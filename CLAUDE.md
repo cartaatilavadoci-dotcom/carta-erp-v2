@@ -1022,11 +1022,32 @@ Za detaljnije informacije, pogledaj:
 
 ## 📅 Changelog & Najnovija Ažuriranja
 
-### 14. Travnja 2026 - Sesija 2 (v1.4) ⭐ VELIKA SESIJA
+### 14. Travnja 2026 - Sesija 2 (v1.4) ⭐ VELIKA SESIJA (27 commitova)
+
+**Dashboard nadogradnje (sve aktivno):**
+- ⭐ **🔴 Live brojači strojeva** - realtime subscription na prod_machine_counters, po karta kartici NLI/WH Tuber/Bottomer, live dot + progress bar + zadnji pulse
+- ⭐ **⚡ OEE widget** - sažetak po liniji+stroju iz v_oee_dashboard, zadnjih 30 dana, obojene OEE brojke (≥70 zeleno, ≥50 narančasto, <50 crveno)
+- ⭐ **⚠️ Pod-proizvedeni nalozi widget** - lista RN-ova s produced_pct < 90% u zadnjih 30 dana
+- ⭐ **📊 Progress bar u Aktivnim RN** - proizvedeno / planirano + obojena crta
+- ⭐ **🔍 Sljedivost palete/RN** - pretraga po RN broju (full overview) ili paleti (trace), modal s kupac→GOP→POP→Roll→proizvođač
+- ⭐ **🖨️ Tisak enrichment u traceability** - otisnute role pokazuju Tisak RN + izvornu papirnu rolu + proizvođača
+- ⭐ **🔔 Bell notifikacije** - badge s brojem nepročitanih, dropdown sa klik-navigacijom
+
+**Planiranje nadogradnje:**
+- ⭐ **📎 Privici narudžbe** - PDF/Excel upload za narudžbenice, test punjenja, ostalo
+  - Storage bucket 'order-attachments' + prod_order_attachments tablica
+  - Badge na 📎 gumbu + banner u editOrder modalu
+  - Za quality control (double-check narudžbe) i AI agent pripremu
+- ⭐ **FK RESTRICT soft-delete fallback** - kad RN ima POP/GOP/evidenciju, ponudi "Otkazano" umjesto hard delete
+
+**Realtime (WebSocket subscriptions):**
+- ⭐ **prod_notifications realtime** - bell se update-a u <1s bez polling-a (60s polling je fallback)
+- ⭐ **prod_machine_counters realtime** - live brojači se auto-refreshaju dok ESP32 šalje pulse
 
 **Workflow & Infrastructure:**
 - ⭐ **Supabase MCP integracija** - direktan pristup bazi za analizu i migracije
 - ⭐ **SB.* safe wrapper** (js/supabase-helpers.js) - centraliziran error handling za sve Supabase pozive (novo Pravilo #24)
+- ⭐ **SB.rpc migracija kompletna** - svih 9 RPC poziva u 3 modula (ovjera-rn × 2, otpreme)
 - ⭐ **Notifikacijski sustav UI** - bell icon + dropdown u sidebaru, surface-a prod_notifications
 
 **Kritični popravci:**
