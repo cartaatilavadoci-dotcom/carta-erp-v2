@@ -24,6 +24,34 @@
   </a>
 </div>
 
+<!-- Sljedivost palete (customer recall tool) -->
+<div class="card" style="margin-bottom: 20px;">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <span>🔍 Sljedivost palete — upis broja palete za punu povijest (kupac, RN, POP tuljci, role papira)</span>
+  </div>
+  <div class="card-body">
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <input type="text" id="traceInput" class="form-control" placeholder="Npr. NLI-00592 ili WH-00234" style="flex: 1; max-width: 280px;" onkeydown="if(event.key==='Enter') traceSearch()">
+      <button class="btn btn-primary" onclick="traceSearch()">Pretraži</button>
+      <span id="traceStatus" style="font-size: 0.85em; color: #666;"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Sljedivost rezultat modal -->
+<div class="modal" id="traceModal" style="display:none;">
+  <div class="modal-content" style="max-width: 720px;">
+    <div class="modal-header">
+      <h3 id="traceModalTitle">🔍 Sljedivost</h3>
+      <span class="modal-close" onclick="closeModal('traceModal')">&times;</span>
+    </div>
+    <div class="modal-body" id="traceModalBody" style="max-height: 70vh; overflow-y: auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('traceModal')">Zatvori</button>
+    </div>
+  </div>
+</div>
+
 <!-- Kamera + Proizvodnja danas/jučer -->
 <div class="form-row" style="margin-bottom: 20px;">
   <div class="card" style="flex: 2;">
@@ -956,6 +984,139 @@ async function loadKontroleVreca() {
     var tbody = document.getElementById('kontroleTableBody');
     if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #f44336;">Greška učitavanja</td></tr>';
   }
+}
+
+// Sljedivost palete — customer recall tool
+// pallet_number nije globalno jedinstven (resetira se per-RN), pa
+// podržavamo dva oblika pretrage:
+//   - "P0004"         → lista svih, user bira
+//   - "RN123/26 P0004" → izravno ciljano
+async function traceSearch() {
+  var input = document.getElementById('traceInput');
+  var status = document.getElementById('traceStatus');
+  var raw = (input.value || '').trim();
+  if (!raw) {
+    status.textContent = 'Unesite broj palete';
+    status.style.color = '#f57c00';
+    return;
+  }
+
+  // Parse: ako ima razmak → RN + paleta, inače samo paleta
+  var rnFilter = null, palletNo = raw;
+  var spaceIdx = raw.indexOf(' ');
+  if (spaceIdx > 0) {
+    rnFilter = raw.substring(0, spaceIdx).trim();
+    palletNo = raw.substring(spaceIdx + 1).trim();
+  }
+
+  status.textContent = 'Tražim...';
+  status.style.color = '#1976d2';
+
+  try {
+    var opts = {
+      columns: 'id, pallet_number, work_order_number, article_name, customer_name, quantity, production_line, operator_name, shift, status, dispatch_status, created_at, dispatched_at',
+      eq: { pallet_number: palletNo },
+      order: { created_at: 'desc' },
+      limit: 100
+    };
+    if (rnFilter) opts.eq.work_order_number = rnFilter;
+
+    var gopList = await SB.select('prod_inventory_gop', opts);
+
+    if (!gopList || gopList.length === 0) {
+      status.textContent = '❌ Paleta nije pronađena';
+      status.style.color = '#d32f2f';
+      return;
+    }
+
+    // Ako je više GOP-ova (isti pallet_number u različitim RN-ovima), daj picker
+    if (gopList.length > 1 && !rnFilter) {
+      status.textContent = gopList.length + ' paleta s tim brojem - odaberite RN';
+      status.style.color = '#f57c00';
+      showPalletPicker(palletNo, gopList);
+      return;
+    }
+
+    var gop = gopList[0];
+    // Za full trace treba nam specifičan GOP - koristi RPC samo ako 1 match
+    var trace = await SB.rpc('trace_pallet', { p_pallet_number: palletNo }, { silent: true });
+    var traceRow = (trace || []).find(function(t) { return t.work_order_number === gop.work_order_number; }) || {};
+
+    status.textContent = '✅ Pronađeno';
+    status.style.color = '#2e7d32';
+
+    // 3. Pripremi HTML za modal
+    var rolesHtml = traceRow.roll_codes ? traceRow.roll_codes : '<em style="color:#999;">nema link-a (stara paleta ili tuber-materijal nije evidentiran)</em>';
+    var manHtml = traceRow.manufacturers ? traceRow.manufacturers : '-';
+    var popHtml = traceRow.pop_codes ? traceRow.pop_codes : '<em style="color:#999;">nema link-a</em>';
+
+    var linijaColor = gop.production_line === 'WH' ? '#2e7d32' : '#e65100';
+    var dispStatus = gop.status === 'Otpremljeno'
+      ? '<span style="color:#2e7d32;font-weight:600;">Otpremljeno ' + (gop.dispatched_at ? new Date(gop.dispatched_at).toLocaleDateString('hr-HR') : '') + '</span>'
+      : '<span style="color:#f57c00;font-weight:600;">' + (gop.status || '-') + '</span>';
+
+    var html =
+      '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;width:180px;">Paleta</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;"><strong>' + gop.pallet_number + '</strong></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Kupac</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;"><strong>' + (gop.customer_name || '-') + '</strong></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Artikl</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.article_name || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Količina</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + formatBroj(gop.quantity || 0) + ' kom</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Radni nalog</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.work_order_number || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Linija</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;"><span style="background:' + linijaColor + ';color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">' + (gop.production_line || '-') + '</span></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Smjena / operater</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.shift || '-') + ' / ' + (gop.operator_name || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Proizvedeno</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.created_at ? new Date(gop.created_at).toLocaleString('hr-HR') : '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Status otpreme</td>' +
+        '<td style="padding:6px;border-bottom:1px solid #eee;">' + dispStatus + '</td></tr>' +
+      '<tr><td style="padding:10px 6px;color:#666;vertical-align:top;border-top:2px solid #1976d2;">POP tuljci korišteni</td>' +
+        '<td style="padding:10px 6px;border-top:2px solid #1976d2;">' + popHtml + '</td></tr>' +
+      '<tr><td style="padding:6px;color:#666;vertical-align:top;">Role papira</td>' +
+        '<td style="padding:6px;">' + rolesHtml + '</td></tr>' +
+      '<tr><td style="padding:6px;color:#666;vertical-align:top;">Proizvođači papira</td>' +
+        '<td style="padding:6px;">' + manHtml + '</td></tr>' +
+      '</table>';
+
+    document.getElementById('traceModalTitle').textContent = '🔍 Sljedivost: ' + palletNo;
+    document.getElementById('traceModalBody').innerHTML = html;
+    openModal('traceModal');
+  } catch (e) {
+    status.textContent = '❌ Greška: ' + e.message;
+    status.style.color = '#d32f2f';
+    console.error('traceSearch:', e);
+  }
+}
+
+// Picker za slučaj kad postoji više paleta istog broja (različiti RN-ovi)
+function showPalletPicker(palletNo, gopList) {
+  var rows = gopList.map(function(g) {
+    var datum = g.created_at ? new Date(g.created_at).toLocaleDateString('hr-HR') : '-';
+    var statusColor = g.status === 'Otpremljeno' ? '#2e7d32' : '#f57c00';
+    var query = (g.work_order_number || '') + ' ' + palletNo;
+    return '<tr style="cursor:pointer;" onclick="document.getElementById(\'traceInput\').value=\'' + query + '\'; closeModal(\'traceModal\'); traceSearch();">' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;"><strong>' + (g.work_order_number || '-') + '</strong></td>' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;">' + (g.customer_name || '-') + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;">' + (g.article_name || '-') + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">' + formatBroj(g.quantity || 0) + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;">' + datum + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid #eee;color:' + statusColor + ';font-weight:600;">' + (g.status || '-') + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var html = '<p style="margin-bottom:10px;color:#666;">Paleta <strong>' + palletNo + '</strong> postoji u ' + gopList.length + ' radnih naloga. Kliknite red za pregled sljedivosti:</p>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+    '<thead><tr style="background:#f5f5f5;"><th style="padding:8px;text-align:left;">RN</th><th style="padding:8px;text-align:left;">Kupac</th><th style="padding:8px;text-align:left;">Artikl</th><th style="padding:8px;text-align:right;">Količina</th><th style="padding:8px;text-align:left;">Datum</th><th style="padding:8px;text-align:left;">Status</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>';
+
+  document.getElementById('traceModalTitle').textContent = '🔍 Više paleta s brojem ' + palletNo;
+  document.getElementById('traceModalBody').innerHTML = html;
+  openModal('traceModal');
 }
 
 // Pod-proizvedeni završeni RN (variance flag)
