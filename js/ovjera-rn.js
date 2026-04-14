@@ -731,15 +731,14 @@
     if (typeof showLoading === 'function') showLoading('Odobravanje...');
 
     try {
-      var result = await initSupabase().rpc('approve_work_order', {
+      // SB.rpc auto-throws on DB/network error i prikazuje toast
+      var data = await SB.rpc('approve_work_order', {
         p_work_order_id: rnId,
         p_approver_user_id: user.id,
         p_approver_name: user.name
       });
 
-      if (result.error) throw result.error;
-
-      var data = result.data;
+      // Business-logic greška iz RPC-a (success: false)
       if (data && data.success === false) {
         if (typeof showMessage === 'function') showMessage(data.error || 'Gre\u0161ka', 'error');
         return;
@@ -781,16 +780,13 @@
     if (typeof showLoading === 'function') showLoading('Odbijanje...');
 
     try {
-      var result = await initSupabase().rpc('reject_work_order', {
+      var data = await SB.rpc('reject_work_order', {
         p_work_order_id: rnId,
         p_rejector_user_id: user.id,
         p_rejector_name: user.name,
         p_reason: razlog.trim()
       });
 
-      if (result.error) throw result.error;
-
-      var data = result.data;
       if (data && data.success === false) {
         if (typeof showMessage === 'function') showMessage(data.error || 'Gre\u0161ka', 'error');
         return;
@@ -822,13 +818,10 @@
     if (typeof showLoading === 'function') showLoading('Slanje na ovjeru...');
 
     try {
-      var result = await initSupabase().rpc('resubmit_work_order', {
+      var data = await SB.rpc('resubmit_work_order', {
         p_work_order_id: rnId
       });
 
-      if (result.error) throw result.error;
-
-      var data = result.data;
       if (data && data.success === false) {
         if (typeof showMessage === 'function') showMessage(data.error || 'Gre\u0161ka', 'error');
         return;
