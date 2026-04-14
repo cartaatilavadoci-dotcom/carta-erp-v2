@@ -250,6 +250,19 @@
   </div>
 </div>
 
+<!-- Live brojači strojeva (realtime iz prod_machine_counters) -->
+<div class="card" style="margin-bottom: 20px;" id="sectionLiveCounters">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #d84315 0%, #ff7043 100%); color: white;">
+    <span>🔴 Live brojači strojeva <span id="liveCountersStatus" style="font-size: 0.75em; margin-left: 8px; opacity: 0.85;">●</span></span>
+    <span id="liveCountersMeta" style="font-size: 0.8em; opacity: 0.9;"></span>
+  </div>
+  <div class="card-body">
+    <div id="liveCountersGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+      <div style="padding: 20px; text-align: center; color: #999;">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
 <!-- OEE sažetak (iz v_oee_dashboard, zadnjih 30 dana) -->
 <div class="form-row" style="margin-bottom: 20px;" id="sectionOee">
   <div class="card" style="flex: 1;">
@@ -741,6 +754,8 @@ async function initDashboardView() {
     loadTodayStats();
     loadYesterdayStats();
     loadActiveRN();
+    loadLiveCounters();
+    subscribeLiveCounters();
     loadOeeSummary();
     loadPodProizvedeniRN();
     loadPOPStats();
@@ -1334,6 +1349,100 @@ function showPalletPicker(palletNo, gopList) {
   document.getElementById('traceModalTitle').textContent = '🔍 Više paleta s brojem ' + palletNo;
   document.getElementById('traceModalBody').innerHTML = html;
   openModal('traceModal');
+}
+
+// =====================
+// Live brojači strojeva (prod_machine_counters realtime)
+// =====================
+var _liveChannel = null;
+
+async function loadLiveCounters() {
+  var grid = document.getElementById('liveCountersGrid');
+  var meta = document.getElementById('liveCountersMeta');
+  if (!grid) return;
+
+  try {
+    var data = await SB.select('v_machine_counters', { limit: 30 });
+
+    if (!data || data.length === 0) {
+      grid.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Nema brojača</div>';
+      return;
+    }
+
+    // Po 1 red po stroju: prefiraj is_active=true, inače najnoviji
+    var perMachine = {};
+    data.forEach(function(c) {
+      var key = c.machine_code;
+      if (!perMachine[key]) { perMachine[key] = c; return; }
+      if (c.is_active && !perMachine[key].is_active) perMachine[key] = c;
+    });
+
+    var entries = Object.values(perMachine);
+    var activeCount = entries.filter(function(c) { return c.is_active; }).length;
+    if (meta) meta.textContent = activeCount + ' aktivnih od ' + entries.length + ' strojeva';
+
+    var html = entries.map(function(c) {
+      var pct = parseFloat(c.progress_percent) || 0;
+      var pctClamped = Math.min(pct, 100);
+      var barColor = c.is_active
+        ? (pct >= 100 ? '#4caf50' : (pct >= 50 ? '#ff9800' : '#f44336'))
+        : '#9e9e9e';
+
+      var pulseAge = '';
+      var isLive = false;
+      if (c.last_pulse_at) {
+        var ageMs = Date.now() - new Date(c.last_pulse_at).getTime();
+        var ageMin = Math.floor(ageMs / 60000);
+        isLive = c.is_active && ageMin < 5;
+        pulseAge = ageMin < 1 ? 'sada' : (ageMin < 60 ? ageMin + ' min' : (Math.floor(ageMin / 60) + 'h'));
+      }
+
+      var liveDot = isLive
+        ? '<span style="display:inline-block;width:8px;height:8px;background:#4caf50;border-radius:50%;margin-right:6px;"></span>'
+        : '<span style="display:inline-block;width:8px;height:8px;background:#9e9e9e;border-radius:50%;margin-right:6px;"></span>';
+
+      var linija = c.machine_code && c.machine_code.indexOf('WH') >= 0 ? 'WH' : 'NLI';
+      var linijaColor = linija === 'WH' ? '#2e7d32' : '#e65100';
+
+      return '<div style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;background:' + (c.is_active ? '#fff' : '#fafafa') + ';" data-machine="' + c.machine_code + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+        '<div>' + liveDot + '<strong>' + c.machine_code + '</strong> <span style="background:' + linijaColor + ';color:white;padding:1px 6px;border-radius:3px;font-size:0.75em;margin-left:4px;">' + linija + '</span></div>' +
+        '<span style="font-size:0.75em;color:#999;">' + pulseAge + '</span>' +
+        '</div>' +
+        '<div style="font-size:0.85em;color:#666;margin-bottom:6px;">' + (c.work_order_number || '(nema aktivnog RN)') + '</div>' +
+        '<div style="font-size:1.4em;font-weight:700;margin-bottom:4px;">' + formatBroj(c.count || 0) + ' <span style="font-size:0.6em;color:#999;font-weight:400;">/ ' + formatBroj(c.target_quantity || 0) + '</span></div>' +
+        '<div style="background:#eee;border-radius:3px;height:6px;overflow:hidden;margin-bottom:4px;">' +
+        '<div style="width:' + pctClamped + '%;background:' + barColor + ';height:100%;transition:width 0.5s;"></div></div>' +
+        '<div style="font-size:0.8em;color:#666;text-align:right;">' + pct.toFixed(1) + '%</div>' +
+        '</div>';
+    }).join('');
+
+    grid.innerHTML = html;
+  } catch (e) {
+    console.error('loadLiveCounters:', e);
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:#d32f2f;">Greška učitavanja brojača</div>';
+  }
+}
+
+function subscribeLiveCounters() {
+  if (_liveChannel) return;
+  try {
+    var sb = initSupabase();
+    if (!sb.channel) return;
+
+    _liveChannel = sb.channel('machine-counters-channel')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'prod_machine_counters' },
+        function() { loadLiveCounters(); })
+      .subscribe(function(statusName) {
+        var el = document.getElementById('liveCountersStatus');
+        if (!el) return;
+        if (statusName === 'SUBSCRIBED') { el.style.color = '#4caf50'; el.title = 'Realtime aktivan'; }
+        else { el.style.color = '#ffc107'; el.title = statusName; }
+      });
+  } catch (e) {
+    console.warn('subscribeLiveCounters failed:', e);
+  }
 }
 
 // OEE sažetak (v_oee_dashboard) zadnjih 30 dana po liniji + stroju
