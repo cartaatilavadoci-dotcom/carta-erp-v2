@@ -475,6 +475,49 @@
   </div>
 </div>
 
+<!-- Modal za privitke narudžbe (narudžbenica, test punjenja) -->
+<div class="modal" id="orderAttachmentsModal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h2>📎 Privici narudžbe <span id="orderAttachOrderNo" style="font-weight:400;color:#1976d2;"></span></h2>
+      <span class="modal-close" onclick="closeModal('orderAttachmentsModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <!-- Upload područje -->
+      <div style="background:#f5f5f5;padding:14px;border-radius:6px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+          <label style="font-weight:600;">Tip dokumenta:</label>
+          <select id="orderAttachKind" class="form-control">
+            <option value="narudzbenica">📋 Narudžbenica (original od kupca)</option>
+            <option value="test_punjenja">🧪 Test punjenja</option>
+            <option value="ostalo">📄 Ostalo</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+          <label>Napomena (opcionalno):</label>
+          <input type="text" id="orderAttachNote" class="form-control" placeholder="npr. v2, izmjena kolor, ...">
+        </div>
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+          <label>Datoteka:</label>
+          <input type="file" id="orderAttachFile" accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.doc,.docx">
+        </div>
+        <div style="text-align:right;">
+          <button class="btn btn-primary" onclick="window.uploadOrderAttachment()">⬆️ Upload</button>
+          <span id="orderAttachStatus" style="margin-left:10px;font-size:0.85em;color:#666;"></span>
+        </div>
+      </div>
+
+      <!-- Lista postojećih privitaka -->
+      <h3 style="margin-top:0;font-size:1em;">Postojeći privici</h3>
+      <div id="orderAttachmentsList" style="max-height:380px;overflow-y:auto;">
+        <div style="padding:20px;text-align:center;color:#999;">Učitavanje...</div>
+      </div>
+
+      <input type="hidden" id="orderAttachOrderId">
+    </div>
+  </div>
+</div>
+
 <!-- Modal za sinkronizaciju brojača -->
 <div class="modal" id="counterSyncModal">
   <div class="modal-content" style="max-width: 700px;">
@@ -1169,6 +1212,21 @@
         </div>
       </div>
       
+      <!-- Privici (narudžbenica, test punjenja) -->
+      <div id="editOrderAttachBanner" style="display:none;background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 100%);border-left:4px solid #1976d2;padding:12px 16px;border-radius:6px;margin:16px 0;cursor:pointer;" onclick="window.openEditOrderAttachments()" title="Klik za pregled privitaka">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <strong style="color:#0d47a1;">📎 <span id="editOrderAttachCount">0</span> privitaka</strong>
+            <span id="editOrderAttachSummary" style="margin-left:8px;color:#555;font-size:0.9em;"></span>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); window.openEditOrderAttachments();">📂 Otvori</button>
+        </div>
+      </div>
+      <div id="editOrderAttachEmpty" style="display:none;background:#fafafa;border:1px dashed #ccc;padding:10px 14px;border-radius:6px;margin:16px 0;text-align:center;color:#999;">
+        📎 Nema privitaka za ovu narudžbu
+        <button class="btn btn-sm btn-outline" style="margin-left:8px;" onclick="window.openEditOrderAttachments()">➕ Dodaj</button>
+      </div>
+
       <!-- Stavke narudžbe -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
         <h4 style="margin: 0;">📦 Stavke narudžbe</h4>
@@ -2049,6 +2107,11 @@ async function loadOrders() {
   const status = document.getElementById('filterStatus').value;
 
   try {
+    // Privici: load counts parallelly (badge na 📎 gumbu)
+    if (typeof loadOrderAttachmentCounts === 'function') {
+      loadOrderAttachmentCounts().catch(function(e) { console.warn(e); });
+    }
+
     // Dohvati narudžbe (ostali filteri se primjenjuju lokalno)
     let query = initSupabase().from('prod_orders').select('*');
 
@@ -2502,6 +2565,9 @@ function renderOrdersTable(orders) {
         <td>${isNewOrder ? formatDatum(order.delivery_deadline) : ''}</td>
         <td><span class="badge badge-${statusClass}">${order.status || '-'}</span></td>
         <td style="white-space: nowrap;">
+          <button class="action-btn" onclick="window.openOrderAttachmentsModal('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}')" title="Privici (narudžbenica, test punjenja)" style="position:relative;">
+            📎${(window.orderAttachmentCounts && window.orderAttachmentCounts[order.id]) ? '<span style="position:absolute;top:-4px;right:-6px;background:#1976d2;color:white;border-radius:8px;min-width:14px;height:14px;padding:0 3px;font-size:9px;font-weight:bold;line-height:14px;">' + window.orderAttachmentCounts[order.id] + '</span>' : ''}
+          </button>
           ${planiranjeReadOnly ? '' : `
           <button class="action-btn" onclick="window.moveOrder('${order.id}', -1)" title="Pomakni gore" style="padding:2px 4px;">↑</button>
           <button class="action-btn" onclick="window.moveOrder('${order.id}', 1)" title="Pomakni dolje" style="padding:2px 4px;">↓</button>
@@ -5236,6 +5302,7 @@ async function editOrder(orderNumber) {
     });
     
     renderEditOrderItems();
+    await renderEditOrderAttachBanner(items[0].id);
     openModal('editOrderModal');
 
     if (changedCount > 0) {
@@ -5846,6 +5913,243 @@ window.syncRNArticleData = syncRNArticleData;
 window.syncAllArticleData = syncAllArticleData;
 window.syncSingleArticle = syncSingleArticle;
 window.openCounterSyncModal = openCounterSyncModal;
+
+// ============================================
+// PRIVICI NARUDŽBE (prod_order_attachments + storage)
+// ============================================
+window.orderAttachmentCounts = {}; // { order_id: count } - za badge rendering
+
+async function loadOrderAttachmentCounts() {
+  // Count po order_id za sve narudžbe, pozivano pri učitavanju tablice
+  try {
+    var data = await SB.select('prod_order_attachments', {
+      columns: 'order_id',
+      limit: 10000
+    });
+    var counts = {};
+    (data || []).forEach(function(a) {
+      counts[a.order_id] = (counts[a.order_id] || 0) + 1;
+    });
+    window.orderAttachmentCounts = counts;
+  } catch (e) {
+    console.warn('loadOrderAttachmentCounts:', e);
+  }
+}
+
+window.openOrderAttachmentsModal = async function(orderId, orderNumber) {
+  document.getElementById('orderAttachOrderId').value = orderId;
+  document.getElementById('orderAttachOrderNo').textContent = orderNumber;
+  document.getElementById('orderAttachStatus').textContent = '';
+  document.getElementById('orderAttachFile').value = '';
+  document.getElementById('orderAttachNote').value = '';
+  document.getElementById('orderAttachKind').value = 'narudzbenica';
+  openModal('orderAttachmentsModal');
+  await renderOrderAttachmentsList(orderId);
+};
+
+async function renderOrderAttachmentsList(orderId) {
+  var list = document.getElementById('orderAttachmentsList');
+  try {
+    var data = await SB.select('prod_order_attachments', {
+      eq: { order_id: orderId },
+      order: { created_at: 'desc' },
+      limit: 100
+    });
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">Nema privitaka</div>';
+      return;
+    }
+
+    var kindLabel = {
+      'narudzbenica': '📋 Narudžbenica',
+      'test_punjenja': '🧪 Test punjenja',
+      'ostalo': '📄 Ostalo'
+    };
+
+    var html = data.map(function(a) {
+      var size = a.file_size ? (a.file_size > 1024*1024 ? (a.file_size/(1024*1024)).toFixed(1) + ' MB' : Math.round(a.file_size/1024) + ' KB') : '-';
+      var dt = a.created_at ? new Date(a.created_at).toLocaleString('hr-HR') : '-';
+      var esc = function(s) { return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
+      return '<div style="border:1px solid #e0e0e0;border-radius:6px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:600;margin-bottom:2px;">' + (kindLabel[a.kind] || a.kind) + ' · <span style="font-weight:400;color:#1976d2;">' + esc(a.file_name) + '</span></div>' +
+        (a.note ? '<div style="font-size:0.85em;color:#666;margin-bottom:2px;">💬 ' + esc(a.note) + '</div>' : '') +
+        '<div style="font-size:0.8em;color:#999;">' + size + ' · ' + esc(a.uploaded_by || '-') + ' · ' + dt + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:4px;flex-shrink:0;">' +
+        '<button class="btn btn-sm btn-primary" onclick="window.downloadOrderAttachment(\'' + a.id + '\')" title="Otvori">👁️</button>' +
+        '<button class="btn btn-sm" style="background:#f44336;color:white;" onclick="window.deleteOrderAttachment(\'' + a.id + '\')" title="Obriši">🗑️</button>' +
+        '</div></div>';
+    }).join('');
+
+    list.innerHTML = html;
+  } catch (e) {
+    console.error('renderOrderAttachmentsList:', e);
+    list.innerHTML = '<div style="padding:20px;color:#d32f2f;">Greška: ' + e.message + '</div>';
+  }
+}
+
+window.uploadOrderAttachment = async function() {
+  var orderId = document.getElementById('orderAttachOrderId').value;
+  var kind = document.getElementById('orderAttachKind').value;
+  var note = document.getElementById('orderAttachNote').value.trim();
+  var fileInput = document.getElementById('orderAttachFile');
+  var status = document.getElementById('orderAttachStatus');
+
+  var file = fileInput.files && fileInput.files[0];
+  if (!file) {
+    status.textContent = 'Odaberite datoteku';
+    status.style.color = '#f57c00';
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    status.textContent = 'Datoteka > 20 MB';
+    status.style.color = '#d32f2f';
+    return;
+  }
+
+  status.textContent = 'Uploadam...';
+  status.style.color = '#1976d2';
+
+  try {
+    // Jedinstveni path: orders/<orderId>/<timestamp>_<sanitizirano_ime>
+    var safeName = file.name.replace(/[^\w.\-]+/g, '_');
+    var path = 'orders/' + orderId + '/' + Date.now() + '_' + safeName;
+
+    var sb = initSupabase();
+    var uploadRes = await sb.storage.from('order-attachments').upload(path, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    if (uploadRes.error) throw uploadRes.error;
+
+    // Upisi metadata
+    var user = Auth.getUser() || {};
+    await SB.insert('prod_order_attachments', {
+      order_id: orderId,
+      kind: kind,
+      file_path: path,
+      file_name: file.name,
+      file_size: file.size,
+      mime_type: file.type || null,
+      note: note || null,
+      uploaded_by: user.name || null,
+      uploaded_by_user_id: user.id || null
+    });
+
+    status.textContent = '✅ Uploadano';
+    status.style.color = '#2e7d32';
+    fileInput.value = '';
+    document.getElementById('orderAttachNote').value = '';
+    await renderOrderAttachmentsList(orderId);
+    await loadOrderAttachmentCounts();
+    // Re-render tablice da se badge osvježi
+    if (typeof renderNarudzbe === 'function') renderNarudzbe();
+    // Ako je editOrderModal otvoren, osvježi banner
+    if (document.getElementById('editOrderModal').classList.contains('active')) {
+      await renderEditOrderAttachBanner(orderId);
+    }
+  } catch (e) {
+    console.error('uploadOrderAttachment:', e);
+    status.textContent = '❌ ' + (e.message || 'Greška');
+    status.style.color = '#d32f2f';
+  }
+};
+
+window.downloadOrderAttachment = async function(attachId) {
+  try {
+    var a = await SB.select('prod_order_attachments', {
+      eq: { id: attachId }, single: true
+    });
+    if (!a) return;
+
+    var sb = initSupabase();
+    var signed = await sb.storage.from('order-attachments').createSignedUrl(a.file_path, 300);
+    if (signed.error) throw signed.error;
+    window.open(signed.data.signedUrl, '_blank');
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+    console.error('downloadOrderAttachment:', e);
+  }
+};
+
+// Renderiraj banner u editOrder modalu s summary-jem privitaka
+async function renderEditOrderAttachBanner(orderId) {
+  var banner = document.getElementById('editOrderAttachBanner');
+  var empty = document.getElementById('editOrderAttachEmpty');
+  var countEl = document.getElementById('editOrderAttachCount');
+  var sumEl = document.getElementById('editOrderAttachSummary');
+  if (!banner) return;
+
+  try {
+    var data = await SB.select('prod_order_attachments', {
+      columns: 'id, kind, file_name',
+      eq: { order_id: orderId },
+      limit: 100
+    });
+
+    if (!data || data.length === 0) {
+      banner.style.display = 'none';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+
+    var byKind = { narudzbenica: 0, test_punjenja: 0, ostalo: 0 };
+    data.forEach(function(a) { byKind[a.kind] = (byKind[a.kind] || 0) + 1; });
+
+    var parts = [];
+    if (byKind.narudzbenica) parts.push('📋 ' + byKind.narudzbenica + ' narudžbenica');
+    if (byKind.test_punjenja) parts.push('🧪 ' + byKind.test_punjenja + ' test punjenja');
+    if (byKind.ostalo) parts.push('📄 ' + byKind.ostalo + ' ostalo');
+
+    countEl.textContent = data.length;
+    sumEl.textContent = '(' + parts.join(' · ') + ')';
+    banner.style.display = 'block';
+    if (empty) empty.style.display = 'none';
+    banner.dataset.orderId = orderId;
+  } catch (e) {
+    console.warn('renderEditOrderAttachBanner:', e);
+    banner.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+  }
+}
+
+window.openEditOrderAttachments = function() {
+  var orderId = document.getElementById('editOrderAttachBanner').dataset.orderId
+             || (editingOrderItems && editingOrderItems[0] && editingOrderItems[0].id);
+  var orderNo = document.getElementById('editOrderNumber').textContent;
+  if (!orderId) return;
+  window.openOrderAttachmentsModal(orderId, orderNo);
+};
+
+window.deleteOrderAttachment = async function(attachId) {
+  if (!confirm('Obrisati ovaj privitak?')) return;
+  try {
+    var a = await SB.select('prod_order_attachments', {
+      eq: { id: attachId }, single: true
+    });
+    if (!a) return;
+
+    var sb = initSupabase();
+    // Obrisi fajl iz storage-a (best effort)
+    await sb.storage.from('order-attachments').remove([a.file_path]);
+    // Obrisi metadata row
+    await SB.delete('prod_order_attachments', { id: attachId });
+
+    showMessage('Privitak obrisan', 'success');
+    var orderId = document.getElementById('orderAttachOrderId').value;
+    await renderOrderAttachmentsList(orderId);
+    await loadOrderAttachmentCounts();
+    if (typeof renderNarudzbe === 'function') renderNarudzbe();
+    if (document.getElementById('editOrderModal').classList.contains('active')) {
+      await renderEditOrderAttachBanner(orderId);
+    }
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+    console.error('deleteOrderAttachment:', e);
+  }
+};
 window.scanCounters = scanCounters;
 window.applyCounterSync = applyCounterSync;
 window.filterRN = filterRN;
