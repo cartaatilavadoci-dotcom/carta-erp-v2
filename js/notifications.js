@@ -13,10 +13,39 @@
 const Notifications = {
   _all: [],
   _pollTimer: null,
+  _realtimeChannel: null,
 
   async init() {
     await this.load();
-    this.startPolling();
+    this.subscribeRealtime();
+    this.startPolling();  // fallback ako realtime padne
+  },
+
+  // Realtime subscription na prod_notifications
+  subscribeRealtime() {
+    if (this._realtimeChannel) return;
+    try {
+      var sb = initSupabase();
+      if (!sb.channel) return;  // stari Supabase klijent bez realtime
+
+      this._realtimeChannel = sb.channel('notifications-channel')
+        .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'prod_notifications' },
+            function(payload) {
+              console.log('🔔 Realtime notif event:', payload.eventType);
+              // Bilo koji INSERT/UPDATE/DELETE — refresh liste
+              Notifications.load();
+            })
+        .subscribe(function(statusName) {
+          if (statusName === 'SUBSCRIBED') {
+            console.log('🔔 Notifications realtime: povezano');
+          } else if (statusName === 'CLOSED' || statusName === 'CHANNEL_ERROR') {
+            console.warn('🔔 Notifications realtime:', statusName, '- polling ostaje aktivan');
+          }
+        });
+    } catch (e) {
+      console.warn('Realtime subscribe failed (polling fallback radi):', e);
+    }
   },
 
   async load() {
@@ -169,8 +198,9 @@ const Notifications = {
   },
 
   startPolling() {
+    // Polling kao fallback ako realtime padne - rjeđe (2 min) jer je realtime primarni
     if (this._pollTimer) clearInterval(this._pollTimer);
-    this._pollTimer = setInterval(function() { Notifications.load(); }, 60000);
+    this._pollTimer = setInterval(function() { Notifications.load(); }, 120000);
   },
 
   // ----- helpers -----
