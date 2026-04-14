@@ -1,0 +1,1668 @@
+<h1 style="margin-bottom: 30px; color: var(--primary);">📊 Pregled</h1>
+
+<!-- KPI Cards -->
+<div class="status-grid" id="sectionKpiCards">
+  <a href="#artikli" class="status-card" style="text-decoration: none; cursor: pointer;">
+    <div class="status-card-icon">👥</div>
+    <div class="status-card-value" id="kpiCustomers">-</div>
+    <div class="status-card-label">Kupci</div>
+  </a>
+  <a href="#artikli" class="status-card info" style="text-decoration: none; cursor: pointer;">
+    <div class="status-card-icon">📦</div>
+    <div class="status-card-value" id="kpiArticles">-</div>
+    <div class="status-card-label">Artikli</div>
+  </a>
+  <a href="#maintenance" class="status-card success" style="text-decoration: none; cursor: pointer;">
+    <div class="status-card-icon">🏭</div>
+    <div class="status-card-value" id="kpiMachines">-</div>
+    <div class="status-card-label">Strojevi</div>
+  </a>
+  <a href="#planiranje" class="status-card warning" style="text-decoration: none; cursor: pointer;">
+    <div class="status-card-icon">📋</div>
+    <div class="status-card-value" id="kpiOrders">-</div>
+    <div class="status-card-label">Aktivne narudžbe</div>
+  </a>
+</div>
+
+<!-- Kamera + Proizvodnja danas/jučer -->
+<div class="form-row" style="margin-bottom: 20px;">
+  <div class="card" style="flex: 2;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>📹 Ulaz - Live</span>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="camStatus" style="font-size: 0.8em; color: #666;">Povezivanje...</span>
+        <button class="btn btn-sm btn-outline" onclick="refreshCam()">🔄</button>
+        <a href="#videonadzor" class="btn btn-sm btn-primary">Sve kamere</a>
+      </div>
+    </div>
+    <div class="card-body" style="padding: 0; background: #000; min-height: 250px;">
+      <div id="camFeed" style="display: flex; align-items: center; justify-content: center; height: 250px;">
+        <div style="color: #666; text-align: center;">
+          <div class="cam-spinner"></div>
+          Učitavanje...
+        </div>
+      </div>
+    </div>
+    <div style="padding: 8px 15px; background: #f5f5f5; display: flex; justify-content: space-between; font-size: 0.85em; color: #666;">
+      <span>Kanal 5</span>
+      <span id="camTime">--:--:--</span>
+    </div>
+  </div>
+  
+  <!-- Proizvodnja danas i jučer -->
+  <div class="card" style="flex: 1;">
+    <div class="card-header">📊 Proizvodnja</div>
+    <div class="card-body" style="padding: 15px;">
+      <!-- Danas -->
+      <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+        <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">📅 DANAS</div>
+        <div id="kpiTodayProduced" style="font-size: 1.8em; font-weight: 700; color: var(--primary);">-</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+          <div style="background: #fff3e0; padding: 8px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: 700; color: #e65100;" id="kpiTodayNLI">-</div>
+            <div style="font-size: 0.75em; color: #666;">NLI</div>
+          </div>
+          <div style="background: #e8f5e9; padding: 8px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: 700; color: #2e7d32;" id="kpiTodayWH">-</div>
+            <div style="font-size: 0.75em; color: #666;">W&H</div>
+          </div>
+        </div>
+      </div>
+      <!-- Jučer -->
+      <div>
+        <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">📆 JUČER</div>
+        <div id="kpiYesterdayProduced" style="font-size: 1.5em; font-weight: 700; color: #666;">-</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+          <div style="background: #fafafa; padding: 8px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: 600; color: #e65100;" id="kpiYesterdayNLI">-</div>
+            <div style="font-size: 0.75em; color: #666;">NLI</div>
+          </div>
+          <div style="background: #fafafa; padding: 8px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: 600; color: #2e7d32;" id="kpiYesterdayWH">-</div>
+            <div style="font-size: 0.75em; color: #666;">W&H</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Role papira (bijeli/smeđi) + Aktivni RN -->
+<div class="form-row" style="margin-bottom: 20px;">
+  <!-- Role papira s detaljima -->
+  <div class="card" style="flex: 1;" id="sectionRolePapira">
+    <div class="card-header">📦 Role papira</div>
+    <div class="card-body">
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+        <div id="kpiRolls" style="font-size: 2.5em; font-weight: 700; color: var(--primary);">-</div>
+        <div style="color: var(--text-secondary);">rola<br>na skladištu</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #9e9e9e;">
+          <div style="font-size: 0.8em; color: #666;">⬜ Bijeli papir</div>
+          <div style="font-size: 1.4em; font-weight: 700;" id="kpiWhiteTons">-</div>
+          <div style="font-size: 0.75em; color: #888;">tona</div>
+        </div>
+        <div style="background: #efebe9; padding: 12px; border-radius: 8px; border-left: 4px solid #795548;">
+          <div style="font-size: 0.8em; color: #666;">🟫 Smeđi papir</div>
+          <div style="font-size: 1.4em; font-weight: 700;" id="kpiBrownTons">-</div>
+          <div style="font-size: 0.75em; color: #888;">tona</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Aktivni radni nalozi po linijama -->
+  <div class="card" style="flex: 1;">
+    <div class="card-header">🔧 Aktivni radni nalozi</div>
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 2em; font-weight: 700; color: #2e7d32;" id="kpiRnWH">-</div>
+          <div style="font-size: 0.85em; color: #666;">W&H</div>
+        </div>
+        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 2em; font-weight: 700; color: #e65100;" id="kpiRnNLI">-</div>
+          <div style="font-size: 0.85em; color: #666;">NLI</div>
+        </div>
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 2em; font-weight: 700; color: #1565c0;" id="kpiRnTisak">-</div>
+          <div style="font-size: 0.85em; color: #666;">Tisak</div>
+        </div>
+      </div>
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Ukupno aktivnih:</span>
+        <span style="font-size: 1.5em; font-weight: 700; color: var(--primary);" id="kpiRnTotal">-</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Trake i zaposlenici -->
+  <div class="card" style="flex: 1;" id="sectionResursi">
+    <div class="card-header">📊 Resursi</div>
+    <div class="card-body">
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+          <div style="font-size: 1.5em;">🎞️</div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.85em; color: #666;">Trake</div>
+            <div style="font-size: 1.3em; font-weight: 700;" id="kpiBelts">-</div>
+          </div>
+          <div style="font-size: 0.85em; color: #888;">pozicija</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+          <div style="font-size: 1.5em;">👷</div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.85em; color: #666;">Zaposlenici</div>
+            <div style="font-size: 1.3em; font-weight: 700;" id="kpiEmployees">-</div>
+          </div>
+          <div style="font-size: 0.85em; color: #888;">aktivnih</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+          <div style="font-size: 1.5em;">📄</div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.85em; color: #666;">POP na čekanju</div>
+            <div style="font-size: 1.3em; font-weight: 700;" id="kpiPOP">-</div>
+          </div>
+          <div style="font-size: 0.85em; color: #888;">kom</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista aktivnih radnih naloga -->
+<div class="form-row" style="margin-bottom: 20px;">
+  <div class="card" style="flex: 2;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>📋 Aktivni radni nalozi - Proizvodnja</span>
+      <a href="#planiranje" class="btn btn-sm btn-outline">Svi nalozi →</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+            <tr>
+              <th>RN</th>
+              <th>Kupac</th>
+              <th>Artikl</th>
+              <th style="text-align: right;">Količina</th>
+              <th>Linija</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="activeRNTable">
+            <tr><td colspan="6" style="text-align: center; padding: 20px;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card" style="flex: 1;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>🖨️ Aktivni nalozi - Tisak</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+            <tr>
+              <th>RN</th>
+              <th>Artikl</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="activeTisakTable">
+            <tr><td colspan="3" style="text-align: center; padding: 20px;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kvarovi i Kontrole vreća -->
+<div class="form-row" style="margin-bottom: 20px;" id="sectionKvaroviKontrole">
+  <!-- Aktivne prijave kvarova -->
+  <div class="card" style="flex: 1;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); color: white;">
+      <span>🔧 Aktivne prijave kvarova</span>
+      <span class="badge" id="kvaroviBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+            <tr>
+              <th style="padding: 8px;">Broj</th>
+              <th style="padding: 8px;">Stroj</th>
+              <th style="padding: 8px;">Tip</th>
+              <th style="padding: 8px;">Prioritet</th>
+              <th style="padding: 8px;">Prijavio</th>
+              <th style="padding: 8px;">Datum</th>
+            </tr>
+          </thead>
+          <tbody id="kvaroviTableBody">
+            <tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Kontrole vreća -->
+  <div class="card" style="flex: 1;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); color: white;">
+      <span>✅ Kontrole vreća (jučer + danas)</span>
+      <span class="badge" id="kontroleBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+            <tr>
+              <th style="padding: 8px;">RN</th>
+              <th style="padding: 8px;">Artikl</th>
+              <th style="padding: 8px;">Linija</th>
+              <th style="padding: 8px;">Smjena</th>
+              <th style="padding: 8px;">Kontrolor</th>
+              <th style="padding: 8px;">Status</th>
+              <th style="padding: 8px;">Datum</th>
+            </tr>
+          </thead>
+          <tbody id="kontroleTableBody">
+            <tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Brzi pristup -->
+<div class="card" id="sectionBrziPristup">
+  <div class="card-header">⚡ Brzi pristup</div>
+  <div class="card-body">
+    <div class="btn-group" style="flex-wrap: wrap;">
+      <a href="#planiranje" class="btn btn-primary">📋 Planiranje</a>
+      <a href="#artikli" class="btn btn-outline">📦 Artikli</a>
+      <a href="#skladiste" class="btn btn-outline">🏭 Skladište</a>
+      <a href="#tuber" class="btn btn-outline">🧻 Tuber</a>
+      <a href="#bottomer-slagac" class="btn btn-outline">🏷️ Bottomer</a>
+      <a href="#videonadzor" class="btn btn-outline">📹 Videonadzor</a>
+      <a href="#maintenance" class="btn btn-outline">🔧 Održavanje</a>
+    </div>
+  </div>
+</div>
+
+<!-- SMJENSKA IZVJEŠĆA -->
+<div class="card" style="margin-top: 20px;" id="sectionSmjenskaIzvjesca">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <span>📝 Smjenska izvješća</span>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85em; color: #666;">Datum:</label>
+        <input type="date" id="izvjesceDatum" class="form-control" style="padding: 6px 10px; width: auto;">
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85em; color: #666;">Smjena:</label>
+        <select id="izvjesceSmjena" class="form-control" style="padding: 6px 10px; width: auto;">
+          <option value="">Sve</option>
+          <option value="1">1. smjena</option>
+          <option value="2">2. smjena</option>
+          <option value="3">3. smjena</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85em; color: #666;">Linija:</label>
+        <select id="izvjesceLinija" class="form-control" style="padding: 6px 10px; width: auto;">
+          <option value="">Sve</option>
+          <option value="WH">WH</option>
+          <option value="NLI">NLI</option>
+          <option value="Tisak">Tisak</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85em; color: #666;">Stroj:</label>
+        <select id="izvjesceStroj" class="form-control" style="padding: 6px 10px; width: auto;">
+          <option value="">Svi</option>
+          <option value="bottomer">Bottomer</option>
+          <option value="tuber">Tuber</option>
+          <option value="tisak">Tisak</option>
+        </select>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="ucitajSmjenskaIzvjesca()">🔍 Traži</button>
+      <button class="btn btn-sm btn-outline" onclick="resetIzvjescaFilter()">↺ Reset</button>
+    </div>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+      <table>
+        <thead style="position: sticky; top: 0; background: #f5f5f5; z-index: 1;">
+          <tr>
+            <th style="padding: 10px;">Datum</th>
+            <th style="padding: 10px;">Smjena</th>
+            <th style="padding: 10px;">Linija</th>
+            <th style="padding: 10px;">Stroj</th>
+            <th style="padding: 10px;">Strojar</th>
+            <th style="padding: 10px;">Pomoćnici</th>
+            <th style="padding: 10px;">Proizvedeno</th>
+            <th style="padding: 10px;">Škart</th>
+            <th style="padding: 10px;">Nalozi</th>
+            <th style="padding: 10px;">Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="izvjescaTableBody">
+          <tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Odaberite filtere i kliknite "Traži"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ZA DETALJE KVARA -->
+<div class="modal" id="kvarDetaljiModal">
+  <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #c62828 0%, #e53935 100%); color: white;">
+      <h3 style="margin: 0;">🔧 Detalji prijave kvara</h3>
+      <button class="modal-close" onclick="zatvoriKvarModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="kvarDetaljiBody" style="padding: 20px;">
+      <!-- Dinamički sadržaj -->
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ZA DETALJE KONTROLE VREĆA -->
+<div class="modal" id="kontrolaDetaljiModal">
+  <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); color: white;">
+      <h3 style="margin: 0;">✅ Detalji kontrole vreće</h3>
+      <button class="modal-close" onclick="zatvoriKontrolaModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="kontrolaDetaljiBody" style="padding: 20px;">
+      <!-- Dinamički sadržaj -->
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ZA DETALJE IZVJEŠĆA -->
+<div class="modal" id="izvjesceDetaljiModal">
+  <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white;">
+      <h3 style="margin: 0;">📝 Detalji smjenskog izvješća</h3>
+      <button class="modal-close" onclick="zatvoriIzvjesceModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="izvjesceDetaljiBody" style="padding: 20px;">
+      <!-- Dinamički sadržaj -->
+    </div>
+  </div>
+</div>
+
+<style>
+.cam-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #333;
+  border-top-color: #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.status-active {
+  background: #d4edda;
+  color: #155724;
+}
+.status-completed {
+  background: #cce5ff;
+  color: #004085;
+}
+
+#activeRNTable tr:hover, #activeTisakTable tr:hover {
+  background: #f5f5f5;
+}
+
+/* Modal stilovi za izvješća */
+#izvjesceDetaljiModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+#izvjesceDetaljiModal.active {
+  display: flex;
+}
+#izvjesceDetaljiModal .modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#izvjesceDetaljiModal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+}
+#izvjesceDetaljiModal .modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#izvjesceDetaljiModal .modal-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+#izvjesceDetaljiModal .modal-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Edit inputi u modalu */
+#izvjesceDetaljiModal .edit-input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+#izvjesceDetaljiModal .edit-input:focus {
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+#izvjesceDetaljiModal .edit-input::-webkit-inner-spin-button {
+  opacity: 1;
+}
+
+/* Modal stilovi za kvarove i kontrole */
+#kvarDetaljiModal, #kontrolaDetaljiModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+#kvarDetaljiModal.active, #kontrolaDetaljiModal.active {
+  display: flex;
+}
+#kvarDetaljiModal .modal-content, #kontrolaDetaljiModal .modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  width: 95%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#kvarDetaljiModal .modal-header, #kontrolaDetaljiModal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+}
+#kvarDetaljiModal .modal-close, #kontrolaDetaljiModal .modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#kvarDetaljiModal .modal-close:hover, #kontrolaDetaljiModal .modal-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Hover efekt na tablice kvarova i kontrola */
+#kvaroviTableBody tr:hover, #kontroleTableBody tr:hover {
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+/* Detalji grid */
+.detalji-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.detalji-item {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #1976d2;
+}
+.detalji-item.warning {
+  border-left-color: #ff9800;
+  background: #fff8e1;
+}
+.detalji-item.error {
+  border-left-color: #f44336;
+  background: #ffebee;
+}
+.detalji-item.success {
+  border-left-color: #4caf50;
+  background: #e8f5e9;
+}
+.detalji-label {
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 4px;
+}
+.detalji-value {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+</style>
+
+<script>
+var camTimer = null;
+var PROXY = CONFIG.CAMERA_PROXY_URL || 'http://localhost:3001';
+
+async function initDashboardView() {
+  console.log('Dashboard init...');
+  
+  // ============================================
+  // ROLE-BASED VISIBILITY
+  // ============================================
+  var user = Auth.getUser();
+  var fullAccessRoles = ['superadmin', 'admin', 'koordinator-proizvodnje', 'uprava', 'voditelj-odrzavanja'];
+  var hasFullAccess = user && fullAccessRoles.indexOf(user.role) !== -1;
+  
+  if (!hasFullAccess) {
+    // Sakrij sekcije za obične korisnike
+    var sectionsToHide = [
+      'sectionKpiCards',
+      'sectionRolePapira', 
+      'sectionResursi',
+      'sectionBrziPristup',
+      'sectionSmjenskaIzvjesca'
+    ];
+    
+    sectionsToHide.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    
+    console.log('Dashboard: Ograničeni prikaz za ulogu:', user ? user.role : 'unknown');
+  }
+  
+  try {
+    // Osnovni podaci
+    var r = await Promise.all([
+      Customers.getAll(),
+      Articles.getAll(),
+      Machines.getAll(),
+      InventoryRolls.getAll(),
+      Belts.getAll(),
+      Employees.getAll()
+    ]);
+    
+    document.getElementById('kpiCustomers').textContent = r[0] ? r[0].length : 0;
+    document.getElementById('kpiArticles').textContent = r[1] ? r[1].length : 0;
+    document.getElementById('kpiMachines').textContent = r[2] ? r[2].length : 0;
+    document.getElementById('kpiRolls').textContent = r[3] ? r[3].length : 0;
+    document.getElementById('kpiBelts').textContent = r[4] ? r[4].length : 0;
+    document.getElementById('kpiEmployees').textContent = r[5] ? r[5].length : 0;
+    
+    // Aktivne narudžbe
+    var ord = await initSupabase().from('prod_orders').select('id').eq('status', 'Aktivno');
+    document.getElementById('kpiOrders').textContent = ord.data ? ord.data.length : 0;
+    
+    // Izračunaj bijeli/smeđi papir u tonama
+    if (r[3] && r[3].length) {
+      var bijeliKg = 0, smedjKg = 0;
+      r[3].forEach(function(roll) {
+        var kg = parseFloat(roll.remaining_kg) || 0;
+        // color = 'B' za bijeli, 'S' ili 'K' za smeđi/kraft
+        if (roll.color === 'B') {
+          bijeliKg += kg;
+        } else {
+          smedjKg += kg;
+        }
+      });
+      document.getElementById('kpiWhiteTons').textContent = (bijeliKg / 1000).toFixed(1);
+      document.getElementById('kpiBrownTons').textContent = (smedjKg / 1000).toFixed(1);
+    }
+    
+    // Učitaj ostale statistike
+    loadTodayStats();
+    loadYesterdayStats();
+    loadActiveRN();
+    loadPOPStats();
+    loadAktivniKvarovi();
+    loadKontroleVreca();
+    loadCam();
+    startCamTimer();
+    
+    console.log('Dashboard loaded');
+  } catch (e) {
+    console.error('Dashboard error:', e);
+  }
+}
+
+// Pomoćna funkcija za lokalni datum u formatu YYYY-MM-DD
+function getLocalDateString(date) {
+  var d = date || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+// Proizvodnja danas - iz prod_shift_details (evidentira svaki unos po datumu)
+async function loadTodayStats() {
+  try {
+    // Koristi proizvodni datum (dan počinje u 06:00)
+    var today = typeof getProductionDate === 'function' ? getProductionDate() : getLocalDateString();
+    console.log('📊 Dashboard - Učitavam proizvodnju za PROIZVODNI DAN:', today);
+    
+    // ISPRAVNO: Eksplicitno kreiraj Date u lokalnom vremenu
+    // new Date(year, month-1, day, hour) UVIJEK koristi lokalno vrijeme
+    var parts = today.split('-');
+    var startDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), 6, 0, 0);
+    var endDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + 1, 6, 0, 0);
+    
+    var startTime = startDate.toISOString();
+    var endTime = endDate.toISOString();
+    console.log('📅 Vremenski raspon:', startTime, 'do', endTime);
+    
+    // Dohvati iz prod_shift_details - filtrira po vrijeme_unosa (06:00-06:00 lokalno)
+    var r = await initSupabase()
+      .from('prod_shift_details')
+      .select('kolicina, linija')
+      .gte('vrijeme_unosa', startTime)
+      .lt('vrijeme_unosa', endTime)
+      .eq('vrsta_unosa', 'GOP');
+    
+    if (r.data && r.data.length) {
+      var nli = 0, wh = 0;
+      r.data.forEach(function(g) {
+        // prod_shift_details koristi 'linija' i 'kolicina'
+        if (g.linija === 'NLI') nli += g.kolicina || 0;
+        else wh += g.kolicina || 0;
+      });
+      console.log('📊 DANAS:', r.data.length, 'unosa, NLI:', nli, 'WH:', wh);
+      document.getElementById('kpiTodayProduced').textContent = formatBroj(nli + wh);
+      document.getElementById('kpiTodayNLI').textContent = formatBroj(nli);
+      document.getElementById('kpiTodayWH').textContent = formatBroj(wh);
+    } else {
+      document.getElementById('kpiTodayProduced').textContent = '0';
+      document.getElementById('kpiTodayNLI').textContent = '0';
+      document.getElementById('kpiTodayWH').textContent = '0';
+    }
+  } catch (e) { console.error('Today stats error:', e); }
+}
+
+// Proizvodnja jučer - iz prod_shift_details
+async function loadYesterdayStats() {
+  try {
+    // Koristi jučerašnji proizvodni datum
+    var yesterday;
+    if (typeof getYesterdayProductionDate === 'function') {
+      yesterday = getYesterdayProductionDate();
+    } else {
+      var d = new Date();
+      d.setDate(d.getDate() - 1);
+      yesterday = getLocalDateString(d);
+    }
+    console.log('📊 Dashboard - Učitavam proizvodnju za JUČERAŠNJI PROIZVODNI DAN:', yesterday);
+    
+    // ISPRAVNO: Eksplicitno kreiraj Date u lokalnom vremenu
+    var parts = yesterday.split('-');
+    var startDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), 6, 0, 0);
+    var endDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + 1, 6, 0, 0);
+    
+    var startTime = startDate.toISOString();
+    var endTime = endDate.toISOString();
+    console.log('📅 Vremenski raspon:', startTime, 'do', endTime);
+    
+    // Dohvati iz prod_shift_details - filtrira po vrijeme_unosa (06:00-06:00 lokalno)
+    var r = await initSupabase()
+      .from('prod_shift_details')
+      .select('kolicina, linija')
+      .gte('vrijeme_unosa', startTime)
+      .lt('vrijeme_unosa', endTime)
+      .eq('vrsta_unosa', 'GOP');
+    
+    if (r.data && r.data.length) {
+      var nli = 0, wh = 0;
+      r.data.forEach(function(g) {
+        // prod_shift_details koristi 'linija' i 'kolicina'
+        if (g.linija === 'NLI') nli += g.kolicina || 0;
+        else wh += g.kolicina || 0;
+      });
+      console.log('📊 JUČER:', r.data.length, 'unosa, NLI:', nli, 'WH:', wh);
+      document.getElementById('kpiYesterdayProduced').textContent = formatBroj(nli + wh);
+      document.getElementById('kpiYesterdayNLI').textContent = formatBroj(nli);
+      document.getElementById('kpiYesterdayWH').textContent = formatBroj(wh);
+    } else {
+      document.getElementById('kpiYesterdayProduced').textContent = '0';
+      document.getElementById('kpiYesterdayNLI').textContent = '0';
+      document.getElementById('kpiYesterdayWH').textContent = '0';
+    }
+  } catch (e) { console.error('Yesterday stats error:', e); }
+}
+
+// Aktivne prijave kvarova (status != 'Riješeno')
+window.kvaroviData = [];
+async function loadAktivniKvarovi() {
+  try {
+    var r = await initSupabase()
+      .from('prod_failure_reports')
+      .select('*')
+      .neq('status', 'Riješeno')
+      .order('reported_at', { ascending: false })
+      .limit(50);
+    
+    var tbody = document.getElementById('kvaroviTableBody');
+    var badge = document.getElementById('kvaroviBadge');
+    
+    if (!tbody) return;
+    
+    if (r.data && r.data.length > 0) {
+      window.kvaroviData = r.data;
+      if (badge) badge.textContent = r.data.length;
+      
+      var html = '';
+      r.data.forEach(function(kvar, index) {
+        var prioritetClass = '';
+        var prioritetIcon = '';
+        switch (kvar.priority) {
+          case 'Visok - stroj stoji':
+            prioritetClass = 'background: #ffebee; color: #c62828;';
+            prioritetIcon = '🔴';
+            break;
+          case 'Srednji - radi ali nije dobro':
+            prioritetClass = 'background: #fff3e0; color: #e65100;';
+            prioritetIcon = '🟡';
+            break;
+          default:
+            prioritetClass = 'background: #e8f5e9; color: #2e7d32;';
+            prioritetIcon = '🟢';
+        }
+        
+        var datum = kvar.reported_at ? new Date(kvar.reported_at).toLocaleDateString('hr-HR') : '-';
+        var vrijeme = kvar.reported_at ? new Date(kvar.reported_at).toLocaleTimeString('hr-HR', {hour: '2-digit', minute: '2-digit'}) : '';
+        
+        html += '<tr onclick="prikaziKvarDetalje(' + index + ')" style="cursor: pointer; ' + (kvar.priority === 'Visok - stroj stoji' ? 'background: #fff5f5;' : '') + '">' +
+          '<td style="padding: 8px;"><strong>' + (kvar.report_number || '-') + '</strong></td>' +
+          '<td style="padding: 8px;">' + (kvar.machine_name || '-') + '</td>' +
+          '<td style="padding: 8px;">' + (kvar.failure_type || '-') + '</td>' +
+          '<td style="padding: 8px;"><span style="padding: 3px 8px; border-radius: 4px; font-size: 0.8em; ' + prioritetClass + '">' + prioritetIcon + ' ' + (kvar.priority ? kvar.priority.split(' - ')[0] : '-') + '</span></td>' +
+          '<td style="padding: 8px;">' + (kvar.reported_by || '-') + '</td>' +
+          '<td style="padding: 8px; font-size: 0.85em;">' + datum + ' ' + vrijeme + '</td>' +
+          '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    } else {
+      window.kvaroviData = [];
+      if (badge) badge.textContent = '0';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #4caf50;">✅ Nema aktivnih prijava kvarova</td></tr>';
+    }
+  } catch (e) {
+    console.error('Kvarovi error:', e);
+    var tbody = document.getElementById('kvaroviTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #f44336;">Greška učitavanja</td></tr>';
+  }
+}
+
+// Kontrole vreća od jučerašnjeg proizvodnog dana (06:00-06:00)
+window.kontroleData = [];
+async function loadKontroleVreca() {
+  try {
+    // Koristi jučerašnji PROIZVODNI datum (dan počinje u 06:00)
+    var jucer;
+    if (typeof getYesterdayProductionDate === 'function') {
+      jucer = getYesterdayProductionDate();
+    } else {
+      var d = new Date();
+      if (d.getHours() < 6) {
+        d.setDate(d.getDate() - 2);
+      } else {
+        d.setDate(d.getDate() - 1);
+      }
+      jucer = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    
+    console.log('📋 Dashboard - Učitavam kontrole od PROIZVODNOG DANA:', jucer);
+    
+    // ISPRAVNO: Eksplicitno kreiraj Date u lokalnom vremenu
+    var parts = jucer.split('-');
+    var startDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), 6, 0, 0);
+    var startTime = startDate.toISOString();
+    
+    console.log('📅 Kontrole od:', startTime);
+    
+    var r = await initSupabase()
+      .from('prod_bag_controls')
+      .select('*')
+      .gte('created_at', startTime)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    var tbody = document.getElementById('kontroleTableBody');
+    var badge = document.getElementById('kontroleBadge');
+    
+    if (!tbody) return;
+    
+    if (r.data && r.data.length > 0) {
+      window.kontroleData = r.data;
+      if (badge) badge.textContent = r.data.length;
+      
+      var html = '';
+      r.data.forEach(function(k, index) {
+        var statusClass = '';
+        var statusText = k.status || 'OK';
+        if (k.status === 'Odstupanje' || k.odstupanja) {
+          statusClass = 'background: #fff3e0; color: #e65100;';
+          statusText = '⚠️ Odstupanje';
+        } else {
+          statusClass = 'background: #e8f5e9; color: #2e7d32;';
+          statusText = '✅ OK';
+        }
+        
+        var linijaColor = k.production_line === 'WH' ? '#2e7d32' : '#e65100';
+        var datum = k.created_at ? new Date(k.created_at).toLocaleDateString('hr-HR') : '-';
+        var vrijeme = k.created_at ? new Date(k.created_at).toLocaleTimeString('hr-HR', {hour: '2-digit', minute: '2-digit'}) : '';
+        
+        html += '<tr onclick="prikaziKontrolaDetalje(' + index + ')" style="cursor: pointer;">' +
+          '<td style="padding: 8px;"><strong>' + (k.work_order_number || '-') + '</strong></td>' +
+          '<td style="padding: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (k.article_name || '') + '">' + (k.article_name || '-') + '</td>' +
+          '<td style="padding: 8px;"><span style="background: ' + linijaColor + '; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">' + (k.production_line || '-') + '</span></td>' +
+          '<td style="padding: 8px; text-align: center;">' + (k.shift_number || '-') + '.</td>' +
+          '<td style="padding: 8px;">' + (k.kontrolor || '-') + '</td>' +
+          '<td style="padding: 8px;"><span style="padding: 3px 8px; border-radius: 4px; font-size: 0.8em; ' + statusClass + '">' + statusText + '</span></td>' +
+          '<td style="padding: 8px; font-size: 0.85em;">' + datum + ' ' + vrijeme + '</td>' +
+          '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    } else {
+      window.kontroleData = [];
+      if (badge) badge.textContent = '0';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Nema kontrola od jučerašnjeg proizvodnog dana</td></tr>';
+    }
+  } catch (e) {
+    console.error('Kontrole error:', e);
+    var tbody = document.getElementById('kontroleTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #f44336;">Greška učitavanja</td></tr>';
+  }
+}
+
+// Aktivni RN po linijama
+async function loadActiveRN() {
+  try {
+    // Glavni RN (WH, NLI) - dohvati sve podatke
+    var glavni = await initSupabase()
+      .from('prod_work_orders')
+      .select('wo_number, customer_name, article_name, quantity, production_line, status')
+      .in('status', ['Planiran', 'U tijeku'])
+      .order('created_at', { ascending: false });
+    
+    // Tisak RN
+    var tisak = await initSupabase()
+      .from('prod_work_orders_printing')
+      .select('wo_number, article_name, customer_name, quantity, status')
+      .in('status', ['Planiran', 'U tijeku'])
+      .order('created_at', { ascending: false });
+    
+    var wh = 0, nli = 0;
+    var tableHtml = '';
+    
+    if (glavni.data && glavni.data.length) {
+      glavni.data.forEach(function(rn) {
+        if (rn.production_line === 'WH') wh++;
+        else if (rn.production_line === 'NLI') nli++;
+        
+        var statusClass = rn.status === 'U tijeku' ? 'status-active' : 'status-pending';
+        var statusText = rn.status === 'U tijeku' ? '▶ U tijeku' : '⏸ Planiran';
+        var linijaColor = rn.production_line === 'WH' ? '#2e7d32' : '#e65100';
+        
+        tableHtml += '<tr>' +
+          '<td><strong>' + (rn.wo_number || '-') + '</strong></td>' +
+          '<td>' + (rn.customer_name || '-') + '</td>' +
+          '<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (rn.article_name || '') + '">' + (rn.article_name || '-') + '</td>' +
+          '<td style="text-align: right;">' + formatBroj(rn.quantity || 0) + '</td>' +
+          '<td><span style="background: ' + linijaColor + '; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">' + (rn.production_line || '-') + '</span></td>' +
+          '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+          '</tr>';
+      });
+    } else {
+      tableHtml = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Nema aktivnih naloga</td></tr>';
+    }
+    
+    document.getElementById('activeRNTable').innerHTML = tableHtml;
+    
+    // Tisak tablica
+    var tisakHtml = '';
+    var tisakCount = 0;
+    
+    if (tisak.data && tisak.data.length) {
+      tisakCount = tisak.data.length;
+      tisak.data.forEach(function(rn) {
+        var statusClass = rn.status === 'U tijeku' ? 'status-active' : 'status-pending';
+        var statusText = rn.status === 'U tijeku' ? '▶' : '⏸';
+        
+        tisakHtml += '<tr>' +
+          '<td><strong>' + (rn.wo_number || '-') + '</strong></td>' +
+          '<td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (rn.article_name || '') + '">' + (rn.article_name || '-') + '</td>' +
+          '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+          '</tr>';
+      });
+    } else {
+      tisakHtml = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #666;">Nema naloga</td></tr>';
+    }
+    
+    document.getElementById('activeTisakTable').innerHTML = tisakHtml;
+    
+    // Ažuriraj KPI brojeve
+    document.getElementById('kpiRnWH').textContent = wh;
+    document.getElementById('kpiRnNLI').textContent = nli;
+    document.getElementById('kpiRnTisak').textContent = tisakCount;
+    document.getElementById('kpiRnTotal').textContent = wh + nli + tisakCount;
+    
+  } catch (e) { console.error('Active RN error:', e); }
+}
+
+// POP na čekanju
+async function loadPOPStats() {
+  try {
+    var r = await initSupabase()
+      .from('prod_inventory_pop')
+      .select('quantity_in_stock')
+      .eq('status', 'Na skladištu')
+      .gt('quantity_in_stock', 0);
+    
+    if (r.data && r.data.length) {
+      var total = r.data.reduce(function(sum, p) { return sum + (p.quantity_in_stock || 0); }, 0);
+      document.getElementById('kpiPOP').textContent = formatBroj(total);
+    } else {
+      document.getElementById('kpiPOP').textContent = '0';
+    }
+  } catch (e) { console.error('POP stats error:', e); }
+}
+
+function loadCam() {
+  var feed = document.getElementById('camFeed');
+  var stat = document.getElementById('camStatus');
+  var time = document.getElementById('camTime');
+  
+  if (!feed || !stat || !time) {
+    if (camTimer) { clearInterval(camTimer); camTimer = null; }
+    return;
+  }
+  
+  var img = new Image();
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+  img.onload = function() {
+    var f = document.getElementById('camFeed');
+    var s = document.getElementById('camStatus');
+    var t = document.getElementById('camTime');
+    if (!f || !s || !t) return;
+    
+    f.innerHTML = '';
+    f.appendChild(img);
+    s.innerHTML = '<span style="color:#4caf50">● Online</span>';
+    t.textContent = new Date().toLocaleTimeString('hr-HR');
+  };
+  img.onerror = function() {
+    var f = document.getElementById('camFeed');
+    var s = document.getElementById('camStatus');
+    if (!f || !s) return;
+    
+    f.innerHTML = '<div style="color:#999;text-align:center;padding:20px">' +
+      '<div style="font-size:2em;margin-bottom:10px">📹</div>' +
+      'Proxy nije dostupan</div>';
+    s.innerHTML = '<span style="color:#f44336">● Offline</span>';
+  };
+  img.src = PROXY + '/api/snapshot/ulaz?t=' + Date.now();
+}
+
+function refreshCam() {
+  var feed = document.getElementById('camFeed');
+  if (!feed) return;
+  feed.innerHTML = '<div style="color:#666;text-align:center"><div class="cam-spinner"></div></div>';
+  loadCam();
+}
+
+function startCamTimer() {
+  if (camTimer) clearInterval(camTimer);
+  camTimer = setInterval(loadCam, 3000);
+}
+
+window.cleanupCurrentView = function() {
+  if (camTimer) { clearInterval(camTimer); camTimer = null; }
+};
+
+window.addEventListener('beforeunload', function() { if (camTimer) clearInterval(camTimer); });
+
+// ============================================
+// SMJENSKA IZVJEŠĆA
+// ============================================
+async function ucitajSmjenskaIzvjesca() {
+  var datum = document.getElementById('izvjesceDatum').value;
+  var smjena = document.getElementById('izvjesceSmjena').value;
+  var linija = document.getElementById('izvjesceLinija').value;
+  var stroj = document.getElementById('izvjesceStroj').value;
+  
+  var tbody = document.getElementById('izvjescaTableBody');
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;"><div class="cam-spinner"></div> Učitavanje...</td></tr>';
+  
+  try {
+    var query = initSupabase()
+      .from('prod_shift_reports')
+      .select('*')
+      .order('shift_date', { ascending: false })
+      .order('shift_number', { ascending: false })
+      .limit(100);
+    
+    if (datum) {
+      query = query.eq('shift_date', datum);
+    }
+    if (smjena) {
+      query = query.eq('shift_number', parseInt(smjena));
+    }
+    if (linija) {
+      query = query.eq('production_line', linija);
+    }
+    if (stroj) {
+      query = query.eq('machine_type', stroj);
+    }
+    
+    var result = await query;
+    
+    if (result.error) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #d32f2f;">Greška: ' + result.error.message + '</td></tr>';
+      return;
+    }
+    
+    if (!result.data || result.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Nema pronađenih izvješća</td></tr>';
+      return;
+    }
+    
+    var html = '';
+    result.data.forEach(function(izv) {
+      var datumFormat = izv.shift_date ? new Date(izv.shift_date).toLocaleDateString('hr-HR') : '-';
+      
+      // Parsiraj report_data JSON
+      var reportData = null;
+      try {
+        reportData = typeof izv.report_data === 'string' ? JSON.parse(izv.report_data) : izv.report_data;
+      } catch(e) { reportData = null; }
+      
+      var proizvedeno = reportData && reportData.ukupno ? (reportData.ukupno.kom || 0).toLocaleString() : '0';
+      var skart = reportData && reportData.ukupno ? (reportData.ukupno.skart || 0).toString() : '0';
+      var brojNaloga = reportData && reportData.nalozi ? reportData.nalozi.length : 0;
+      
+      // Boja linije
+      var linijaBadge = '';
+      if (izv.production_line === 'WH') {
+        linijaBadge = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">WH</span>';
+      } else if (izv.production_line === 'NLI') {
+        linijaBadge = '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">NLI</span>';
+      } else if (izv.production_line === 'Tisak') {
+        linijaBadge = '<span style="background: #9c27b0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">Tisak</span>';
+      } else {
+        linijaBadge = izv.production_line || '-';
+      }
+      
+      // Boja smjene
+      var smjenaBadge = '<span style="background: #1976d2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">' + izv.shift_number + '. smjena</span>';
+      
+      // Stroj tip badge
+      var strojBadge = '';
+      if (izv.machine_type === 'bottomer') {
+        strojBadge = '<span style="background: #1565c0; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Bottomer</span>';
+      } else if (izv.machine_type === 'tuber') {
+        strojBadge = '<span style="background: #2e7d32; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Tuber</span>';
+      } else if (izv.machine_type === 'tisak') {
+        strojBadge = '<span style="background: #7b1fa2; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Tisak</span>';
+      } else {
+        strojBadge = izv.machine_type || '-';
+      }
+      
+      html += '<tr>';
+      html += '<td style="padding: 10px;">' + datumFormat + '</td>';
+      html += '<td style="padding: 10px;">' + smjenaBadge + '</td>';
+      html += '<td style="padding: 10px;">' + linijaBadge + '</td>';
+      html += '<td style="padding: 10px;">' + strojBadge + '</td>';
+      html += '<td style="padding: 10px;">' + (izv.strojar || '-') + '</td>';
+      html += '<td style="padding: 10px; font-size: 0.85em; max-width: 150px; overflow: hidden; text-overflow: ellipsis;" title="' + (izv.pomocnici || '') + '">' + (izv.pomocnici || '-') + '</td>';
+      html += '<td style="padding: 10px; font-weight: 600; color: #2e7d32;">' + proizvedeno + '</td>';
+      html += '<td style="padding: 10px; color: #d32f2f;">' + skart + '</td>';
+      html += '<td style="padding: 10px;">' + brojNaloga + '</td>';
+      html += '<td style="padding: 10px;">';
+      html += '<button class="btn btn-sm btn-outline" onclick="prikaziDetaljeIzvjesca(\'' + izv.id + '\')" title="Detalji">👁️</button>';
+      html += '</td>';
+      html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+    
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #d32f2f;">Greška: ' + e.message + '</td></tr>';
+  }
+}
+
+function resetIzvjescaFilter() {
+  document.getElementById('izvjesceDatum').value = '';
+  document.getElementById('izvjesceSmjena').value = '';
+  document.getElementById('izvjesceLinija').value = '';
+  document.getElementById('izvjesceStroj').value = '';
+  document.getElementById('izvjescaTableBody').innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Odaberite filtere i kliknite "Traži"</td></tr>';
+}
+
+async function prikaziDetaljeIzvjesca(id) {
+  try {
+    // Dohvati izvješće
+    var result = await initSupabase()
+      .from('prod_shift_reports')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (result.error || !result.data) {
+      alert('Greška pri dohvaćanju izvješća');
+      return;
+    }
+    
+    var izv = result.data;
+    
+    // Provjeri je li korisnik admin
+    var isAdmin = imaAdminUlogu();
+    
+    // Parsiraj report_data
+    var reportData = null;
+    try {
+      reportData = typeof izv.report_data === 'string' ? JSON.parse(izv.report_data) : izv.report_data;
+    } catch(e) { reportData = null; }
+    
+    // Spremi podatke globalno za uređivanje
+    window.trenutnoIzvjesce = {
+      id: id,
+      data: izv,
+      reportData: reportData
+    };
+    
+    var html = '';
+    
+    // ADMIN TOOLBAR
+    if (isAdmin) {
+      html += '<div style="background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">';
+      html += '<span style="color: #e65100; font-weight: 600;">⚙️ Admin način - možete uređivati podatke</span>';
+      html += '<button class="btn btn-success" onclick="spremiIzmjeneIzvjesca()" style="padding: 8px 20px;">💾 Spremi izmjene</button>';
+      html += '</div>';
+    }
+    
+    // ZAGLAVLJE
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+    html += '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">';
+    html += '<div style="font-size: 0.85em; color: #666;">📅 Datum</div>';
+    html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.shift_date ? new Date(izv.shift_date).toLocaleDateString('hr-HR') : '-') + '</div>';
+    html += '</div>';
+    html += '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">';
+    html += '<div style="font-size: 0.85em; color: #666;">🔄 Smjena</div>';
+    html += '<div style="font-size: 1.2em; font-weight: 600;">' + izv.shift_number + '. smjena</div>';
+    html += '</div>';
+    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">';
+    html += '<div style="font-size: 0.85em; color: #666;">🏭 Linija</div>';
+    html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.production_line || '-') + '</div>';
+    html += '</div>';
+    html += '<div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0;">';
+    html += '<div style="font-size: 0.85em; color: #666;">⚙️ Stroj</div>';
+    html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.machine_type || '-') + '</div>';
+    html += '</div>';
+    html += '</div>';
+    
+    // POSTAVA (editabilno za admina)
+    html += '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">';
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">';
+    if (isAdmin) {
+      html += '<div><span style="color: #666;">👷 Strojar:</span> <input type="text" id="editStrojar" value="' + (izv.strojar || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
+      html += '<div><span style="color: #666;">👥 Pomoćnici:</span> <input type="text" id="editPomocnici" value="' + (izv.pomocnici || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
+    } else {
+      html += '<div><span style="color: #666;">👷 Strojar:</span> <strong>' + (izv.strojar || '-') + '</strong></div>';
+      html += '<div><span style="color: #666;">👥 Pomoćnici:</span> <strong>' + (izv.pomocnici || '-') + '</strong></div>';
+    }
+    html += '</div>';
+    html += '</div>';
+    
+    // RADNI NALOZI (editabilni za admina)
+    if (reportData && reportData.nalozi && reportData.nalozi.length > 0) {
+      html += '<h4 style="margin: 20px 0 10px; color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 5px;">📋 Radni nalozi (' + reportData.nalozi.length + ')</h4>';
+      html += '<div style="overflow-x: auto;">';
+      html += '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;" id="naloziTable">';
+      html += '<thead><tr style="background: #1e3a5f; color: white;">';
+      html += '<th style="padding: 8px; text-align: left;">RN</th>';
+      html += '<th style="padding: 8px; text-align: left;">Opis</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #2e7d32;">Kom</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #c62828;">Škart</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #1565c0;">Rad</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #f57c00;">Kvar</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #ad1457;">Preštel.</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #00796b;">Ček.tulj.</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #5d4037;">Van str.</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #546e7a;">Čekanje</th>';
+      html += '<th style="padding: 8px; text-align: right; background: #3f51b5;">Čišćenje</th>';
+      html += '</tr></thead>';
+      html += '<tbody>';
+      
+      reportData.nalozi.forEach(function(n, i) {
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9f9f9';
+        html += '<tr style="background: ' + bgColor + ';" data-index="' + i + '">';
+        html += '<td style="padding: 6px; border-bottom: 1px solid #eee; font-weight: 600; color: #1565c0;">' + (n.rn || '-') + '</td>';
+        html += '<td style="padding: 6px; border-bottom: 1px solid #eee; max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;" title="' + (n.opis || '') + '">' + (n.opis || '-') + '</td>';
+        
+        if (isAdmin) {
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-kom" data-index="' + i + '" value="' + (n.kom || 0) + '" onchange="izracunajUkupnoIzvjesca()" style="width: 70px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-skart" data-index="' + i + '" value="' + (n.skart || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-rad" data-index="' + i + '" value="' + (n.rad || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-kvar" data-index="' + i + '" value="' + (n.kvar || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-prestelavanje" data-index="' + i + '" value="' + (n.prestelavanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-cekanje_tuljke" data-index="' + i + '" value="' + (n.cekanje_tuljke || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-van_stroja" data-index="' + i + '" value="' + (n.van_stroja || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-cekanje" data-index="' + i + '" value="' + (n.cekanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-ciscenje" data-index="' + i + '" value="' + (n.ciscenje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+        } else {
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600; color: #2e7d32;">' + (n.kom || 0).toLocaleString() + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; color: #c62828;">' + (n.skart || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.rad || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.kvar || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.prestelavanje || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.cekanje_tuljke || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.van_stroja || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.cekanje || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.ciscenje || 0) + '</td>';
+        }
+        html += '</tr>';
+      });
+      
+      // UKUPNO redak
+      var u = reportData.ukupno || {};
+      html += '<tr style="background: #e3f2fd; font-weight: 600;">';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f;" colspan="2"><strong>UKUPNO:</strong></td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: #2e7d32;" id="ukupnoKom">' + (u.kom || 0).toLocaleString() + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: #c62828;" id="ukupnoSkart">' + (u.skart || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoRad">' + (u.rad || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoKvar">' + (u.kvar || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoPrestelavanje">' + (u.prestelavanje || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoCekanjeTuljke">' + (u.cekanje_tuljke || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoVanStroja">' + (u.van_stroja || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoCekanje">' + (u.cekanje || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoCiscenje">' + (u.ciscenje || 0) + '</td>';
+      html += '</tr>';
+      
+      html += '</tbody></table>';
+      html += '</div>';
+    }
+    
+    // NAPOMENA (editabilna za admina)
+    html += '<h4 style="margin: 20px 0 10px; color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 5px;">📝 Napomena</h4>';
+    if (isAdmin) {
+      html += '<textarea id="editNapomena" class="form-control" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">' + (izv.napomena || '') + '</textarea>';
+    } else {
+      html += '<div style="background: #fffde7; padding: 15px; border-radius: 8px; border-left: 4px solid #fbc02d; white-space: pre-wrap;">' + (izv.napomena || '-') + '</div>';
+    }
+    
+    // META INFO
+    html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.8em; color: #999;">';
+    html += '🕐 Kreirano: ' + (izv.created_at ? new Date(izv.created_at).toLocaleString('hr-HR') : '-');
+    html += '</div>';
+    
+    // ADMIN GUMB NA DNU
+    if (isAdmin) {
+      html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: right;">';
+      html += '<button class="btn btn-outline" onclick="zatvoriIzvjesceModal()" style="margin-right: 10px;">Odustani</button>';
+      html += '<button class="btn btn-success" onclick="spremiIzmjeneIzvjesca()" style="padding: 10px 30px;">💾 Spremi izmjene</button>';
+      html += '</div>';
+    }
+    
+    document.getElementById('izvjesceDetaljiBody').innerHTML = html;
+    document.getElementById('izvjesceDetaljiModal').classList.add('active');
+    
+  } catch (e) {
+    alert('Greška: ' + e.message);
+  }
+}
+
+// Provjera admin uloge
+function imaAdminUlogu() {
+  // Prvo pokušaj koristiti Auth modul
+  if (typeof Auth !== 'undefined' && Auth.isAdmin) {
+    return Auth.isAdmin();
+  }
+  
+  // Fallback na localStorage - uključuje i koordinator-proizvodnje
+  var adminUloge = ['superadmin', 'admin', 'koordinator-proizvodnje'];
+  try {
+    var sessionStr = localStorage.getItem('carta_erp_session');
+    if (!sessionStr) return false;
+    var session = JSON.parse(sessionStr);
+    var userRole = session.role || '';  // 'role' (string), ne 'roles' (array)!
+    return adminUloge.indexOf(userRole) !== -1;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Izračunaj ukupno iz inputa
+function izracunajUkupnoIzvjesca() {
+  var polja = [
+    { css: 'kom', id: 'Kom' },
+    { css: 'skart', id: 'Skart' },
+    { css: 'rad', id: 'Rad' },
+    { css: 'kvar', id: 'Kvar' },
+    { css: 'prestelavanje', id: 'Prestelavanje' },
+    { css: 'cekanje_tuljke', id: 'CekanjeTuljke' },
+    { css: 'van_stroja', id: 'VanStroja' },
+    { css: 'cekanje', id: 'Cekanje' },
+    { css: 'ciscenje', id: 'Ciscenje' }
+  ];
+  
+  polja.forEach(function(polje) {
+    var inputs = document.querySelectorAll('.edit-' + polje.css);
+    var ukupno = 0;
+    inputs.forEach(function(input) {
+      ukupno += parseFloat(input.value) || 0;
+    });
+    
+    var elUkupno = document.getElementById('ukupno' + polje.id);
+    if (elUkupno) {
+      if (polje.css === 'kom') {
+        elUkupno.textContent = ukupno.toLocaleString();
+      } else {
+        elUkupno.textContent = ukupno.toFixed(1);
+      }
+    }
+  });
+}
+
+// Spremi izmjene izvješća
+async function spremiIzmjeneIzvjesca() {
+  if (!window.trenutnoIzvjesce) {
+    alert('Nema učitanog izvješća');
+    return;
+  }
+  
+  if (!confirm('Jeste li sigurni da želite spremiti izmjene?')) return;
+  
+  try {
+    var id = window.trenutnoIzvjesce.id;
+    var reportData = window.trenutnoIzvjesce.reportData || { nalozi: [], ukupno: {} };
+    
+    // Ažuriraj naloge iz inputa
+    var inputs = document.querySelectorAll('#naloziTable tbody tr[data-index]');
+    inputs.forEach(function(tr) {
+      var index = parseInt(tr.getAttribute('data-index'));
+      if (reportData.nalozi[index]) {
+        reportData.nalozi[index].kom = parseInt(tr.querySelector('.edit-kom').value) || 0;
+        reportData.nalozi[index].skart = parseFloat(tr.querySelector('.edit-skart').value) || 0;
+        reportData.nalozi[index].rad = parseFloat(tr.querySelector('.edit-rad').value) || 0;
+        reportData.nalozi[index].kvar = parseFloat(tr.querySelector('.edit-kvar').value) || 0;
+        reportData.nalozi[index].prestelavanje = parseFloat(tr.querySelector('.edit-prestelavanje').value) || 0;
+        reportData.nalozi[index].cekanje_tuljke = parseFloat(tr.querySelector('.edit-cekanje_tuljke').value) || 0;
+        reportData.nalozi[index].van_stroja = parseFloat(tr.querySelector('.edit-van_stroja').value) || 0;
+        reportData.nalozi[index].cekanje = parseFloat(tr.querySelector('.edit-cekanje').value) || 0;
+        reportData.nalozi[index].ciscenje = parseFloat(tr.querySelector('.edit-ciscenje').value) || 0;
+      }
+    });
+    
+    // Izračunaj ukupno
+    reportData.ukupno = {
+      kom: 0, skart: 0, rad: 0, kvar: 0, prestelavanje: 0,
+      cekanje_tuljke: 0, van_stroja: 0, cekanje: 0, ciscenje: 0
+    };
+    
+    reportData.nalozi.forEach(function(n) {
+      reportData.ukupno.kom += n.kom || 0;
+      reportData.ukupno.skart += n.skart || 0;
+      reportData.ukupno.rad += n.rad || 0;
+      reportData.ukupno.kvar += n.kvar || 0;
+      reportData.ukupno.prestelavanje += n.prestelavanje || 0;
+      reportData.ukupno.cekanje_tuljke += n.cekanje_tuljke || 0;
+      reportData.ukupno.van_stroja += n.van_stroja || 0;
+      reportData.ukupno.cekanje += n.cekanje || 0;
+      reportData.ukupno.ciscenje += n.ciscenje || 0;
+    });
+    
+    // Dohvati ostale editabilne podatke
+    var strojar = document.getElementById('editStrojar') ? document.getElementById('editStrojar').value : window.trenutnoIzvjesce.data.strojar;
+    var pomocnici = document.getElementById('editPomocnici') ? document.getElementById('editPomocnici').value : window.trenutnoIzvjesce.data.pomocnici;
+    var napomena = document.getElementById('editNapomena') ? document.getElementById('editNapomena').value : window.trenutnoIzvjesce.data.napomena;
+    
+    // Spremi u bazu
+    var result = await initSupabase()
+      .from('prod_shift_reports')
+      .update({
+        strojar: strojar,
+        pomocnici: pomocnici,
+        napomena: napomena,
+        report_data: reportData
+      })
+      .eq('id', id);
+    
+    if (result.error) {
+      alert('Greška pri spremanju: ' + result.error.message);
+      return;
+    }
+    
+    alert('✅ Izvješće uspješno ažurirano!');
+    zatvoriIzvjesceModal();
+    ucitajSmjenskaIzvjesca(); // Osvježi tablicu
+    
+  } catch (e) {
+    alert('Greška: ' + e.message);
+  }
+}
+
+function zatvoriIzvjesceModal() {
+  document.getElementById('izvjesceDetaljiModal').classList.remove('active');
+  window.trenutnoIzvjesce = null;
+}
+
+// ============================================
+// PRIKAZ DETALJA KVARA
+// ============================================
+function prikaziKvarDetalje(index) {
+  var kvar = window.kvaroviData[index];
+  if (!kvar) return;
+  
+  var prioritetClass = '';
+  var prioritetText = kvar.priority || '-';
+  switch (kvar.priority) {
+    case 'Visok - stroj stoji':
+      prioritetClass = 'error';
+      break;
+    case 'Srednji - radi ali nije dobro':
+      prioritetClass = 'warning';
+      break;
+    default:
+      prioritetClass = 'success';
+  }
+  
+  var datum = kvar.reported_at ? new Date(kvar.reported_at).toLocaleString('hr-HR') : '-';
+  
+  var html = '';
+  html += '<div class="detalji-grid">';
+  html += '<div class="detalji-item"><div class="detalji-label">Broj prijave</div><div class="detalji-value">' + (kvar.report_number || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Status</div><div class="detalji-value">' + (kvar.status || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Stroj</div><div class="detalji-value">' + (kvar.machine_name || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Kod stroja</div><div class="detalji-value">' + (kvar.machine_code || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Tip kvara</div><div class="detalji-value">' + (kvar.failure_type || '-') + '</div></div>';
+  html += '<div class="detalji-item ' + prioritetClass + '"><div class="detalji-label">Prioritet</div><div class="detalji-value">' + prioritetText + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Prijavio</div><div class="detalji-value">' + (kvar.reported_by || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Datum prijave</div><div class="detalji-value">' + datum + '</div></div>';
+  html += '</div>';
+  
+  // Opis kvara
+  html += '<div style="margin-top: 20px;">';
+  html += '<h4 style="margin-bottom: 10px; color: #333;">📝 Opis kvara</h4>';
+  html += '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + (kvar.description || 'Nema opisa') + '</div>';
+  html += '</div>';
+  
+  // Ako ima rješenje
+  if (kvar.resolution) {
+    html += '<div style="margin-top: 20px;">';
+    html += '<h4 style="margin-bottom: 10px; color: #4caf50;">✅ Rješenje</h4>';
+    html += '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.resolution + '</div>';
+    html += '</div>';
+  }
+  
+  // Ako ima napomene
+  if (kvar.notes) {
+    html += '<div style="margin-top: 20px;">';
+    html += '<h4 style="margin-bottom: 10px; color: #1976d2;">📋 Napomene</h4>';
+    html += '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.notes + '</div>';
+    html += '</div>';
+  }
+  
+  // Dodatne informacije
+  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.85em; color: #666;">';
+  if (kvar.assigned_to) html += '<div>👤 Dodijeljeno: ' + kvar.assigned_to + '</div>';
+  if (kvar.downtime_minutes) html += '<div>⏱️ Vrijeme zastoja: ' + kvar.downtime_minutes + ' min</div>';
+  if (kvar.source_module) html += '<div>📍 Izvor: ' + kvar.source_module + '</div>';
+  html += '</div>';
+  
+  document.getElementById('kvarDetaljiBody').innerHTML = html;
+  document.getElementById('kvarDetaljiModal').classList.add('active');
+}
+
+function zatvoriKvarModal() {
+  document.getElementById('kvarDetaljiModal').classList.remove('active');
+}
+
+// ============================================
+// PRIKAZ DETALJA KONTROLE VREĆE
+// ============================================
+function prikaziKontrolaDetalje(index) {
+  var k = window.kontroleData[index];
+  if (!k) return;
+  
+  var datum = k.created_at ? new Date(k.created_at).toLocaleString('hr-HR') : '-';
+  var linijaColor = k.production_line === 'WH' ? '#2e7d32' : '#e65100';
+  
+  var html = '';
+  
+  // Header info
+  html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #1976d2;">';
+  html += '<div>';
+  html += '<div style="font-size: 0.85em; color: #666;">Radni nalog</div>';
+  html += '<div style="font-size: 1.3em; font-weight: 700; color: #1565c0;">' + (k.work_order_number || '-') + '</div>';
+  html += '</div>';
+  html += '<div style="text-align: right;">';
+  html += '<span style="background: ' + linijaColor + '; color: white; padding: 4px 12px; border-radius: 4px; font-weight: 600;">' + (k.production_line || '-') + '</span>';
+  html += '<div style="margin-top: 5px; font-size: 0.85em; color: #666;">' + (k.shift_number || '-') + '. smjena</div>';
+  html += '</div>';
+  html += '</div>';
+  
+  // Artikl
+  html += '<div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 20px;">';
+  html += '<div style="font-size: 0.85em; color: #666;">Artikl</div>';
+  html += '<div style="font-weight: 600;">' + (k.article_name || '-') + '</div>';
+  if (k.article_code) html += '<div style="font-size: 0.85em; color: #888;">Šifra: ' + k.article_code + '</div>';
+  html += '</div>';
+  
+  // Dimenzije
+  html += '<h4 style="margin-bottom: 10px; color: #333;">📏 Izmjerene dimenzije</h4>';
+  html += '<div class="detalji-grid">';
+  html += '<div class="detalji-item"><div class="detalji-label">Dužina vreće (mm)</div><div class="detalji-value">' + (k.duzina_vrece || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Širina vreće (mm)</div><div class="detalji-value">' + (k.sirina_vrece || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Širina dna gornje (mm)</div><div class="detalji-value">' + (k.sirina_dna_gornje || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Širina dna donje (mm)</div><div class="detalji-value">' + (k.sirina_dna_donje || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Širina ventila (mm)</div><div class="detalji-value">' + (k.sirina_ventila || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Dužina ventila (mm)</div><div class="detalji-value">' + (k.duzina_ventila || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Dužina folije (mm)</div><div class="detalji-value">' + (k.duzina_folije || '-') + '</div></div>';
+  html += '<div class="detalji-item"><div class="detalji-label">Položaj ventila</div><div class="detalji-value">' + (k.polozaj_ventila || '-') + '</div></div>';
+  html += '</div>';
+  
+  // Kontrole kvalitete
+  html += '<h4 style="margin: 20px 0 10px; color: #333;">✅ Kontrole kvalitete</h4>';
+  html += '<div class="detalji-grid">';
+  
+  var kontrolePolja = [
+    { label: 'Perforacija na ventilu', value: k.perforacija_ventil },
+    { label: 'Ljepljenje ventila', value: k.ljepljenje_ventila },
+    { label: 'Ljepljenje dna gornje', value: k.ljepljenje_dna_gornje },
+    { label: 'Ljepljenje dna donje', value: k.ljepljenje_dna_donje },
+    { label: 'Tisak gornji', value: k.tisak_gornji },
+    { label: 'Tisak donji', value: k.tisak_donji },
+    { label: 'Ljepljenje etikete', value: k.ljepljenje_etikete },
+    { label: 'Test tlak', value: k.test_tlak }
+  ];
+  
+  kontrolePolja.forEach(function(polje) {
+    var statusClass = '';
+    if (polje.value === 'Odstupanje') statusClass = 'warning';
+    else if (polje.value === 'OK' || polje.value === 'DA') statusClass = 'success';
+    html += '<div class="detalji-item ' + statusClass + '"><div class="detalji-label">' + polje.label + '</div><div class="detalji-value">' + (polje.value || '-') + '</div></div>';
+  });
+  
+  html += '</div>';
+  
+  // Odstupanja ako postoje
+  if (k.odstupanja) {
+    html += '<div style="margin-top: 20px;">';
+    html += '<h4 style="margin-bottom: 10px; color: #e65100;">⚠️ Zabilježena odstupanja</h4>';
+    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #e65100; white-space: pre-wrap;">' + k.odstupanja + '</div>';
+    html += '</div>';
+  }
+  
+  // Meta info
+  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.85em; color: #666;">';
+  html += '<div>👤 Kontrolor: ' + (k.kontrolor || '-') + '</div>';
+  html += '<div>🕐 Vrijeme: ' + datum + '</div>';
+  html += '</div>';
+  
+  document.getElementById('kontrolaDetaljiBody').innerHTML = html;
+  document.getElementById('kontrolaDetaljiModal').classList.add('active');
+}
+
+function zatvoriKontrolaModal() {
+  document.getElementById('kontrolaDetaljiModal').classList.remove('active');
+}
+
+// Postavi današnji datum kao default
+document.addEventListener('DOMContentLoaded', function() {
+  var danas = new Date().toISOString().split('T')[0];
+  var datumInput = document.getElementById('izvjesceDatum');
+  if (datumInput) datumInput.value = danas;
+});
+</script>

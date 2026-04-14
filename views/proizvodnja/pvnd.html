@@ -1,0 +1,2207 @@
+<!-- PVND - Proizvodnja na dan -->
+<style>
+  .pvnd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .pvnd-title {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .year-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .year-selector label {
+    font-weight: 600;
+    color: #666;
+  }
+  .year-selector select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  /* Glavni tabovi */
+  .main-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .main-tab {
+    padding: 12px 24px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .main-tab:hover { background: #e0e0e0; }
+  .main-tab.active {
+    background: var(--primary);
+    color: white;
+  }
+  .main-tab.plan-tab.active {
+    background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+  }
+  
+  .month-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .month-tab {
+    padding: 10px 16px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    min-width: 45px;
+    text-align: center;
+  }
+  .month-tab:hover { background: #e0e0e0; }
+  .month-tab.active {
+    background: var(--primary);
+    color: white;
+  }
+  .month-tab.yearly {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+  
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .kpi-card.nli {
+    background: linear-gradient(135deg, #e65100 0%, #ff9800 100%);
+    color: white;
+  }
+  .kpi-card.wh {
+    background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+    color: white;
+  }
+  .kpi-card.total {
+    background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+    color: white;
+  }
+  .kpi-card.plan {
+    background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+    color: white;
+  }
+  .kpi-value {
+    font-size: 1.8em;
+    font-weight: 700;
+  }
+  .kpi-label {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 5px;
+  }
+  .kpi-plan {
+    font-size: 0.7em;
+    opacity: 0.8;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255,255,255,0.3);
+  }
+  .kpi-percent {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 700;
+    background: rgba(255,255,255,0.2);
+  }
+  .kpi-percent.good { background: rgba(76, 175, 80, 0.4); }
+  .kpi-percent.warning { background: rgba(255, 193, 7, 0.4); }
+  .kpi-percent.bad { background: rgba(244, 67, 54, 0.4); }
+  
+  .section-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: #37474f;
+    color: white;
+    padding: 15px 20px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-header.plan {
+    background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+  }
+  .data-table th {
+    background: #455a64;
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #37474f;
+    white-space: nowrap;
+  }
+  .data-table th.number { text-align: right; }
+  .data-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .data-table tr:hover { background: #f5f5f5; }
+  .data-table .number {
+    text-align: right;
+    font-family: 'Consolas', monospace;
+  }
+  .data-table .total-row {
+    background: #e3f2fd;
+    font-weight: 700;
+  }
+  .data-table .total-row td {
+    border-top: 2px solid #1976d2;
+  }
+  .data-table .plan-row {
+    background: #f3e5f5;
+  }
+  .data-table .plan-row td {
+    color: #7b1fa2;
+  }
+  .data-table .day-separator {
+    background: #eceff1;
+  }
+  .data-table .day-separator td {
+    padding: 8px 10px;
+    font-weight: 700;
+    color: #455a64;
+    border-top: 2px solid #cfd8dc;
+  }
+  
+  .rn-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .line-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  .line-badge.nli { background: #fff3e0; color: #e65100; }
+  .line-badge.wh { background: #e8f5e9; color: #2e7d32; }
+  .data-table tr.row-wh { background: #fffde7; }
+  .data-table tr.row-wh:hover { background: #fff9c4; }
+  .data-table tr.row-nli { background: #e8f5e9; }
+  .data-table tr.row-nli:hover { background: #c8e6c9; }
+  
+  /* Plan tab stilovi */
+  .plan-input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    font-family: 'Consolas', monospace;
+    width: 130px;
+    text-align: right;
+  }
+  .plan-input:focus {
+    border-color: #9c27b0;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+  }
+  .plan-input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+  }
+  .btn-save-plan {
+    background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-save-plan:hover { opacity: 0.9; }
+  
+  /* Popup za smjene */
+  .shift-popup-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    display: none;
+  }
+  .shift-popup-overlay.visible { display: block; }
+  .shift-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    z-index: 9999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    min-width: 320px;
+    max-width: 90vw;
+    display: none;
+  }
+  .shift-popup.visible { display: block; }
+  .shift-popup-header {
+    background: #37474f;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .shift-popup-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .shift-popup-close:hover { opacity: 1; }
+  .shift-popup-body { padding: 20px; }
+  .shift-popup-section { margin-bottom: 15px; }
+  .shift-popup-section-title {
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .shift-popup-section-title.nli {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #e65100;
+  }
+  .shift-popup-section-title.wh {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+  }
+  .shift-popup-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-bottom: 1px solid #eee;
+  }
+  .shift-popup-row:last-child { border-bottom: none; }
+  .shift-popup-label { color: #666; }
+  .shift-popup-value { font-weight: 600; font-family: 'Consolas', monospace; }
+  .shift-popup-total {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #1976d2;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #1565c0;
+  }
+  
+  /* Klik indikator */
+  .data-table tr.has-shift-data { cursor: pointer; }
+  .data-table tr.has-shift-data:hover { background: #e3f2fd !important; }
+  
+  /* Filter sekcija */
+  .filter-section {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+  }
+  .filter-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .filter-section-title {
+    font-weight: 600;
+    color: #37474f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    align-items: end;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .filter-group label {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #666;
+  }
+  .filter-group select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95em;
+    cursor: pointer;
+    background: white;
+  }
+  .filter-group select:focus {
+    border-color: #1976d2;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  }
+  .btn-reset-filter {
+    padding: 10px 16px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  .btn-reset-filter:hover {
+    background: #eeeeee;
+  }
+  .filter-active-badge {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  .filter-summary {
+    margin-top: 12px;
+    padding: 12px 15px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 8px;
+    font-size: 0.9em;
+    display: none;
+    border-left: 4px solid #1976d2;
+  }
+  .filter-summary.active {
+    display: block;
+  }
+  .filter-summary-title {
+    font-weight: 600;
+    color: #1565c0;
+    margin-bottom: 8px;
+  }
+  .filter-summary-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .filter-summary-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .filter-summary-stat strong {
+    color: #1565c0;
+  }
+
+  /* === DNEVNI DETALJ VIEW === */
+  .day-detail-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .day-detail-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-back {
+    padding: 10px 20px;
+    background: #37474f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+  }
+  .btn-back:hover { background: #455a64; }
+  .btn-day-nav {
+    padding: 8px 14px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-day-nav:hover { background: #e0e0e0; }
+  .day-detail-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .shift-group-header {
+    background: linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%) !important;
+    font-weight: 700;
+    color: #37474f;
+  }
+  .shift-group-header td {
+    padding: 10px 12px !important;
+    border-top: 2px solid #90a4ae;
+  }
+  .shift-subtotal td {
+    font-weight: 600;
+    background: #f5f5f5 !important;
+    border-top: 1px solid #ccc;
+  }
+  .report-subsection {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+  }
+  .report-subsection.nli { border-left-color: #e65100; }
+  .report-subsection.wh { border-left-color: #2e7d32; }
+  .report-meta {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  .report-napomena {
+    background: #fff3e0;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-style: italic;
+    color: #e65100;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  .status-badge.na-skladistu { background: #e8f5e9; color: #2e7d32; }
+  .status-badge.u-pripremi { background: #fff3e0; color: #e65100; }
+  .status-badge.otpremljeno { background: #e3f2fd; color: #1565c0; }
+  @media (max-width: 768px) {
+    .day-detail-nav { flex-direction: column; align-items: stretch; }
+    .day-detail-title { font-size: 1.2em; text-align: center; }
+    .day-detail-nav-left { justify-content: center; }
+  }
+</style>
+
+<div class="pvnd-header">
+  <div class="pvnd-title">📊 PVND - Proizvodnja na dan</div>
+  <div class="year-selector">
+    <label>Godina:</label>
+    <select id="pvndYear" onchange="pvndChangeYear()">
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+    <button class="btn btn-sm btn-primary" onclick="pvndRefresh()">🔄</button>
+  </div>
+</div>
+
+<!-- Glavni tabovi -->
+<div class="main-tabs">
+  <button class="main-tab active" id="tabPregled" onclick="pvndSwitchMainTab('pregled')">
+    📊 Pregled proizvodnje
+  </button>
+  <button class="main-tab plan-tab" id="tabPlan" onclick="pvndSwitchMainTab('plan')">
+    📋 Plan proizvodnje
+  </button>
+</div>
+
+<!-- Sadržaj Pregled -->
+<div id="pvndPregledContent">
+  <div class="month-tabs">
+    <button class="month-tab" data-month="1" onclick="pvndSelectMonth(1)">1</button>
+    <button class="month-tab" data-month="2" onclick="pvndSelectMonth(2)">2</button>
+    <button class="month-tab" data-month="3" onclick="pvndSelectMonth(3)">3</button>
+    <button class="month-tab" data-month="4" onclick="pvndSelectMonth(4)">4</button>
+    <button class="month-tab" data-month="5" onclick="pvndSelectMonth(5)">5</button>
+    <button class="month-tab" data-month="6" onclick="pvndSelectMonth(6)">6</button>
+    <button class="month-tab" data-month="7" onclick="pvndSelectMonth(7)">7</button>
+    <button class="month-tab" data-month="8" onclick="pvndSelectMonth(8)">8</button>
+    <button class="month-tab" data-month="9" onclick="pvndSelectMonth(9)">9</button>
+    <button class="month-tab" data-month="10" onclick="pvndSelectMonth(10)">10</button>
+    <button class="month-tab" data-month="11" onclick="pvndSelectMonth(11)">11</button>
+    <button class="month-tab" data-month="12" onclick="pvndSelectMonth(12)">12</button>
+    <button class="month-tab yearly" data-month="0" onclick="pvndSelectMonth(0)">📅 Godišnji</button>
+  </div>
+  
+  <!-- Filter sekcija -->
+  <div class="filter-section">
+    <div class="filter-section-header">
+      <div class="filter-section-title">
+        🔍 Filteri
+        <span id="pvndFilterBadge" class="filter-active-badge" style="display:none;">Filtrirano</span>
+      </div>
+      <button class="btn-reset-filter" onclick="pvndResetFilters()">✕ Poništi</button>
+    </div>
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label>Linija</label>
+        <select id="pvndFilterLinija" onchange="pvndApplyFilters()">
+          <option value="">Sve linije</option>
+          <option value="NLI">🟠 NLI</option>
+          <option value="WH">🟢 W&H</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Kupac</label>
+        <select id="pvndFilterKupac" onchange="pvndApplyFilters()">
+          <option value="">Svi kupci</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Artikl</label>
+        <select id="pvndFilterArtikl" onchange="pvndApplyFilters()">
+          <option value="">Svi artikli</option>
+        </select>
+      </div>
+    </div>
+    <div id="pvndFilterSummary" class="filter-summary">
+      <div class="filter-summary-title">📊 Ukupno za odabrane filtere (cijela godina):</div>
+      <div class="filter-summary-stats" id="pvndFilterStats"></div>
+    </div>
+  </div>
+  
+  <div id="pvndContent"></div>
+</div>
+
+<!-- Sadržaj Plan -->
+<div id="pvndPlanContent" style="display: none;"></div>
+
+<!-- Popup za smjene -->
+<div id="shiftPopupOverlay" class="shift-popup-overlay" onclick="pvndHideShiftPopup()"></div>
+<div id="shiftPopup" class="shift-popup">
+  <div class="shift-popup-header">
+    <span>📊 Proizvodnja po smjenama</span>
+    <button class="shift-popup-close" onclick="pvndHideShiftPopup()">×</button>
+  </div>
+  <div class="shift-popup-body" id="shiftPopupBody"></div>
+</div>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var pvndCurrentYear = new Date().getFullYear();
+var pvndCurrentMonth = new Date().getMonth() + 1;
+var pvndGopData = [];
+var pvndFilteredData = []; // Filtrirani podaci
+var pvndPlansData = [];
+var pvndShiftDataCache = {};
+var pvndCurrentMainTab = 'pregled';
+var pvndCurrentDay = null;         // Odabrani dan za dnevni detalj (null = mjesečni view)
+var pvndDayShiftReports = [];      // Ručni smjenski izvještaji za odabrani dan
+var pvndDayPalletData = [];        // Palete za odabrani dan
+
+// Filter varijable
+var pvndFilterLinija = '';
+var pvndFilterKupac = '';
+var pvndFilterArtikl = '';
+
+const monthNames = ['', 'Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 
+                    'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac'];
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initPvndView() {
+  console.log('📊 PVND init');
+  document.getElementById('pvndYear').value = pvndCurrentYear.toString();
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') pvndHideShiftPopup();
+  });
+  
+  await pvndLoadData();
+  await pvndLoadPlans();
+  pvndPopulateFilters(); // Popuni filtere nakon učitavanja
+  pvndFilteredData = pvndGopData; // Inicijalno svi podaci
+  pvndSelectMonth(pvndCurrentMonth);
+}
+
+// ============================================
+// POPUNJAVANJE FILTERA
+// ============================================
+function pvndPopulateFilters() {
+  var kupci = new Map(); // Map za kupac -> count
+  var artikli = new Map(); // Map za artikl_code -> {name, code, count}
+  
+  pvndGopData.forEach(function(g) {
+    // Kupci
+    if (g.customer_name && g.customer_name !== '-') {
+      var kupacCount = kupci.get(g.customer_name) || 0;
+      kupci.set(g.customer_name, kupacCount + (g.kolicina || 0));
+    }
+    // Artikli
+    if (g.article_name && g.article_name !== '-') {
+      var key = g.article_code || g.article_name;
+      var existing = artikli.get(key);
+      if (existing) {
+        existing.count += (g.kolicina || 0);
+      } else {
+        artikli.set(key, { name: g.article_name, code: g.article_code || '', count: g.kolicina || 0 });
+      }
+    }
+  });
+  
+  // Popuni dropdown za kupce (sortirano po količini desc)
+  var kupacSelect = document.getElementById('pvndFilterKupac');
+  kupacSelect.innerHTML = '<option value="">Svi kupci (' + kupci.size + ')</option>';
+  Array.from(kupci.entries())
+    .sort(function(a, b) { return b[1] - a[1]; }) // Sort po količini desc
+    .forEach(function(entry) {
+      var opt = document.createElement('option');
+      opt.value = entry[0];
+      opt.textContent = entry[0] + ' (' + formatBroj(entry[1]) + ')';
+      kupacSelect.appendChild(opt);
+    });
+  
+  // Popuni dropdown za artikle (sortirano po količini desc)
+  var artiklSelect = document.getElementById('pvndFilterArtikl');
+  artiklSelect.innerHTML = '<option value="">Svi artikli (' + artikli.size + ')</option>';
+  Array.from(artikli.entries())
+    .sort(function(a, b) { return b[1].count - a[1].count; }) // Sort po količini desc
+    .forEach(function(entry) {
+      var opt = document.createElement('option');
+      opt.value = entry[0];
+      var displayText = entry[1].code ? entry[1].code + ' - ' : '';
+      displayText += entry[1].name.substring(0, 30) + (entry[1].name.length > 30 ? '...' : '');
+      displayText += ' (' + formatBroj(entry[1].count) + ')';
+      opt.textContent = displayText;
+      opt.title = entry[1].name; // Full name on hover
+      artiklSelect.appendChild(opt);
+    });
+  
+  console.log('🔍 Filteri: ' + kupci.size + ' kupaca, ' + artikli.size + ' artikala');
+}
+
+// ============================================
+// PRIMJENA FILTERA
+// ============================================
+function pvndApplyFilters() {
+  pvndFilterLinija = document.getElementById('pvndFilterLinija').value;
+  pvndFilterKupac = document.getElementById('pvndFilterKupac').value;
+  pvndFilterArtikl = document.getElementById('pvndFilterArtikl').value;
+  
+  // Filtriraj podatke
+  pvndFilteredData = pvndGopData.filter(function(g) {
+    if (pvndFilterLinija && g.linija !== pvndFilterLinija) return false;
+    if (pvndFilterKupac && g.customer_name !== pvndFilterKupac) return false;
+    if (pvndFilterArtikl) {
+      var artiklKey = g.article_code || g.article_name;
+      if (artiklKey !== pvndFilterArtikl) return false;
+    }
+    return true;
+  });
+  
+  // Ažuriraj badge i summary
+  var hasFilter = pvndFilterLinija || pvndFilterKupac || pvndFilterArtikl;
+  document.getElementById('pvndFilterBadge').style.display = hasFilter ? 'inline-block' : 'none';
+  
+  var summaryEl = document.getElementById('pvndFilterSummary');
+  var statsEl = document.getElementById('pvndFilterStats');
+  
+  if (hasFilter) {
+    // Izračunaj agregate za filtrirane podatke (cijela godina)
+    var totalKom = 0, totalNli = 0, totalWh = 0;
+    var uniqueRN = new Set();
+    var uniqueKupci = new Set();
+    var uniqueArtikli = new Set();
+    var uniquePalete = new Set(); // NOVO: Broji unikatne palete po referenci
+    
+    pvndFilteredData.forEach(function(g) {
+      totalKom += g.kolicina || 0;
+      if (g.linija === 'NLI') totalNli += g.kolicina || 0;
+      else totalWh += g.kolicina || 0;
+      // IZMJENA: Umjesto totalPaleta++, dodaj referencu u Set
+      if (g.referenca) uniquePalete.add(g.referenca);
+      if (g.work_order_number) uniqueRN.add(g.work_order_number);
+      if (g.customer_name) uniqueKupci.add(g.customer_name);
+      if (g.article_code || g.article_name) uniqueArtikli.add(g.article_code || g.article_name);
+    });
+    
+    statsEl.innerHTML = 
+      '<div class="filter-summary-stat">📦 <strong>' + formatBroj(totalKom) + '</strong> kom</div>' +
+      (totalNli > 0 ? '<div class="filter-summary-stat">🟠 NLI: <strong>' + formatBroj(totalNli) + '</strong></div>' : '') +
+      (totalWh > 0 ? '<div class="filter-summary-stat">🟢 W&H: <strong>' + formatBroj(totalWh) + '</strong></div>' : '') +
+      '<div class="filter-summary-stat">📋 <strong>' + uniqueRN.size + '</strong> RN</div>' +
+      '<div class="filter-summary-stat">🎯 <strong>' + uniquePalete.size + '</strong> paleta</div>' +
+      (uniqueKupci.size > 1 ? '<div class="filter-summary-stat">👥 <strong>' + uniqueKupci.size + '</strong> kupaca</div>' : '') +
+      (uniqueArtikli.size > 1 ? '<div class="filter-summary-stat">📝 <strong>' + uniqueArtikli.size + '</strong> artikala</div>' : '');
+    
+    summaryEl.classList.add('active');
+  } else {
+    summaryEl.classList.remove('active');
+    pvndFilteredData = pvndGopData;
+  }
+  
+  // Ponovo renderaj trenutni prikaz
+  if (pvndCurrentDay !== null) {
+    pvndRenderDayDetail(pvndCurrentYear, pvndCurrentMonth, pvndCurrentDay);
+  } else if (pvndCurrentMonth === 0) {
+    pvndRenderYearly();
+  } else {
+    pvndRenderMonth(pvndCurrentMonth);
+  }
+}
+
+// ============================================
+// RESET FILTERA
+// ============================================
+function pvndResetFilters() {
+  document.getElementById('pvndFilterLinija').value = '';
+  document.getElementById('pvndFilterKupac').value = '';
+  document.getElementById('pvndFilterArtikl').value = '';
+  pvndApplyFilters();
+}
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function pvndLoadData() {
+  try {
+    // Filtriramo po datum koloni za godinu (da IMPORT podaci budu u pravoj godini)
+    const startDate = `${pvndCurrentYear}-01-01`;
+    const endDate = `${pvndCurrentYear}-12-31`;
+    
+    const { data, error } = await initSupabase()
+      .from('prod_shift_details')
+      .select('*')
+      .gte('datum', startDate)
+      .lte('datum', endDate)
+      .eq('vrsta_unosa', 'GOP')
+      .order('datum', { ascending: true })
+      .limit(10000);
+    
+    if (error) throw error;
+    
+    // Za svaki zapis izračunaj proizvodni datum
+    // IMPORT podaci koriste datum kolonu (jer vrijeme_unosa je kad su importirani, ne kad su proizvedeni)
+    // Normalni podaci koriste vrijeme_unosa za izračun proizvodnog datuma
+    pvndGopData = (data || []).map(g => {
+      const isImport = (g.shift_id || '').startsWith('IMPORT-');
+      if (isImport) {
+        // IMPORT podaci - koristi datum kolonu kakav jest
+        g._prodDatum = g.datum;
+      } else {
+        // Normalni podaci - izračunaj proizvodni datum iz vrijeme_unosa
+        g._prodDatum = getProductionDateFromTimestamp(g.vrijeme_unosa) || g.datum;
+      }
+      return g;
+    });
+    
+    console.log(`📦 Učitano ${pvndGopData.length} GOP zapisa za ${pvndCurrentYear}`);
+  } catch (e) {
+    console.error('PVND load error:', e);
+    pvndGopData = [];
+  }
+}
+
+async function pvndLoadPlans() {
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_production_plans')
+      .select('*')
+      .eq('year', pvndCurrentYear)
+      .order('month', { ascending: true });
+    
+    if (error) {
+      console.log('Tablica planova ne postoji ili greška:', error.message);
+      pvndPlansData = [];
+      return;
+    }
+    
+    pvndPlansData = data || [];
+    console.log(`📋 Učitano ${pvndPlansData.length} planova`);
+  } catch (e) {
+    console.error('Plans load error:', e);
+    pvndPlansData = [];
+  }
+}
+
+// ============================================
+// HELPER FUNKCIJE ZA PLAN
+// ============================================
+function pvndGetPlan(month, line) {
+  const plan = pvndPlansData.find(p => p.month === month && p.line === line);
+  return plan ? (plan.planned_quantity || 0) : 0;
+}
+
+function pvndGetMonthPlan(month) {
+  return pvndGetPlan(month, 'NLI') + pvndGetPlan(month, 'WH');
+}
+
+function pvndGetYearPlan(line) {
+  return pvndPlansData
+    .filter(p => !line || p.line === line)
+    .reduce((sum, p) => sum + (p.planned_quantity || 0), 0);
+}
+
+function pvndPercentClass(pct) {
+  if (pct >= 95) return 'good';
+  if (pct >= 80) return 'warning';
+  return 'bad';
+}
+
+function pvndFormatPercent(actual, plan) {
+  if (!plan) return '';
+  const pct = (actual / plan * 100).toFixed(1);
+  return `<span class="kpi-percent ${pvndPercentClass(parseFloat(pct))}">${pct}%</span>`;
+}
+
+// ============================================
+// GLAVNI TABOVI
+// ============================================
+function pvndSwitchMainTab(tab) {
+  pvndCurrentMainTab = tab;
+  
+  document.getElementById('tabPregled').classList.toggle('active', tab === 'pregled');
+  document.getElementById('tabPlan').classList.toggle('active', tab === 'plan');
+  document.getElementById('pvndPregledContent').style.display = tab === 'pregled' ? 'block' : 'none';
+  document.getElementById('pvndPlanContent').style.display = tab === 'plan' ? 'block' : 'none';
+  
+  if (tab === 'plan') pvndRenderPlanTab();
+}
+
+// ============================================
+// POPUP ZA SMJENE
+// ============================================
+function pvndShowShiftPopup(dataKey) {
+  const data = pvndShiftDataCache[dataKey];
+  if (!data) return;
+  
+  const popup = document.getElementById('shiftPopup');
+  const overlay = document.getElementById('shiftPopupOverlay');
+  const body = document.getElementById('shiftPopupBody');
+  
+  let html = '';
+  
+  // NLI
+  const nliTotal = (data.nli_smjena1 || 0) + (data.nli_smjena2 || 0) + (data.nli_smjena3 || 0);
+  if (nliTotal > 0) {
+    html += `<div class="shift-popup-section">
+      <div class="shift-popup-section-title nli"><span>🟠 NLI linija</span><span>${formatBroj(nliTotal)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">1. smjena (06-14h)</span><span class="shift-popup-value">${formatBroj(data.nli_smjena1 || 0)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">2. smjena (14-22h)</span><span class="shift-popup-value">${formatBroj(data.nli_smjena2 || 0)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">3. smjena (22-06h)</span><span class="shift-popup-value">${formatBroj(data.nli_smjena3 || 0)}</span></div>
+    </div>`;
+  }
+  
+  // WH
+  const whTotal = (data.wh_smjena1 || 0) + (data.wh_smjena2 || 0) + (data.wh_smjena3 || 0);
+  if (whTotal > 0) {
+    html += `<div class="shift-popup-section">
+      <div class="shift-popup-section-title wh"><span>🟢 W&H linija</span><span>${formatBroj(whTotal)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">1. smjena (06-14h)</span><span class="shift-popup-value">${formatBroj(data.wh_smjena1 || 0)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">2. smjena (14-22h)</span><span class="shift-popup-value">${formatBroj(data.wh_smjena2 || 0)}</span></div>
+      <div class="shift-popup-row"><span class="shift-popup-label">3. smjena (22-06h)</span><span class="shift-popup-value">${formatBroj(data.wh_smjena3 || 0)}</span></div>
+    </div>`;
+  }
+  
+  const grandTotal = nliTotal + whTotal;
+  if (grandTotal > 0) {
+    html += `<div class="shift-popup-total"><span>UKUPNO</span><span>${formatBroj(grandTotal)}</span></div>`;
+  } else {
+    html = '<div style="text-align:center; padding:20px; color:#999;"><div style="font-size:2em;">📭</div>Nema podataka o smjenama</div>';
+  }
+  
+  body.innerHTML = html;
+  overlay.classList.add('visible');
+  popup.classList.add('visible');
+}
+
+function pvndHideShiftPopup() {
+  document.getElementById('shiftPopup')?.classList.remove('visible');
+  document.getElementById('shiftPopupOverlay')?.classList.remove('visible');
+}
+
+// ============================================
+// DNEVNI DETALJ - UČITAVANJE PODATAKA
+// ============================================
+async function pvndLoadDayDetails(dateString) {
+  try {
+    const dayStart = getProductionDayStartISO(dateString);
+    const dayEnd = getProductionDayEndISO(dateString);
+
+    const [reportsResult, palletsResult] = await Promise.all([
+      initSupabase()
+        .from('prod_shift_reports')
+        .select('*')
+        .eq('shift_date', dateString)
+        .limit(100),
+      initSupabase()
+        .from('prod_inventory_gop')
+        .select('*')
+        .gte('created_at', dayStart)
+        .lt('created_at', dayEnd)
+        .order('created_at', { ascending: true })
+        .limit(1000)
+    ]);
+
+    pvndDayShiftReports = reportsResult.data || [];
+    pvndDayPalletData = palletsResult.data || [];
+
+    console.log(`📅 Dan ${dateString}: ${pvndDayShiftReports.length} izvještaja, ${pvndDayPalletData.length} paleta`);
+  } catch (e) {
+    console.error('Greška pri učitavanju dnevnih detalja:', e);
+    pvndDayShiftReports = [];
+    pvndDayPalletData = [];
+  }
+}
+
+// ============================================
+// DNEVNI DETALJ - GLAVNI ENTRY POINT
+// ============================================
+async function pvndShowDayDetail(year, month, day) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) return;
+
+  pvndCurrentDay = day;
+  pvndCurrentMonth = month;
+  pvndCurrentYear = year;
+
+  showLoading('Učitavanje dnevnog pregleda...');
+
+  const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  await pvndLoadDayDetails(dateString);
+  pvndRenderDayDetail(year, month, day);
+
+  hideLoading();
+}
+
+// ============================================
+// DNEVNI DETALJ - NAVIGACIJA
+// ============================================
+function pvndNavigateDay(offset) {
+  let newDay = pvndCurrentDay + offset;
+  let newMonth = pvndCurrentMonth;
+  let newYear = pvndCurrentYear;
+
+  if (newDay < 1) {
+    newMonth--;
+    if (newMonth < 1) { newMonth = 12; newYear--; }
+    newDay = new Date(newYear, newMonth, 0).getDate();
+  } else {
+    const daysInMonth = new Date(newYear, newMonth, 0).getDate();
+    if (newDay > daysInMonth) {
+      newMonth++;
+      if (newMonth > 12) { newMonth = 1; newYear++; }
+      newDay = 1;
+    }
+  }
+
+  pvndShowDayDetail(newYear, newMonth, newDay);
+}
+
+function pvndCloseDayDetail() {
+  pvndCurrentDay = null;
+  pvndRenderMonth(pvndCurrentMonth);
+}
+
+// ============================================
+// DNEVNI DETALJ - RENDER
+// ============================================
+function pvndRenderDayDetail(year, month, day) {
+  const dayNames = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+  const dateObj = new Date(year, month - 1, day);
+  const dayOfWeek = dayNames[dateObj.getDay()];
+  const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  // Filtriraj podatke za ovaj dan
+  const dayRecords = pvndFilteredData.filter(g => {
+    const prodDatum = g._prodDatum || g.datum;
+    return prodDatum === dateString;
+  });
+
+  // === KPI AGREGACIJA ===
+  let totalNli = 0, totalWh = 0, totalSkart = 0;
+  const uniqueRN = new Set();
+  const uniquePalete = new Set();
+  let nliS1 = 0, nliS2 = 0, nliS3 = 0, whS1 = 0, whS2 = 0, whS3 = 0;
+
+  dayRecords.forEach(g => {
+    const qty = g.kolicina || 0;
+    const skart = g.skart || 0;
+    const line = g.linija || 'WH';
+    const smjena = g.smjena || 0;
+
+    if (line === 'NLI') {
+      totalNli += qty;
+      if (smjena === 1) nliS1 += qty;
+      else if (smjena === 2) nliS2 += qty;
+      else if (smjena === 3) nliS3 += qty;
+    } else {
+      totalWh += qty;
+      if (smjena === 1) whS1 += qty;
+      else if (smjena === 2) whS2 += qty;
+      else if (smjena === 3) whS3 += qty;
+    }
+    totalSkart += skart;
+    if (g.work_order_number) uniqueRN.add(g.work_order_number);
+    if (g.referenca) uniquePalete.add(g.referenca);
+  });
+
+  const grandTotal = totalNli + totalWh;
+
+  // === SEKCIJA A: Header s navigacijom ===
+  let html = `
+    <div class="day-detail-nav">
+      <div class="day-detail-nav-left">
+        <button class="btn-back" onclick="pvndCloseDayDetail()">← Natrag</button>
+        <button class="btn-day-nav" onclick="pvndNavigateDay(-1)" title="Prethodni dan">◀</button>
+        <button class="btn-day-nav" onclick="pvndNavigateDay(1)" title="Sljedeći dan">▶</button>
+      </div>
+      <div class="day-detail-title">📅 ${day}. ${monthNames[month]} ${year} (${dayOfWeek})</div>
+    </div>`;
+
+  // === SEKCIJA B: KPI kartice ===
+  html += `
+    <div class="kpi-grid">
+      <div class="kpi-card total">
+        <div class="kpi-value">${formatBroj(grandTotal)}</div>
+        <div class="kpi-label">Ukupno proizvedeno</div>
+      </div>
+      <div class="kpi-card nli">
+        <div class="kpi-value">${formatBroj(totalNli)}</div>
+        <div class="kpi-label">NLI linija</div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          S1: ${formatBroj(nliS1)} | S2: ${formatBroj(nliS2)} | S3: ${formatBroj(nliS3)}
+        </div>
+      </div>
+      <div class="kpi-card wh">
+        <div class="kpi-value">${formatBroj(totalWh)}</div>
+        <div class="kpi-label">W&H linija</div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          S1: ${formatBroj(whS1)} | S2: ${formatBroj(whS2)} | S3: ${formatBroj(whS3)}
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${uniqueRN.size}</div>
+        <div class="kpi-label">Radnih naloga</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${uniquePalete.size}</div>
+        <div class="kpi-label">Paleta</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${formatBroj(totalSkart)}</div>
+        <div class="kpi-label">Škart</div>
+      </div>
+    </div>`;
+
+  if (dayRecords.length === 0) {
+    html += `<div class="section-card" style="text-align:center; padding:40px; color:#999;">
+      <div style="font-size:2em;">📭</div>Nema podataka za ${day}. ${monthNames[month]} ${year}
+    </div>`;
+    document.getElementById('pvndContent').innerHTML = html;
+    return;
+  }
+
+  // === SEKCIJA C: Proizvodnja po smjenama ===
+  html += pvndRenderDayShiftTable(dayRecords);
+
+  // === SEKCIJA D: Pregled po radnim nalozima ===
+  html += pvndRenderDayRNSummary(dayRecords);
+
+  // === SEKCIJA E: Ručni smjenski izvještaji ===
+  html += pvndRenderDayManualReports();
+
+  // === SEKCIJA F: Detalji paleta ===
+  html += pvndRenderDayPallets();
+
+  document.getElementById('pvndContent').innerHTML = html;
+}
+
+// ============================================
+// DNEVNI DETALJ - TABLICA PO SMJENAMA
+// ============================================
+function pvndRenderDayShiftTable(dayRecords) {
+  // Grupiraj po smjeni -> liniji -> RN
+  const shifts = {};
+  dayRecords.forEach(g => {
+    const smjena = g.smjena || 0;
+    const line = g.linija || 'WH';
+    const rn = g.work_order_number || 'Nepoznat';
+
+    if (!shifts[smjena]) shifts[smjena] = {};
+    if (!shifts[smjena][line]) shifts[smjena][line] = {};
+    if (!shifts[smjena][line][rn]) {
+      shifts[smjena][line][rn] = {
+        kupac: g.customer_name || '-',
+        artikl: g.article_name || '-',
+        kolicina: 0,
+        skart: 0,
+        operateri: new Set()
+      };
+    }
+    shifts[smjena][line][rn].kolicina += g.kolicina || 0;
+    shifts[smjena][line][rn].skart += g.skart || 0;
+    if (g.operater) shifts[smjena][line][rn].operateri.add(g.operater);
+  });
+
+  const smjenaNames = { 1: '1. smjena (06:00 - 14:00)', 2: '2. smjena (14:00 - 22:00)', 3: '3. smjena (22:00 - 06:00)', 0: 'Neraspoređeno' };
+  const sortedShifts = Object.keys(shifts).map(Number).sort((a, b) => (a || 99) - (b || 99));
+
+  let tableRows = '';
+  sortedShifts.forEach(smjena => {
+    let shiftTotal = 0;
+    let shiftSkart = 0;
+
+    // Prebrojimo ukupno za smjenu
+    Object.entries(shifts[smjena]).forEach(([line, rns]) => {
+      Object.values(rns).forEach(r => { shiftTotal += r.kolicina; shiftSkart += r.skart; });
+    });
+
+    tableRows += `<tr class="shift-group-header">
+      <td colspan="5">${smjenaNames[smjena] || 'Smjena ' + smjena}</td>
+      <td class="number"><strong>${formatBroj(shiftTotal)}</strong></td>
+      <td class="number">${formatBroj(shiftSkart)}</td>
+      <td></td>
+    </tr>`;
+
+    // Sortiraj linije: WH pa NLI
+    const sortedLines = Object.keys(shifts[smjena]).sort((a, b) => a === 'NLI' ? 1 : -1);
+    sortedLines.forEach(line => {
+      const lineClass = line === 'NLI' ? 'row-nli' : 'row-wh';
+      const lineBadge = line === 'NLI' ? '<span class="line-badge nli">NLI</span>' : '<span class="line-badge wh">W&H</span>';
+
+      Object.entries(shifts[smjena][line]).forEach(([rn, r]) => {
+        const operateri = [...r.operateri].join(', ') || '-';
+        tableRows += `<tr class="${lineClass}">
+          <td>${lineBadge}</td>
+          <td><span class="rn-badge">${rn}</span></td>
+          <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.kupac}">${r.kupac}</td>
+          <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.artikl}">${r.artikl}</td>
+          <td class="number">${formatBroj(r.kolicina)}</td>
+          <td class="number">${formatBroj(r.skart)}</td>
+          <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${operateri}">${operateri}</td>
+        </tr>`;
+      });
+    });
+  });
+
+  return `
+    <div class="section-card">
+      <div class="section-header">📊 Proizvodnja po smjenama</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Linija</th>
+              <th>RN</th>
+              <th>Kupac</th>
+              <th>Artikl</th>
+              <th class="number">Količina</th>
+              <th class="number">Škart</th>
+              <th>Operater</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ============================================
+// DNEVNI DETALJ - PREGLED PO RADNIM NALOZIMA
+// ============================================
+function pvndRenderDayRNSummary(dayRecords) {
+  const rnData = {};
+  dayRecords.forEach(g => {
+    const rn = g.work_order_number || 'Nepoznat';
+    const line = g.linija || 'WH';
+    const smjena = g.smjena || 0;
+    const qty = g.kolicina || 0;
+
+    if (!rnData[rn]) {
+      rnData[rn] = {
+        line, kupac: g.customer_name || '-', artikl: g.article_name || '-',
+        sifra: g.article_code || '-',
+        s1: 0, s2: 0, s3: 0, total: 0, uniquePalete: new Set()
+      };
+    }
+    rnData[rn].total += qty;
+    if (smjena === 1) rnData[rn].s1 += qty;
+    else if (smjena === 2) rnData[rn].s2 += qty;
+    else if (smjena === 3) rnData[rn].s3 += qty;
+    if (g.referenca) rnData[rn].uniquePalete.add(g.referenca);
+  });
+
+  let tableRows = '';
+  // Sortiraj po ukupnoj količini desc
+  const sorted = Object.entries(rnData).sort((a, b) => b[1].total - a[1].total);
+  sorted.forEach(([rn, r]) => {
+    const lineClass = r.line === 'NLI' ? 'row-nli' : 'row-wh';
+    const lineBadge = r.line === 'NLI' ? '<span class="line-badge nli">NLI</span>' : '<span class="line-badge wh">W&H</span>';
+    tableRows += `<tr class="${lineClass}">
+      <td><span class="rn-badge">${rn}</span></td>
+      <td>${lineBadge}</td>
+      <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.kupac}">${r.kupac}</td>
+      <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.artikl}">${r.artikl}</td>
+      <td style="font-size:0.85em; color:#666;">${r.sifra}</td>
+      <td class="number">${formatBroj(r.s1)}</td>
+      <td class="number">${formatBroj(r.s2)}</td>
+      <td class="number">${formatBroj(r.s3)}</td>
+      <td class="number"><strong>${formatBroj(r.total)}</strong></td>
+      <td class="number">${r.uniquePalete.size}</td>
+    </tr>`;
+  });
+
+  return `
+    <div class="section-card">
+      <div class="section-header">📋 Pregled po radnim nalozima</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>RN</th>
+              <th>Linija</th>
+              <th>Kupac</th>
+              <th>Artikl</th>
+              <th>Šifra</th>
+              <th class="number">S1</th>
+              <th class="number">S2</th>
+              <th class="number">S3</th>
+              <th class="number">Ukupno</th>
+              <th class="number">Pal.</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ============================================
+// DNEVNI DETALJ - RUČNI SMJENSKI IZVJEŠTAJI
+// ============================================
+function pvndRenderDayManualReports() {
+  if (!pvndDayShiftReports || pvndDayShiftReports.length === 0) return '';
+
+  // Sortiraj po linija, pa smjena
+  const sorted = [...pvndDayShiftReports].sort((a, b) => {
+    if (a.production_line !== b.production_line) return a.production_line === 'NLI' ? -1 : 1;
+    return (a.shift_number || 0) - (b.shift_number || 0);
+  });
+
+  // Filtriraj po odabranoj liniji ako je filter aktivan
+  const filtered = pvndFilterLinija
+    ? sorted.filter(r => r.production_line === pvndFilterLinija)
+    : sorted;
+
+  if (filtered.length === 0) return '';
+
+  let sections = '';
+  filtered.forEach(report => {
+    const line = report.production_line || '?';
+    const smjena = report.shift_number || '?';
+    const lineClass = line === 'NLI' ? 'nli' : 'wh';
+    const lineIcon = line === 'NLI' ? '🟠' : '🟢';
+    const strojar = report.strojar || '-';
+    const pomocnici = report.pomocnici || '-';
+    const napomena = report.napomena || '';
+    const machineType = report.machine_type || '';
+
+    let reportContent = '';
+    const rd = report.report_data;
+
+    if (rd && rd.nalozi && rd.nalozi.length > 0) {
+      let rows = '';
+      rd.nalozi.forEach(n => {
+        rows += `<tr>
+          <td><span class="rn-badge">${n.rn || '-'}</span></td>
+          <td class="number">${formatBroj(n.kom || 0)}</td>
+          <td class="number">${n.skart || 0}</td>
+          <td class="number">${n.prestelavanje || 0}</td>
+          <td class="number">${n.rad || 0}</td>
+          <td class="number">${n.kvar || 0}</td>
+          <td class="number">${n.cekanje_tuljke || n.cekanje_tiska || 0}</td>
+          <td class="number">${n.van_stroja || 0}</td>
+          <td class="number">${n.cekanje || 0}</td>
+          <td class="number">${n.ciscenje || 0}</td>
+        </tr>`;
+      });
+
+      // Ukupno red
+      if (rd.ukupno) {
+        const u = rd.ukupno;
+        rows += `<tr class="shift-subtotal">
+          <td><strong>Ukupno</strong></td>
+          <td class="number"><strong>${formatBroj(u.kom || 0)}</strong></td>
+          <td class="number"><strong>${u.skart || 0}</strong></td>
+          <td class="number"><strong>${u.prestelavanje || 0}</strong></td>
+          <td class="number"><strong>${u.rad || 0}</strong></td>
+          <td class="number"><strong>${u.kvar || 0}</strong></td>
+          <td class="number"><strong>${u.cekanje_tuljke || u.cekanje_tiska || 0}</strong></td>
+          <td class="number"><strong>${u.van_stroja || 0}</strong></td>
+          <td class="number"><strong>${u.cekanje || 0}</strong></td>
+          <td class="number"><strong>${u.ciscenje || 0}</strong></td>
+        </tr>`;
+      }
+
+      reportContent = `
+        <div style="overflow-x: auto;">
+          <table class="data-table" style="font-size:0.9em;">
+            <thead>
+              <tr>
+                <th>RN</th>
+                <th class="number">Kom</th>
+                <th class="number">Škart</th>
+                <th class="number">Preštel.</th>
+                <th class="number">Rad</th>
+                <th class="number">Kvar</th>
+                <th class="number">Čekanje</th>
+                <th class="number">Van stroja</th>
+                <th class="number">Čekanje 2</th>
+                <th class="number">Čišćenje</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    } else {
+      reportContent = '<div style="color:#999; padding:10px;">Nema detaljnih podataka u izvještaju</div>';
+    }
+
+    sections += `
+      <div class="report-subsection ${lineClass}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:5px;">
+          <strong>${lineIcon} ${line} - Smjena ${smjena}${machineType ? ' (' + machineType + ')' : ''}</strong>
+        </div>
+        <div class="report-meta">
+          Strojar: <strong>${strojar}</strong> | Pomoćnici: <strong>${pomocnici}</strong>
+        </div>
+        ${reportContent}
+        ${napomena ? `<div class="report-napomena">📝 ${napomena}</div>` : ''}
+      </div>`;
+  });
+
+  return `
+    <div class="section-card">
+      <div class="section-header">📝 Smjenski izvještaji (ručni unosi)</div>
+      ${sections}
+    </div>`;
+}
+
+// ============================================
+// DNEVNI DETALJ - DETALJI PALETA
+// ============================================
+function pvndRenderDayPallets() {
+  if (!pvndDayPalletData || pvndDayPalletData.length === 0) return '';
+
+  // Filtriraj po liniji ako je filter aktivan
+  let pallets = pvndFilterLinija
+    ? pvndDayPalletData.filter(p => p.production_line === pvndFilterLinija)
+    : pvndDayPalletData;
+
+  if (pallets.length === 0) return '';
+
+  let rows = '';
+  pallets.forEach(p => {
+    const lineClass = p.production_line === 'NLI' ? 'row-nli' : 'row-wh';
+    const statusClass = (p.status || '').replace(/\s+/g, '-').toLowerCase();
+    rows += `<tr class="${lineClass}">
+      <td><strong>${p.pallet_number || '-'}</strong></td>
+      <td><span class="rn-badge">${p.work_order_number || '-'}</span></td>
+      <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.article_name || ''}">${p.article_name || '-'}</td>
+      <td class="number">${formatBroj(p.quantity || 0)}</td>
+      <td>${p.pallet_dimension || '-'}</td>
+      <td>${p.operator_name || '-'}</td>
+      <td><span class="status-badge ${statusClass}">${p.status || '-'}</span></td>
+    </tr>`;
+  });
+
+  return `
+    <div class="section-card">
+      <div class="section-header">📦 Detalji paleta (${pallets.length})</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Paleta #</th>
+              <th>RN</th>
+              <th>Artikl</th>
+              <th class="number">Količina</th>
+              <th>Dimenzija</th>
+              <th>Operater</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ============================================
+// ODABIR MJESECA
+// ============================================
+function pvndSelectMonth(month) {
+  pvndCurrentDay = null; // Resetiraj dnevni view
+  pvndCurrentMonth = month;
+
+  document.querySelectorAll('.month-tab').forEach(tab => {
+    tab.classList.toggle('active', parseInt(tab.dataset.month) === month);
+  });
+  
+  if (month === 0) {
+    pvndRenderYearly();
+  } else {
+    pvndRenderMonth(month);
+  }
+}
+
+// ============================================
+// RENDER MJESEČNOG PREGLEDA
+// VAŽNO: Koristi _prodDatum (proizvodni datum) umjesto datum kolone!
+// ============================================
+function pvndRenderMonth(month) {
+  pvndShiftDataCache = {};
+  
+  // Koristi FILTRIRANE podatke i _prodDatum
+  const monthGop = pvndFilteredData.filter(g => {
+    const prodDatum = g._prodDatum || g.datum;
+    return parseInt(prodDatum.split('-')[1]) === month;
+  });
+  
+  // Agregacija
+  const dailyData = {};
+  const monthUniqueRN = new Set(); // NOVO: Unikatni RN-ovi za cijeli mjesec
+  const monthUniquePalete = new Set(); // NOVO: Unikatne palete za cijeli mjesec
+  
+  monthGop.forEach(g => {
+    const prodDatum = g._prodDatum || g.datum;
+    const day = parseInt(prodDatum.split('-')[2]);
+    const rn = g.work_order_number || 'Nepoznat';
+    const line = g.linija || 'WH';
+    const smjena = g.smjena || 0;
+    const qty = g.kolicina || 0;
+    const palRef = g.referenca || null; // Broj palete
+    
+    // Dodaj u mjesečne unikatne setove
+    if (g.work_order_number) monthUniqueRN.add(g.work_order_number);
+    if (palRef) monthUniquePalete.add(palRef);
+    
+    if (!dailyData[day]) {
+      dailyData[day] = { nalozi: {}, nliTotal: 0, whTotal: 0, uniquePalete: new Set(),
+        nli_smjena1: 0, nli_smjena2: 0, nli_smjena3: 0,
+        wh_smjena1: 0, wh_smjena2: 0, wh_smjena3: 0 };
+    }
+    
+    if (!dailyData[day].nalozi[rn]) {
+      dailyData[day].nalozi[rn] = { nli: 0, wh: 0, uniquePalete: new Set(), line,
+        kupac: g.customer_name || '-', artikl: g.article_name || '-', sifra: g.article_code || '-',
+        nli_smjena1: 0, nli_smjena2: 0, nli_smjena3: 0,
+        wh_smjena1: 0, wh_smjena2: 0, wh_smjena3: 0 };
+    }
+    
+    // IZMJENA: Broji unikatne palete po referenci umjesto svakog zapisa
+    if (palRef) {
+      dailyData[day].nalozi[rn].uniquePalete.add(palRef);
+      dailyData[day].uniquePalete.add(palRef);
+    }
+    
+    if (line === 'NLI') {
+      dailyData[day].nalozi[rn].nli += qty;
+      dailyData[day].nliTotal += qty;
+      if (smjena === 1) { dailyData[day].nalozi[rn].nli_smjena1 += qty; dailyData[day].nli_smjena1 += qty; }
+      else if (smjena === 2) { dailyData[day].nalozi[rn].nli_smjena2 += qty; dailyData[day].nli_smjena2 += qty; }
+      else if (smjena === 3) { dailyData[day].nalozi[rn].nli_smjena3 += qty; dailyData[day].nli_smjena3 += qty; }
+    } else {
+      dailyData[day].nalozi[rn].wh += qty;
+      dailyData[day].whTotal += qty;
+      if (smjena === 1) { dailyData[day].nalozi[rn].wh_smjena1 += qty; dailyData[day].wh_smjena1 += qty; }
+      else if (smjena === 2) { dailyData[day].nalozi[rn].wh_smjena2 += qty; dailyData[day].wh_smjena2 += qty; }
+      else if (smjena === 3) { dailyData[day].nalozi[rn].wh_smjena3 += qty; dailyData[day].wh_smjena3 += qty; }
+    }
+  });
+
+  // Izračunaj sate rada po liniji
+  // Pristup: broji unikatne (datum-smjena) kombinacije s količinom > 0 iz sirovih podataka
+  // Svaka unikatna kombinacija = 1 smjena = 8h
+  // Ako smjena nije poznata, broji unikatni datum kao 1 smjena (8h) - fallback
+  const nliShiftSet = new Set(), whShiftSet = new Set();
+  const nliDaySet = new Set(), whDaySet = new Set();
+  let nliUniqueRN = new Set(), whUniqueRN = new Set();
+
+  monthGop.forEach(g => {
+    const qty = g.kolicina || 0;
+    if (qty <= 0) return;
+    const prodDatum = g._prodDatum || g.datum;
+    const day = prodDatum.split('-')[2];
+    const smjena = g.smjena;
+    const line = g.linija || 'WH';
+
+    if (line === 'NLI') {
+      if (smjena) nliShiftSet.add(`${day}-${smjena}`);
+      else nliDaySet.add(day);
+      if (g.work_order_number) nliUniqueRN.add(g.work_order_number);
+    } else {
+      if (smjena) whShiftSet.add(`${day}-${smjena}`);
+      else whDaySet.add(day);
+      if (g.work_order_number) whUniqueRN.add(g.work_order_number);
+    }
+  });
+
+  // Dani koji nemaju smjenu ali imaju količinu - broji kao 1 smjena (8h) po danu
+  // ALI samo ako taj dan nema nijednu poznatu smjenu (inače su već prebrojane)
+  let nliExtraDays = 0, whExtraDays = 0;
+  nliDaySet.forEach(d => { if (![...nliShiftSet].some(s => s.startsWith(d + '-'))) nliExtraDays++; });
+  whDaySet.forEach(d => { if (![...whShiftSet].some(s => s.startsWith(d + '-'))) whExtraDays++; });
+
+  const nliSatiRada = (nliShiftSet.size + nliExtraDays) * 8;
+  const whSatiRada = (whShiftSet.size + whExtraDays) * 8;
+
+  // Generiraj tablicu
+  let tableHtml = '';
+  let grandTotalNli = 0, grandTotalWh = 0;
+  // IZMJENA: grandTotalPaleta i grandTotalRn se računaju iz mjesečnih unikatnih setova
+  
+  const sortedDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
+  
+  sortedDays.forEach(day => {
+    const d = dailyData[day];
+    const dayTotal = d.nliTotal + d.whTotal;
+    const rnCount = Object.keys(d.nalozi).length;
+    const dayPaletaCount = d.uniquePalete.size; // Koristi unikatne palete za dan
+    
+    grandTotalNli += d.nliTotal;
+    grandTotalWh += d.whTotal;
+    // IZMJENA: Ne zbrajamo više RN i palete po danima - koristimo mjesečne unikatne setove
+    
+    const dayKey = `day_${month}_${day}`;
+    pvndShiftDataCache[dayKey] = {
+      nli_smjena1: d.nli_smjena1, nli_smjena2: d.nli_smjena2, nli_smjena3: d.nli_smjena3,
+      wh_smjena1: d.wh_smjena1, wh_smjena2: d.wh_smjena2, wh_smjena3: d.wh_smjena3
+    };
+    
+    tableHtml += `<tr class="day-separator has-shift-data" onclick="pvndShowDayDetail(${pvndCurrentYear}, ${month}, ${day})" title="Klikni za dnevni detalj" style="cursor:pointer;">
+      <td><strong>${day}.</strong></td>
+      <td colspan="4">${rnCount} RN, ${dayPaletaCount} paleta</td>
+      <td class="number">${formatBroj(d.nliTotal)}</td>
+      <td class="number">${formatBroj(d.whTotal)}</td>
+      <td class="number"><strong>${formatBroj(dayTotal)}</strong></td>
+      <td class="number">${dayPaletaCount}</td>
+    </tr>`;
+    
+    let rnIndex = 0;
+    // Sortiraj: W&H zapisi prvi, zatim NLI
+    const sortedNalozi = Object.entries(d.nalozi).sort(([, a], [, b]) => {
+      if (a.line === b.line) return 0;
+      return a.line === 'NLI' ? 1 : -1;
+    });
+    sortedNalozi.forEach(([rn, r]) => {
+      const total = r.nli + r.wh;
+      const lineBadge = r.line === 'NLI' ? '<span class="line-badge nli">NLI</span>' : '<span class="line-badge wh">W&H</span>';
+      const rowClass = r.line === 'NLI' ? 'row-nli' : 'row-wh';
+      const rnPaletaCount = r.uniquePalete.size; // IZMJENA: Koristi unikatne palete
+
+      const rnKey = `rn_${month}_${day}_${rnIndex++}`;
+      pvndShiftDataCache[rnKey] = {
+        nli_smjena1: r.nli_smjena1, nli_smjena2: r.nli_smjena2, nli_smjena3: r.nli_smjena3,
+        wh_smjena1: r.wh_smjena1, wh_smjena2: r.wh_smjena2, wh_smjena3: r.wh_smjena3
+      };
+
+      tableHtml += `<tr class="has-shift-data ${rowClass}" onclick="pvndShowShiftPopup('${rnKey}')">
+        <td></td>
+        <td><span class="rn-badge">${rn}</span> ${lineBadge}</td>
+        <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.kupac}">${r.kupac}</td>
+        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.artikl}">${r.artikl}</td>
+        <td style="font-size:0.85em; color:#666;">${r.sifra}</td>
+        <td class="number">${formatBroj(r.nli)}</td>
+        <td class="number">${formatBroj(r.wh)}</td>
+        <td class="number"><strong>${formatBroj(total)}</strong></td>
+        <td class="number">${rnPaletaCount}</td>
+      </tr>`;
+    });
+  });
+  
+  if (sortedDays.length === 0) {
+    tableHtml = `<tr><td colspan="9" style="text-align:center; padding:40px; color:#999;">
+      <div style="font-size:2em;">📭</div>Nema podataka za ${monthNames[month]} ${pvndCurrentYear}
+    </td></tr>`;
+  }
+  
+  const grandTotal = grandTotalNli + grandTotalWh;
+  const grandTotalRn = monthUniqueRN.size;
+  const grandTotalPaleta = monthUniquePalete.size;
+
+  // Produktivnost po liniji
+  const nliKomH = nliSatiRada > 0 ? Math.round(grandTotalNli / nliSatiRada) : 0;
+  const whKomH = whSatiRada > 0 ? Math.round(grandTotalWh / whSatiRada) : 0;
+  const nliKomNalog = nliUniqueRN.size > 0 ? Math.round(grandTotalNli / nliUniqueRN.size) : 0;
+  const whKomNalog = whUniqueRN.size > 0 ? Math.round(grandTotalWh / whUniqueRN.size) : 0;
+
+  const planNli = pvndGetPlan(month, 'NLI');
+  const planWh = pvndGetPlan(month, 'WH');
+  const planTotal = planNli + planWh;
+  
+  document.getElementById('pvndContent').innerHTML = `
+    <h2 style="margin-bottom: 20px;">📅 ${monthNames[month]} ${pvndCurrentYear}</h2>
+    
+    <div class="kpi-grid">
+      <div class="kpi-card total">
+        <div class="kpi-value">${formatBroj(grandTotal)}</div>
+        <div class="kpi-label">Ukupno proizvedeno</div>
+        ${planTotal ? `<div class="kpi-plan">Plan: ${formatBroj(planTotal)}</div>${pvndFormatPercent(grandTotal, planTotal)}` : ''}
+      </div>
+      <div class="kpi-card nli">
+        <div class="kpi-value">${formatBroj(grandTotalNli)}</div>
+        <div class="kpi-label">NLI linija</div>
+        ${planNli ? `<div class="kpi-plan">Plan: ${formatBroj(planNli)}</div>${pvndFormatPercent(grandTotalNli, planNli)}` : ''}
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          <span title="Sati rada">⏱ ${nliSatiRada}h</span> | <span title="Komada po satu">⚡ ${formatBroj(nliKomH)} kom/h</span><br>
+          <span title="Broj radnih naloga">📋 ${nliUniqueRN.size} RN</span> | <span title="Komada po nalogu">📦 ${formatBroj(nliKomNalog)} kom/RN</span>
+        </div>
+      </div>
+      <div class="kpi-card wh">
+        <div class="kpi-value">${formatBroj(grandTotalWh)}</div>
+        <div class="kpi-label">W&H linija</div>
+        ${planWh ? `<div class="kpi-plan">Plan: ${formatBroj(planWh)}</div>${pvndFormatPercent(grandTotalWh, planWh)}` : ''}
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          <span title="Sati rada">⏱ ${whSatiRada}h</span> | <span title="Komada po satu">⚡ ${formatBroj(whKomH)} kom/h</span><br>
+          <span title="Broj radnih naloga">📋 ${whUniqueRN.size} RN</span> | <span title="Komada po nalogu">📦 ${formatBroj(whKomNalog)} kom/RN</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${grandTotalRn}</div>
+        <div class="kpi-label">Radnih naloga</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${grandTotalPaleta}</div>
+        <div class="kpi-label">Paleta</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${sortedDays.length}</div>
+        <div class="kpi-label">Radnih dana</div>
+      </div>
+    </div>
+    
+    <div style="background: #e3f2fd; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; color: #1565c0;">
+      💡 <strong>Tip:</strong> Klikni na dan (sivi red) za detaljan dnevni pregled, ili na nalog za pregled po smjenama
+    </div>
+    
+    <div class="section-card">
+      <div class="section-header">📋 Proizvodnja po danima</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">Dan</th>
+              <th>RN</th>
+              <th>Kupac</th>
+              <th>Artikl</th>
+              <th>Šifra</th>
+              <th class="number">NLI</th>
+              <th class="number">W&H</th>
+              <th class="number">Ukupno</th>
+              <th class="number">Pal.</th>
+            </tr>
+          </thead>
+          <tbody>${tableHtml}</tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="5"><strong>UKUPNO PROIZVEDENO</strong></td>
+              <td class="number"><strong>${formatBroj(grandTotalNli)}</strong></td>
+              <td class="number"><strong>${formatBroj(grandTotalWh)}</strong></td>
+              <td class="number"><strong>${formatBroj(grandTotal)}</strong></td>
+              <td class="number"><strong>${grandTotalPaleta}</strong></td>
+            </tr>
+            ${planTotal ? `<tr class="plan-row">
+              <td colspan="5"><strong>📋 PLAN</strong></td>
+              <td class="number"><strong>${formatBroj(planNli)}</strong></td>
+              <td class="number"><strong>${formatBroj(planWh)}</strong></td>
+              <td class="number"><strong>${formatBroj(planTotal)}</strong></td>
+              <td class="number">-</td>
+            </tr>` : ''}
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================
+// RENDER GODIŠNJEG PREGLEDA
+// VAŽNO: Koristi _prodDatum (proizvodni datum) umjesto datum kolone!
+// ============================================
+function pvndRenderYearly() {
+  const monthly = {};
+  const yearUniqueRN = new Set();
+  const yearUniquePalete = new Set();
+  const yearNliShifts = new Set();
+  const yearWhShifts = new Set();
+  const yearNliDays = new Set(); // Fallback za dane bez smjene
+  const yearWhDays = new Set();
+  const yearNliRN = new Set();
+  const yearWhRN = new Set();
+
+  // Koristi FILTRIRANE podatke
+  pvndFilteredData.forEach(g => {
+    const prodDatum = g._prodDatum || g.datum;
+    const m = parseInt(prodDatum.split('-')[1]);
+    const day = prodDatum.split('-')[2];
+    if (!monthly[m]) monthly[m] = { nli: 0, wh: 0, uniquePalete: new Set(), nalozi: new Set(),
+      nliNalozi: new Set(), whNalozi: new Set(), nliShifts: new Set(), whShifts: new Set(),
+      nliDays: new Set(), whDays: new Set() };
+    const qty = g.kolicina || 0;
+    const smjena = g.smjena;
+    const line = g.linija || 'WH';
+
+    if (line === 'NLI') {
+      monthly[m].nli += qty;
+      if (qty > 0) {
+        if (smjena) {
+          const sk = `${day}-${smjena}`;
+          monthly[m].nliShifts.add(sk);
+          yearNliShifts.add(`${m}-${sk}`);
+        } else {
+          monthly[m].nliDays.add(day);
+          yearNliDays.add(`${m}-${day}`);
+        }
+      }
+    } else {
+      monthly[m].wh += qty;
+      if (qty > 0) {
+        if (smjena) {
+          const sk = `${day}-${smjena}`;
+          monthly[m].whShifts.add(sk);
+          yearWhShifts.add(`${m}-${sk}`);
+        } else {
+          monthly[m].whDays.add(day);
+          yearWhDays.add(`${m}-${day}`);
+        }
+      }
+    }
+
+    if (g.referenca) {
+      monthly[m].uniquePalete.add(g.referenca);
+      yearUniquePalete.add(g.referenca);
+    }
+    if (g.work_order_number) {
+      monthly[m].nalozi.add(g.work_order_number);
+      yearUniqueRN.add(g.work_order_number);
+      if (line === 'NLI') { monthly[m].nliNalozi.add(g.work_order_number); yearNliRN.add(g.work_order_number); }
+      else { monthly[m].whNalozi.add(g.work_order_number); yearWhRN.add(g.work_order_number); }
+    }
+  });
+  
+  let rows = '';
+  let totNli = 0, totWh = 0;
+  let totPlanNli = 0, totPlanWh = 0;
+  
+  for (let m = 1; m <= 12; m++) {
+    const d = monthly[m] || { nli: 0, wh: 0, uniquePalete: new Set(), nalozi: new Set(),
+      nliNalozi: new Set(), whNalozi: new Set(), nliShifts: new Set(), whShifts: new Set(),
+      nliDays: new Set(), whDays: new Set() };
+    const total = d.nli + d.wh;
+    const rnCount = d.nalozi.size;
+
+    // Sati rada po liniji - unikatne smjene + fallback dani bez smjene
+    let mNliExtra = 0, mWhExtra = 0;
+    d.nliDays.forEach(dy => { if (![...d.nliShifts].some(s => s.startsWith(dy + '-'))) mNliExtra++; });
+    d.whDays.forEach(dy => { if (![...d.whShifts].some(s => s.startsWith(dy + '-'))) mWhExtra++; });
+    const mNliH = (d.nliShifts.size + mNliExtra) * 8;
+    const mWhH = (d.whShifts.size + mWhExtra) * 8;
+    const mNliKomH = mNliH > 0 ? Math.round(d.nli / mNliH) : 0;
+    const mWhKomH = mWhH > 0 ? Math.round(d.wh / mWhH) : 0;
+
+    const planNli = pvndGetPlan(m, 'NLI');
+    const planWh = pvndGetPlan(m, 'WH');
+    const planTotal = planNli + planWh;
+
+    totNli += d.nli;
+    totWh += d.wh;
+    totPlanNli += planNli;
+    totPlanWh += planWh;
+
+    const pct = planTotal ? (total / planTotal * 100).toFixed(1) : '-';
+    const pctClass = planTotal ? pvndPercentClass(parseFloat(pct)) : '';
+
+    rows += `<tr onclick="pvndSelectMonth(${m})" style="cursor:pointer; ${total === 0 && !planTotal ? 'opacity:0.5;' : ''}">
+      <td><strong>${monthNames[m]}</strong></td>
+      <td class="number">${formatBroj(d.nli)}</td>
+      <td class="number" style="font-size:0.8em; color:#666;">${mNliH}h / ${formatBroj(mNliKomH)}</td>
+      <td class="number">${formatBroj(d.wh)}</td>
+      <td class="number" style="font-size:0.8em; color:#666;">${mWhH}h / ${formatBroj(mWhKomH)}</td>
+      <td class="number"><strong>${formatBroj(total)}</strong></td>
+      <td class="number" style="color:#7b1fa2;">${planTotal ? formatBroj(planTotal) : '-'}</td>
+      <td class="number"><span class="kpi-percent ${pctClass}" style="font-size:0.85em;">${pct}${planTotal ? '%' : ''}</span></td>
+      <td class="number">${rnCount}</td>
+    </tr>`;
+  }
+
+  const grandTotal = totNli + totWh;
+  const grandPlan = totPlanNli + totPlanWh;
+  const totRn = yearUniqueRN.size;
+
+  // Godišnje produktivnost metrike - sa fallback danima
+  let totNliExtra = 0, totWhExtra = 0;
+  yearNliDays.forEach(dk => { if (![...yearNliShifts].some(s => s.startsWith(dk.split('-')[0] + '-' + dk.split('-')[1] + '-'))) totNliExtra++; });
+  yearWhDays.forEach(dk => { if (![...yearWhShifts].some(s => s.startsWith(dk.split('-')[0] + '-' + dk.split('-')[1] + '-'))) totWhExtra++; });
+  const totNliH = (yearNliShifts.size + totNliExtra) * 8;
+  const totWhH = (yearWhShifts.size + totWhExtra) * 8;
+  const totNliKomH = totNliH > 0 ? Math.round(totNli / totNliH) : 0;
+  const totWhKomH = totWhH > 0 ? Math.round(totWh / totWhH) : 0;
+  const totNliKomRN = yearNliRN.size > 0 ? Math.round(totNli / yearNliRN.size) : 0;
+  const totWhKomRN = yearWhRN.size > 0 ? Math.round(totWh / yearWhRN.size) : 0;
+  
+  document.getElementById('pvndContent').innerHTML = `
+    <h2 style="margin-bottom: 20px;">📅 Godišnji pregled ${pvndCurrentYear}</h2>
+    
+    <div class="kpi-grid">
+      <div class="kpi-card total">
+        <div class="kpi-value">${formatBroj(grandTotal)}</div>
+        <div class="kpi-label">Ukupno proizvedeno</div>
+        ${grandPlan ? `<div class="kpi-plan">Plan: ${formatBroj(grandPlan)}</div>${pvndFormatPercent(grandTotal, grandPlan)}` : ''}
+      </div>
+      <div class="kpi-card nli">
+        <div class="kpi-value">${formatBroj(totNli)}</div>
+        <div class="kpi-label">NLI linija</div>
+        ${totPlanNli ? `<div class="kpi-plan">Plan: ${formatBroj(totPlanNli)}</div>${pvndFormatPercent(totNli, totPlanNli)}` : ''}
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          <span title="Sati rada">⏱ ${totNliH}h</span> | <span title="Komada po satu">⚡ ${formatBroj(totNliKomH)} kom/h</span><br>
+          <span title="Broj radnih naloga">📋 ${yearNliRN.size} RN</span> | <span title="Komada po nalogu">📦 ${formatBroj(totNliKomRN)} kom/RN</span>
+        </div>
+      </div>
+      <div class="kpi-card wh">
+        <div class="kpi-value">${formatBroj(totWh)}</div>
+        <div class="kpi-label">W&H linija</div>
+        ${totPlanWh ? `<div class="kpi-plan">Plan: ${formatBroj(totPlanWh)}</div>${pvndFormatPercent(totWh, totPlanWh)}` : ''}
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.3); font-size:0.82em; line-height:1.6;">
+          <span title="Sati rada">⏱ ${totWhH}h</span> | <span title="Komada po satu">⚡ ${formatBroj(totWhKomH)} kom/h</span><br>
+          <span title="Broj radnih naloga">📋 ${yearWhRN.size} RN</span> | <span title="Komada po nalogu">📦 ${formatBroj(totWhKomRN)} kom/RN</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${totRn}</div>
+        <div class="kpi-label">Radnih naloga</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">📊 Proizvodnja po mjesecima</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mjesec</th>
+              <th class="number">NLI</th>
+              <th class="number" style="font-size:0.8em;">h / kom/h</th>
+              <th class="number">W&H</th>
+              <th class="number" style="font-size:0.8em;">h / kom/h</th>
+              <th class="number">Ukupno</th>
+              <th class="number" style="color:#ce93d8;">Plan</th>
+              <th class="number">%</th>
+              <th class="number">RN</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td><strong>UKUPNO</strong></td>
+              <td class="number"><strong>${formatBroj(totNli)}</strong></td>
+              <td class="number" style="font-size:0.8em;"><strong>${totNliH}h / ${formatBroj(totNliKomH)}</strong></td>
+              <td class="number"><strong>${formatBroj(totWh)}</strong></td>
+              <td class="number" style="font-size:0.8em;"><strong>${totWhH}h / ${formatBroj(totWhKomH)}</strong></td>
+              <td class="number"><strong>${formatBroj(grandTotal)}</strong></td>
+              <td class="number" style="color:#7b1fa2;"><strong>${grandPlan ? formatBroj(grandPlan) : '-'}</strong></td>
+              <td class="number"><strong>${grandPlan ? (grandTotal / grandPlan * 100).toFixed(1) + '%' : '-'}</strong></td>
+              <td class="number"><strong>${totRn}</strong></td>
+            </tr>
+            ${grandPlan ? `<tr class="plan-row">
+              <td><strong>📋 GODIŠNJI PLAN</strong></td>
+              <td class="number"><strong>${formatBroj(totPlanNli)}</strong></td>
+              <td class="number">-</td>
+              <td class="number"><strong>${formatBroj(totPlanWh)}</strong></td>
+              <td class="number">-</td>
+              <td class="number"><strong>${formatBroj(grandPlan)}</strong></td>
+              <td class="number">-</td>
+              <td class="number">-</td>
+              <td class="number">-</td>
+            </tr>` : ''}
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================
+// RENDER PLAN TAB
+// ============================================
+function pvndRenderPlanTab() {
+  const canEdit = Auth.isAdmin();
+  
+  let rows = '';
+  let totNli = 0, totWh = 0;
+  
+  for (let m = 1; m <= 12; m++) {
+    const planNli = pvndGetPlan(m, 'NLI');
+    const planWh = pvndGetPlan(m, 'WH');
+    totNli += planNli;
+    totWh += planWh;
+    
+    rows += `<tr>
+      <td><strong>${monthNames[m]}</strong></td>
+      <td><input type="number" class="plan-input" id="planNli_${m}" value="${planNli || ''}" placeholder="0" ${!canEdit ? 'disabled' : ''} onchange="pvndRecalcPlan()"></td>
+      <td><input type="number" class="plan-input" id="planWh_${m}" value="${planWh || ''}" placeholder="0" ${!canEdit ? 'disabled' : ''} onchange="pvndRecalcPlan()"></td>
+      <td class="number" style="font-weight:600;" id="planTotal_${m}">${formatBroj(planNli + planWh)}</td>
+    </tr>`;
+  }
+  
+  document.getElementById('pvndPlanContent').innerHTML = `
+    <h2 style="margin-bottom: 20px;">📋 Plan proizvodnje ${pvndCurrentYear}</h2>
+    
+    ${!canEdit ? `<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #e65100;">
+      ⚠️ Samo administratori mogu uređivati plan proizvodnje.
+    </div>` : ''}
+    
+    <div class="kpi-grid" style="margin-bottom: 30px;">
+      <div class="kpi-card plan">
+        <div class="kpi-value" id="planGrandTotal">${formatBroj(totNli + totWh)}</div>
+        <div class="kpi-label">Ukupni godišnji plan</div>
+      </div>
+      <div class="kpi-card nli">
+        <div class="kpi-value" id="planTotalNli">${formatBroj(totNli)}</div>
+        <div class="kpi-label">Plan NLI</div>
+      </div>
+      <div class="kpi-card wh">
+        <div class="kpi-value" id="planTotalWh">${formatBroj(totWh)}</div>
+        <div class="kpi-label">Plan W&H</div>
+      </div>
+    </div>
+    
+    <div class="section-card">
+      <div class="section-header plan">📋 Mjesečni planovi po linijama</div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:150px;">Mjesec</th>
+              <th class="number" style="background:#e65100;">🟠 NLI plan</th>
+              <th class="number" style="background:#2e7d32;">🟢 W&H plan</th>
+              <th class="number">Ukupno</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td><strong>GODIŠNJI PLAN</strong></td>
+              <td class="number" style="color:#e65100;"><strong id="footerNli">${formatBroj(totNli)}</strong></td>
+              <td class="number" style="color:#2e7d32;"><strong id="footerWh">${formatBroj(totWh)}</strong></td>
+              <td class="number"><strong id="footerTotal">${formatBroj(totNli + totWh)}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    
+    ${canEdit ? `<div style="display:flex; justify-content:flex-end; margin-top:20px;">
+      <button class="btn-save-plan" onclick="pvndSavePlans()">💾 Spremi plan</button>
+    </div>` : ''}
+  `;
+}
+
+function pvndRecalcPlan() {
+  let totNli = 0, totWh = 0;
+  
+  for (let m = 1; m <= 12; m++) {
+    const nli = parseInt(document.getElementById(`planNli_${m}`)?.value) || 0;
+    const wh = parseInt(document.getElementById(`planWh_${m}`)?.value) || 0;
+    totNli += nli;
+    totWh += wh;
+    
+    const el = document.getElementById(`planTotal_${m}`);
+    if (el) el.textContent = formatBroj(nli + wh);
+  }
+  
+  document.getElementById('planGrandTotal').textContent = formatBroj(totNli + totWh);
+  document.getElementById('planTotalNli').textContent = formatBroj(totNli);
+  document.getElementById('planTotalWh').textContent = formatBroj(totWh);
+  document.getElementById('footerNli').textContent = formatBroj(totNli);
+  document.getElementById('footerWh').textContent = formatBroj(totWh);
+  document.getElementById('footerTotal').textContent = formatBroj(totNli + totWh);
+}
+
+async function pvndSavePlans() {
+  if (!Auth.isAdmin()) {
+    showMessage('Nemate dozvolu za uređivanje plana', 'error');
+    return;
+  }
+  
+  showLoading('Spremanje plana...');
+  
+  try {
+    const user = Auth.getUser();
+    const updates = [];
+    
+    for (let m = 1; m <= 12; m++) {
+      const nli = parseInt(document.getElementById(`planNli_${m}`)?.value) || 0;
+      const wh = parseInt(document.getElementById(`planWh_${m}`)?.value) || 0;
+      
+      updates.push({
+        year: pvndCurrentYear,
+        month: m,
+        line: 'NLI',
+        planned_quantity: nli,
+        updated_by: user?.name || 'Unknown'
+      });
+      
+      updates.push({
+        year: pvndCurrentYear,
+        month: m,
+        line: 'WH',
+        planned_quantity: wh,
+        updated_by: user?.name || 'Unknown'
+      });
+    }
+    
+    const { error } = await initSupabase()
+      .from('prod_production_plans')
+      .upsert(updates, { onConflict: 'year,month,line' });
+    
+    if (error) throw error;
+    
+    await pvndLoadPlans();
+    showMessage('✅ Plan proizvodnje spremljen!', 'success');
+    
+  } catch (e) {
+    console.error('Save plans error:', e);
+    showMessage('❌ Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// POMOĆNE FUNKCIJE
+// ============================================
+function pvndChangeYear() {
+  pvndCurrentYear = parseInt(document.getElementById('pvndYear').value);
+  pvndRefresh();
+}
+
+async function pvndRefresh() {
+  pvndCurrentDay = null; // Resetiraj dnevni view
+  showLoading('Učitavanje...');
+  await pvndLoadData();
+  await pvndLoadPlans();
+  
+  // Resetiraj filtere i ponovo popuni dropdown-ove
+  document.getElementById('pvndFilterLinija').value = '';
+  document.getElementById('pvndFilterKupac').value = '';
+  document.getElementById('pvndFilterArtikl').value = '';
+  pvndFilterLinija = '';
+  pvndFilterKupac = '';
+  pvndFilterArtikl = '';
+  document.getElementById('pvndFilterBadge').style.display = 'none';
+  document.getElementById('pvndFilterSummary').classList.remove('active');
+  
+  pvndPopulateFilters();
+  pvndFilteredData = pvndGopData;
+  
+  if (pvndCurrentMainTab === 'plan') {
+    pvndRenderPlanTab();
+  } else {
+    pvndSelectMonth(pvndCurrentMonth);
+  }
+  hideLoading();
+}
+
+// Inicijalizacija
+if (typeof initSupabase === 'function') {
+  initPvndView();
+}
+</script>

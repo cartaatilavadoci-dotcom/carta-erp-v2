@@ -1,0 +1,1588 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../../css/styles.css">
+<!-- ============================================ -->
+<!-- RASPORED WH - Windmöller & Hölscher linija -->
+<!-- S tabovima: Pregled (svi) / Uređivanje (admin) -->
+<!-- Verzija: 2.0 - Dodana podrška za radne subote -->
+<!-- ============================================ -->
+
+<style>
+  /* TABOVI */
+  .raspored-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 2px solid #5d4037;
+  }
+  
+  .raspored-tab {
+    padding: 12px 24px;
+    background: #efebe9;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5d4037;
+    border-radius: 8px 8px 0 0;
+    margin-right: 4px;
+    transition: all 0.2s;
+  }
+  
+  .raspored-tab:hover {
+    background: #d7ccc8;
+  }
+  
+  .raspored-tab.active {
+    background: #5d4037;
+    color: white;
+  }
+  
+  .raspored-tab.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .tab-content {
+    display: none;
+    padding: 20px 0;
+  }
+  
+  .tab-content.active {
+    display: block;
+  }
+  
+  /* ADMIN BADGE */
+  .admin-badge {
+    display: inline-block;
+    background: #ff5722;
+    color: white;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* KONTROLE */
+  .raspored-controls {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #5d4037 0%, #6d4c41 100%);
+    border-radius: 10px;
+  }
+  
+  .raspored-controls .form-group { margin-bottom: 0; }
+  
+  .raspored-controls label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    font-size: 0.85em;
+  }
+  
+  .raspored-controls input[type="date"],
+  .raspored-controls select {
+    padding: 10px 15px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.95);
+  }
+  
+  .raspored-controls .btn { padding: 10px 18px; }
+
+  .raspored-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .raspored-table th {
+    background: #5d4037;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #3e2723;
+  }
+  
+  .raspored-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    vertical-align: top;
+  }
+
+  .p1 { background: #1976d2; }
+  .p2 { background: #388e3c; }
+  .p3 { background: #f57c00; }
+  .p4 { background: #c2185b; }
+  .p5 { background: #7b1fa2; }
+  
+  .postava-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: white;
+  }
+  
+  .smjena-cell { min-width: 160px; padding: 6px !important; }
+  .smjena-cell.bg-p1 { background: #e3f2fd; border-left: 3px solid #1976d2; }
+  .smjena-cell.bg-p2 { background: #e8f5e9; border-left: 3px solid #388e3c; }
+  .smjena-cell.bg-p3 { background: #fff3e0; border-left: 3px solid #f57c00; }
+  .smjena-cell.bg-p4 { background: #fce4ec; border-left: 3px solid #c2185b; }
+  .smjena-cell.bg-p5 { background: #f3e5f5; border-left: 3px solid #7b1fa2; }
+  
+  .djelatnik-lista {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.4;
+    text-align: left;
+    margin-top: 4px;
+  }
+  
+  .djelatnik-lista .bottomer { color: #1565c0; }
+  .djelatnik-lista .tuber { color: #2e7d32; }
+  
+  .subota-row { background: #fffde7 !important; }
+  .nedjelja-row { background: #ffebee !important; }
+  .nedjelja-row td, .subota-row td { color: #999; }
+  .subota-row.radna-subota { background: #fff3e0 !important; }
+  .subota-row.radna-subota td { color: #333; }
+  .today-row { background: rgba(76, 175, 80, 0.12) !important; }
+  .slobodni-cell { background: #f5f5f5; color: #999; font-style: italic; font-size: 11px; }
+
+  .week-info {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #5d4037 0%, #6d4c41 100%);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    color: white;
+  }
+  
+  .week-info-item { display: flex; align-items: center; gap: 8px; }
+  .week-info-item .label { color: rgba(255,255,255,0.7); font-size: 0.85em; }
+  .week-info-item .value { font-weight: 600; }
+  
+  .week-badge { padding: 4px 12px; border-radius: 15px; font-weight: 700; font-size: 0.85em; }
+  .week-a { background: #c2185b; }
+  .week-b { background: #7b1fa2; }
+
+  .legenda {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .legenda-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .legenda-color { width: 16px; height: 16px; border-radius: 4px; }
+
+  .info-box {
+    background: #efebe9;
+    border-left: 4px solid #5d4037;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  /* UREĐIVANJE SEKCIJA */
+  .edit-section {
+    background: #fff8e1;
+    border: 2px solid #ffc107;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .edit-section h3 {
+    margin: 0 0 15px 0;
+    color: #f57f17;
+    font-size: 16px;
+  }
+  
+  .edit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .edit-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+  }
+  
+  .edit-field input,
+  .edit-field select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .postave-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    padding: 15px 0;
+  }
+  
+  .postava-card {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+  }
+  
+  .postava-card-header {
+    padding: 10px 15px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .postava-card-body { padding: 12px; }
+  
+  .stroj-sekcija { margin-bottom: 12px; }
+  .stroj-sekcija:last-child { margin-bottom: 0; }
+  
+  .stroj-naziv {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  
+  .clanovi-lista { display: flex; flex-wrap: wrap; gap: 5px; }
+  
+  .clan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  
+  .clan-badge .ukloni {
+    cursor: pointer;
+    color: #c00;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  
+  .clan-badge .ukloni:hover { color: #f00; }
+  
+  .dodaj-btn {
+    background: #e8f5e9;
+    border: 1px dashed #4caf50;
+    color: #2e7d32;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  
+  .dodaj-btn:hover { background: #c8e6c9; }
+
+  /* RADNE SUBOTE SEKCIJA */
+  .subote-section {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .subote-section h3 {
+    margin: 0 0 15px 0;
+    color: #e65100;
+    font-size: 16px;
+  }
+  
+  .subote-form {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+  }
+  
+  .subote-form .form-group {
+    margin-bottom: 0;
+  }
+  
+  .subote-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+  }
+  
+  .subote-form input,
+  .subote-form select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  
+  .subote-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .subote-table th {
+    background: #ff9800;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+  }
+  
+  .subote-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .subote-table tr:hover {
+    background: #fff8e1;
+  }
+  
+  .subote-table .btn-delete {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .subote-table .btn-delete:hover {
+    background: #d32f2f;
+  }
+  
+  .no-subote {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-style: italic;
+  }
+  
+  .radna-subota-badge {
+    display: inline-block;
+    background: #ff9800;
+    color: white;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 5px;
+    font-weight: 600;
+  }
+
+  @media print {
+    .raspored-controls, .legenda, .btn, .card:last-child, .week-info, .info-box, .raspored-tabs, .edit-section, .subote-section { display: none !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">Raspored Smjena - WH Linija (Windmöller)</div>
+  
+  <!-- TABOVI -->
+  <div class="raspored-tabs">
+    <button class="raspored-tab active" onclick="switchTab('pregled')" id="tabPregled">
+      📋 Pregled
+    </button>
+    <button class="raspored-tab" onclick="switchTab('uredjivanje')" id="tabUredjivanje">
+      ⚙️ Uređivanje <span class="admin-badge">ADMIN</span>
+    </button>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- TAB: PREGLED -->
+  <!-- ============================================ -->
+  <div id="contentPregled" class="tab-content active">
+    
+    <!-- INFO -->
+    <div class="info-box">
+      <strong>WH Linija:</strong> Postava 4 i Postava 5 rade ponedjeljak-petak u 2 smjene.
+      Tjedno se izmjenjuju. Subote su slobodne osim ako su definirane kao radne.
+    </div>
+    
+    <!-- WEEK INFO -->
+    <div class="week-info">
+      <div class="week-info-item">
+        <span class="label">Danas:</span>
+        <span class="value" id="todayInfo">-</span>
+      </div>
+      <div class="week-info-item">
+        <span class="label">Tjedan:</span>
+        <span class="week-badge" id="currentWeek">-</span>
+      </div>
+      <div class="week-info-item">
+        <span class="label">Smjena:</span>
+        <span class="value" id="currentShift">-</span>
+      </div>
+    </div>
+    
+    <!-- KONTROLE - PREGLED -->
+    <div class="raspored-controls">
+      <div class="form-group">
+        <label>Od datuma:</label>
+        <input type="date" id="rasporedOdDatuma">
+      </div>
+      <div class="form-group">
+        <label>Do datuma:</label>
+        <input type="date" id="rasporedDoDatuma">
+      </div>
+      <button class="btn btn-primary" onclick="generirajRaspored()">Generiraj</button>
+      <button class="btn btn-secondary" onclick="goToToday()">Danas</button>
+      <button class="btn btn-secondary" onclick="ispisiRaspored()">Ispis</button>
+    </div>
+    
+    <!-- LEGENDA -->
+    <div class="legenda">
+      <div class="legenda-item"><div class="legenda-color p1"></div> Postava 1</div>
+      <div class="legenda-item"><div class="legenda-color p2"></div> Postava 2</div>
+      <div class="legenda-item"><div class="legenda-color p3"></div> Postava 3</div>
+      <div class="legenda-item"><div class="legenda-color p4"></div> Postava 4</div>
+      <div class="legenda-item"><div class="legenda-color p5"></div> Postava 5</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:#fff3e0; border:1px solid #ff9800;"></div> Radna subota</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:#fffde7; border:1px solid #ddd;"></div> Subota (slob.)</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:#ffebee; border:1px solid #ddd;"></div> Nedjelja (slob.)</div>
+    </div>
+    
+    <!-- TABLICA -->
+    <div class="table-container">
+      <table class="raspored-table" id="rasporedTable">
+        <thead>
+          <tr>
+            <th style="width:100px;">Datum</th>
+            <th style="width:60px;">Dan</th>
+            <th>1. smjena (6-14)</th>
+            <th>2. smjena (14-22)</th>
+          </tr>
+        </thead>
+        <tbody id="rasporedTableBody">
+          <tr><td colspan="4" style="text-align:center; padding:30px; color:#999;">Odaberite datume i kliknite "Generiraj"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- TAB: UREĐIVANJE (ADMIN ONLY) -->
+  <!-- ============================================ -->
+  <div id="contentUredjivanje" class="tab-content">
+    
+    <!-- POSTAVKE ROTACIJE -->
+    <div class="edit-section">
+      <h3>⚙️ Postavke rotacije</h3>
+      <div class="edit-grid">
+        <div class="edit-field">
+          <label>Referentni datum (ponedjeljak):</label>
+          <input type="date" id="editStartDate">
+        </div>
+        <div class="edit-field">
+          <label>1. smjena na taj datum:</label>
+          <select id="editStartPostava">
+            <option value="4">Postava 4</option>
+            <option value="5">Postava 5</option>
+          </select>
+        </div>
+        <div class="edit-field" style="display:flex; align-items:flex-end;">
+          <button class="btn btn-success" onclick="spremiPostavke()" style="background:#4CAF50;">
+            💾 Spremi postavke
+          </button>
+        </div>
+      </div>
+      <p style="margin-top:10px; font-size:12px; color:#666;">
+        <strong>Napomena:</strong> Referentni datum služi kao početak rotacije. 
+        Npr. ako postavite 06.01.2025. s Postavom 4, tada taj ponedjeljak Postava 4 radi 1. smjenu.
+      </p>
+    </div>
+    
+    <!-- RADNE SUBOTE -->
+    <div class="subote-section">
+      <h3>📅 Radne subote</h3>
+      
+      <div class="subote-form">
+        <div class="form-group">
+          <label>Datum subote:</label>
+          <input type="date" id="subotaDatum">
+        </div>
+        <div class="form-group">
+          <label>1. smjena (6-14):</label>
+          <select id="subotaSmjena1">
+            <option value="">-- Ne radi --</option>
+            <option value="1">Postava 1</option>
+            <option value="2">Postava 2</option>
+            <option value="3">Postava 3</option>
+            <option value="4">Postava 4</option>
+            <option value="5">Postava 5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>2. smjena (14-22):</label>
+          <select id="subotaSmjena2">
+            <option value="">-- Ne radi --</option>
+            <option value="1">Postava 1</option>
+            <option value="2">Postava 2</option>
+            <option value="3">Postava 3</option>
+            <option value="4">Postava 4</option>
+            <option value="5">Postava 5</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="dodajRadnuSubotu()">+ Dodaj subotu</button>
+      </div>
+      
+      <table class="subote-table">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>1. smjena (6-14)</th>
+            <th>2. smjena (14-22)</th>
+            <th style="width:80px;">Akcija</th>
+          </tr>
+        </thead>
+        <tbody id="suboteTableBody">
+          <tr><td colspan="4" class="no-subote">Učitavam...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- UPRAVLJANJE ČLANOVIMA POSTAVA -->
+    <h3 style="margin:20px 0 15px;">👥 Članovi postava</h3>
+    
+    <div class="postave-grid" id="postaveContainer">
+      <div style="text-align:center; padding:30px; color:#999;">Učitavam postave...</div>
+    </div>
+    
+    <!-- SPREMI U BAZU -->
+    <div style="margin-top:20px; padding:15px; background:#e8f5e9; border-radius:8px;">
+      <button class="btn btn-success" onclick="spremiRaspored()" style="background:#4CAF50;">
+        📅 Spremi raspored u bazu (za odabrani period)
+      </button>
+      <span style="margin-left:15px; color:#666; font-size:12px;">
+        Spremanje generira zapise u prod_schedules tablicu (uključuje radne subote)
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Dodaj člana -->
+<div id="dodajClanaModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>Dodaj člana</h3>
+      <span class="close-btn" onclick="closeModal('dodajClanaModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p id="dodajClanaInfo" style="color:#666; margin-bottom:15px;">Tim</p>
+      <input type="hidden" id="dodajClanaTeamId">
+      <div class="form-group">
+        <label>Ime djelatnika:</label>
+        <input type="text" id="dodajClanaIme" placeholder="IME PREZIME" style="text-transform:uppercase;">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('dodajClanaModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiNovogClana()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var DANI = ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'];
+
+// Postavke iz baze (učitavaju se async)
+var WH_CONFIG = {
+  startDate: '2025-01-06',  // Default
+  startPostava: 4           // Default
+};
+
+// Postave - učitavaju se iz baze
+window.POSTAVE = {
+  1: { naziv: 'Postava 1', bottomer: [], tuber: [] },
+  2: { naziv: 'Postava 2', bottomer: [], tuber: [] },
+  3: { naziv: 'Postava 3', bottomer: [], tuber: [] },
+  4: { naziv: 'Postava 4', bottomer: [], tuber: [] },
+  5: { naziv: 'Postava 5', bottomer: [], tuber: [] }
+};
+
+// Radne subote - učitavaju se iz baze
+window.RADNE_SUBOTE = {};  // Format: { '2025-01-25': { smjena1: 4, smjena2: null }, ... }
+
+window.podaciUcitani = false;
+
+// ============================================
+// PROVJERA ADMIN PRAVA
+// ============================================
+function isAdmin() {
+  var ulogeZaUredjivanje = ['superadmin', 'admin', 'koordinator-proizvodnje'];
+  
+  try {
+    var sessionStr = localStorage.getItem('carta_erp_session');
+    if (!sessionStr) return false;
+    
+    var session = JSON.parse(sessionStr);
+    var userRole = session.role || '';
+    return ulogeZaUredjivanje.includes(userRole);
+  } catch (e) {
+    console.error('[WH] Greška čitanja sesije:', e);
+    return false;
+  }
+}
+
+// ============================================
+// TABOVI
+// ============================================
+function switchTab(tab) {
+  if (tab === 'uredjivanje' && !isAdmin()) {
+    showMessage('Samo administratori mogu uređivati postavke', 'warning');
+    return;
+  }
+  
+  document.querySelectorAll('.raspored-tab').forEach(function(t) {
+    t.classList.remove('active');
+  });
+  document.querySelectorAll('.tab-content').forEach(function(c) {
+    c.classList.remove('active');
+  });
+  
+  if (tab === 'pregled') {
+    document.getElementById('tabPregled').classList.add('active');
+    document.getElementById('contentPregled').classList.add('active');
+  } else {
+    document.getElementById('tabUredjivanje').classList.add('active');
+    document.getElementById('contentUredjivanje').classList.add('active');
+    ucitajPostave();
+    ucitajRadneSubote();
+  }
+}
+
+// ============================================
+// UČITAJ POSTAVKE IZ BAZE
+// ============================================
+async function ucitajPostavke() {
+  try {
+    var { data, error } = await initSupabase()
+      .from('settings')
+      .select('key, text_value')
+      .in('key', ['raspored_wh_start_date', 'raspored_wh_start_postava']);
+    
+    if (error) {
+      console.error('[WH] Greška učitavanja postavki:', error);
+      return;
+    }
+    
+    if (data) {
+      data.forEach(function(row) {
+        if (row.key === 'raspored_wh_start_date' && row.text_value) {
+          WH_CONFIG.startDate = row.text_value;
+        }
+        if (row.key === 'raspored_wh_start_postava' && row.text_value) {
+          WH_CONFIG.startPostava = parseInt(row.text_value) || 4;
+        }
+      });
+    }
+    
+    console.log('[WH] Postavke učitane:', WH_CONFIG);
+    
+    document.getElementById('editStartDate').value = WH_CONFIG.startDate;
+    document.getElementById('editStartPostava').value = WH_CONFIG.startPostava;
+    
+  } catch(e) {
+    console.error('[WH] Iznimka:', e);
+  }
+}
+
+// ============================================
+// SPREMI POSTAVKE U BAZU
+// ============================================
+async function spremiPostavke() {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za ovu akciju', 'error');
+    return;
+  }
+  
+  var startDate = document.getElementById('editStartDate').value;
+  var startPostava = document.getElementById('editStartPostava').value;
+  
+  if (!startDate) {
+    showMessage('Odaberite referentni datum', 'warning');
+    return;
+  }
+  
+  var d = new Date(startDate);
+  if (d.getDay() !== 1) {
+    showMessage('Referentni datum mora biti ponedjeljak!', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    await initSupabase()
+      .from('settings')
+      .upsert({ 
+        key: 'raspored_wh_start_date', 
+        value: 0,
+        text_value: startDate,
+        description: 'WH: Referentni datum (ponedjeljak)',
+        category: 'RASPORED'
+      }, { onConflict: 'key' });
+    
+    await initSupabase()
+      .from('settings')
+      .upsert({ 
+        key: 'raspored_wh_start_postava', 
+        value: parseInt(startPostava),
+        text_value: startPostava,
+        description: 'WH: Početna postava na referentni datum (4 ili 5)',
+        category: 'RASPORED'
+      }, { onConflict: 'key' });
+    
+    WH_CONFIG.startDate = startDate;
+    WH_CONFIG.startPostava = parseInt(startPostava);
+    
+    hideLoading();
+    showMessage('Postavke spremljene!', 'success');
+    
+    if (document.getElementById('rasporedOdDatuma').value) {
+      generirajRaspored();
+    }
+    
+  } catch(e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// RADNE SUBOTE - UČITAVANJE
+// ============================================
+async function ucitajRadneSubote() {
+  try {
+    var { data, error } = await initSupabase()
+      .from('settings')
+      .select('key, text_value')
+      .eq('key', 'raspored_wh_radne_subote')
+      .maybeSingle();
+    
+    if (error) {
+      console.error('[WH] Greška učitavanja radnih subota:', error);
+      return;
+    }
+    
+    if (data && data.text_value) {
+      try {
+        window.RADNE_SUBOTE = JSON.parse(data.text_value);
+      } catch(e) {
+        window.RADNE_SUBOTE = {};
+      }
+    } else {
+      window.RADNE_SUBOTE = {};
+    }
+    
+    console.log('[WH] Radne subote učitane:', window.RADNE_SUBOTE);
+    renderRadneSubote();
+    
+  } catch(e) {
+    console.error('[WH] Iznimka radne subote:', e);
+  }
+}
+
+// ============================================
+// RADNE SUBOTE - SPREMANJE U BAZU
+// ============================================
+async function spremiRadneSubote() {
+  try {
+    await initSupabase()
+      .from('settings')
+      .upsert({ 
+        key: 'raspored_wh_radne_subote', 
+        value: 0,
+        text_value: JSON.stringify(window.RADNE_SUBOTE),
+        description: 'WH: Radne subote (JSON)',
+        category: 'RASPORED'
+      }, { onConflict: 'key' });
+    
+    console.log('[WH] Radne subote spremljene');
+    return true;
+  } catch(e) {
+    console.error('[WH] Greška spremanja radnih subota:', e);
+    return false;
+  }
+}
+
+// ============================================
+// RADNE SUBOTE - DODAVANJE
+// ============================================
+async function dodajRadnuSubotu() {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za ovu akciju', 'error');
+    return;
+  }
+  
+  var datum = document.getElementById('subotaDatum').value;
+  var smjena1 = document.getElementById('subotaSmjena1').value;
+  var smjena2 = document.getElementById('subotaSmjena2').value;
+  
+  if (!datum) {
+    showMessage('Odaberite datum subote', 'warning');
+    return;
+  }
+  
+  // Provjeri da je subota
+  var d = new Date(datum);
+  if (d.getDay() !== 6) {
+    showMessage('Odabrani datum nije subota!', 'warning');
+    return;
+  }
+  
+  // Provjeri da je barem jedna smjena odabrana
+  if (!smjena1 && !smjena2) {
+    showMessage('Odaberite barem jednu smjenu', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  // Dodaj u objekt
+  window.RADNE_SUBOTE[datum] = {
+    smjena1: smjena1 ? parseInt(smjena1) : null,
+    smjena2: smjena2 ? parseInt(smjena2) : null
+  };
+  
+  // Spremi u bazu
+  var success = await spremiRadneSubote();
+  
+  hideLoading();
+  
+  if (success) {
+    showMessage('Radna subota dodana: ' + formatDate(d), 'success');
+    
+    // Reset forme
+    document.getElementById('subotaDatum').value = '';
+    document.getElementById('subotaSmjena1').value = '';
+    document.getElementById('subotaSmjena2').value = '';
+    
+    renderRadneSubote();
+    
+    // Regeneriraj raspored ako je prikazan
+    if (document.getElementById('rasporedOdDatuma').value) {
+      generirajRaspored();
+    }
+  } else {
+    showMessage('Greška pri spremanju', 'error');
+  }
+}
+
+// ============================================
+// RADNE SUBOTE - BRISANJE
+// ============================================
+async function obrisiRadnuSubotu(datum) {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za ovu akciju', 'error');
+    return;
+  }
+  
+  if (!confirm('Obrisati radnu subotu ' + formatDate(new Date(datum)) + '?')) {
+    return;
+  }
+  
+  showLoading();
+  
+  delete window.RADNE_SUBOTE[datum];
+  
+  var success = await spremiRadneSubote();
+  
+  hideLoading();
+  
+  if (success) {
+    showMessage('Radna subota obrisana', 'success');
+    renderRadneSubote();
+    
+    if (document.getElementById('rasporedOdDatuma').value) {
+      generirajRaspored();
+    }
+  } else {
+    showMessage('Greška pri brisanju', 'error');
+  }
+}
+
+// ============================================
+// RADNE SUBOTE - RENDERIRANJE TABLICE
+// ============================================
+function renderRadneSubote() {
+  var tbody = document.getElementById('suboteTableBody');
+  var subote = Object.keys(window.RADNE_SUBOTE).sort();
+  
+  if (subote.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="no-subote">Nema definiranih radnih subota</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  subote.forEach(function(datum) {
+    var s = window.RADNE_SUBOTE[datum];
+    var d = new Date(datum);
+    
+    html += '<tr>';
+    html += '<td><strong>' + formatDate(d) + '</strong></td>';
+    html += '<td>' + (s.smjena1 ? '<span class="postava-badge p' + s.smjena1 + '">Postava ' + s.smjena1 + '</span>' : '<span style="color:#999;">-</span>') + '</td>';
+    html += '<td>' + (s.smjena2 ? '<span class="postava-badge p' + s.smjena2 + '">Postava ' + s.smjena2 + '</span>' : '<span style="color:#999;">-</span>') + '</td>';
+    html += '<td><button class="btn-delete" onclick="obrisiRadnuSubotu(\'' + datum + '\')">Obriši</button></td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// ============================================
+// IZRAČUN TJEDNA
+// ============================================
+function izracunajTjedanIndex(datum) {
+  var start = new Date(WH_CONFIG.startDate);
+  var diff = datum - start;
+  var tjedana = Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+  return tjedana;
+}
+
+function getWeekLetter(idx) {
+  return idx % 2 === 0 ? 'A' : 'B';
+}
+
+// ============================================
+// UČITAJ POSTAVE IZ BAZE
+// ============================================
+async function ucitajPostave() {
+  if (window.podaciUcitani) {
+    renderPostaveCards();
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    // Dohvati timove za sve postave (1-5) - potrebno za radne subote
+    var { data: teams, error: teamsError } = await initSupabase()
+      .from('prod_schedule_teams')
+      .select('*')
+      .in('postava_broj', [1, 2, 3, 4, 5])
+      .order('postava_broj')
+      .order('stroj_tip');
+    
+    if (teamsError) throw teamsError;
+    
+    console.log('[WH] Timovi iz baze:', teams);
+    
+    window.POSTAVE = {
+      1: { naziv: 'Postava 1', bottomer: [], tuber: [], teams: [] },
+      2: { naziv: 'Postava 2', bottomer: [], tuber: [], teams: [] },
+      3: { naziv: 'Postava 3', bottomer: [], tuber: [], teams: [] },
+      4: { naziv: 'Postava 4', bottomer: [], tuber: [], teams: [] },
+      5: { naziv: 'Postava 5', bottomer: [], tuber: [], teams: [] }
+    };
+    
+    if (!teams || teams.length === 0) {
+      console.warn('[WH] Nema timova u bazi!');
+      window.podaciUcitani = true;
+      hideLoading();
+      renderPostaveCards();
+      return;
+    }
+    
+    var teamIds = teams.map(function(t) { return t.id; });
+    
+    var { data: members, error: membersError } = await initSupabase()
+      .from('prod_schedule_members')
+      .select('*')
+      .in('team_id', teamIds)
+      .eq('aktivan', true);
+    
+    if (membersError) throw membersError;
+    
+    console.log('[WH] Članovi iz baze:', members);
+    
+    teams.forEach(function(team) {
+      var teamMembers = (members || []).filter(function(m) { return m.team_id === team.id; });
+      var imena = teamMembers.map(function(m) { return m.djelatnik_ime; });
+      
+      var postava = window.POSTAVE[team.postava_broj];
+      if (!postava) return;
+      
+      postava.teams.push({
+        id: team.id,
+        stroj: team.stroj_tip,
+        clanovi: imena
+      });
+      
+      var strojUpper = (team.stroj_tip || '').toUpperCase();
+      if (strojUpper === 'BOTTOMER') {
+        postava.bottomer = postava.bottomer.concat(imena);
+      } else if (strojUpper === 'TUBER') {
+        postava.tuber = postava.tuber.concat(imena);
+      }
+    });
+    
+    console.log('[WH] POSTAVE nakon grupiranja:', JSON.stringify(window.POSTAVE));
+    
+    window.podaciUcitani = true;
+    hideLoading();
+    
+    renderPostaveCards();
+    
+  } catch(e) {
+    hideLoading();
+    showMessage('Greška učitavanja: ' + e.message, 'error');
+    console.error('[WH] Error:', e);
+  }
+}
+
+function renderPostaveCards() {
+  var container = document.getElementById('postaveContainer');
+  var html = '';
+  
+  [4, 5].forEach(function(pNum) {
+    var p = window.POSTAVE[pNum];
+    var colorClass = pNum === 4 ? 'p4' : 'p5';
+    
+    html += '<div class="postava-card">';
+    html += '<div class="postava-card-header ' + colorClass + '">';
+    html += '<span>' + p.naziv + '</span>';
+    html += '</div>';
+    html += '<div class="postava-card-body">';
+    
+    if (p.teams && p.teams.length > 0) {
+      p.teams.forEach(function(team) {
+        html += '<div class="stroj-sekcija">';
+        html += '<div class="stroj-naziv">' + team.stroj + '</div>';
+        html += '<div class="clanovi-lista">';
+        
+        team.clanovi.forEach(function(ime) {
+          html += '<span class="clan-badge">' + ime;
+          html += ' <span class="ukloni" data-teamid="' + team.id + '" data-ime="' + ime + '">×</span>';
+          html += '</span>';
+        });
+        
+        html += '<button class="dodaj-btn" data-teamid="' + team.id + '" data-info="' + p.naziv + ' - ' + team.stroj + '">+ Dodaj</button>';
+        html += '</div></div>';
+      });
+    } else {
+      html += '<p style="color:#999; font-style:italic;">Nema definiranih timova</p>';
+    }
+    
+    html += '</div></div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+// ============================================
+// GENERIRAJ RASPORED
+// ============================================
+function generirajRaspored() {
+  var odDatum = new Date(document.getElementById('rasporedOdDatuma').value);
+  var doDatum = new Date(document.getElementById('rasporedDoDatuma').value);
+  
+  if (isNaN(odDatum.getTime()) || isNaN(doDatum.getTime())) {
+    showMessage('Odaberite oba datuma', 'warning');
+    return;
+  }
+  
+  var tbody = document.getElementById('rasporedTableBody');
+  var html = '';
+  var trenutni = new Date(odDatum);
+  var danas = new Date();
+  danas.setHours(0,0,0,0);
+  
+  while (trenutni <= doDatum) {
+    var dan = trenutni.getDay();
+    var tjedanIdx = izracunajTjedanIndex(trenutni);
+    var datumStr = formatDate(trenutni);
+    var datumKey = formatDateInput(trenutni);
+    var danStr = DANI[dan];
+    
+    var rowClass = '';
+    var isRadnaSubota = dan === 6 && window.RADNE_SUBOTE[datumKey];
+    
+    if (dan === 0) rowClass = 'nedjelja-row';
+    else if (dan === 6) {
+      rowClass = isRadnaSubota ? 'subota-row radna-subota' : 'subota-row';
+    }
+    
+    var checkDanas = new Date(trenutni);
+    checkDanas.setHours(0,0,0,0);
+    if (checkDanas.getTime() === danas.getTime()) rowClass += ' today-row';
+    
+    html += '<tr class="' + rowClass + '">';
+    html += '<td><strong>' + datumStr + '</strong>';
+    if (isRadnaSubota) {
+      html += '<span class="radna-subota-badge">RADNA</span>';
+    }
+    html += '</td>';
+    html += '<td>' + danStr + '</td>';
+    
+    if (dan === 0) {
+      // Nedjelja - uvijek slobodno
+      html += '<td class="slobodni-cell" colspan="2">Slobodno</td>';
+    } else if (dan === 6) {
+      // Subota - provjeri je li radna
+      if (isRadnaSubota) {
+        var subota = window.RADNE_SUBOTE[datumKey];
+        
+        // 1. smjena
+        if (subota.smjena1) {
+          html += renderSmjenaCell(subota.smjena1);
+        } else {
+          html += '<td class="slobodni-cell">-</td>';
+        }
+        
+        // 2. smjena
+        if (subota.smjena2) {
+          html += renderSmjenaCell(subota.smjena2);
+        } else {
+          html += '<td class="slobodni-cell">-</td>';
+        }
+      } else {
+        html += '<td class="slobodni-cell" colspan="2">Slobodno</td>';
+      }
+    } else {
+      // Radni dan PON-PET - 2 smjene
+      var smjena1Postava, smjena2Postava;
+      
+      if (tjedanIdx % 2 === 0) {
+        smjena1Postava = WH_CONFIG.startPostava;
+        smjena2Postava = WH_CONFIG.startPostava === 4 ? 5 : 4;
+      } else {
+        smjena1Postava = WH_CONFIG.startPostava === 4 ? 5 : 4;
+        smjena2Postava = WH_CONFIG.startPostava;
+      }
+      
+      html += renderSmjenaCell(smjena1Postava);
+      html += renderSmjenaCell(smjena2Postava);
+    }
+    
+    html += '</tr>';
+    trenutni.setDate(trenutni.getDate() + 1);
+  }
+  
+  tbody.innerHTML = html;
+  updateWeekInfo();
+}
+
+function renderSmjenaCell(postavaNum) {
+  var p = window.POSTAVE[postavaNum];
+  if (!p) return '<td class="smjena-cell">-</td>';
+  
+  // Dinamičke CSS klase za bilo koju postavu (1-5)
+  var bgClass = 'bg-p' + postavaNum;
+  var badgeClass = 'p' + postavaNum;
+  
+  var html = '<td class="smjena-cell ' + bgClass + '">';
+  html += '<span class="postava-badge ' + badgeClass + '">' + p.naziv + '</span>';
+  html += '<div class="djelatnik-lista">';
+  
+  if (p.bottomer && p.bottomer.length > 0) {
+    html += '<div class="bottomer"><strong>B:</strong> ' + p.bottomer.map(skratiIme).join(', ') + '</div>';
+  }
+  
+  if (p.tuber && p.tuber.length > 0) {
+    html += '<div class="tuber"><strong>T:</strong> ' + p.tuber.map(skratiIme).join(', ') + '</div>';
+  }
+  
+  html += '</div></td>';
+  return html;
+}
+
+// ============================================
+// EVENT DELEGATION za dodavanje/brisanje članova
+// ============================================
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('ukloni')) {
+    var teamId = e.target.getAttribute('data-teamid');
+    var ime = e.target.getAttribute('data-ime');
+    if (teamId && ime) ukloniClana(teamId, ime);
+  }
+  
+  if (e.target.classList.contains('dodaj-btn')) {
+    var teamId = e.target.getAttribute('data-teamid');
+    var info = e.target.getAttribute('data-info');
+    if (teamId) otvoriDodajModal(teamId, info);
+  }
+});
+
+function otvoriDodajModal(teamId, info) {
+  document.getElementById('dodajClanaTeamId').value = teamId;
+  document.getElementById('dodajClanaInfo').textContent = info || 'Tim';
+  document.getElementById('dodajClanaIme').value = '';
+  openModal('dodajClanaModal');
+}
+
+function spremiNovogClana() {
+  var teamId = document.getElementById('dodajClanaTeamId').value;
+  var ime = document.getElementById('dodajClanaIme').value.trim().toUpperCase();
+  
+  if (!ime) {
+    showMessage('Unesite ime djelatnika', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  initSupabase()
+    .from('prod_schedule_members')
+    .insert({ team_id: parseInt(teamId), djelatnik_ime: ime, aktivan: true })
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greška: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Član dodan', 'success');
+      closeModal('dodajClanaModal');
+      window.podaciUcitani = false;
+      ucitajPostave();
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greška: ' + e.message, 'error');
+    });
+}
+
+function ukloniClana(teamId, ime) {
+  if (!confirm('Ukloniti ' + ime + ' iz postave?')) return;
+  
+  showLoading();
+  
+  initSupabase()
+    .from('prod_schedule_members')
+    .delete()
+    .eq('team_id', parseInt(teamId))
+    .eq('djelatnik_ime', ime)
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greška: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Član uklonjen', 'success');
+      window.podaciUcitani = false;
+      ucitajPostave();
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greška: ' + e.message, 'error');
+    });
+}
+
+// ============================================
+// SPREMI RASPORED U BAZU
+// ============================================
+function spremiRaspored() {
+  if (!window.podaciUcitani) {
+    showMessage('Postave nisu učitane', 'warning');
+    return;
+  }
+  
+  var odDatum = new Date(document.getElementById('rasporedOdDatuma').value);
+  var doDatum = new Date(document.getElementById('rasporedDoDatuma').value);
+  
+  if (isNaN(odDatum.getTime()) || isNaN(doDatum.getTime())) {
+    showMessage('Unesite oba datuma', 'warning');
+    return;
+  }
+  
+  if (!confirm('Spremiti raspored WH za period ' + formatDate(odDatum) + ' - ' + formatDate(doDatum) + '?')) return;
+  
+  showLoading();
+  
+  var zapisi = [];
+  var trenutni = new Date(odDatum);
+  
+  while (trenutni <= doDatum) {
+    var dan = trenutni.getDay();
+    var tjedanIdx = izracunajTjedanIndex(trenutni);
+    var datumStr = formatDateInput(trenutni);
+    
+    // Nedjelja - preskoči
+    if (dan === 0) {
+      trenutni.setDate(trenutni.getDate() + 1);
+      continue;
+    }
+    
+    // Subota - provjeri je li radna
+    if (dan === 6) {
+      var radnaSubota = window.RADNE_SUBOTE[datumStr];
+      if (radnaSubota) {
+        // Radna subota - dodaj smjene koje su definirane
+        if (radnaSubota.smjena1) {
+          var postava1 = window.POSTAVE[radnaSubota.smjena1];
+          if (postava1) {
+            zapisi.push({
+              datum: datumStr,
+              smjena: 1,
+              postava_broj: radnaSubota.smjena1,
+              linija: 'WH',
+              djelatnici: JSON.stringify(postava1.bottomer.concat(postava1.tuber)),
+              notes: postava1.naziv + ' (Radna subota)'
+            });
+          }
+        }
+        
+        if (radnaSubota.smjena2) {
+          var postava2 = window.POSTAVE[radnaSubota.smjena2];
+          if (postava2) {
+            zapisi.push({
+              datum: datumStr,
+              smjena: 2,
+              postava_broj: radnaSubota.smjena2,
+              linija: 'WH',
+              djelatnici: JSON.stringify(postava2.bottomer.concat(postava2.tuber)),
+              notes: postava2.naziv + ' (Radna subota)'
+            });
+          }
+        }
+      }
+      trenutni.setDate(trenutni.getDate() + 1);
+      continue;
+    }
+    
+    // PON-PET - 2 smjene po rotaciji
+    var smjena1Postava, smjena2Postava;
+    
+    if (tjedanIdx % 2 === 0) {
+      smjena1Postava = WH_CONFIG.startPostava;
+      smjena2Postava = WH_CONFIG.startPostava === 4 ? 5 : 4;
+    } else {
+      smjena1Postava = WH_CONFIG.startPostava === 4 ? 5 : 4;
+      smjena2Postava = WH_CONFIG.startPostava;
+    }
+    
+    // Smjena 1
+    var postava1 = window.POSTAVE[smjena1Postava];
+    if (postava1) {
+      zapisi.push({
+        datum: datumStr,
+        smjena: 1,
+        postava_broj: smjena1Postava,
+        linija: 'WH',
+        djelatnici: JSON.stringify(postava1.bottomer.concat(postava1.tuber)),
+        notes: postava1.naziv
+      });
+    }
+    
+    // Smjena 2
+    var postava2 = window.POSTAVE[smjena2Postava];
+    if (postava2) {
+      zapisi.push({
+        datum: datumStr,
+        smjena: 2,
+        postava_broj: smjena2Postava,
+        linija: 'WH',
+        djelatnici: JSON.stringify(postava2.bottomer.concat(postava2.tuber)),
+        notes: postava2.naziv
+      });
+    }
+    
+    trenutni.setDate(trenutni.getDate() + 1);
+  }
+  
+  if (zapisi.length === 0) {
+    hideLoading();
+    showMessage('Nema zapisa za spremanje', 'warning');
+    return;
+  }
+  
+  // Briši stare zapise za WH
+  initSupabase()
+    .from('prod_schedules')
+    .delete()
+    .eq('linija', 'WH')
+    .gte('datum', formatDateInput(odDatum))
+    .lte('datum', formatDateInput(doDatum))
+    .then(function() {
+      return initSupabase()
+        .from('prod_schedules')
+        .insert(zapisi);
+    })
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greška: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Raspored WH spremljen - ' + zapisi.length + ' zapisa', 'success');
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greška: ' + e.message, 'error');
+    });
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function skratiIme(puno) {
+  var parts = puno.split(' ');
+  if (parts.length >= 2) {
+    return parts[0].charAt(0) + '. ' + parts.slice(1).join(' ');
+  }
+  return puno;
+}
+
+function formatDate(d) {
+  return d.getDate().toString().padStart(2,'0') + '.' + 
+         (d.getMonth()+1).toString().padStart(2,'0') + '.' + 
+         d.getFullYear() + '.';
+}
+
+function formatDateInput(d) {
+  return d.getFullYear() + '-' + 
+         (d.getMonth()+1).toString().padStart(2,'0') + '-' + 
+         d.getDate().toString().padStart(2,'0');
+}
+
+function updateWeekInfo() {
+  var danas = new Date();
+  var idx = izracunajTjedanIndex(danas);
+  var letter = getWeekLetter(idx);
+  
+  var badge = document.getElementById('currentWeek');
+  badge.textContent = 'Tjedan ' + letter;
+  badge.className = 'week-badge week-' + letter.toLowerCase();
+  
+  document.getElementById('todayInfo').textContent = formatDate(danas) + ' (' + DANI[danas.getDay()] + ')';
+  
+  var hour = danas.getHours();
+  var shift = hour >= 6 && hour < 14 ? '1. (6-14)' : '2. (14-22)';
+  document.getElementById('currentShift').textContent = shift;
+}
+
+function goToToday() {
+  var danas = new Date();
+  var pon = new Date(danas);
+  pon.setDate(danas.getDate() - danas.getDay() + 1);
+  var ned = new Date(pon);
+  ned.setDate(pon.getDate() + 6);
+  
+  document.getElementById('rasporedOdDatuma').value = formatDateInput(pon);
+  document.getElementById('rasporedDoDatuma').value = formatDateInput(ned);
+  generirajRaspored();
+}
+
+function ispisiRaspored() {
+  var tablica = document.getElementById('rasporedTable');
+  var odStr = formatDate(new Date(document.getElementById('rasporedOdDatuma').value));
+  var doStr = formatDate(new Date(document.getElementById('rasporedDoDatuma').value));
+  
+  var printHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<title>Raspored WH</title>' +
+    '<style>' +
+    'body{font-family:Arial,sans-serif;font-size:10px;margin:10px;}' +
+    'h2{text-align:center;margin-bottom:5px;}' +
+    '.info{text-align:center;color:#666;margin-bottom:10px;}' +
+    'table{width:100%;border-collapse:collapse;}' +
+    'th{background:#5d4037;color:white;padding:6px 4px;}' +
+    'td{padding:4px;border:1px solid #999;vertical-align:top;}' +
+    '.p4{background:#c2185b;}.p5{background:#7b1fa2;}' +
+    '.postava-badge{display:inline-block;padding:2px 6px;border-radius:8px;font-weight:bold;font-size:8px;color:white;margin-bottom:2px;}' +
+    '.bg-p4{background:#fce4ec;}.bg-p5{background:#f3e5f5;}' +
+    '.djelatnik-lista{font-size:8px;}.bottomer{color:#1565c0;}.tuber{color:#2e7d32;}' +
+    '.subota-row,.nedjelja-row{background:#f5f5f5;}' +
+    '.subota-row.radna-subota{background:#fff3e0;}' +
+    '.slobodni-cell{background:#f5f5f5;color:#999;}' +
+    '.radna-subota-badge{display:inline-block;background:#ff9800;color:white;font-size:7px;padding:1px 4px;border-radius:6px;margin-left:3px;}' +
+    '@media print{*{-webkit-print-color-adjust:exact!important;}}' +
+    '</' + 'style></' + 'head><body>' +
+    '<h2>RASPORED WH LINIJA</h2>' +
+    '<p class="info">Od ' + odStr + ' do ' + doStr + '</p>' +
+    tablica.outerHTML +
+    '<scr' + 'ipt>window.onload=function(){window.print();}</' + 'scr' + 'ipt>' +
+    '</' + 'body></' + 'html>';
+  
+  var win = window.open('', '_blank');
+  if (win) {
+    win.document.write(printHTML);
+    win.document.close();
+  }
+}
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function init() {
+  // Provjeri admin prava i sakrij tab ako nije admin
+  if (!isAdmin()) {
+    document.getElementById('tabUredjivanje').classList.add('disabled');
+  }
+  
+  // Učitaj postavke iz baze
+  await ucitajPostavke();
+  
+  // Učitaj radne subote
+  await ucitajRadneSubote();
+  
+  // Učitaj postave
+  await ucitajPostave();
+  
+  // Postavi default datume
+  goToToday();
+  
+  // Ažuriraj info
+  updateWeekInfo();
+}
+
+init();
+</script>
+<script src="../../js/mobile.js"></script>

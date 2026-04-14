@@ -1,0 +1,976 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../../css/styles.css">
+<!-- ============================================ -->
+<!-- RASPORED NLI - Nova verzija s prod_schedule_* tablicama -->
+<!-- ============================================ -->
+
+<style>
+  /* KONTROLE */
+  .raspored-controls {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    border-radius: 10px;
+  }
+  
+  .raspored-controls .form-group { margin-bottom: 0; }
+  
+  .raspored-controls label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    font-size: 0.85em;
+  }
+  
+  .raspored-controls input[type="date"] {
+    padding: 10px 15px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.95);
+  }
+  
+  .raspored-controls .btn { padding: 10px 18px; }
+
+  /* TABLICA RASPOREDA */
+  .raspored-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .raspored-table th {
+    background: #1a237e;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #0d1642;
+  }
+  
+  .raspored-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    vertical-align: top;
+  }
+
+  /* Boje postava */
+  .p1 { background: #1976d2; }
+  .p2 { background: #f57c00; }
+  .p3 { background: #388e3c; }
+  .p4 { background: #c2185b; }
+  .p5 { background: #7b1fa2; }
+  .p6 { background: #ffa000; }
+  
+  .postava-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: white;
+  }
+  
+  .smjena-cell {
+    min-width: 140px;
+    padding: 6px !important;
+  }
+  
+  .smjena-cell.bg-p1 { background: #e3f2fd; border-left: 3px solid #1976d2; }
+  .smjena-cell.bg-p2 { background: #fff3e0; border-left: 3px solid #f57c00; }
+  .smjena-cell.bg-p3 { background: #e8f5e9; border-left: 3px solid #388e3c; }
+  .smjena-cell.bg-p4 { background: #fce4ec; border-left: 3px solid #c2185b; }
+  .smjena-cell.bg-p5 { background: #f3e5f5; border-left: 3px solid #7b1fa2; }
+  .smjena-cell.bg-p6 { background: #fff8e1; border-left: 3px solid #ffa000; }
+  
+  .djelatnik-lista {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.4;
+    text-align: left;
+    margin-top: 4px;
+  }
+  
+  .djelatnik-lista .bottomer { color: #1565c0; }
+  .djelatnik-lista .tuber { color: #2e7d32; }
+  
+  .subota-row { background: #fffde7 !important; }
+  .nedjelja-row { background: #ffebee !important; }
+  .nedjelja-row td { color: #999; }
+  .today-row { background: rgba(76, 175, 80, 0.12) !important; }
+  
+  .slobodni-cell { background: #f5f5f5; color: #999; font-style: italic; font-size: 11px; }
+
+  /* WEEK INFO */
+  .week-info {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    color: white;
+  }
+  
+  .week-info-item { display: flex; align-items: center; gap: 8px; }
+  .week-info-item .label { color: rgba(255,255,255,0.7); font-size: 0.85em; }
+  .week-info-item .value { font-weight: 600; }
+  
+  .week-badge { padding: 4px 12px; border-radius: 15px; font-weight: 700; font-size: 0.85em; }
+  .week-a { background: #1976d2; }
+  .week-b { background: #f57c00; }
+  .week-c { background: #388e3c; }
+
+  /* LEGENDA */
+  .legenda {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .legenda-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .legenda-color { width: 16px; height: 16px; border-radius: 4px; }
+
+  /* POSTAVE GRID */
+  .postave-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    padding: 15px 0;
+  }
+  
+  .postava-card {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+  }
+  
+  .postava-card-header {
+    padding: 10px 15px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .postava-card-body { padding: 12px; }
+  
+  .stroj-sekcija { margin-bottom: 12px; }
+  .stroj-sekcija:last-child { margin-bottom: 0; }
+  
+  .stroj-naziv {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .clanovi-lista { display: flex; flex-wrap: wrap; gap: 5px; }
+  
+  .clan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  
+  .clan-badge .ukloni {
+    cursor: pointer;
+    color: #c00;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 2px;
+  }
+  
+  .clan-badge .ukloni:hover { color: #f00; }
+  
+  .dodaj-btn {
+    background: #e8f5e9;
+    border: 1px dashed #4caf50;
+    color: #2e7d32;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  
+  .dodaj-btn:hover { background: #c8e6c9; }
+
+  /* SAKRIVANJE EDIT KONTROLA ZA NE-ADMIN KORISNIKE */
+  .hide-edit-controls .ukloni,
+  .hide-edit-controls .dodaj-btn {
+    display: none !important;
+  }
+
+  /* PRINT */
+  @media print {
+    .raspored-controls, .legenda, .btn, .card:last-child, .week-info { display: none !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .raspored-table { font-size: 9px; }
+    .raspored-table th { padding: 6px 4px; }
+    .raspored-table td { padding: 4px; }
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">Raspored Smjena - NLI Linija</div>
+  
+  <!-- WEEK INFO -->
+  <div class="week-info">
+    <div class="week-info-item">
+      <span class="label">Danas:</span>
+      <span class="value" id="todayInfo">-</span>
+    </div>
+    <div class="week-info-item">
+      <span class="label">Tjedan:</span>
+      <span class="week-badge" id="currentWeek">-</span>
+    </div>
+    <div class="week-info-item">
+      <span class="label">Smjena:</span>
+      <span class="value" id="currentShift">-</span>
+    </div>
+  </div>
+  
+  <!-- KONTROLE -->
+  <div class="raspored-controls">
+    <div class="form-group">
+      <label>Od datuma:</label>
+      <input type="date" id="rasporedOdDatuma">
+    </div>
+    <div class="form-group">
+      <label>Do datuma:</label>
+      <input type="date" id="rasporedDoDatuma">
+    </div>
+    <button class="btn btn-primary" onclick="generirajRaspored()">Generiraj</button>
+    <button class="btn btn-success" onclick="spremiRaspored()" style="background:#4CAF50;">Spremi u bazu</button>
+    <button class="btn btn-secondary" onclick="goToToday()">Danas</button>
+    <button class="btn btn-secondary" onclick="osvjeziTimove()">Osvjezi</button>
+    <button class="btn btn-secondary" onclick="ispisiRaspored()">Ispis</button>
+  </div>
+  
+  <!-- LEGENDA -->
+  <div class="legenda">
+    <div class="legenda-item"><div class="legenda-color p1"></div> Postava 1 (NLI)</div>
+    <div class="legenda-item"><div class="legenda-color p2"></div> Postava 2 (NLI)</div>
+    <div class="legenda-item"><div class="legenda-color p3"></div> Postava 3 (NLI)</div>
+    <div class="legenda-item"><div class="legenda-color p4"></div> Postava 4 (WH-Sub)</div>
+    <div class="legenda-item"><div class="legenda-color p5"></div> Postava 5 (WH-Sub)</div>
+    <div class="legenda-item"><div class="legenda-color p6"></div> Postava 6 (Spec)</div>
+  </div>
+  
+  <!-- TABLICA -->
+  <div class="table-container">
+    <table class="raspored-table" id="rasporedTable">
+      <thead>
+        <tr>
+          <th style="width:85px;">Datum</th>
+          <th style="width:90px;">Dan</th>
+          <th>1. SMJENA (6-14)</th>
+          <th>2. SMJENA (14-22)</th>
+          <th>3. SMJENA (22-6)</th>
+          <th style="width:100px;">Slobodni</th>
+        </tr>
+      </thead>
+      <tbody id="rasporedBody">
+        <tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">
+          Kliknite "Generiraj" za prikaz rasporeda
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- UPRAVLJANJE POSTAVAMA -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">Upravljanje Postavama</div>
+  <div class="postave-grid" id="postaveGrid">
+    <p style="text-align:center; color:#999; padding:20px;">Ucitavam postave...</p>
+  </div>
+</div>
+
+<!-- MODAL: Dodaj clana -->
+<div id="dodajClanaModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>Dodaj clana</h3>
+      <button class="modal-close" onclick="closeModal('dodajClanaModal')">x</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="dodajClanaTeamId">
+      <p id="dodajClanaInfo" style="font-weight:600; margin-bottom:12px;"></p>
+      <div class="form-group">
+        <label>Ime i prezime djelatnika *</label>
+        <input type="text" id="dodajClanaIme" class="form-control" placeholder="npr. IVAN HORVAT" style="text-transform:uppercase;">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('dodajClanaModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiNovogClana()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+console.log('Raspored NLI View ucitan');
+
+// ============================================
+// KONFIGURACIJA ROTACIJE
+// ============================================
+var NLI_ROTACIJA = [
+  { smjena1: 2, smjena2: 3, smjena3: 1 },
+  { smjena1: 3, smjena2: 1, smjena3: 2 },
+  { smjena1: 1, smjena2: 2, smjena3: 3 }
+];
+
+// Parovi postava za subote - smjene se rotiraju svaka 3. subota
+var SUBOTA_CIKLUS = [
+  { par: [2, 6], slobodni: [1, 3, 4, 5] },  // Index 0: P2 + P6
+  { par: [5, 3], slobodni: [1, 2, 4, 6] },  // Index 1: P5 + P3
+  { par: [4, 1], slobodni: [2, 3, 5, 6] }   // Index 2: P4 + P1
+];
+
+var REFERENTNI_DATUM = new Date(2025, 10, 3);
+// Referentna subota za rotaciju smjena (24.01.2026 - prva subota iz PDF-a)
+var REFERENTNA_SUBOTA = new Date(2026, 0, 24);
+var DANI = ['NEDJELJA', 'PONEDJELJAK', 'UTORAK', 'SRIJEDA', 'CETVRTAK', 'PETAK', 'SUBOTA'];
+
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+window.POSTAVE = {};
+window.CLANOVI_POSTAVE_6 = [];
+window.podaciUcitani = false;
+
+// ============================================
+// PROVJERA ADMIN PRAVA
+// ============================================
+function isAdmin() {
+  var ulogeZaUredjivanje = ['superadmin', 'admin', 'koordinator-proizvodnje'];
+  
+  try {
+    var sessionStr = localStorage.getItem('carta_erp_session');
+    if (!sessionStr) return false;
+    
+    var session = JSON.parse(sessionStr);
+    var userRole = session.role || '';
+    
+    console.log('[NLI] User role:', userRole, '| Ima pristup uređivanju:', ulogeZaUredjivanje.includes(userRole));
+    
+    return ulogeZaUredjivanje.includes(userRole);
+  } catch (e) {
+    console.error('[NLI] Greška čitanja sesije:', e);
+    return false;
+  }
+}
+
+// ============================================
+// INIT
+// ============================================
+(function() {
+  // Provjeri admin prava i sakrij edit kontrole ako nije admin
+  if (!isAdmin()) {
+    document.body.classList.add('hide-edit-controls');
+  }
+  
+  var danas = new Date();
+  var pon = new Date(danas);
+  pon.setDate(danas.getDate() - danas.getDay() + 1);
+  var ned = new Date(pon);
+  ned.setDate(pon.getDate() + 27);
+  
+  document.getElementById('rasporedOdDatuma').value = formatDateInput(pon);
+  document.getElementById('rasporedDoDatuma').value = formatDateInput(ned);
+  
+  updateWeekInfo();
+  ucitajPostave();
+})();
+
+// ============================================
+// UCITAJ POSTAVE IZ BAZE
+// ============================================
+function ucitajPostave() {
+  showLoading();
+  
+  initSupabase()
+    .from('prod_schedule_teams')
+    .select('id, postava_broj, naziv_tima, stroj_tip, linija, status, prod_schedule_members(id, djelatnik_ime, aktivan)')
+    .eq('status', 'Aktivan')
+    .order('postava_broj')
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        console.error('Greska:', result.error);
+        showMessage('Greska pri ucitavanju postava: ' + result.error.message, 'error');
+        return;
+      }
+      
+      window.POSTAVE = {};
+      
+      (result.data || []).forEach(function(team) {
+        var pNum = team.postava_broj;
+        
+        if (!window.POSTAVE[pNum]) {
+          window.POSTAVE[pNum] = {
+            naziv: team.naziv_tima,
+            linija: team.linija,
+            bottomer: [],
+            tuber: [],
+            bottomerTeamId: null,
+            tuberTeamId: null
+          };
+        }
+        
+        var clanovi = (team.prod_schedule_members || [])
+          .filter(function(m) { return m.aktivan !== false; })
+          .map(function(m) { return m.djelatnik_ime; });
+        
+        if (team.stroj_tip === 'Bottomer') {
+          window.POSTAVE[pNum].bottomer = clanovi;
+          window.POSTAVE[pNum].bottomerTeamId = team.id;
+        } else if (team.stroj_tip === 'Tuber') {
+          window.POSTAVE[pNum].tuber = clanovi;
+          window.POSTAVE[pNum].tuberTeamId = team.id;
+        }
+      });
+      
+      // Clanovi Postave 6 za filtriranje subotom
+      window.CLANOVI_POSTAVE_6 = [];
+      if (window.POSTAVE[6]) {
+        window.CLANOVI_POSTAVE_6 = window.POSTAVE[6].bottomer.concat(window.POSTAVE[6].tuber);
+      }
+      
+      window.podaciUcitani = true;
+      console.log('Postave ucitane:', Object.keys(window.POSTAVE).length);
+      
+      renderPostaveGrid();
+      generirajRaspored();
+    })
+    .catch(function(e) {
+      hideLoading();
+      console.error('Greska:', e);
+      showMessage('Greska: ' + e.message, 'error');
+    });
+}
+
+// ============================================
+// IZRACUN TJEDNA
+// ============================================
+function izracunajTjedanIndex(datum) {
+  var ms = 7 * 24 * 60 * 60 * 1000;
+  var diff = datum.getTime() - REFERENTNI_DATUM.getTime();
+  var weeks = Math.floor(diff / ms);
+  return ((weeks % 3) + 3) % 3;
+}
+
+function getWeekLetter(idx) {
+  return ['A', 'B', 'C'][idx];
+}
+
+// Izračunaj rotaciju smjena za subote
+// Vraća 0 = originalne smjene (par[0]=1.smj, par[1]=2.smj)
+// Vraća 1 = obrnute smjene (par[1]=1.smj, par[0]=2.smj)
+function izracunajSubotnjuRotaciju(datum) {
+  var ms = 7 * 24 * 60 * 60 * 1000;
+  var diff = datum.getTime() - REFERENTNA_SUBOTA.getTime();
+  var weeks = Math.floor(diff / ms);
+  // Svaka 3. subota se ponavlja isti par postava
+  // Ali smjene se rotiraju - ako je prošli put bila 1. smjena, sada je 2. i obrnuto
+  var ciklus = Math.floor(weeks / 3);
+  return ciklus % 2;
+}
+
+// ============================================
+// GENERIRAJ RASPORED
+// ============================================
+function generirajRaspored() {
+  if (!window.podaciUcitani) {
+    showMessage('Postave jos nisu ucitane', 'warning');
+    return;
+  }
+  
+  var odDatum = new Date(document.getElementById('rasporedOdDatuma').value);
+  var doDatum = new Date(document.getElementById('rasporedDoDatuma').value);
+  
+  if (isNaN(odDatum.getTime()) || isNaN(doDatum.getTime())) {
+    showMessage('Unesite oba datuma', 'warning');
+    return;
+  }
+  
+  var tbody = document.getElementById('rasporedBody');
+  var html = '';
+  var danas = new Date();
+  danas.setHours(0,0,0,0);
+  
+  var trenutni = new Date(odDatum);
+  var brojDana = 0;
+  
+  while (trenutni <= doDatum) {
+    var dan = trenutni.getDay();
+    var tjedanIdx = izracunajTjedanIndex(trenutni);
+    var isToday = trenutni.toDateString() === danas.toDateString();
+    
+    var rowClass = '';
+    if (isToday) rowClass = 'today-row';
+    else if (dan === 0) rowClass = 'nedjelja-row';
+    else if (dan === 6) rowClass = 'subota-row';
+    
+    var datumStr = formatDate(trenutni);
+    
+    html += '<tr class="' + rowClass + '">';
+    html += '<td>' + datumStr + '</td>';
+    html += '<td>' + DANI[dan] + '</td>';
+    
+    if (dan === 0) {
+      html += '<td colspan="3" class="slobodni-cell">SLOBODNO</td>';
+      html += '<td class="slobodni-cell">Svi</td>';
+    } else if (dan === 6) {
+      var ciklus = SUBOTA_CIKLUS[tjedanIdx];
+      var rotacija = izracunajSubotnjuRotaciju(trenutni);
+      var smjena1, smjena2;
+      
+      // Rotacija smjena - svaka 3. subota se smjene izmjenjuju
+      if (rotacija === 0) {
+        smjena1 = ciklus.par[0];
+        smjena2 = ciklus.par[1];
+      } else {
+        smjena1 = ciklus.par[1];
+        smjena2 = ciklus.par[0];
+      }
+      
+      html += renderSmjenaCell(smjena1, true);
+      html += renderSmjenaCell(smjena2, true);
+      html += '<td class="slobodni-cell">-</td>';
+      html += '<td class="slobodni-cell">P' + ciklus.slobodni.join(', P') + '</td>';
+    } else {
+      var rot = NLI_ROTACIJA[tjedanIdx];
+      html += renderSmjenaCell(rot.smjena1, false);
+      html += renderSmjenaCell(rot.smjena2, false);
+      html += renderSmjenaCell(rot.smjena3, false);
+      html += '<td class="slobodni-cell">-</td>';
+    }
+    
+    html += '</tr>';
+    trenutni.setDate(trenutni.getDate() + 1);
+    brojDana++;
+  }
+  
+  tbody.innerHTML = html;
+  showMessage('Raspored generiran za ' + brojDana + ' dana', 'success');
+}
+
+function renderSmjenaCell(pNum, jeSubota) {
+  var postava = window.POSTAVE[pNum];
+  if (!postava) return '<td>-</td>';
+  
+  var bottomer = postava.bottomer.slice();
+  var tuber = postava.tuber.slice();
+  
+  // Subotom filtriraj clanove P6 iz maticnih postava
+  if (jeSubota && pNum !== 6 && [1,2,3].indexOf(pNum) !== -1) {
+    bottomer = bottomer.filter(function(ime) {
+      return window.CLANOVI_POSTAVE_6.indexOf(ime) === -1;
+    });
+    tuber = tuber.filter(function(ime) {
+      return window.CLANOVI_POSTAVE_6.indexOf(ime) === -1;
+    });
+  }
+  
+  var html = '<td class="smjena-cell bg-p' + pNum + '">';
+  html += '<span class="postava-badge p' + pNum + '">' + postava.naziv + '</span>';
+  html += '<div class="djelatnik-lista">';
+  
+  if (bottomer.length > 0) {
+    html += '<div class="bottomer"><b>B:</b> ' + bottomer.map(skratiIme).join(', ') + '</div>';
+  }
+  if (tuber.length > 0) {
+    html += '<div class="tuber"><b>T:</b> ' + tuber.map(skratiIme).join(', ') + '</div>';
+  }
+  
+  html += '</div></td>';
+  return html;
+}
+
+// ============================================
+// RENDER POSTAVE GRID
+// ============================================
+function renderPostaveGrid() {
+  var grid = document.getElementById('postaveGrid');
+  var html = '';
+  
+  for (var pNum = 1; pNum <= 6; pNum++) {
+    var postava = window.POSTAVE[pNum];
+    if (!postava) continue;
+    
+    html += '<div class="postava-card">';
+    html += '<div class="postava-card-header p' + pNum + '">';
+    html += '<span>' + postava.naziv + '</span>';
+    html += '<span style="font-size:11px;opacity:0.8;">' + postava.linija + '</span>';
+    html += '</div>';
+    html += '<div class="postava-card-body">';
+    
+    // Bottomer
+    html += '<div class="stroj-sekcija">';
+    html += '<div class="stroj-naziv">Bottomer</div>';
+    html += '<div class="clanovi-lista">';
+    postava.bottomer.forEach(function(ime) {
+      html += '<span class="clan-badge">' + skratiIme(ime);
+      html += '<span class="ukloni" data-teamid="' + postava.bottomerTeamId + '" data-ime="' + ime + '">x</span>';
+      html += '</span>';
+    });
+    html += '<button class="dodaj-btn" data-teamid="' + postava.bottomerTeamId + '" data-info="' + postava.naziv + ' - Bottomer">+ Dodaj</button>';
+    html += '</div></div>';
+    
+    // Tuber
+    html += '<div class="stroj-sekcija">';
+    html += '<div class="stroj-naziv">Tuber</div>';
+    html += '<div class="clanovi-lista">';
+    postava.tuber.forEach(function(ime) {
+      html += '<span class="clan-badge">' + skratiIme(ime);
+      html += '<span class="ukloni" data-teamid="' + postava.tuberTeamId + '" data-ime="' + ime + '">x</span>';
+      html += '</span>';
+    });
+    html += '<button class="dodaj-btn" data-teamid="' + postava.tuberTeamId + '" data-info="' + postava.naziv + ' - Tuber">+ Dodaj</button>';
+    html += '</div></div>';
+    
+    html += '</div></div>';
+  }
+  
+  grid.innerHTML = html;
+}
+
+// ============================================
+// UPRAVLJANJE CLANOVIMA
+// ============================================
+document.addEventListener('click', function(e) {
+  // Ukloni clana
+  if (e.target.classList.contains('ukloni')) {
+    var teamId = e.target.getAttribute('data-teamid');
+    var ime = e.target.getAttribute('data-ime');
+    if (teamId && ime) ukloniClana(teamId, ime);
+  }
+  
+  // Dodaj clana
+  if (e.target.classList.contains('dodaj-btn')) {
+    var teamId = e.target.getAttribute('data-teamid');
+    var info = e.target.getAttribute('data-info');
+    if (teamId) otvoriDodajModal(teamId, info);
+  }
+});
+
+function otvoriDodajModal(teamId, info) {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za uređivanje postava', 'warning');
+    return;
+  }
+  document.getElementById('dodajClanaTeamId').value = teamId;
+  document.getElementById('dodajClanaInfo').textContent = info || 'Tim';
+  document.getElementById('dodajClanaIme').value = '';
+  openModal('dodajClanaModal');
+}
+
+function spremiNovogClana() {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za uređivanje postava', 'warning');
+    return;
+  }
+  
+  var teamId = document.getElementById('dodajClanaTeamId').value;
+  var ime = document.getElementById('dodajClanaIme').value.trim().toUpperCase();
+  
+  if (!ime) {
+    showMessage('Unesite ime djelatnika', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  initSupabase()
+    .from('prod_schedule_members')
+    .insert({ team_id: parseInt(teamId), djelatnik_ime: ime, aktivan: true })
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greska: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Clan dodan', 'success');
+      closeModal('dodajClanaModal');
+      window.podaciUcitani = false;
+      ucitajPostave();
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greska: ' + e.message, 'error');
+    });
+}
+
+function ukloniClana(teamId, ime) {
+  if (!isAdmin()) {
+    showMessage('Nemate dozvolu za uređivanje postava', 'warning');
+    return;
+  }
+  
+  if (!confirm('Ukloniti ' + ime + ' iz postave?')) return;
+  
+  showLoading();
+  
+  initSupabase()
+    .from('prod_schedule_members')
+    .delete()
+    .eq('team_id', parseInt(teamId))
+    .eq('djelatnik_ime', ime)
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greska: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Clan uklonjen', 'success');
+      window.podaciUcitani = false;
+      ucitajPostave();
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greska: ' + e.message, 'error');
+    });
+}
+
+// ============================================
+// SPREMI RASPORED
+// ============================================
+function spremiRaspored() {
+  if (!window.podaciUcitani) {
+    showMessage('Postave nisu ucitane', 'warning');
+    return;
+  }
+  
+  var odDatum = new Date(document.getElementById('rasporedOdDatuma').value);
+  var doDatum = new Date(document.getElementById('rasporedDoDatuma').value);
+  
+  if (isNaN(odDatum.getTime()) || isNaN(doDatum.getTime())) {
+    showMessage('Unesite oba datuma', 'warning');
+    return;
+  }
+  
+  if (!confirm('Spremiti raspored za period ' + formatDate(odDatum) + ' - ' + formatDate(doDatum) + '?')) return;
+  
+  showLoading();
+  
+  var zapisi = [];
+  var trenutni = new Date(odDatum);
+  
+  while (trenutni <= doDatum) {
+    var dan = trenutni.getDay();
+    var tjedanIdx = izracunajTjedanIndex(trenutni);
+    var datumStr = formatDateInput(trenutni);
+    
+    if (dan === 0) {
+      trenutni.setDate(trenutni.getDate() + 1);
+      continue;
+    }
+    
+    var smjene = [];
+    if (dan === 6) {
+      var ciklus = SUBOTA_CIKLUS[tjedanIdx];
+      var rotacija = izracunajSubotnjuRotaciju(trenutni);
+      var smjena1, smjena2;
+      
+      // Rotacija smjena - svaka 3. subota se smjene izmjenjuju
+      if (rotacija === 0) {
+        smjena1 = ciklus.par[0];
+        smjena2 = ciklus.par[1];
+      } else {
+        smjena1 = ciklus.par[1];
+        smjena2 = ciklus.par[0];
+      }
+      
+      smjene.push({ smjena: 1, postava: smjena1 });
+      smjene.push({ smjena: 2, postava: smjena2 });
+    } else {
+      var rot = NLI_ROTACIJA[tjedanIdx];
+      smjene.push({ smjena: 1, postava: rot.smjena1 });
+      smjene.push({ smjena: 2, postava: rot.smjena2 });
+      smjene.push({ smjena: 3, postava: rot.smjena3 });
+    }
+    
+    smjene.forEach(function(s) {
+      var postava = window.POSTAVE[s.postava];
+      if (!postava) return;
+      
+      var djelatnici = postava.bottomer.concat(postava.tuber);
+      
+      zapisi.push({
+        datum: datumStr,
+        smjena: s.smjena,
+        postava_broj: s.postava,
+        linija: 'NLI',
+        djelatnici: JSON.stringify(djelatnici),
+        notes: postava.naziv
+      });
+    });
+    
+    trenutni.setDate(trenutni.getDate() + 1);
+  }
+  
+  if (zapisi.length === 0) {
+    hideLoading();
+    showMessage('Nema zapisa za spremanje', 'warning');
+    return;
+  }
+  
+  // Brisi stare zapise
+  initSupabase()
+    .from('prod_schedules')
+    .delete()
+    .eq('linija', 'NLI')
+    .gte('datum', formatDateInput(odDatum))
+    .lte('datum', formatDateInput(doDatum))
+    .then(function() {
+      // Spremi nove
+      return initSupabase()
+        .from('prod_schedules')
+        .insert(zapisi);
+    })
+    .then(function(result) {
+      hideLoading();
+      
+      if (result.error) {
+        showMessage('Greska: ' + result.error.message, 'error');
+        return;
+      }
+      
+      showMessage('Raspored spremljen - ' + zapisi.length + ' zapisa', 'success');
+    })
+    .catch(function(e) {
+      hideLoading();
+      showMessage('Greska: ' + e.message, 'error');
+    });
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function skratiIme(puno) {
+  var parts = puno.split(' ');
+  if (parts.length >= 2) {
+    return parts[0].charAt(0) + '. ' + parts.slice(1).join(' ');
+  }
+  return puno;
+}
+
+function formatDate(d) {
+  return d.getDate().toString().padStart(2,'0') + '.' + 
+         (d.getMonth()+1).toString().padStart(2,'0') + '.' + 
+         d.getFullYear() + '.';
+}
+
+function formatDateInput(d) {
+  return d.getFullYear() + '-' + 
+         (d.getMonth()+1).toString().padStart(2,'0') + '-' + 
+         d.getDate().toString().padStart(2,'0');
+}
+
+function updateWeekInfo() {
+  var danas = new Date();
+  var idx = izracunajTjedanIndex(danas);
+  var letter = getWeekLetter(idx);
+  
+  var badge = document.getElementById('currentWeek');
+  badge.textContent = 'Tjedan ' + letter;
+  badge.className = 'week-badge week-' + letter.toLowerCase();
+  
+  document.getElementById('todayInfo').textContent = formatDate(danas) + ' (' + DANI[danas.getDay()] + ')';
+  
+  var hour = danas.getHours();
+  var shift = hour >= 6 && hour < 14 ? '1. (6-14)' : 
+              hour >= 14 && hour < 22 ? '2. (14-22)' : '3. (22-6)';
+  document.getElementById('currentShift').textContent = shift;
+}
+
+function goToToday() {
+  var danas = new Date();
+  var pon = new Date(danas);
+  pon.setDate(danas.getDate() - danas.getDay() + 1);
+  var ned = new Date(pon);
+  ned.setDate(pon.getDate() + 6);
+  
+  document.getElementById('rasporedOdDatuma').value = formatDateInput(pon);
+  document.getElementById('rasporedDoDatuma').value = formatDateInput(ned);
+  generirajRaspored();
+}
+
+function osvjeziTimove() {
+  window.podaciUcitani = false;
+  ucitajPostave();
+}
+
+function ispisiRaspored() {
+  var tablica = document.getElementById('rasporedTable');
+  var odStr = formatDate(new Date(document.getElementById('rasporedOdDatuma').value));
+  var doStr = formatDate(new Date(document.getElementById('rasporedDoDatuma').value));
+  
+  var printHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<title>Raspored NLI</title>' +
+    '<style>' +
+    'body{font-family:Arial,sans-serif;font-size:10px;margin:10px;}' +
+    'h2{text-align:center;margin-bottom:5px;}' +
+    '.info{text-align:center;color:#666;margin-bottom:10px;}' +
+    'table{width:100%;border-collapse:collapse;}' +
+    'th{background:#1a237e;color:white;padding:6px 4px;}' +
+    'td{padding:4px;border:1px solid #999;vertical-align:top;}' +
+    '.p1{background:#1976d2;}.p2{background:#f57c00;}.p3{background:#388e3c;}' +
+    '.p4{background:#c2185b;}.p5{background:#7b1fa2;}.p6{background:#ffa000;}' +
+    '.postava-badge{display:inline-block;padding:2px 6px;border-radius:8px;font-weight:bold;font-size:8px;color:white;margin-bottom:2px;}' +
+    '.bg-p1{background:#e3f2fd;}.bg-p2{background:#fff3e0;}.bg-p3{background:#e8f5e9;}' +
+    '.bg-p4{background:#fce4ec;}.bg-p5{background:#f3e5f5;}.bg-p6{background:#fff8e1;}' +
+    '.djelatnik-lista{font-size:8px;}.bottomer{color:#1565c0;}.tuber{color:#2e7d32;}' +
+    '.subota-row{background:#fffde7;}.nedjelja-row{background:#ffebee;}' +
+    '.slobodni-cell{background:#f5f5f5;color:#999;}' +
+    '@media print{*{-webkit-print-color-adjust:exact!important;}}' +
+    '</' + 'style></' + 'head><body>' +
+    '<h2>RASPORED NLI LINIJA</h2>' +
+    '<p class="info">Od ' + odStr + ' do ' + doStr + '</p>' +
+    tablica.outerHTML +
+    '<scr' + 'ipt>window.onload=function(){window.print();}</' + 'scr' + 'ipt>' +
+    '</' + 'body></' + 'html>';
+  
+  var win = window.open('', '_blank');
+  if (win) {
+    win.document.write(printHTML);
+    win.document.close();
+  }
+}
+</script>
+<script src="../../js/mobile.js"></script>

@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obračun plaća | Carta ERP</title>
+  <link rel="stylesheet" href="../../styles/main.css">
+  <style>
+/* ============================================
+   OBRAČUN PLAĆA - Styles
+   ============================================ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.page-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #1e3a5f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Period selector */
+.period-selector {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.period-selector select {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #1976d2;
+  background: #e3f2fd;
+}
+
+.tab-btn.active {
+  color: #1976d2;
+  border-bottom-color: #1976d2;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* KPI Cards */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.kpi-card .label {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.kpi-card .value {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.kpi-card.blue .value { color: #1976d2; }
+.kpi-card.green .value { color: #4caf50; }
+.kpi-card.orange .value { color: #ff9800; }
+.kpi-card.red .value { color: #f44336; }
+
+/* Hours Input Table */
+.hours-table-container {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.hours-table th {
+  background: #1e3a5f;
+  color: white;
+  padding: 10px 8px;
+  text-align: center;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.hours-table th.employee-col {
+  text-align: left;
+  min-width: 180px;
+}
+
+.hours-table th.hour-col {
+  min-width: 60px;
+  font-size: 0.85em;
+}
+
+.hours-table th .koef {
+  display: block;
+  font-size: 0.75em;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.hours-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+.hours-table td.employee-cell {
+  text-align: left;
+  padding-left: 12px;
+  background: #f8f9fa;
+}
+
+.hours-table td.employee-cell .name {
+  font-weight: 600;
+  color: #333;
+}
+
+.hours-table td.employee-cell .job {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.hours-table input[type="number"] {
+  width: 50px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.95em;
+}
+
+.hours-table input[type="number"]:focus {
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.2);
+}
+
+.hours-table input.has-value {
+  background: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.hours-table input.warning {
+  background: #fff3e0;
+  border-color: #ff9800;
+}
+
+.hours-table input.error {
+  background: #ffebee;
+  border-color: #f44336;
+}
+
+.hours-table tr:hover td {
+  background: #f5f5f5;
+}
+
+.hours-table tr:hover td.employee-cell {
+  background: #e3f2fd;
+}
+
+/* Totals row */
+.hours-table tfoot td {
+  background: #e8f5e9;
+  font-weight: 600;
+  padding: 10px 8px;
+  border-top: 2px solid #4caf50;
+}
+
+/* Action buttons */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-bar .left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-primary { background: #1976d2; color: white; }
+.btn-primary:hover { background: #1565c0; }
+
+.btn-success { background: #4caf50; color: white; }
+.btn-success:hover { background: #43a047; }
+
+.btn-warning { background: #ff9800; color: white; }
+.btn-warning:hover { background: #f57c00; }
+
+.btn-secondary { background: #e0e0e0; color: #333; }
+.btn-secondary:hover { background: #d0d0d0; }
+
+.btn-danger { background: #f44336; color: white; }
+.btn-danger:hover { background: #e53935; }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Team filter */
+.team-filter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.team-filter select {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+  min-width: 200px;
+}
+
+/* Payroll review table */
+.payroll-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.payroll-table th {
+  background: #1e3a5f;
+  color: white;
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.payroll-table th.right {
+  text-align: right;
+}
+
+.payroll-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.payroll-table td.right {
+  text-align: right;
+  font-family: 'Consolas', monospace;
+}
+
+.payroll-table tr:hover {
+  background: #f5f5f5;
+}
+
+.payroll-table .employee-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.payroll-table .employee-info .name {
+  font-weight: 600;
+}
+
+.payroll-table .employee-info .job {
+  font-size: 0.85em;
+  color: #666;
+}
+
+/* Manual bonus input */
+.manual-bonus-input {
+  width: 80px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: right;
+}
+
+.manual-bonus-input:focus {
+  border-color: #ff9800;
+  outline: none;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.status-badge.draft { background: #e0e0e0; color: #666; }
+.status-badge.calculated { background: #e3f2fd; color: #1976d2; }
+.status-badge.confirmed { background: #e8f5e9; color: #4caf50; }
+.status-badge.paid { background: #f3e5f5; color: #9c27b0; }
+
+/* Team section */
+.team-section {
+  margin-bottom: 30px;
+}
+
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #1976d2, #1e88e5);
+  color: white;
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 0;
+}
+
+.team-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.team-header .team-totals {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9em;
+}
+
+.team-header .team-totals span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Loading */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-overlay.active { display: flex; }
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+}
+
+.toast {
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  animation: slideIn 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.toast.success { background: #4caf50; }
+.toast.error { background: #f44336; }
+.toast.warning { background: #ff9800; }
+.toast.info { background: #2196f3; }
+
+@keyframes slideIn {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.3em;
+}
+
+.modal-close {
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Payslip preview */
+.payslip {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.payslip-header {
+  background: #1e3a5f;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+.payslip-header h3 {
+  margin: 0 0 5px 0;
+}
+
+.payslip-header .period {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+.payslip-section {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.payslip-section:last-child {
+  border-bottom: none;
+}
+
+.payslip-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.payslip-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.payslip-row.total {
+  font-weight: 700;
+  font-size: 1.1em;
+  border-top: 2px solid #333;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.payslip-row.highlight {
+  background: #e8f5e9;
+  margin: 0 -15px;
+  padding: 8px 15px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .hours-table-container {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .action-bar {
+    flex-direction: column;
+  }
+  
+  .action-bar .left,
+  .action-bar .right {
+    width: 100%;
+    justify-content: center;
+  }
+}
+  </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================ -->
+<!-- HEADER -->
+<!-- ============================================ -->
+<div class="page-header">
+  <h1 class="page-title">💰 Obračun plaća</h1>
+  
+  <div class="period-selector">
+    <label>Razdoblje:</label>
+    <select id="filterMjesec"></select>
+    <select id="filterGodina"></select>
+    <button class="btn btn-primary" onclick="loadData()">🔄 Učitaj</button>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- KPI ROW -->
+<!-- ============================================ -->
+<div class="kpi-row">
+  <div class="kpi-card blue">
+    <div class="label">Djelatnika</div>
+    <div class="value" id="kpiDjelatnika">0</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="label">Uneseno sati</div>
+    <div class="value" id="kpiUnesenoSati">0</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="label">Obračunato</div>
+    <div class="value" id="kpiObracunato">0</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="label">Ukupno bruto</div>
+    <div class="value" id="kpiUkupnoBruto">0 €</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="label">Ukupno neto</div>
+    <div class="value" id="kpiUkupnoNeto">0 €</div>
+  </div>
+  <div class="kpi-card red">
+    <div class="label">Fond sati</div>
+    <div class="value" id="kpiFondSati">176</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TABS -->
+<!-- ============================================ -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('unos')">📝 Unos sati</button>
+  <button class="tab-btn" onclick="showTab('obracun')">📊 Obračun</button>
+  <button class="tab-btn" onclick="showTab('pregled')">👥 Pregled po postavama</button>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 1: UNOS SATI -->
+<!-- ============================================ -->
+<div id="tab-unos" class="tab-content active">
+  
+  <div class="action-bar">
+    <div class="left">
+      <button class="btn btn-secondary" onclick="importCSV()">📥 Import CSV</button>
+      <button class="btn btn-secondary" onclick="exportHoursCSV()">📤 Export</button>
+      <button class="btn btn-secondary" onclick="copyFromLastMonth()">📋 Kopiraj prošli mjesec</button>
+    </div>
+    <div class="right">
+      <button class="btn btn-success" onclick="saveAllHours()">💾 Spremi sve sate</button>
+    </div>
+  </div>
+  
+  <div class="hours-table-container">
+    <table class="hours-table" id="hoursTable">
+      <thead>
+        <tr>
+          <th class="employee-col">Djelatnik</th>
+          <th class="hour-col">RR<span class="koef">×1.00</span></th>
+          <th class="hour-col">P1D<span class="koef">×1.50</span></th>
+          <th class="hour-col">RNR<span class="koef">×1.30</span></th>
+          <th class="hour-col">RDP<span class="koef">×1.50</span></th>
+          <th class="hour-col">RDC<span class="koef">×1.80</span></th>
+          <th class="hour-col">BOL<span class="koef">×0.70</span></th>
+          <th class="hour-col">RRV<span class="koef">×1.50</span></th>
+          <th class="hour-col">RPV<span class="koef">×2.00</span></th>
+          <th class="hour-col">RPN<span class="koef">×1.80</span></th>
+          <th class="hour-col">RNN<span class="koef">×1.65</span></th>
+          <th class="hour-col">RPP<span class="koef">×1.80</span></th>
+          <th class="hour-col">PD<span class="koef">×1.00</span></th>
+          <th class="hour-col">DVRV<span class="koef">%neto</span></th>
+          <th class="hour-col">Prij.<span class="koef">€</span></th>
+          <th class="hour-col">Σ sati</th>
+        </tr>
+      </thead>
+      <tbody id="hoursTableBody">
+        <tr><td colspan="16" style="text-align:center;padding:40px;color:#999;">Učitavanje...</td></tr>
+      </tbody>
+      <tfoot id="hoursTableFoot">
+        <tr>
+          <td><strong>UKUPNO</strong></td>
+          <td id="totalRR">0</td>
+          <td id="totalP1D">0</td>
+          <td id="totalRNR">0</td>
+          <td id="totalRDP">0</td>
+          <td id="totalRDC">0</td>
+          <td id="totalBOL">0</td>
+          <td id="totalRRV">0</td>
+          <td id="totalRPV">0</td>
+          <td id="totalRPN">0</td>
+          <td id="totalRNN">0</td>
+          <td id="totalRPP">0</td>
+          <td id="totalPD">0</td>
+          <td id="totalDVRV">0</td>
+          <td id="totalPrijevoz">0</td>
+          <td id="totalSati">0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 2: OBRAČUN -->
+<!-- ============================================ -->
+<div id="tab-obracun" class="tab-content">
+  
+  <div class="action-bar">
+    <div class="left">
+      <span>Izračunaj plaće za sve djelatnike s unesenim satima</span>
+    </div>
+    <div class="right">
+      <button class="btn btn-warning" onclick="calculateAll()">🧮 Izračunaj sve</button>
+      <button class="btn btn-success" onclick="confirmAll()">✅ Potvrdi sve</button>
+    </div>
+  </div>
+  
+  <div id="obracunResults">
+    <p style="text-align:center;padding:40px;color:#999;">Kliknite "Izračunaj sve" za generiranje obračuna</p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 3: PREGLED PO POSTAVAMA -->
+<!-- ============================================ -->
+<div id="tab-pregled" class="tab-content">
+  
+  <div class="team-filter">
+    <label>Odaberi postavu:</label>
+    <select id="filterTeam" onchange="filterByTeam()">
+      <option value="all">-- Sve postave --</option>
+    </select>
+    <button class="btn btn-secondary" onclick="exportTeamCSV()">📤 Export</button>
+    <button class="btn btn-secondary" onclick="printTeam()">🖨️ Print</button>
+  </div>
+  
+  <div id="teamResults">
+    <p style="text-align:center;padding:40px;color:#999;">Odaberite postavu za pregled</p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL: PLATNA LISTA -->
+<!-- ============================================ -->
+<div class="modal" id="payslipModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>📄 Platna lista</h2>
+      <span class="modal-close" onclick="closeModal('payslipModal')">&times;</span>
+    </div>
+    <div class="modal-body" id="payslipContent">
+      <!-- Dinamički sadržaj -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('payslipModal')">Zatvori</button>
+      <button class="btn btn-primary" onclick="printPayslip()">🖨️ Ispis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCRIPTS -->
+<!-- ============================================ -->
+<script src="../../config.js"></script>
+<script src="../../supabase-helpers.js"></script>
+<script>
+// ============================================
+// GLOBAL STATE
+// ============================================
+const MJESECI = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj',
+                 'Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+
+const HOUR_CODES = ['RR','P1D','RNR','RDP','RDC','BOL','RRV','RPV','RPN','RNN','RPP','PD','DVRV'];
+
+const KOEF = {
+  RR: 1.00, P1D: 1.50, RNR: 1.30, RDP: 1.50, RDC: 1.80, BOL: 0.70,
+  RRV: 1.50, RPV: 2.00, RPN: 1.80, RNN: 1.65, RPP: 1.80, PD: 1.00, DVRV: 0
+};
+
+let employees = [];
+let teams = []; // Team names from employees.team_name
+let workHours = [];
+let payrollData = [];
+let bonusesData = [];
+let settings = {};
+let monthlyHours = {};
+let hourTypes = [];
+
+// ============================================
+// INIT
+// ============================================
+async function init() {
+  initSelectors();
+  await Promise.all([
+    loadSettings(),
+    loadMonthlyHours(),
+    loadHourTypes()
+  ]);
+  await loadData(); // This loads employees first
+  loadTeams(); // Then populate teams from employees.team_name
+}
+
+function initSelectors() {
+  const monthSelect = document.getElementById('filterMjesec');
+  const yearSelect = document.getElementById('filterGodina');
+  const now = new Date();
+  
+  MJESECI.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = m;
+    if (i === now.getMonth()) opt.selected = true;
+    monthSelect.appendChild(opt);
+  });
+  
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 2; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+}
+
+// ============================================
+// DATA LOADING
+// ============================================
+async function loadSettings() {
+  try {
+    const { data } = await initSupabase().from('settings').select('*');
+    (data || []).forEach(s => { 
+      settings[s.key] = isNaN(parseFloat(s.value)) ? s.value : parseFloat(s.value);
+    });
+  } catch (e) { console.error('Settings error:', e); }
+}
+
+async function loadMonthlyHours() {
+  try {
+    const { data } = await initSupabase().from('monthly_hours').select('*');
+    (data || []).forEach(h => { 
+      monthlyHours[`${h.year}-${h.month}`] = h.working_hours;
+    });
+  } catch (e) { console.error('Monthly hours error:', e); }
+}
+
+async function loadHourTypes() {
+  try {
+    const { data } = await initSupabase().from('hour_types').select('*').order('sort_order');
+    hourTypes = data || [];
+    hourTypes.forEach(h => { KOEF[h.code] = parseFloat(h.coefficient) || 1; });
+  } catch (e) { console.error('Hour types error:', e); }
+}
+
+async function loadTeams() {
+  try {
+    // Dohvati unikatne team_name iz employees
+    const teamNames = [...new Set(employees.filter(e => e.team_name).map(e => e.team_name))].sort();
+    teams = teamNames;
+    
+    // Populate team filter
+    const select = document.getElementById('filterTeam');
+    select.innerHTML = '<option value="all">-- Sve postave --</option>';
+    teamNames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+  } catch (e) { console.error('Teams error:', e); }
+}
+
+async function loadData() {
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  
+  showLoading('Učitavanje podataka...');
+  
+  try {
+    // Load employees
+    const { data: empData } = await initSupabase()
+      .from('employees')
+      .select('*')
+      .eq('active', true)
+      .order('last_name');
+    employees = empData || [];
+    
+    // Load work_hours for this period
+    const { data: whData } = await initSupabase()
+      .from('work_hours')
+      .select('*')
+      .eq('year', year)
+      .eq('month', month);
+    workHours = whData || [];
+    
+    // Load payroll for this period
+    const { data: prData } = await initSupabase()
+      .from('payroll')
+      .select('*')
+      .eq('year', year)
+      .eq('month', month);
+    payrollData = prData || [];
+    
+    // Load bonuses
+    const { data: bonData } = await initSupabase()
+      .from('bonuses')
+      .select('*')
+      .eq('year', year)
+      .eq('month', month);
+    bonusesData = bonData || [];
+    
+    // Update UI
+    const fondSati = monthlyHours[`${year}-${month}`] || settings.FOND_SATI_DEFAULT || 176;
+    document.getElementById('kpiFondSati').textContent = fondSati;
+    
+    renderHoursTable();
+    updateKPIs();
+    
+  } catch (e) {
+    showMessage('Greška pri učitavanju: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// RENDER HOURS TABLE
+// ============================================
+function renderHoursTable() {
+  const tbody = document.getElementById('hoursTableBody');
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  const fondSati = monthlyHours[`${year}-${month}`] || settings.FOND_SATI_DEFAULT || 176;
+  
+  if (employees.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:40px;color:#999;">Nema aktivnih djelatnika</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = employees.map(emp => {
+    const wh = workHours.find(w => w.employee_id === emp.id) || {};
+    const hours = wh.hours_breakdown || {};
+    const transport = wh.transport_amount || emp.transport_allowance || 0;
+    
+    // Calculate total hours
+    let total = 0;
+    HOUR_CODES.filter(c => c !== 'DVRV').forEach(code => {
+      total += parseFloat(hours[code]) || 0;
+    });
+    
+    return `
+      <tr data-emp-id="${emp.id}">
+        <td class="employee-cell">
+          <div class="name">${emp.first_name} ${emp.last_name}</div>
+          <div class="job">${emp.position || '-'}</div>
+        </td>
+        ${HOUR_CODES.map(code => {
+          const val = hours[code] || '';
+          const cls = val ? 'has-value' : '';
+          return `<td><input type="number" class="hour-input ${cls}" data-code="${code}" value="${val}" min="0" step="0.5" onchange="onHourChange(this, '${emp.id}')"></td>`;
+        }).join('')}
+        <td><input type="number" class="hour-input ${transport ? 'has-value' : ''}" data-code="PRIJEVOZ" value="${transport}" min="0" step="1" onchange="onHourChange(this, '${emp.id}')"></td>
+        <td class="total-cell" id="total-${emp.id}">${total.toFixed(1)}</td>
+      </tr>
+    `;
+  }).join('');
+  
+  updateTotals();
+}
+
+function onHourChange(input, empId) {
+  const val = parseFloat(input.value) || 0;
+  
+  // Add/remove has-value class
+  if (val > 0) {
+    input.classList.add('has-value');
+  } else {
+    input.classList.remove('has-value');
+  }
+  
+  // Validate
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  const fondSati = monthlyHours[`${year}-${month}`] || 176;
+  
+  // Calculate row total
+  const row = input.closest('tr');
+  let total = 0;
+  row.querySelectorAll('.hour-input[data-code]').forEach(inp => {
+    const code = inp.dataset.code;
+    if (code !== 'DVRV' && code !== 'PRIJEVOZ') {
+      total += parseFloat(inp.value) || 0;
+    }
+  });
+  
+  const totalCell = document.getElementById(`total-${empId}`);
+  if (totalCell) totalCell.textContent = total.toFixed(1);
+  
+  // Warning if over fond
+  const rrInput = row.querySelector('input[data-code="RR"]');
+  if (rrInput) {
+    const rrVal = parseFloat(rrInput.value) || 0;
+    if (rrVal > fondSati) {
+      rrInput.classList.add('warning');
+    } else {
+      rrInput.classList.remove('warning');
+    }
+  }
+  
+  updateTotals();
+}
+
+function updateTotals() {
+  const totals = {};
+  HOUR_CODES.forEach(code => { totals[code] = 0; });
+  totals.PRIJEVOZ = 0;
+  totals.SATI = 0;
+  
+  document.querySelectorAll('#hoursTableBody tr').forEach(row => {
+    row.querySelectorAll('.hour-input').forEach(input => {
+      const code = input.dataset.code;
+      const val = parseFloat(input.value) || 0;
+      if (totals[code] !== undefined) totals[code] += val;
+      if (code !== 'DVRV' && code !== 'PRIJEVOZ') totals.SATI += val;
+    });
+  });
+  
+  HOUR_CODES.forEach(code => {
+    const el = document.getElementById(`total${code}`);
+    if (el) el.textContent = totals[code].toFixed(1);
+  });
+  document.getElementById('totalPrijevoz').textContent = totals.PRIJEVOZ.toFixed(0);
+  document.getElementById('totalSati').textContent = totals.SATI.toFixed(0);
+}
+
+// ============================================
+// SAVE HOURS
+// ============================================
+async function saveAllHours() {
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  
+  showLoading('Spremanje sati...');
+  
+  try {
+    let saved = 0;
+    const rows = document.querySelectorAll('#hoursTableBody tr');
+    
+    for (const row of rows) {
+      const empId = row.dataset.empId;
+      if (!empId) continue;
+      
+      const hours = {};
+      let hasData = false;
+      
+      HOUR_CODES.forEach(code => {
+        const input = row.querySelector(`input[data-code="${code}"]`);
+        const val = parseFloat(input?.value) || 0;
+        if (val > 0) {
+          hours[code] = val;
+          hasData = true;
+        }
+      });
+      
+      const transportInput = row.querySelector('input[data-code="PRIJEVOZ"]');
+      const transport = parseFloat(transportInput?.value) || 0;
+      
+      if (!hasData && transport === 0) continue;
+      
+      // Check if exists
+      const existing = workHours.find(w => w.employee_id === empId);
+      
+      if (existing) {
+        await initSupabase()
+          .from('work_hours')
+          .update({
+            hours_breakdown: hours,
+            transport_amount: transport,
+            status: 'draft',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id);
+      } else {
+        await initSupabase()
+          .from('work_hours')
+          .insert({
+            company_id: 'b61f3e81-fd26-468b-a359-71f08ca6e0f8',
+            employee_id: empId,
+            year, month,
+            hours_breakdown: hours,
+            transport_amount: transport,
+            status: 'draft'
+          });
+      }
+      saved++;
+    }
+    
+    showMessage(`Spremljeno ${saved} zapisa!`, 'success');
+    await loadData();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// CALCULATE PAYROLL
+// ============================================
+async function calculateAll() {
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  const fondSati = monthlyHours[`${year}-${month}`] || settings.FOND_SATI_DEFAULT || 176;
+  
+  // Filter employees with hours
+  const toCalculate = employees.filter(emp => {
+    const wh = workHours.find(w => w.employee_id === emp.id);
+    return wh && wh.hours_breakdown && Object.keys(wh.hours_breakdown).length > 0;
+  });
+  
+  if (toCalculate.length === 0) {
+    showMessage('Nema djelatnika s unesenim satima!', 'warning');
+    return;
+  }
+  
+  if (!confirm(`Izračunati plaće za ${toCalculate.length} djelatnika?`)) return;
+  
+  showLoading('Računanje plaća...');
+  
+  try {
+    const results = [];
+    
+    for (const emp of toCalculate) {
+      const wh = workHours.find(w => w.employee_id === emp.id);
+      const hours = wh.hours_breakdown || {};
+      const transport = wh.transport_amount || 0;
+      
+      // Calculate salary
+      const calc = calculateSalary(emp, hours, fondSati, transport);
+      
+      // Get existing payroll or create new
+      const existingPayroll = payrollData.find(p => p.employee_id === emp.id);
+      
+      const payrollRecord = {
+        company_id: 'b61f3e81-fd26-468b-a359-71f08ca6e0f8',
+        employee_id: emp.id,
+        year, month,
+        fond_sati: fondSati,
+        hours_breakdown: hours,
+        total_hours: calc.total_hours,
+        gross_salary: calc.gross_salary,
+        mio_1: calc.mio_1,
+        mio_2: calc.mio_2,
+        personal_deduction: calc.personal_deduction,
+        tax_base: calc.tax_base,
+        income_tax: calc.income_tax,
+        surtax: calc.surtax,
+        net_salary: calc.net_salary,
+        transport_allowance: calc.transport_final,
+        sick_leave_hours: calc.sick_leave_hours,
+        transport_reduction: calc.transport_reduction,
+        bonus_reduction: calc.bonus_reduction,
+        dolasci_van_rv: calc.dolasci_van_rv,
+        iznos_dolasci_van_rv: calc.iznos_dolasci_van_rv,
+        productivity_bonus_eur: calc.productivity_bonus_eur,
+        manual_bonus_eur: existingPayroll?.manual_bonus_eur || 0,
+        total_payment: calc.total_payment + (existingPayroll?.manual_bonus_eur || 0),
+        status: 'calculated'
+      };
+      
+      if (existingPayroll) {
+        await initSupabase()
+          .from('payroll')
+          .update(payrollRecord)
+          .eq('id', existingPayroll.id);
+      } else {
+        await initSupabase()
+          .from('payroll')
+          .insert(payrollRecord);
+      }
+      
+      results.push({ ...calc, emp, payrollRecord });
+    }
+    
+    showMessage(`Izračunato ${results.length} plaća!`, 'success');
+    await loadData();
+    renderObracunResults(results);
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+function calculateSalary(emp, hours, fondSati, transport) {
+  // Osnovna plaća
+  const minimalnaPlaca = settings.MINIMALNA_PLACA || 970;
+  const coefficient = emp.coefficient || 1.0;
+  const baseSalary = minimalnaPlaca * coefficient;
+  const hourlyRate = baseSalary / fondSati;
+  
+  // Kategorije sati
+  const oduzimiOdRR = ['RNR', 'RDP', 'RDC', 'RRV', 'RNN', 'BOL', 'PD'];
+  const prekovremeni = ['P1D', 'RPV', 'RPN', 'RPP'];
+  
+  let satiZaOduzeti = 0;
+  oduzimiOdRR.forEach(code => { satiZaOduzeti += parseFloat(hours[code]) || 0; });
+  
+  let satiPrekovremeni = 0;
+  prekovremeni.forEach(code => { satiPrekovremeni += parseFloat(hours[code]) || 0; });
+  
+  const uneseniRR = parseFloat(hours.RR) || 0;
+  const efektivniRR = Math.max(0, uneseniRR - satiZaOduzeti);
+  const totalHours = efektivniRR + satiZaOduzeti + satiPrekovremeni;
+  
+  // Bruto plaća
+  let grossSalary = efektivniRR * hourlyRate;
+  
+  oduzimiOdRR.forEach(code => {
+    const h = parseFloat(hours[code]) || 0;
+    if (h > 0) grossSalary += h * hourlyRate * (KOEF[code] || 1);
+  });
+  
+  prekovremeni.forEach(code => {
+    const h = parseFloat(hours[code]) || 0;
+    if (h > 0) grossSalary += h * hourlyRate * (KOEF[code] || 1);
+  });
+  
+  // MIO doprinosi
+  const mio1Rate = settings.MIO_1_STUP || 0.15;
+  const mio2Rate = settings.MIO_2_STUP || 0.05;
+  const mio1 = grossSalary * mio1Rate;
+  const mio2 = grossSalary * mio2Rate;
+  const dohodak = grossSalary - mio1 - mio2;
+  
+  // Osobni odbitak
+  const children = emp.children_count || 0;
+  let personalDeduction;
+  if (children === 0) personalDeduction = settings.OSOBNI_ODBITAK_0_DJECE || 600;
+  else if (children === 1) personalDeduction = settings.OSOBNI_ODBITAK_1_DIJETE || 900;
+  else if (children === 2) personalDeduction = settings.OSOBNI_ODBITAK_2_DJECE || 1320;
+  else if (children === 3) personalDeduction = settings.OSOBNI_ODBITAK_3_DJECE || 1920;
+  else personalDeduction = settings.OSOBNI_ODBITAK_4_DJECE || 2760;
+  
+  const taxBase = Math.max(0, dohodak - personalDeduction);
+  
+  // Porez - PROVJERI tax_rate_override!
+  let incomeTax = 0, surtax = 0;
+  
+  if (emp.tax_rate_override && emp.tax_rate_override > 0) {
+    // Posebna stopa iz employees tablice
+    incomeTax = taxBase * (emp.tax_rate_override / 100);
+  } else {
+    // Standardni izračun po settings
+    const porezPrag = (settings.POREZ_PRAG_GODISNJI || 50400) / 12;
+    const stopa1 = settings.POREZ_STOPA_1 || 0.20;
+    const stopa2 = settings.POREZ_STOPA_2 || 0.30;
+    
+    if (taxBase <= porezPrag) {
+      incomeTax = taxBase * stopa1;
+    } else {
+      incomeTax = porezPrag * stopa1 + (taxBase - porezPrag) * stopa2;
+    }
+    surtax = incomeTax * ((emp.surtax_rate || 0) / 100);
+  }
+  
+  const netSalary = dohodak - incomeTax - surtax;
+  
+  // BOLOVANJE - umanjenje prijevoza i bonusa
+  const sickLeaveHours = parseFloat(hours.BOL) || 0;
+  const sickLeaveDays = sickLeaveHours / 8;
+  const workingDays = fondSati / 8;
+  const sickLeaveRatio = workingDays > 0 ? sickLeaveDays / workingDays : 0;
+  
+  // Umanjenje prijevoza proporcionalno bolovanju
+  const transportReduction = transport * sickLeaveRatio;
+  const transportFinal = transport - transportReduction;
+  
+  // DVRV - 1% prosječne neto plaće
+  const dolasciVanRV = parseFloat(hours.DVRV) || 0;
+  const prosjecnaNeto = emp.average_net_salary || 0;
+  const iznosDVRV = prosjecnaNeto * 0.01 * dolasciVanRV;
+  
+  // Bonus produktivnosti (iz bonuses tablice)
+  const bonus = bonusesData.find(b => b.employee_id === emp.id) || {};
+  let productivityBonusEur = bonus.productivity_bonus_eur || 0;
+  
+  // Umanjenje bonusa proporcionalno bolovanju
+  const bonusReduction = productivityBonusEur * sickLeaveRatio;
+  productivityBonusEur = productivityBonusEur - bonusReduction;
+  
+  // Ukupno za isplatu (bez ručnog bonusa - to se dodaje naknadno)
+  const totalPayment = netSalary + transportFinal + iznosDVRV + productivityBonusEur;
+  
+  return {
+    total_hours: totalHours,
+    gross_salary: grossSalary,
+    mio_1: mio1,
+    mio_2: mio2,
+    personal_deduction: personalDeduction,
+    tax_base: taxBase,
+    income_tax: incomeTax,
+    surtax: surtax,
+    net_salary: netSalary,
+    transport_original: transport,
+    transport_reduction: transportReduction,
+    transport_final: transportFinal,
+    sick_leave_hours: sickLeaveHours,
+    dolasci_van_rv: dolasciVanRV,
+    iznos_dolasci_van_rv: iznosDVRV,
+    productivity_bonus_original: bonus.productivity_bonus_eur || 0,
+    bonus_reduction: bonusReduction,
+    productivity_bonus_eur: productivityBonusEur,
+    total_payment: totalPayment
+  };
+}
+
+function renderObracunResults(results) {
+  const container = document.getElementById('obracunResults');
+  
+  if (results.length === 0) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Nema rezultata</p>';
+    return;
+  }
+  
+  let totalBruto = 0, totalNeto = 0, totalPayment = 0;
+  results.forEach(r => {
+    totalBruto += r.gross_salary;
+    totalNeto += r.net_salary;
+    totalPayment += r.total_payment;
+  });
+  
+  container.innerHTML = `
+    <table class="payroll-table">
+      <thead>
+        <tr>
+          <th>Djelatnik</th>
+          <th class="right">Sati</th>
+          <th class="right">Bruto</th>
+          <th class="right">MIO</th>
+          <th class="right">Porez</th>
+          <th class="right">Neto</th>
+          <th class="right">Prijevoz</th>
+          <th class="right">Bonus</th>
+          <th class="right">UKUPNO</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${results.map(r => `
+          <tr>
+            <td>
+              <div class="employee-info">
+                <span class="name">${r.emp.first_name} ${r.emp.last_name}</span>
+                <span class="job">${r.emp.position || '-'}</span>
+              </div>
+            </td>
+            <td class="right">${r.total_hours.toFixed(1)}</td>
+            <td class="right">${r.gross_salary.toFixed(2)} €</td>
+            <td class="right">${(r.mio_1 + r.mio_2).toFixed(2)} €</td>
+            <td class="right">${(r.income_tax + r.surtax).toFixed(2)} €</td>
+            <td class="right">${r.net_salary.toFixed(2)} €</td>
+            <td class="right">${r.transport_final.toFixed(2)} €</td>
+            <td class="right">${(r.productivity_bonus_eur + r.iznos_dolasci_van_rv).toFixed(2)} €</td>
+            <td class="right"><strong>${r.total_payment.toFixed(2)} €</strong></td>
+            <td><button class="btn btn-secondary" onclick="showPayslip('${r.emp.id}')">👁️</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><strong>UKUPNO</strong></td>
+          <td></td>
+          <td class="right"><strong>${totalBruto.toFixed(2)} €</strong></td>
+          <td></td>
+          <td></td>
+          <td class="right"><strong>${totalNeto.toFixed(2)} €</strong></td>
+          <td></td>
+          <td></td>
+          <td class="right"><strong>${totalPayment.toFixed(2)} €</strong></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+  
+  updateKPIs();
+}
+
+// ============================================
+// TEAM VIEW WITH MANUAL BONUS
+// ============================================
+async function filterByTeam() {
+  const teamName = document.getElementById('filterTeam').value;
+  const container = document.getElementById('teamResults');
+  
+  if (teamName === 'all') {
+    renderAllTeams();
+    return;
+  }
+  
+  // Get employees in this team
+  const teamEmployees = employees.filter(e => e.team_name === teamName);
+  
+  if (teamEmployees.length === 0) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Nema djelatnika u ovoj postavi</p>';
+    return;
+  }
+  
+  // Get payroll for team members
+  const teamPayroll = payrollData.filter(p => teamEmployees.some(e => e.id === p.employee_id));
+  
+  renderTeamSection(teamName, teamEmployees, teamPayroll, container);
+}
+
+function renderAllTeams() {
+  const container = document.getElementById('teamResults');
+  let html = '';
+  
+  // Group employees by team_name
+  const teamNames = [...new Set(employees.filter(e => e.team_name).map(e => e.team_name))].sort();
+  
+  teamNames.forEach(teamName => {
+    const teamEmployees = employees.filter(e => e.team_name === teamName);
+    if (teamEmployees.length === 0) return;
+    
+    const teamPayroll = payrollData.filter(p => teamEmployees.some(e => e.id === p.employee_id));
+    
+    let teamTotal = 0;
+    teamPayroll.forEach(p => { teamTotal += (p.total_payment || 0) + (p.manual_bonus_eur || 0); });
+    
+    html += `
+      <div class="team-section">
+        <div class="team-header">
+          <h3>${teamName}</h3>
+          <div class="team-totals">
+            <span>👥 ${teamEmployees.length} djelatnika</span>
+            <span>💰 ${teamTotal.toFixed(2)} €</span>
+          </div>
+        </div>
+        ${renderTeamTable(teamName, teamEmployees, teamPayroll)}
+      </div>
+    `;
+  });
+  
+  // Employees without team
+  const noTeamEmps = employees.filter(e => !e.team_name);
+  if (noTeamEmps.length > 0) {
+    const noTeamPayroll = payrollData.filter(p => noTeamEmps.some(e => e.id === p.employee_id));
+    let noTeamTotal = 0;
+    noTeamPayroll.forEach(p => { noTeamTotal += (p.total_payment || 0) + (p.manual_bonus_eur || 0); });
+    
+    html += `
+      <div class="team-section">
+        <div class="team-header" style="background: linear-gradient(135deg, #757575, #9e9e9e);">
+          <h3>Bez postave</h3>
+          <div class="team-totals">
+            <span>👥 ${noTeamEmps.length} djelatnika</span>
+            <span>💰 ${noTeamTotal.toFixed(2)} €</span>
+          </div>
+        </div>
+        ${renderTeamTable(null, noTeamEmps, noTeamPayroll)}
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:#999;">Nema podataka</p>';
+}
+
+function renderTeamSection(teamName, teamEmployees, teamPayroll, container) {
+  let teamTotal = 0;
+  teamPayroll.forEach(p => { teamTotal += (p.total_payment || 0) + (p.manual_bonus_eur || 0); });
+  
+  container.innerHTML = `
+    <div class="team-section">
+      <div class="team-header">
+        <h3>${teamName || 'Bez postave'}</h3>
+        <div class="team-totals">
+          <span>👥 ${teamEmployees.length} djelatnika</span>
+          <span>💰 ${teamTotal.toFixed(2)} €</span>
+        </div>
+      </div>
+      ${renderTeamTable(teamName, teamEmployees, teamPayroll)}
+    </div>
+  `;
+}
+
+function renderTeamTable(teamName, teamEmployees, teamPayroll) {
+  return `
+    <table class="payroll-table">
+      <thead>
+        <tr>
+          <th>Djelatnik</th>
+          <th class="right">Neto</th>
+          <th class="right">Prijevoz</th>
+          <th class="right">Prod. bonus</th>
+          <th class="right">DVRV</th>
+          <th class="right">Ručni bonus €</th>
+          <th class="right">UKUPNO</th>
+          <th>Status</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${teamEmployees.map(emp => {
+          const p = teamPayroll.find(pr => pr.employee_id === emp.id) || {};
+          const manualBonus = p.manual_bonus_eur || 0;
+          const total = (p.total_payment || 0) + manualBonus;
+          
+          return `
+            <tr>
+              <td>
+                <div class="employee-info">
+                  <span class="name">${emp.first_name} ${emp.last_name}</span>
+                  <span class="job">${emp.position || '-'}${emp.linija ? ` <small style="color:#1976d2;">(${emp.linija}${emp.stroj_tip ? ' - ' + emp.stroj_tip : ''})</small>` : ''}</span>
+                </div>
+              </td>
+              <td class="right">${(p.net_salary || 0).toFixed(2)} €</td>
+              <td class="right">${(p.transport_allowance || 0).toFixed(2)} €</td>
+              <td class="right">${(p.productivity_bonus_eur || 0).toFixed(2)} €</td>
+              <td class="right">${(p.iznos_dolasci_van_rv || 0).toFixed(2)} €</td>
+              <td class="right">
+                <input type="number" class="manual-bonus-input" 
+                       value="${manualBonus.toFixed(2)}" 
+                       step="0.01"
+                       onchange="updateManualBonus('${p.id || ''}', '${emp.id}', this.value)">
+              </td>
+              <td class="right"><strong>${total.toFixed(2)} €</strong></td>
+              <td><span class="status-badge ${p.status || 'draft'}">${p.status || 'draft'}</span></td>
+              <td>
+                <button class="btn btn-secondary" onclick="showPayslip('${emp.id}')" ${!p.id ? 'disabled' : ''}>👁️</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function updateManualBonus(payrollId, empId, value) {
+  const bonus = parseFloat(value) || 0;
+  const year = parseInt(document.getElementById('filterGodina').value);
+  const month = parseInt(document.getElementById('filterMjesec').value);
+  
+  try {
+    if (payrollId) {
+      // Update existing
+      const payroll = payrollData.find(p => p.id === payrollId);
+      const newTotal = (payroll?.total_payment || 0) - (payroll?.manual_bonus_eur || 0) + bonus;
+      
+      await initSupabase()
+        .from('payroll')
+        .update({ 
+          manual_bonus_eur: bonus,
+          total_payment: newTotal + bonus
+        })
+        .eq('id', payrollId);
+    } else {
+      // Create new payroll with just manual bonus
+      await initSupabase()
+        .from('payroll')
+        .insert({
+          company_id: 'b61f3e81-fd26-468b-a359-71f08ca6e0f8',
+          employee_id: empId,
+          year, month,
+          manual_bonus_eur: bonus,
+          total_payment: bonus,
+          status: 'draft'
+        });
+    }
+    
+    showMessage('Ručni bonus spremljen!', 'success');
+    await loadData();
+    filterByTeam();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// PAYSLIP
+// ============================================
+function showPayslip(empId) {
+  const emp = employees.find(e => e.id === empId);
+  const payroll = payrollData.find(p => p.employee_id === empId);
+  
+  if (!emp || !payroll) {
+    showMessage('Nema podataka za platnu listu', 'warning');
+    return;
+  }
+  
+  const year = document.getElementById('filterGodina').value;
+  const month = document.getElementById('filterMjesec').value;
+  
+  const manualBonus = payroll.manual_bonus_eur || 0;
+  const finalTotal = (payroll.total_payment || 0) + manualBonus;
+  
+  document.getElementById('payslipContent').innerHTML = `
+    <div class="payslip">
+      <div class="payslip-header">
+        <h3>${emp.first_name} ${emp.last_name}</h3>
+        <div class="period">${MJESECI[month-1]} ${year}</div>
+      </div>
+      
+      <div class="payslip-section">
+        <h4>Podaci o djelatniku</h4>
+        <div class="payslip-row"><span>Radno mjesto</span><span>${emp.position || '-'}</span></div>
+        <div class="payslip-row"><span>Koeficijent</span><span>${emp.coefficient || 1}</span></div>
+        <div class="payslip-row"><span>Broj djece</span><span>${emp.children_count || 0}</span></div>
+      </div>
+      
+      <div class="payslip-section">
+        <h4>Radni sati</h4>
+        <div class="payslip-row"><span>Fond sati</span><span>${payroll.fond_sati || 176}</span></div>
+        <div class="payslip-row"><span>Ukupno odrađeno</span><span>${(payroll.total_hours || 0).toFixed(1)}</span></div>
+        ${payroll.sick_leave_hours > 0 ? `<div class="payslip-row"><span>Bolovanje</span><span>${payroll.sick_leave_hours} h</span></div>` : ''}
+      </div>
+      
+      <div class="payslip-section">
+        <h4>Obračun plaće</h4>
+        <div class="payslip-row"><span>Bruto plaća</span><span>${(payroll.gross_salary || 0).toFixed(2)} €</span></div>
+        <div class="payslip-row"><span>MIO I. stup (15%)</span><span>-${(payroll.mio_1 || 0).toFixed(2)} €</span></div>
+        <div class="payslip-row"><span>MIO II. stup (5%)</span><span>-${(payroll.mio_2 || 0).toFixed(2)} €</span></div>
+        <div class="payslip-row"><span>Osobni odbitak</span><span>${(payroll.personal_deduction || 0).toFixed(2)} €</span></div>
+        <div class="payslip-row"><span>Porez na dohodak</span><span>-${(payroll.income_tax || 0).toFixed(2)} €</span></div>
+        ${payroll.surtax > 0 ? `<div class="payslip-row"><span>Prirez</span><span>-${payroll.surtax.toFixed(2)} €</span></div>` : ''}
+        <div class="payslip-row total"><span>NETO PLAĆA</span><span>${(payroll.net_salary || 0).toFixed(2)} €</span></div>
+      </div>
+      
+      <div class="payslip-section">
+        <h4>Dodaci</h4>
+        ${payroll.transport_allowance > 0 ? `
+          <div class="payslip-row">
+            <span>Prijevoz ${payroll.transport_reduction > 0 ? `(umanjeno ${payroll.transport_reduction.toFixed(2)} € zbog bolovanja)` : ''}</span>
+            <span>+${(payroll.transport_allowance || 0).toFixed(2)} €</span>
+          </div>
+        ` : ''}
+        ${payroll.iznos_dolasci_van_rv > 0 ? `
+          <div class="payslip-row"><span>Dolasci van RV (${payroll.dolasci_van_rv} × 1%)</span><span>+${payroll.iznos_dolasci_van_rv.toFixed(2)} €</span></div>
+        ` : ''}
+        ${payroll.productivity_bonus_eur > 0 ? `
+          <div class="payslip-row">
+            <span>Bonus produktivnosti ${payroll.bonus_reduction > 0 ? `(umanjeno ${payroll.bonus_reduction.toFixed(2)} € zbog bolovanja)` : ''}</span>
+            <span>+${payroll.productivity_bonus_eur.toFixed(2)} €</span>
+          </div>
+        ` : ''}
+        ${manualBonus !== 0 ? `
+          <div class="payslip-row"><span>Ručna korekcija</span><span>${manualBonus >= 0 ? '+' : ''}${manualBonus.toFixed(2)} €</span></div>
+        ` : ''}
+      </div>
+      
+      <div class="payslip-section">
+        <div class="payslip-row total highlight">
+          <span>ZA ISPLATU</span>
+          <span>${finalTotal.toFixed(2)} €</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('payslipModal').classList.add('active');
+}
+
+// ============================================
+// UTILITIES
+// ============================================
+function showTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  
+  document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  
+  if (tabName === 'pregled') {
+    filterByTeam();
+  }
+}
+
+function updateKPIs() {
+  document.getElementById('kpiDjelatnika').textContent = employees.length;
+  document.getElementById('kpiUnesenoSati').textContent = workHours.length;
+  document.getElementById('kpiObracunato').textContent = payrollData.filter(p => p.status === 'calculated' || p.status === 'confirmed').length;
+  
+  let totalBruto = 0, totalNeto = 0;
+  payrollData.forEach(p => {
+    totalBruto += p.gross_salary || 0;
+    totalNeto += (p.total_payment || 0) + (p.manual_bonus_eur || 0);
+  });
+  
+  document.getElementById('kpiUkupnoBruto').textContent = totalBruto.toFixed(0) + ' €';
+  document.getElementById('kpiUkupnoNeto').textContent = totalNeto.toFixed(0) + ' €';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function showLoading(msg) {
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+function showMessage(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+async function confirmAll() {
+  if (!confirm('Potvrditi sve izračunate plaće?')) return;
+  
+  showLoading('Potvrđivanje...');
+  try {
+    await initSupabase()
+      .from('payroll')
+      .update({ status: 'confirmed' })
+      .eq('status', 'calculated');
+    
+    showMessage('Sve plaće potvrđene!', 'success');
+    await loadData();
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function printPayslip() {
+  const content = document.getElementById('payslipContent').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+    <head>
+      <title>Platna lista</title>
+      <style>
+        body { font-family: Arial; padding: 20px; }
+        .payslip { border: 1px solid #ddd; }
+        .payslip-header { background: #1e3a5f; color: white; padding: 15px; text-align: center; }
+        .payslip-section { padding: 15px; border-bottom: 1px solid #eee; }
+        .payslip-section h4 { margin: 0 0 10px; color: #666; }
+        .payslip-row { display: flex; justify-content: space-between; padding: 5px 0; }
+        .payslip-row.total { font-weight: bold; border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; }
+        .payslip-row.highlight { background: #e8f5e9; }
+      </style>
+    </head>
+    <body>${content}<script src="../../js/mobile.js"></script>
+</body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+}
+
+function copyFromLastMonth() {
+  showMessage('Funkcija u izradi...', 'info');
+}
+
+function importCSV() {
+  showMessage('Funkcija u izradi...', 'info');
+}
+
+function exportHoursCSV() {
+  showMessage('Funkcija u izradi...', 'info');
+}
+
+function exportTeamCSV() {
+  showMessage('Funkcija u izradi...', 'info');
+}
+
+function printTeam() {
+  window.print();
+}
+
+// Start
+init();
+</script>
+
+<script src="../../js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,1158 @@
+<h1 style="margin-bottom: 30px; color: var(--primary);">📊 Produktivnost</h1>
+
+<!-- FILTRI -->
+<div class="card">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Mjesec</label>
+      <select class="form-control" id="filterMonth">
+        <option value="1">Siječanj</option>
+        <option value="2">Veljača</option>
+        <option value="3">Ožujak</option>
+        <option value="4">Travanj</option>
+        <option value="5">Svibanj</option>
+        <option value="6">Lipanj</option>
+        <option value="7">Srpanj</option>
+        <option value="8">Kolovoz</option>
+        <option value="9">Rujan</option>
+        <option value="10">Listopad</option>
+        <option value="11">Studeni</option>
+        <option value="12">Prosinac</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Godina</label>
+      <select class="form-control" id="filterYear">
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Linija</label>
+      <select class="form-control" id="filterLine">
+        <option value="">Sve</option>
+        <option value="NLI">NLI</option>
+        <option value="WH">W&H</option>
+        <option value="TISAK">Tisak</option>
+        <option value="SKLADISTE">Skladište</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Stroj</label>
+      <select class="form-control" id="filterMachine">
+        <option value="">Svi</option>
+        <option value="bottomer">Bottomer</option>
+        <option value="tuber">Tuber</option>
+        <option value="aries">Aries</option>
+        <option value="flexotecnica">Flexotecnica</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tim</label>
+      <select class="form-control" id="filterTeam">
+        <option value="">Svi timovi</option>
+      </select>
+    </div>
+    <div class="form-group" style="align-self: flex-end;">
+      <button class="btn btn-primary" onclick="loadProductivityData()">🔄 Učitaj</button>
+      <button class="btn btn-success" onclick="openAddModal()">➕ Novi unos</button>
+    </div>
+  </div>
+</div>
+
+<!-- KPI KARTICE -->
+<div class="status-grid" style="margin-bottom: 20px;">
+  <div class="status-card success">
+    <div class="status-card-value" id="kpiBonusOstali">0%</div>
+    <div class="status-card-label">Prosj. bonus ostali</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-value" id="kpiBonusVoditelj">0%</div>
+    <div class="status-card-label">Prosj. bonus voditelji</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-value" id="kpiScrapPct">0%</div>
+    <div class="status-card-label">Prosj. škart</div>
+  </div>
+  <div class="status-card">
+    <div class="status-card-value" id="kpiEntries">0</div>
+    <div class="status-card-label">Broj unosa</div>
+  </div>
+</div>
+
+<!-- TABLICA PRODUKTIVNOSTI -->
+<div class="card">
+  <div class="card-header">
+    📈 Produktivnost po postavama
+    <button class="btn btn-sm btn-info" onclick="exportProductivityData()">📥 Export</button>
+  </div>
+  <div class="card-body">
+    <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+      <table>
+        <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+          <tr>
+            <th>Datum</th>
+            <th>Postava / Tim</th>
+            <th>Linija</th>
+            <th>Stroj</th>
+            <th style="text-align: right;">Ostvareno / Plan</th>
+            <th style="text-align: right;">Škart %</th>
+            <th style="width: 150px;">Bonus</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="productivityTable">
+          <tr><td colspan="8" class="empty-state">Učitavanje...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MJESEČNI PREGLED ZA BONUSE -->
+<div class="card" style="margin-top: 20px;">
+  <div class="card-header">
+    💰 Mjesečni pregled po timovima (za bonuse)
+    <div>
+      <select class="form-control" id="bonusMonth" style="width: auto; display: inline-block;" onchange="loadMonthlyStats()"></select>
+      <button class="btn btn-sm btn-success" onclick="calculateBonuses()">🧮 Izračunaj bonuse</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Formula info -->
+    <div class="bonus-formula-info">
+      <strong>📐 Formula bonusa:</strong>
+      <span class="formula-tag voditelj">Voditelji/Koordinatori: <span id="formulaVoditelj">25.5</span>/2200 × razlika</span>
+      <span class="formula-tag ostali">Ostali: <span id="formulaOstali">12.5</span>/2200 × razlika</span>
+      <span class="formula-tag" style="background:#ffebee;color:#c62828;">Škart: -12 × (ostvareni% - 1%)</span>
+    </div>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Tim</th>
+          <th>Linija</th>
+          <th style="text-align: right;">Plan</th>
+          <th style="text-align: right;">Ostvareno</th>
+          <th style="text-align: right;">Razlika</th>
+          <th style="text-align: right;">Škart %</th>
+          <th style="text-align: right;">Bonus %</th>
+          <th style="text-align: right;">Akcija</th>
+        </tr>
+      </thead>
+      <tbody id="monthlyStatsTable">
+        <tr><td colspan="8" class="empty-state">Odaberite mjesec</td></tr>
+      </tbody>
+      <tfoot id="monthlyStatsTfoot" style="display: none;">
+        <tr style="background: #e8f5e9; font-weight: bold;">
+          <td colspan="4">UKUPNO</td>
+          <td style="text-align: right;" id="totalRazlika">0</td>
+          <td colspan="3"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL ZA UNOS/UREĐIVANJE -->
+<!-- ============================================ -->
+<div class="modal" id="entryModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 id="entryModalTitle">➕ Novi unos produktivnosti</h2>
+      <span class="modal-close" onclick="closeModal('entryModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="entryId">
+      <input type="hidden" id="entryLine">
+      <input type="hidden" id="entryMachine">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Datum *</label>
+          <input type="date" class="form-control" id="entryDate" required>
+        </div>
+        <div class="form-group" style="flex: 2;">
+          <label>Postava / Tim *</label>
+          <select class="form-control" id="entryTeam" onchange="onTeamChange()">
+            <option value="">-- Odaberi postavu --</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Prikaz linije i stroja (readonly) -->
+      <div class="form-row" id="teamInfoRow" style="display: none;">
+        <div class="form-group">
+          <label>Linija</label>
+          <input type="text" class="form-control" id="entryLineDisplay" readonly style="background:#e3f2fd; font-weight:bold;">
+        </div>
+        <div class="form-group">
+          <label>Stroj</label>
+          <input type="text" class="form-control" id="entryMachineDisplay" readonly style="background:#e3f2fd; font-weight:bold;">
+        </div>
+      </div>
+      
+      <hr style="margin: 20px 0; border-color: #eee;">
+      
+      <!-- Plan iz postavki -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>📋 Plan (kom/h) <small style="color:#888;">(iz postavki)</small></label>
+          <input type="number" class="form-control" id="entryPlan" value="0" readonly style="background:#e8f5e9; font-weight:bold;">
+        </div>
+        <div class="form-group">
+          <label>✅ Ostvareno (kom/h)</label>
+          <input type="number" class="form-control" id="entryActual" value="0" min="0" oninput="autoCalculate()">
+        </div>
+      </div>
+      
+      <!-- Škart u postotcima -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>🎯 Škart dozvoljeni (%) <small style="color:#888;">(iz postavki)</small></label>
+          <input type="number" class="form-control" id="entryScrapAllowed" value="1" step="0.1" readonly style="background:#fff3e0; font-weight:bold;">
+        </div>
+        <div class="form-group">
+          <label>⚠️ Škart ostvareni (%)</label>
+          <input type="number" class="form-control" id="entryScrapPct" value="0" min="0" max="100" step="0.1" oninput="autoCalculate()">
+        </div>
+      </div>
+      
+      <!-- Preview izračuna bonusa -->
+      <div class="oee-preview">
+        <h4>📊 Izračun bonusa</h4>
+        <div class="oee-metrics" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="oee-metric">
+            <span class="label">Razlika (kom/h)</span>
+            <span class="value" id="previewRazlika">0</span>
+          </div>
+          <div class="oee-metric">
+            <span class="label">Razlika škarta</span>
+            <span class="value" id="previewScrapDiff">0%</span>
+          </div>
+          <div class="oee-metric">
+            <span class="label">Korekcija škarta</span>
+            <span class="value" id="previewScrapKorekcija">0%</span>
+          </div>
+        </div>
+        <div class="oee-metrics" style="grid-template-columns: repeat(2, 1fr); margin-top: 10px;">
+          <div class="oee-metric total" style="background: rgba(76,175,80,0.3);">
+            <span class="label">Bonus ostali (12/2200)</span>
+            <span class="value" id="previewBonusOstali">0%</span>
+          </div>
+          <div class="oee-metric total" style="background: rgba(255,152,0,0.3);">
+            <span class="label">Bonus voditelji (25.5/2200)</span>
+            <span class="value" id="previewBonusVoditelj">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Napomena</label>
+        <textarea class="form-control" id="entryNotes" rows="2" placeholder="Napomene..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('entryModal')">Odustani</button>
+      <button class="btn btn-danger" id="deleteBtn" onclick="deleteProductivityEntry()" style="display: none;">🗑️ Obriši</button>
+      <button class="btn btn-primary" onclick="saveProductivityEntry()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .oee-bar {
+    height: 24px;
+    background: #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .oee-bar .fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.3s;
+  }
+  .oee-bar .value {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+  }
+  .oee-green { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+  .oee-orange { background: linear-gradient(90deg, #ff9800, #FFC107); }
+  .oee-red { background: linear-gradient(90deg, #f44336, #E91E63); }
+  
+  .oee-preview {
+    background: linear-gradient(135deg, #1565c0, #1976d2);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+  .oee-preview h4 { margin: 0 0 15px 0; font-size: 1em; }
+  .oee-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+  .oee-metric { text-align: center; }
+  .oee-metric .label { font-size: 0.8em; opacity: 0.8; display: block; }
+  .oee-metric .value { font-size: 1.5em; font-weight: 700; }
+  .oee-metric.total { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; }
+  .oee-metric.total .value { color: #4CAF50; }
+  
+  .bonus-positive { color: #4CAF50; font-weight: 600; }
+  .bonus-negative { color: #f44336; }
+  
+  .bonus-formula-info {
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .formula-tag {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+  }
+  .formula-tag.voditelj { background: #fff3e0; color: #e65100; }
+  .formula-tag.ostali { background: #e8f5e9; color: #2e7d32; }
+</style>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var productivityData = [];
+var productivityTeams = [];
+var bonusRules = [];
+var productivityPlans = {}; // Plan i škart iz postavki
+var bonusSettings = {
+  BONUS_KOEF_VODITELJ: 25.5,
+  BONUS_KOEF_OSTALI: 12,
+  BONUS_BAZA: 2200,
+  PLANIRANI_SKART: 1.0,
+  SKART_KOEF_VODITELJ: -12,
+  SKART_KOEF_OSTALI: -8
+};
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+console.log('📊 ProduktivnostView učitan!');
+
+async function initProduktivnostView() {
+  console.log('✅ initProduktivnostView()');
+  
+  // Default mjesec i godina - trenutni
+  var today = new Date();
+  document.getElementById('filterMonth').value = today.getMonth() + 1;
+  document.getElementById('filterYear').value = today.getFullYear();
+  
+  // Popuni mjesece za bonus pregled
+  initBonusMonthSelect();
+  
+  await loadProductivityPlans();
+  await loadProductivityTeams();
+  await loadBonusSettings();
+  await loadProductivityData();
+}
+
+// ============================================
+// UČITAVANJE PLANOVA IZ POSTAVKI
+// ============================================
+async function loadProductivityPlans() {
+  try {
+    var { data, error } = await initSupabase()
+      .from('settings')
+      .select('key, value')
+      .eq('category', 'PRODUKTIVNOST');
+    
+    if (error) throw error;
+    
+    productivityPlans = {};
+    (data || []).forEach(function(s) {
+      productivityPlans[s.key] = parseFloat(s.value);
+    });
+    
+    console.log('📋 Planovi produktivnosti učitani:', productivityPlans);
+    
+  } catch (e) {
+    console.error('Greška učitavanja planova:', e);
+    // Fallback defaults
+    productivityPlans = {
+      plan_osobna_wh_tuber: 1500,
+      plan_osobna_wh_bottomer: 1500,
+      plan_osobna_nli_tuber: 2000,
+      plan_osobna_nli_bottomer: 2000,
+      plan_osobna_tisak_aries: 1800,
+      plan_osobna_tisak_flexotecnica: 1800,
+      plan_skladiste_mjesecno: 4000000,
+      skart_osobna_wh_tuber: 1,
+      skart_osobna_wh_bottomer: 1,
+      skart_osobna_nli_tuber: 1,
+      skart_osobna_nli_bottomer: 1,
+      skart_osobna_tisak_aries: 1,
+      skart_osobna_tisak_flexotecnica: 1,
+      skart_skladiste: 1
+    };
+  }
+}
+
+// ============================================
+// PROMJENA TIMA - DOHVATI LINIJU, STROJ, PLAN I ŠKART
+// ============================================
+function onTeamChange() {
+  var teamId = document.getElementById('entryTeam').value;
+  var teamInfoRow = document.getElementById('teamInfoRow');
+  
+  if (!teamId) {
+    teamInfoRow.style.display = 'none';
+    document.getElementById('entryLine').value = '';
+    document.getElementById('entryMachine').value = '';
+    document.getElementById('entryPlan').value = 0;
+    document.getElementById('entryScrapAllowed').value = 1;
+    return;
+  }
+  
+  // Pronađi tim
+  var team = productivityTeams.find(function(t) { return t.id === teamId; });
+  if (!team) return;
+  
+  // Postavi liniju i stroj iz tima
+  var line = team.linija || '';
+  var machine = (team.stroj_tip || '').toLowerCase();
+  
+  document.getElementById('entryLine').value = line;
+  document.getElementById('entryMachine').value = machine;
+  document.getElementById('entryLineDisplay').value = line;
+  document.getElementById('entryMachineDisplay').value = team.stroj_tip || '';
+  teamInfoRow.style.display = 'flex';
+  
+  // Odredi ključeve za plan i škart
+  var planKey = '';
+  var skartKey = '';
+  
+  if (line === 'NLI') {
+    if (machine === 'tuber') {
+      planKey = 'plan_osobna_nli_tuber';
+      skartKey = 'skart_osobna_nli_tuber';
+    } else if (machine === 'bottomer') {
+      planKey = 'plan_osobna_nli_bottomer';
+      skartKey = 'skart_osobna_nli_bottomer';
+    }
+  } else if (line === 'WH') {
+    if (machine === 'tuber') {
+      planKey = 'plan_osobna_wh_tuber';
+      skartKey = 'skart_osobna_wh_tuber';
+    } else if (machine === 'bottomer') {
+      planKey = 'plan_osobna_wh_bottomer';
+      skartKey = 'skart_osobna_wh_bottomer';
+    }
+  } else if (line === 'TISAK') {
+    if (machine === 'aries') {
+      planKey = 'plan_osobna_tisak_aries';
+      skartKey = 'skart_osobna_tisak_aries';
+    } else if (machine === 'flexotecnica') {
+      planKey = 'plan_osobna_tisak_flexotecnica';
+      skartKey = 'skart_osobna_tisak_flexotecnica';
+    }
+  } else if (line === 'SKLADISTE') {
+    planKey = 'plan_skladiste_mjesecno';
+    skartKey = 'skart_skladiste';
+  }
+  
+  // Postavi vrijednosti iz postavki
+  var plan = productivityPlans[planKey] || 0;
+  var skart = productivityPlans[skartKey] || 1;
+  
+  document.getElementById('entryPlan').value = plan;
+  document.getElementById('entryScrapAllowed').value = skart;
+  
+  // Ažuriraj izračun
+  autoCalculate();
+}
+
+// ============================================
+// AUTOMATSKI IZRAČUN BONUSA
+// ============================================
+function autoCalculate() {
+  var actual = parseInt(document.getElementById('entryActual').value) || 0;
+  var scrapPct = parseFloat(document.getElementById('entryScrapPct').value) || 0;
+  var scrapAllowed = parseFloat(document.getElementById('entryScrapAllowed').value) || 1;
+  var plan = parseInt(document.getElementById('entryPlan').value) || 0;
+  
+  // Razlika produktivnosti (kom/h)
+  var razlika = actual - plan;
+  
+  // Razlika škarta (%)
+  var scrapDiff = scrapPct - scrapAllowed;
+  
+  // Korekcija škarta: -12 × (ostvareni% - dozvoljeni%)
+  var korekcijaSkartat = -12 * scrapDiff;
+  
+  // Bonus formula
+  // Ostali: (12 / 2200) × razlika + korekcija
+  // Voditelji: (25.5 / 2200) × razlika + korekcija
+  var bonusOstali = (12 / 2200) * razlika + korekcijaSkartat;
+  var bonusVoditelj = (25.5 / 2200) * razlika + korekcijaSkartat;
+  
+  // Bonus ne može biti negativan
+  if (bonusOstali < 0) bonusOstali = 0;
+  if (bonusVoditelj < 0) bonusVoditelj = 0;
+  
+  // Ažuriraj preview
+  var razlikaEl = document.getElementById('previewRazlika');
+  razlikaEl.textContent = (razlika >= 0 ? '+' : '') + razlika.toLocaleString();
+  razlikaEl.style.color = razlika >= 0 ? '#4CAF50' : '#f44336';
+  
+  var scrapDiffEl = document.getElementById('previewScrapDiff');
+  scrapDiffEl.textContent = scrapPct.toFixed(1) + '% - ' + scrapAllowed.toFixed(1) + '% = ' + (scrapDiff >= 0 ? '+' : '') + scrapDiff.toFixed(1) + '%';
+  scrapDiffEl.style.color = scrapDiff <= 0 ? '#4CAF50' : '#f44336';
+  
+  var korekcijaEl = document.getElementById('previewScrapKorekcija');
+  korekcijaEl.textContent = (korekcijaSkartat >= 0 ? '+' : '') + korekcijaSkartat.toFixed(2) + '%';
+  korekcijaEl.style.color = korekcijaSkartat >= 0 ? '#4CAF50' : '#f44336';
+  
+  document.getElementById('previewBonusOstali').textContent = '+' + bonusOstali.toFixed(2) + '%';
+  document.getElementById('previewBonusVoditelj').textContent = '+' + bonusVoditelj.toFixed(2) + '%';
+}
+
+async function loadBonusSettings() {
+  try {
+    const { data } = await initSupabase()
+      .from('settings')
+      .select('key, value')
+      .in('key', ['BONUS_KOEF_VODITELJ', 'BONUS_KOEF_OSTALI', 'BONUS_BAZA']);
+    
+    if (data) {
+      data.forEach(s => {
+        bonusSettings[s.key] = parseFloat(s.value) || bonusSettings[s.key];
+      });
+    }
+    
+    // Ažuriraj prikaz formule
+    document.getElementById('formulaVoditelj').textContent = bonusSettings.BONUS_KOEF_VODITELJ;
+    document.getElementById('formulaOstali').textContent = bonusSettings.BONUS_KOEF_OSTALI;
+    
+    console.log('💰 Bonus postavke:', bonusSettings);
+  } catch (e) {
+    console.error('Greška učitavanja bonus postavki:', e);
+  }
+}
+
+function initBonusMonthSelect() {
+  const select = document.getElementById('bonusMonth');
+  const now = new Date();
+  
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('hr-HR', { month: 'long', year: 'numeric' });
+    select.innerHTML += `<option value="${value}">${label}</option>`;
+  }
+}
+
+// Pokreni
+initProduktivnostView();
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function loadProductivityTeams() {
+  try {
+    // Koristi prod_schedule_teams umjesto teams
+    const { data } = await initSupabase()
+      .from('prod_schedule_teams')
+      .select('*')
+      .eq('status', 'Aktivan')
+      .order('postava_broj');
+    
+    // Transformiraj u format kompatibilan s ostatkom koda
+    productivityTeams = (data || []).map(t => ({
+      id: t.id.toString(),
+      name: `${t.naziv_tima} (${t.linija} - ${t.stroj_tip})`,
+      postava_broj: t.postava_broj,
+      linija: t.linija,
+      stroj_tip: t.stroj_tip
+    }));
+    
+    // Popuni filtere
+    const filterSelect = document.getElementById('filterTeam');
+    const entrySelect = document.getElementById('entryTeam');
+    
+    // Grupiraj po postava_broj za filter (da nema duplikata Bottomer/Tuber)
+    const uniqueTeams = {};
+    (data || []).forEach(t => {
+      const key = `${t.postava_broj}-${t.linija}`;
+      if (!uniqueTeams[key]) {
+        uniqueTeams[key] = {
+          id: t.id.toString(),
+          name: `${t.naziv_tima} (${t.linija})`,
+          postava_broj: t.postava_broj,
+          linija: t.linija
+        };
+      }
+    });
+    
+    const uniqueList = Object.values(uniqueTeams).sort((a, b) => a.postava_broj - b.postava_broj);
+    
+    const filterOptions = uniqueList.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    filterSelect.innerHTML = '<option value="">Svi timovi</option>' + filterOptions;
+    
+    // Za entrySelect prikaži sve (uključujući Bottomer/Tuber razliku)
+    const entryOptions = productivityTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    entrySelect.innerHTML = '<option value="">-- Odaberi postavu --</option>' + entryOptions;
+    
+    console.log(`👥 Učitano ${productivityTeams.length} timova iz prod_schedule_teams`);
+  } catch (e) {
+    console.error('Greška učitavanja timova:', e);
+  }
+}
+
+async function loadProductivityData() {
+  var month = parseInt(document.getElementById('filterMonth').value);
+  var year = parseInt(document.getElementById('filterYear').value);
+  var line = document.getElementById('filterLine').value;
+  var machine = document.getElementById('filterMachine').value;
+  var team = document.getElementById('filterTeam').value;
+  
+  // Izračunaj prvi i zadnji dan mjeseca
+  var firstDay = year + '-' + String(month).padStart(2, '0') + '-01';
+  var lastDay = new Date(year, month, 0); // Zadnji dan mjeseca
+  var lastDayStr = year + '-' + String(month).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+  
+  try {
+    showLoading('Učitavanje...');
+    
+    var query = initSupabase()
+      .from('productivity')
+      .select('*')
+      .gte('date', firstDay)
+      .lte('date', lastDayStr)
+      .order('date', { ascending: false });
+    
+    if (line) query = query.eq('line', line);
+    if (machine) query = query.eq('machine_type', machine);
+    if (team) query = query.eq('team_id', team);
+    
+    var result = await query;
+    if (result.error) throw result.error;
+    
+    productivityData = result.data || [];
+    console.log('📊 Učitano ' + productivityData.length + ' zapisa za ' + month + '/' + year);
+    
+    renderProductivityTable();
+    updateProductivityStats();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// RENDERIRANJE
+// ============================================
+function renderProductivityTable() {
+  var tbody = document.getElementById('productivityTable');
+  
+  if (productivityData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nema podataka za odabrani period</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = productivityData.map(function(p) {
+    var team = productivityTeams.find(function(t) { return t.id === p.team_id; });
+    
+    // Škart
+    var scrapPct = p.scrap_pct || 0;
+    var scrapAllowed = p.scrap_allowed_pct || 1;
+    var scrapClass = scrapPct <= scrapAllowed ? 'color:#4CAF50' : 'color:#f44336';
+    
+    // Bonus
+    var bonusOstali = p.bonus_ostali || 0;
+    var bonusClass = bonusOstali > 0 ? 'oee-green' : 'oee-orange';
+    
+    return '<tr>' +
+      '<td>' + formatDateHR(p.date) + '</td>' +
+      '<td><strong>' + (team ? team.name : '-') + '</strong></td>' +
+      '<td>' + (p.line || '-') + '</td>' +
+      '<td>' + (p.machine_type || '-') + '</td>' +
+      '<td style="text-align: right;">' + (p.actual_pieces || 0).toLocaleString() + ' <small style="color:#888;">/' + (p.target_pieces || 0).toLocaleString() + '</small></td>' +
+      '<td style="text-align: right; ' + scrapClass + '">' + scrapPct.toFixed(1) + '% <small>(' + scrapAllowed + '%)</small></td>' +
+      '<td>' +
+        '<div class="oee-bar">' +
+          '<div class="fill ' + bonusClass + '" style="width:' + Math.min(100, bonusOstali * 5) + '%"></div>' +
+          '<span class="value">+' + bonusOstali.toFixed(2) + '%</span>' +
+        '</div>' +
+      '</td>' +
+      '<td>' +
+        '<button class="btn btn-sm btn-primary" onclick="editProductivityEntry(\'' + p.id + '\')">✏️</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function updateProductivityStats() {
+  if (productivityData.length === 0) {
+    document.getElementById('kpiBonusOstali').textContent = '0%';
+    document.getElementById('kpiBonusVoditelj').textContent = '0%';
+    document.getElementById('kpiScrapPct').textContent = '0%';
+    document.getElementById('kpiEntries').textContent = '0';
+    return;
+  }
+  
+  // Prosječni bonus ostali
+  var avgBonusOstali = productivityData.reduce(function(sum, p) { return sum + (p.bonus_ostali || 0); }, 0) / productivityData.length;
+  
+  // Prosječni bonus voditelji
+  var avgBonusVoditelj = productivityData.reduce(function(sum, p) { return sum + (p.bonus_voditelj || 0); }, 0) / productivityData.length;
+  
+  // Prosječni škart %
+  var avgScrapPct = productivityData.reduce(function(sum, p) { return sum + (p.scrap_pct || 0); }, 0) / productivityData.length;
+  
+  document.getElementById('kpiBonusOstali').textContent = '+' + avgBonusOstali.toFixed(2) + '%';
+  document.getElementById('kpiBonusVoditelj').textContent = '+' + avgBonusVoditelj.toFixed(2) + '%';
+  document.getElementById('kpiScrapPct').textContent = avgScrapPct.toFixed(2) + '%';
+  document.getElementById('kpiEntries').textContent = productivityData.length;
+}
+
+// ============================================
+// MODAL OPERACIJE
+// ============================================
+function openAddModal() {
+  document.getElementById('entryId').value = '';
+  document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('entryTeam').value = '';
+  document.getElementById('entryLine').value = '';
+  document.getElementById('entryMachine').value = '';
+  document.getElementById('entryActual').value = '0';
+  document.getElementById('entryScrapPct').value = '0';
+  document.getElementById('entryNotes').value = '';
+  document.getElementById('entryPlan').value = '0';
+  document.getElementById('entryScrapAllowed').value = '1';
+  document.getElementById('teamInfoRow').style.display = 'none';
+  
+  document.getElementById('entryModalTitle').textContent = '➕ Novi unos produktivnosti';
+  document.getElementById('deleteBtn').style.display = 'none';
+  
+  autoCalculate();
+  openModal('entryModal');
+}
+
+function editProductivityEntry(id) {
+  var entry = productivityData.find(function(p) { return p.id === id; });
+  if (!entry) return;
+  
+  document.getElementById('entryId').value = entry.id;
+  document.getElementById('entryDate').value = entry.date;
+  document.getElementById('entryTeam').value = entry.team_id || '';
+  document.getElementById('entryActual').value = entry.actual_pieces || 0;
+  document.getElementById('entryScrapPct').value = entry.scrap_pct || 0;
+  document.getElementById('entryNotes').value = entry.notes || '';
+  
+  document.getElementById('entryModalTitle').textContent = '✏️ Uredi unos';
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+  
+  // Dohvati liniju i stroj iz tima
+  onTeamChange();
+  openModal('entryModal');
+}
+
+async function saveProductivityEntry() {
+  var id = document.getElementById('entryId').value;
+  var teamId = document.getElementById('entryTeam').value;
+  
+  if (!teamId) {
+    showMessage('Odaberite postavu/tim!', 'warning');
+    return;
+  }
+  
+  var plan = parseInt(document.getElementById('entryPlan').value) || 0;
+  var actual = parseInt(document.getElementById('entryActual').value) || 0;
+  var scrapPct = parseFloat(document.getElementById('entryScrapPct').value) || 0;
+  var scrapAllowed = parseFloat(document.getElementById('entryScrapAllowed').value) || 1;
+  var line = document.getElementById('entryLine').value;
+  var machine = document.getElementById('entryMachine').value;
+  
+  // Razlika produktivnosti
+  var razlika = actual - plan;
+  
+  // Razlika škarta
+  var scrapDiff = scrapPct - scrapAllowed;
+  
+  // Korekcija škarta
+  var korekcijaSkartat = -12 * scrapDiff;
+  
+  // Bonus
+  var bonusOstali = (12 / 2200) * razlika + korekcijaSkartat;
+  var bonusVoditelj = (25.5 / 2200) * razlika + korekcijaSkartat;
+  if (bonusOstali < 0) bonusOstali = 0;
+  if (bonusVoditelj < 0) bonusVoditelj = 0;
+  
+  var entry = {
+    date: document.getElementById('entryDate').value,
+    line: line,
+    machine_type: machine,
+    team_id: teamId,
+    target_pieces: plan,
+    actual_pieces: actual,
+    scrap_pct: scrapPct,
+    scrap_allowed_pct: scrapAllowed,
+    bonus_ostali: bonusOstali,
+    bonus_voditelj: bonusVoditelj,
+    notes: document.getElementById('entryNotes').value
+  };
+  
+  try {
+    showLoading('Spremanje...');
+    
+    var result;
+    if (id) {
+      result = await initSupabase().from('productivity').update(entry).eq('id', id);
+      if (result.error) throw result.error;
+      showMessage('Unos ažuriran!', 'success');
+    } else {
+      result = await initSupabase().from('productivity').insert(entry);
+      if (result.error) throw result.error;
+      showMessage('Unos spremljen!', 'success');
+    }
+    
+    closeModal('entryModal');
+    await loadProductivityData();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteProductivityEntry() {
+  const id = document.getElementById('entryId').value;
+  if (!id) return;
+  
+  if (!confirm('Obrisati ovaj unos?')) return;
+  
+  try {
+    showLoading('Brisanje...');
+    const { error } = await initSupabase().from('productivity').delete().eq('id', id);
+    if (error) throw error;
+    
+    showMessage('Unos obrisan!', 'success');
+    closeModal('entryModal');
+    await loadProductivityData();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// MJESEČNI PREGLED I BONUSI
+// ============================================
+async function loadMonthlyStats() {
+  const monthValue = document.getElementById('bonusMonth').value;
+  if (!monthValue) return;
+  
+  const [year, month] = monthValue.split('-').map(Number);
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+  const endDate = `${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`;
+  
+  try {
+    showLoading('Učitavanje mjesečnih statistika...');
+    
+    const { data, error } = await initSupabase()
+      .from('productivity')
+      .select('*')
+      .gte('date', startDate)
+      .lte('date', endDate);
+    
+    if (error) throw error;
+    
+    // Grupiraj po timu - sumiraj plan, ostvareno i škart
+    const teamStats = {};
+    (data || []).forEach(p => {
+      const teamId = p.team_id || 'none';
+      if (!teamStats[teamId]) {
+        teamStats[teamId] = {
+          team_id: teamId,
+          line: p.line,
+          totalPlan: 0,
+          totalActual: 0,
+          totalGood: 0,
+          totalScrap: 0
+        };
+      }
+      teamStats[teamId].totalPlan += p.target_pieces || 0;
+      teamStats[teamId].totalActual += p.actual_pieces || 0;
+      teamStats[teamId].totalGood += p.good_pieces || 0;
+      teamStats[teamId].totalScrap += p.scrap_pieces || 0;
+    });
+    
+    renderMonthlyStats(Object.values(teamStats), year, month);
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderMonthlyStats(stats, year, month) {
+  const tbody = document.getElementById('monthlyStatsTable');
+  const tfoot = document.getElementById('monthlyStatsTfoot');
+  
+  if (stats.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nema podataka za odabrani mjesec</td></tr>';
+    tfoot.style.display = 'none';
+    return;
+  }
+  
+  let totalRazlika = 0;
+  
+  tbody.innerHTML = stats.map(s => {
+    const team = productivityTeams.find(t => t.id === s.team_id);
+    const teamName = team?.name || 'Bez tima';
+    const razlika = s.totalActual - s.totalPlan;
+    
+    // Škart postotak
+    const skartPostotak = s.totalActual > 0 ? (s.totalScrap / s.totalActual) * 100 : 0;
+    
+    // Produktivnost postotak
+    const produktivnostOstali = (bonusSettings.BONUS_KOEF_OSTALI / bonusSettings.BONUS_BAZA) * razlika;
+    const produktivnostVoditelj = (bonusSettings.BONUS_KOEF_VODITELJ / bonusSettings.BONUS_BAZA) * razlika;
+    
+    // Korekcija škarta - RAZLIČITI KOEFICIJENTI!
+    const skartKorekcijaoOstali = bonusSettings.SKART_KOEF_OSTALI * (skartPostotak - 1.0);
+    const skartKorekcijaVoditelj = bonusSettings.SKART_KOEF_VODITELJ * (skartPostotak - 1.0);
+    
+    // Ukupni bonus = produktivnost + korekcija škarta (minimum 0!)
+    let ukupnoBonusOstali = produktivnostOstali + skartKorekcijaoOstali;
+    let ukupnoBonusVoditelj = produktivnostVoditelj + skartKorekcijaVoditelj;
+    
+    // Bonus ne može biti negativan!
+    if (ukupnoBonusOstali < 0) ukupnoBonusOstali = 0;
+    if (ukupnoBonusVoditelj < 0) ukupnoBonusVoditelj = 0;
+    
+    totalRazlika += razlika;
+    
+    const razlikaClass = razlika >= 0 ? 'color:#4CAF50' : 'color:#f44336';
+    const bonusClass = ukupnoBonusOstali > 0 ? 'color:#4CAF50' : 'color:#999';
+    
+    return `
+      <tr>
+        <td><strong>${teamName}</strong></td>
+        <td>${s.line || '-'}</td>
+        <td style="text-align: right;">${s.totalPlan.toLocaleString()}</td>
+        <td style="text-align: right;">${s.totalActual.toLocaleString()}</td>
+        <td style="text-align: right; ${razlikaClass}; font-weight: bold;">
+          ${razlika >= 0 ? '+' : ''}${razlika.toLocaleString()}
+        </td>
+        <td style="text-align: right;">${skartPostotak.toFixed(2)}%</td>
+        <td style="text-align: right; ${bonusClass}; font-weight: bold;">
+          +${ukupnoBonusOstali.toFixed(2)}%
+          <small style="color:#999;display:block;font-size:0.65em;">V/K: +${ukupnoBonusVoditelj.toFixed(2)}%</small>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-success" onclick="applyBonus('${s.team_id}', ${year}, ${month}, ${razlika}, ${skartPostotak})">
+            💰 Izračunaj
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  // Ažuriraj footer
+  document.getElementById('totalRazlika').textContent = (totalRazlika >= 0 ? '+' : '') + totalRazlika.toLocaleString();
+  tfoot.style.display = 'table-footer-group';
+}
+
+async function calculateBonuses() {
+  await loadMonthlyStats();
+  showMessage('Bonusi izračunati! Kliknite "Primijeni" za spremanje.', 'info');
+}
+
+async function applyBonus(teamId, year, month, razlika, skartPostotak) {
+  if (teamId === 'none') {
+    showMessage('Ne možete primijeniti bonus za unose bez tima!', 'warning');
+    return;
+  }
+  
+  const razlikaNum = parseFloat(razlika);
+  const skartNum = parseFloat(skartPostotak) || 0;
+  
+  // Korekcija škarta: -12 × (ostvareni% - planirani%)
+  // Planirani škart = 1%
+  const korekcijaSkartat = -12 * (skartNum - 1.0);
+  
+  try {
+    showLoading('Učitavanje članova tima...');
+    
+    // Dohvati članove tima s podacima o djelatniku
+    const { data: members, error: membersError } = await initSupabase()
+      .from('team_members')
+      .select(`
+        employee_id,
+        employees (
+          id,
+          first_name,
+          last_name,
+          job_title,
+          average_net_salary
+        )
+      `)
+      .eq('team_id', teamId);
+    
+    if (membersError) throw membersError;
+    
+    if (!members || members.length === 0) {
+      showMessage('Tim nema članova!', 'warning');
+      hideLoading();
+      return;
+    }
+    
+    const team = productivityTeams.find(t => t.id === teamId);
+    let totalBonus = 0;
+    const bonusData = [];
+    
+    members.forEach(m => {
+      const emp = m.employees;
+      if (!emp) return;
+      
+      const jobTitle = (emp.job_title || '').toLowerCase();
+      const isVoditelj = jobTitle.includes('voditelj') || jobTitle.includes('koordinator');
+      const koef = isVoditelj ? bonusSettings.BONUS_KOEF_VODITELJ : bonusSettings.BONUS_KOEF_OSTALI;
+      const avgSalary = emp.average_net_salary || 0;
+      
+      // FORMULA:
+      // 1. produktivnost_postotak = (koef / 2200) × razlika
+      // 2. korekcija_skarta = -12 × (ostvareni% - 1%)
+      // 3. ukupni_postotak = produktivnost + korekcija
+      // 4. bonus_eur = average_net_salary × (ukupni_postotak / 100)
+      
+      const produktivnostPostotak = (koef / bonusSettings.BONUS_BAZA) * razlikaNum;
+      const ukupniPostotak = produktivnostPostotak + korekcijaSkartat;
+      const bonusEur = avgSalary * (ukupniPostotak / 100);
+      
+      totalBonus += bonusEur;
+      bonusData.push({
+        employee_id: emp.id,
+        name: `${emp.first_name} ${emp.last_name}`,
+        job_title: emp.job_title,
+        avg_salary: avgSalary,
+        koef: koef,
+        produktivnost_postotak: produktivnostPostotak,
+        korekcija_skarta: korekcijaSkartat,
+        ukupni_postotak: ukupniPostotak,
+        bonus_eur: bonusEur
+      });
+    });
+    
+    hideLoading();
+    
+    // Prikaži preview
+    let previewMsg = `Tim: ${team?.name}\n`;
+    previewMsg += `Razlika produktivnosti: ${razlikaNum >= 0 ? '+' : ''}${razlikaNum.toLocaleString()}\n`;
+    previewMsg += `Škart: ${skartNum.toFixed(2)}% (planirano: 1%)\n`;
+    previewMsg += `Korekcija škarta: ${korekcijaSkartat >= 0 ? '+' : ''}${korekcijaSkartat.toFixed(2)}%\n\n`;
+    previewMsg += `Djelatnici:\n`;
+    bonusData.forEach(bd => {
+      const znak = bd.bonus_eur >= 0 ? '+' : '';
+      previewMsg += `• ${bd.name}: ${bd.produktivnost_postotak.toFixed(2)}% ${korekcijaSkartat >= 0 ? '+' : ''}${korekcijaSkartat.toFixed(2)}% = ${bd.ukupni_postotak.toFixed(2)}% → ${znak}${bd.bonus_eur.toFixed(2)} €\n`;
+    });
+    previewMsg += `\nUKUPNO: ${totalBonus >= 0 ? '+' : ''}${totalBonus.toFixed(2)} €`;
+    previewMsg += `\n\nPrimijeniti bonus za ${bonusData.length} djelatnika?`;
+    
+    if (!confirm(previewMsg)) return;
+    
+    showLoading('Spremanje bonusa...');
+    
+    // Spremi bonus za svakog djelatnika
+    let saved = 0;
+    for (const bd of bonusData) {
+      const { data: existingBonus } = await initSupabase()
+        .from('bonuses')
+        .select('id')
+        .eq('employee_id', bd.employee_id)
+        .eq('year', year)
+        .eq('month', month)
+        .maybeSingle();
+      
+      const bonusRecord = {
+        employee_id: bd.employee_id,
+        year: year,
+        month: month,
+        team_id: teamId,
+        team_name: team?.name || '',
+        productivity_bonus_percent: bd.ukupni_postotak,
+        productivity_bonus_eur: bd.bonus_eur
+      };
+      
+      if (existingBonus) {
+        await initSupabase()
+          .from('bonuses')
+          .update(bonusRecord)
+          .eq('id', existingBonus.id);
+      } else {
+        await initSupabase()
+          .from('bonuses')
+          .insert(bonusRecord);
+      }
+      saved++;
+    }
+    
+    showMessage(`✅ Bonus spremljen za ${saved} djelatnika! Ukupno: ${totalBonus.toFixed(2)} €`, 'success');
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// EXPORT
+// ============================================
+function exportProductivityData() {
+  let csv = 'Datum,Smjena,Linija,Stroj,Tim,Plan,Ostvareno,Dobrih,Škart,OEE,Dostupnost,Učinkovitost,Kvaliteta\n';
+  
+  productivityData.forEach(p => {
+    const team = productivityTeams.find(t => t.id === p.team_id);
+    csv += `${p.date},${p.shift_number},${p.line},${p.machine_type || ''},`;
+    csv += `"${team?.name || ''}",${p.target_pieces || 0},${p.actual_pieces || 0},`;
+    csv += `${p.good_pieces || 0},${p.scrap_pieces || 0},`;
+    csv += `${(p.oee || 0).toFixed(1)},${(p.availability || 0).toFixed(1)},`;
+    csv += `${(p.performance || 0).toFixed(1)},${(p.quality || 0).toFixed(1)}\n`;
+  });
+  
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `produktivnost_${document.getElementById('filterDateFrom').value}_${document.getElementById('filterDateTo').value}.csv`;
+  link.click();
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function formatDateHR(dateStr) {
+  return new Date(dateStr).toLocaleDateString('hr-HR');
+}
+</script>

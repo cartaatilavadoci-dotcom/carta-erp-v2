@@ -1,0 +1,1166 @@
+<!-- ============================================
+     CARTA ERP - Produktivnost po strojaru
+     views/proizvodnja/produktivnost-strojara.html
+     ============================================ -->
+
+<style>
+/* ============================================
+   PRODUKTIVNOST STROJARA STYLES
+   ============================================ */
+.ps-container {
+  padding: 15px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ps-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ps-header h1 {
+  margin: 0;
+  font-size: 1.4em;
+  color: #1565c0;
+  flex: 1;
+}
+
+.ps-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.ps-filters select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 120px;
+  background: white;
+}
+
+.ps-filters button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ps-filters button:hover {
+  background: linear-gradient(135deg, #0d47a1 0%, #1a237e 100%);
+}
+
+/* Ranking tablica */
+.ps-ranking-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.ps-ranking-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.ps-ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.ps-ranking-table th {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+  color: white;
+  padding: 12px 10px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.ps-ranking-table th:first-child { text-align: center; width: 50px; }
+.ps-ranking-table th:nth-child(2) { text-align: left; }
+
+.ps-ranking-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.ps-ranking-table td:first-child { text-align: center; font-size: 1.2em; }
+.ps-ranking-table td:nth-child(2) { text-align: left; font-weight: 600; }
+
+.ps-ranking-table tr:hover {
+  background: #e3f2fd;
+  cursor: pointer;
+}
+
+.ps-ranking-table tr.selected {
+  background: #bbdefb;
+}
+
+.ps-produktivnost-cell {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.ps-produktivnost-cell.high { color: #2e7d32; }
+.ps-produktivnost-cell.medium { color: #f57f17; }
+.ps-produktivnost-cell.low { color: #c62828; }
+
+/* Progress bar */
+.ps-bar-container {
+  width: 100%;
+  background: #e0e0e0;
+  border-radius: 4px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.ps-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Detalji strojara */
+.ps-details-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  display: none;
+}
+
+.ps-details-section.visible {
+  display: block;
+}
+
+.ps-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #1565c0;
+}
+
+.ps-details-header h3 {
+  margin: 0;
+  color: #1565c0;
+}
+
+.ps-details-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.ps-summary-card {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+}
+
+.ps-summary-card.main {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+}
+
+.ps-summary-card h4 {
+  margin: 0 0 5px 0;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.ps-summary-value {
+  font-size: 1.8em;
+  font-weight: 700;
+}
+
+.ps-details-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ps-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.ps-details-table th {
+  background: #37474f;
+  color: white;
+  padding: 10px 8px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.ps-details-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.ps-details-table tr:hover {
+  background: #fff3e0;
+  cursor: pointer;
+}
+
+.ps-details-table .datum-col {
+  text-align: left;
+  font-weight: 600;
+  color: #1565c0;
+  text-decoration: underline;
+}
+
+/* Modal */
+.ps-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+.ps-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.ps-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.ps-modal-header h2 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.ps-modal-close {
+  font-size: 1.8em;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.ps-modal-close:hover {
+  opacity: 1;
+}
+
+.ps-modal-body {
+  padding: 20px;
+}
+
+.ps-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  border-radius: 0 0 12px 12px;
+}
+
+.ps-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.ps-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ps-form-group label {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.ps-form-group input,
+.ps-form-group textarea {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+.ps-form-group input:focus,
+.ps-form-group textarea:focus {
+  outline: none;
+  border-color: #1565c0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+.ps-form-group input[readonly] {
+  background: #f5f5f5;
+  color: #666;
+}
+
+/* WO tablica u modalu */
+.ps-wo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin-top: 15px;
+}
+
+.ps-wo-table th {
+  background: #455a64;
+  color: white;
+  padding: 8px 5px;
+  text-align: center;
+  font-size: 0.85em;
+}
+
+.ps-wo-table td {
+  padding: 6px 4px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.ps-wo-table input {
+  width: 55px;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.ps-wo-table input.wide {
+  width: 100%;
+  min-width: 120px;
+}
+
+.ps-wo-table .rn-col {
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Empty state */
+.ps-empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .ps-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ps-filters {
+    flex-direction: column;
+  }
+
+  .ps-filters select,
+  .ps-filters button {
+    width: 100%;
+  }
+
+  .ps-ranking-table,
+  .ps-details-table {
+    font-size: 0.8em;
+  }
+
+  .ps-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<div class="ps-container">
+  <!-- Header s filterima -->
+  <div class="ps-header">
+    <h1>👷 Produktivnost po strojaru</h1>
+    <div class="ps-filters">
+      <select id="psStroj" onchange="psOnStrojChange()">
+        <option value="Tuber">Tuber</option>
+        <option value="Bottomer">Bottomer</option>
+        <option value="Tisak">Tisak</option>
+      </select>
+      <select id="psLinija">
+        <option value="WH">WH (W&H)</option>
+        <option value="NLI">NLI</option>
+      </select>
+      <select id="psMjesec"></select>
+      <select id="psGodina"></select>
+      <button onclick="psUcitajPodatke()">🔍 Pretraži</button>
+    </div>
+  </div>
+
+  <!-- Ranking tablica svih strojara -->
+  <div class="ps-ranking-section">
+    <h3>🏆 Ranking produktivnosti - <span id="psRankingTitle">-</span></h3>
+    <table class="ps-ranking-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Strojar</th>
+          <th>Smjena</th>
+          <th>Proizvedeno</th>
+          <th>Rad (h)</th>
+          <th>Škart (kg)</th>
+          <th>Produktivnost</th>
+          <th style="width: 150px;">Graf</th>
+        </tr>
+      </thead>
+      <tbody id="psRankingBody">
+        <tr><td colspan="8" class="ps-empty">Odaberi stroj, liniju i mjesec za prikaz rankinga</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Detalji odabranog strojara -->
+  <div class="ps-details-section" id="psDetailsSection">
+    <div class="ps-details-header">
+      <h3>📊 Detalji: <span id="psDetailsStrojar">-</span></h3>
+      <button class="btn btn-sm btn-secondary" onclick="psZatvoriDetalje()">✖ Zatvori</button>
+    </div>
+
+    <div class="ps-details-summary">
+      <div class="ps-summary-card main">
+        <h4>Produktivnost</h4>
+        <div class="ps-summary-value" id="psDetailsProd">-</div>
+        <small>kom/h</small>
+      </div>
+      <div class="ps-summary-card">
+        <h4>Proizvedeno</h4>
+        <div class="ps-summary-value" id="psDetailsKom">-</div>
+        <small>komada</small>
+      </div>
+      <div class="ps-summary-card">
+        <h4>Sati rada</h4>
+        <div class="ps-summary-value" id="psDetailsRad">-</div>
+        <small>sati</small>
+      </div>
+      <div class="ps-summary-card">
+        <h4>Smjena</h4>
+        <div class="ps-summary-value" id="psDetailsSmjena">-</div>
+        <small>izvještaja</small>
+      </div>
+    </div>
+
+    <h4>Dnevni pregled (klikni za korekciju):</h4>
+    <div class="ps-details-table-container">
+      <table class="ps-details-table">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Smjena</th>
+            <th>Proizvedeno</th>
+            <th>Rad (h)</th>
+            <th>Škart</th>
+            <th>Preštel.</th>
+            <th>Kvar</th>
+            <th>Čekanja</th>
+            <th>Produktivnost</th>
+          </tr>
+        </thead>
+        <tbody id="psDetailsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal za korekciju izvještaja -->
+<div class="ps-modal" id="psCorrectionModal">
+  <div class="ps-modal-content">
+    <div class="ps-modal-header">
+      <h2>✏️ Korekcija izvještaja</h2>
+      <span class="ps-modal-close" onclick="psCloseModal()">&times;</span>
+    </div>
+    <div class="ps-modal-body">
+      <!-- Info polja -->
+      <div class="ps-form-grid">
+        <div class="ps-form-group">
+          <label>Datum:</label>
+          <input type="text" id="psModalDatum" readonly>
+        </div>
+        <div class="ps-form-group">
+          <label>Smjena:</label>
+          <input type="text" id="psModalSmjena" readonly>
+        </div>
+        <div class="ps-form-group">
+          <label>Linija:</label>
+          <input type="text" id="psModalLinija" readonly>
+        </div>
+        <div class="ps-form-group">
+          <label>Stroj:</label>
+          <input type="text" id="psModalStroj" readonly>
+        </div>
+      </div>
+
+      <!-- Strojar info -->
+      <div class="ps-form-grid">
+        <div class="ps-form-group">
+          <label>Strojar: *</label>
+          <input type="text" id="psModalStrojar" placeholder="Ime i prezime">
+        </div>
+        <div class="ps-form-group">
+          <label>Pomoćnici:</label>
+          <input type="text" id="psModalPomocnici" placeholder="Pomoćnici">
+        </div>
+      </div>
+
+      <!-- Tablica naloga -->
+      <h4 style="margin: 20px 0 10px;">Nalozi u smjeni:</h4>
+      <div style="max-height: 300px; overflow: auto;">
+        <table class="ps-wo-table" id="psModalWOTable">
+          <thead>
+            <tr>
+              <th>Br. Naloga</th>
+              <th>Opis</th>
+              <th>Kom</th>
+              <th>Škart</th>
+              <th>Preštel.</th>
+              <th>Rad</th>
+              <th>Kvar</th>
+              <th>Čekanje1</th>
+              <th>VanStroja</th>
+              <th>Čekanje2</th>
+              <th>Čišćenje</th>
+            </tr>
+          </thead>
+          <tbody id="psModalWOBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Napomena -->
+      <div class="ps-form-group" style="margin-top: 20px;">
+        <label>Napomena:</label>
+        <textarea id="psModalNapomena" rows="3" placeholder="Napomena..."></textarea>
+      </div>
+    </div>
+    <div class="ps-modal-actions">
+      <button class="btn btn-secondary" onclick="psCloseModal()">Odustani</button>
+      <button class="btn btn-success" onclick="psSpremiKorekciju()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// PRODUKTIVNOST STROJARA MODULE
+// ============================================
+console.log('👷 Produktivnost strojara module loaded');
+
+var psData = {
+  allReports: [],
+  ranking: [],
+  selectedStrojar: null,
+  currentReport: null
+};
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initProduktivnostStrojaraView() {
+  console.log('Initializing Produktivnost Strojara view...');
+
+  // Popuni mjesec dropdown
+  var mjesecSelect = document.getElementById('psMjesec');
+  var mjeseci = ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj',
+                 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac'];
+  var currentMonth = new Date().getMonth();
+
+  mjeseci.forEach(function(m, i) {
+    var opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = m;
+    if (i === currentMonth) opt.selected = true;
+    mjesecSelect.appendChild(opt);
+  });
+
+  // Popuni godina dropdown
+  var godinaSelect = document.getElementById('psGodina');
+  var currentYear = new Date().getFullYear();
+  for (var y = currentYear; y >= 2024; y--) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    godinaSelect.appendChild(opt);
+  }
+
+  // Inicijalno sakrij liniju ako je Tisak
+  psOnStrojChange();
+}
+
+// ============================================
+// EVENT HANDLERI
+// ============================================
+function psOnStrojChange() {
+  var stroj = document.getElementById('psStroj').value;
+  var linijaSelect = document.getElementById('psLinija');
+
+  // Sakrij liniju za Tisak
+  if (stroj === 'Tisak') {
+    linijaSelect.style.display = 'none';
+  } else {
+    linijaSelect.style.display = 'inline-block';
+  }
+}
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function psUcitajPodatke() {
+  var stroj = document.getElementById('psStroj').value;
+  var linija = document.getElementById('psLinija').value;
+  var mjesec = parseInt(document.getElementById('psMjesec').value);
+  var godina = parseInt(document.getElementById('psGodina').value);
+
+  // Izračunaj raspon datuma
+  var startDate = godina + '-' + String(mjesec).padStart(2, '0') + '-01';
+  var lastDay = new Date(godina, mjesec, 0).getDate();
+  var endDate = godina + '-' + String(mjesec).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+
+  showLoading('Učitavanje podataka...');
+
+  try {
+    // Kreiraj upit
+    var query = initSupabase()
+      .from('prod_shift_reports')
+      .select('*')
+      .eq('machine_type', stroj)
+      .gte('shift_date', startDate)
+      .lte('shift_date', endDate)
+      .not('strojar', 'is', null)
+      .order('shift_date', { ascending: true })
+      .order('shift_number', { ascending: true })
+      .limit(1000);
+
+    // Dodaj filter linije SAMO ako nije Tisak
+    if (stroj !== 'Tisak') {
+      query = query.eq('production_line', linija);
+    }
+
+    var result = await query;
+
+    if (result.error) throw result.error;
+
+    psData.allReports = result.data || [];
+    console.log('Loaded reports:', psData.allReports.length);
+
+    // Agregiraj po strojaru
+    psAgregirajRanking();
+
+    // Renderaj ranking
+    psRenderRanking();
+
+    // Sakrij detalje
+    psZatvoriDetalje();
+
+    // Ažuriraj naslov
+    var mjeseci = ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj',
+                   'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac'];
+    var naslov = stroj + (stroj !== 'Tisak' ? ' ' + linija : '') + ' - ' + mjeseci[mjesec-1] + ' ' + godina;
+    document.getElementById('psRankingTitle').textContent = naslov;
+
+  } catch (e) {
+    console.error('Error loading data:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// AGREGACIJA PO STROJARU
+// ============================================
+function psAgregirajRanking() {
+  var strojarStats = {};
+
+  psData.allReports.forEach(function(r) {
+    var strojar = r.strojar;
+    if (!strojar) return;
+
+    // Parse report_data
+    var data = r.report_data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch(e) { data = {}; }
+    }
+
+    var ukupno = data && data.ukupno ? data.ukupno : {};
+
+    if (!strojarStats[strojar]) {
+      strojarStats[strojar] = {
+        kom: 0,
+        rad: 0,
+        skart: 0,
+        smjena: 0
+      };
+    }
+
+    strojarStats[strojar].kom += parseInt(ukupno.kom) || 0;
+    strojarStats[strojar].rad += parseFloat(ukupno.rad) || 0;
+    strojarStats[strojar].skart += parseFloat(ukupno.skart) || 0;
+    strojarStats[strojar].smjena += 1;
+  });
+
+  // Izračunaj produktivnost i sortiraj
+  psData.ranking = Object.entries(strojarStats)
+    .map(function(entry) {
+      var strojar = entry[0];
+      var stats = entry[1];
+      var produktivnost = stats.rad > 0 ? Math.round(stats.kom / stats.rad) : 0;
+      return {
+        strojar: strojar,
+        kom: stats.kom,
+        rad: stats.rad,
+        skart: stats.skart,
+        smjena: stats.smjena,
+        produktivnost: produktivnost
+      };
+    })
+    .sort(function(a, b) { return b.produktivnost - a.produktivnost; });
+
+  console.log('Ranking calculated:', psData.ranking.length, 'operators');
+}
+
+// ============================================
+// RENDERANJE RANKINGA
+// ============================================
+function psRenderRanking() {
+  var tbody = document.getElementById('psRankingBody');
+
+  if (psData.ranking.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="ps-empty">Nema podataka za odabrano razdoblje</td></tr>';
+    return;
+  }
+
+  // Pronađi max produktivnost za bar chart
+  var maxProd = Math.max.apply(null, psData.ranking.map(function(r) { return r.produktivnost; }));
+
+  var html = '';
+  psData.ranking.forEach(function(r, i) {
+    var rank = i + 1;
+    var rankIcon = '';
+    if (rank === 1) rankIcon = '🥇';
+    else if (rank === 2) rankIcon = '🥈';
+    else if (rank === 3) rankIcon = '🥉';
+    else rankIcon = rank + '.';
+
+    // Odredi klasu produktivnosti
+    var prodClass = '';
+    if (r.produktivnost >= 1500) prodClass = 'high';
+    else if (r.produktivnost >= 1000) prodClass = 'medium';
+    else prodClass = 'low';
+
+    // Bar width
+    var barWidth = maxProd > 0 ? Math.round((r.produktivnost / maxProd) * 100) : 0;
+
+    html += '<tr onclick="psOtvoriDetalje(\'' + r.strojar.replace(/'/g, "\\'") + '\')">';
+    html += '<td>' + rankIcon + '</td>';
+    html += '<td>' + escapeHtml(r.strojar) + '</td>';
+    html += '<td>' + r.smjena + '</td>';
+    html += '<td>' + r.kom.toLocaleString('hr-HR') + '</td>';
+    html += '<td>' + r.rad.toFixed(1) + '</td>';
+    html += '<td>' + r.skart.toFixed(1) + '</td>';
+    html += '<td class="ps-produktivnost-cell ' + prodClass + '">' + r.produktivnost.toLocaleString('hr-HR') + '</td>';
+    html += '<td><div class="ps-bar-container"><div class="ps-bar" style="width:' + barWidth + '%"></div></div></td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+}
+
+// ============================================
+// DETALJI STROJARA
+// ============================================
+function psOtvoriDetalje(strojar) {
+  psData.selectedStrojar = strojar;
+
+  // Filtriraj izvještaje za ovog strojara
+  var detalji = psData.allReports.filter(function(r) {
+    return r.strojar === strojar;
+  });
+
+  // Pronađi statistiku iz rankinga
+  var stats = psData.ranking.find(function(r) { return r.strojar === strojar; });
+
+  // Popuni summary
+  document.getElementById('psDetailsStrojar').textContent = strojar;
+  document.getElementById('psDetailsProd').textContent = stats ? stats.produktivnost.toLocaleString('hr-HR') : '-';
+  document.getElementById('psDetailsKom').textContent = stats ? stats.kom.toLocaleString('hr-HR') : '-';
+  document.getElementById('psDetailsRad').textContent = stats ? stats.rad.toFixed(1) : '-';
+  document.getElementById('psDetailsSmjena').textContent = stats ? stats.smjena : '-';
+
+  // Renderaj dnevnu tablicu
+  var tbody = document.getElementById('psDetailsBody');
+  var html = '';
+
+  detalji.forEach(function(r, i) {
+    var data = r.report_data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch(e) { data = {}; }
+    }
+
+    var ukupno = data && data.ukupno ? data.ukupno : {};
+
+    var kom = parseInt(ukupno.kom) || 0;
+    var rad = parseFloat(ukupno.rad) || 0;
+    var skart = parseFloat(ukupno.skart) || 0;
+    var prestel = parseFloat(ukupno.prestelavanje) || 0;
+    var kvar = parseFloat(ukupno.kvar) || 0;
+    // Podrška za oba formata: Tuber (cekanjeTuljke) i Bottomer (cekanje_tuljke)
+    var cekanja = (parseFloat(ukupno.cekanjeTuljke) || parseFloat(ukupno.cekanje_tuljke) || 0) +
+                  (parseFloat(ukupno.cekanje) || 0);
+    var produktivnost = rad > 0 ? Math.round(kom / rad) : 0;
+
+    var datumDisplay = new Date(r.shift_date).toLocaleDateString('hr-HR');
+
+    html += '<tr onclick="psOtvoriModal(' + i + ')">';
+    html += '<td class="datum-col">' + datumDisplay + '</td>';
+    html += '<td>' + r.shift_number + '. smjena</td>';
+    html += '<td>' + kom.toLocaleString('hr-HR') + '</td>';
+    html += '<td>' + rad.toFixed(1) + '</td>';
+    html += '<td>' + skart.toFixed(1) + '</td>';
+    html += '<td>' + prestel.toFixed(1) + '</td>';
+    html += '<td>' + kvar.toFixed(1) + '</td>';
+    html += '<td>' + cekanja.toFixed(1) + '</td>';
+    html += '<td><strong>' + produktivnost.toLocaleString('hr-HR') + '</strong></td>';
+    html += '</tr>';
+  });
+
+  tbody.innerHTML = html;
+
+  // Prikaži sekciju
+  document.getElementById('psDetailsSection').classList.add('visible');
+
+  // Scroll do detalja
+  document.getElementById('psDetailsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function psZatvoriDetalje() {
+  document.getElementById('psDetailsSection').classList.remove('visible');
+  psData.selectedStrojar = null;
+}
+
+// ============================================
+// MODAL ZA KOREKCIJU
+// ============================================
+function psOtvoriModal(index) {
+  // Dohvati izvještaj
+  var detalji = psData.allReports.filter(function(r) {
+    return r.strojar === psData.selectedStrojar;
+  });
+
+  var report = detalji[index];
+  if (!report) return;
+
+  psData.currentReport = report;
+
+  // Popuni header polja
+  document.getElementById('psModalDatum').value = new Date(report.shift_date).toLocaleDateString('hr-HR');
+  document.getElementById('psModalSmjena').value = report.shift_number + '. smjena';
+  document.getElementById('psModalLinija').value = report.production_line || '-';
+  document.getElementById('psModalStroj').value = report.machine_type || '-';
+
+  // Popuni strojar polja
+  document.getElementById('psModalStrojar').value = report.strojar || '';
+  document.getElementById('psModalPomocnici').value = report.pomocnici || '';
+  document.getElementById('psModalNapomena').value = report.napomena || '';
+
+  // Parse report_data
+  var data = report.report_data;
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data); } catch(e) { data = {}; }
+  }
+
+  // Podrška za oba formata: Tuber (work_orders) i Bottomer (nalozi)
+  var workOrders = [];
+  var isBottomer = report.machine_type === 'Bottomer';
+
+  if (isBottomer && data && data.nalozi) {
+    // Bottomer format - normaliziraj nazive polja
+    workOrders = data.nalozi.map(function(nalog) {
+      return {
+        wo_number: nalog.rn || nalog.wo_number || '',
+        opis: nalog.opis || '',
+        kom: nalog.kom || 0,
+        skart: nalog.skart || 0,
+        prestelavanje: nalog.prestelavanje || 0,
+        rad: nalog.rad || 0,
+        kvar: nalog.kvar || 0,
+        cekanjeTuljke: nalog.cekanje_tuljke || nalog.cekanjeTuljke || 0,
+        vanStroja: nalog.van_stroja || nalog.vanStroja || 0,
+        cekanje: nalog.cekanje || 0,
+        ciscenje: nalog.ciscenje || 0
+      };
+    });
+  } else if (data && data.work_orders) {
+    // Tuber format - koristi direktno
+    workOrders = data.work_orders;
+  }
+
+  console.log('Modal WO data:', workOrders.length, 'naloga, isBottomer:', isBottomer);
+
+  // Renderaj WO tablicu
+  var tbody = document.getElementById('psModalWOBody');
+  var html = '';
+
+  if (workOrders.length === 0) {
+    // Dodaj prazan red za unos
+    html += psGenerateWORow(0, {});
+  } else {
+    workOrders.forEach(function(wo, i) {
+      html += psGenerateWORow(i, wo);
+    });
+  }
+
+  tbody.innerHTML = html;
+
+  // Prikaži modal
+  document.getElementById('psCorrectionModal').style.display = 'flex';
+}
+
+function psGenerateWORow(index, wo) {
+  return '<tr>' +
+    '<td class="rn-col"><input type="text" class="wide" data-field="wo_number" data-index="' + index + '" value="' + (wo.wo_number || '') + '"></td>' +
+    '<td><input type="text" class="wide" data-field="opis" data-index="' + index + '" value="' + escapeHtml(wo.opis || '') + '"></td>' +
+    '<td><input type="number" data-field="kom" data-index="' + index + '" value="' + (wo.kom || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="skart" data-index="' + index + '" value="' + (wo.skart || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="prestelavanje" data-index="' + index + '" value="' + (wo.prestelavanje || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="rad" data-index="' + index + '" value="' + (wo.rad || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="kvar" data-index="' + index + '" value="' + (wo.kvar || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="cekanjeTuljke" data-index="' + index + '" value="' + (wo.cekanjeTuljke || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="vanStroja" data-index="' + index + '" value="' + (wo.vanStroja || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="cekanje" data-index="' + index + '" value="' + (wo.cekanje || '') + '"></td>' +
+    '<td><input type="number" step="0.1" data-field="ciscenje" data-index="' + index + '" value="' + (wo.ciscenje || '') + '"></td>' +
+    '</tr>';
+}
+
+function psCloseModal() {
+  document.getElementById('psCorrectionModal').style.display = 'none';
+  psData.currentReport = null;
+}
+
+// ============================================
+// SPREMANJE KOREKCIJE
+// ============================================
+async function psSpremiKorekciju() {
+  var report = psData.currentReport;
+  if (!report) return;
+
+  var strojar = document.getElementById('psModalStrojar').value.trim();
+  if (!strojar) {
+    showMessage('Strojar je obavezan!', 'warning');
+    return;
+  }
+
+  showLoading('Spremanje...');
+
+  try {
+    // Prikupi WO podatke iz tablice
+    var workOrders = [];
+    var rows = document.querySelectorAll('#psModalWOBody tr');
+    var isBottomer = report.machine_type === 'Bottomer';
+
+    var totals = {
+      kom: 0, skart: 0, prestelavanje: 0, rad: 0, kvar: 0,
+      cekanjeTuljke: 0, vanStroja: 0, cekanje: 0, ciscenje: 0
+    };
+
+    // Za Bottomer koristimo snake_case u totalima
+    var bottomerTotals = {
+      kom: 0, skart: 0, prestelavanje: 0, rad: 0, kvar: 0,
+      cekanje_tuljke: 0, van_stroja: 0, cekanje: 0, ciscenje: 0
+    };
+
+    rows.forEach(function(row) {
+      var inputs = row.querySelectorAll('input');
+      var wo = {};
+
+      inputs.forEach(function(input) {
+        var field = input.getAttribute('data-field');
+        if (field === 'kom') {
+          wo[field] = parseInt(input.value) || 0;
+        } else if (['skart', 'prestelavanje', 'rad', 'kvar', 'cekanjeTuljke', 'vanStroja', 'cekanje', 'ciscenje'].includes(field)) {
+          wo[field] = parseFloat(input.value) || 0;
+        } else {
+          wo[field] = input.value || '';
+        }
+      });
+
+      // Preskoči prazan red
+      if (!wo.wo_number && !wo.kom) return;
+
+      workOrders.push(wo);
+
+      // Akumuliraj totale
+      totals.kom += wo.kom || 0;
+      totals.skart += wo.skart || 0;
+      totals.prestelavanje += wo.prestelavanje || 0;
+      totals.rad += wo.rad || 0;
+      totals.kvar += wo.kvar || 0;
+      totals.cekanjeTuljke += wo.cekanjeTuljke || 0;
+      totals.vanStroja += wo.vanStroja || 0;
+      totals.cekanje += wo.cekanje || 0;
+      totals.ciscenje += wo.ciscenje || 0;
+
+      // Za Bottomer snake_case
+      bottomerTotals.kom += wo.kom || 0;
+      bottomerTotals.skart += wo.skart || 0;
+      bottomerTotals.prestelavanje += wo.prestelavanje || 0;
+      bottomerTotals.rad += wo.rad || 0;
+      bottomerTotals.kvar += wo.kvar || 0;
+      bottomerTotals.cekanje_tuljke += wo.cekanjeTuljke || 0;
+      bottomerTotals.van_stroja += wo.vanStroja || 0;
+      bottomerTotals.cekanje += wo.cekanje || 0;
+      bottomerTotals.ciscenje += wo.ciscenje || 0;
+    });
+
+    // Kreiraj reportData u odgovarajućem formatu
+    var reportData;
+    if (isBottomer) {
+      // Bottomer format: nalozi[] sa snake_case poljima
+      var nalozi = workOrders.map(function(wo) {
+        return {
+          rn: wo.wo_number,
+          opis: wo.opis,
+          kom: wo.kom,
+          skart: wo.skart,
+          prestelavanje: wo.prestelavanje,
+          rad: wo.rad,
+          kvar: wo.kvar,
+          cekanje_tuljke: wo.cekanjeTuljke,
+          van_stroja: wo.vanStroja,
+          cekanje: wo.cekanje,
+          ciscenje: wo.ciscenje
+        };
+      });
+      reportData = {
+        nalozi: nalozi,
+        ukupno: bottomerTotals
+      };
+    } else {
+      // Tuber format: work_orders[] sa camelCase poljima
+      reportData = {
+        work_orders: workOrders,
+        ukupno: totals
+      };
+    }
+
+    var updateData = {
+      strojar: strojar,
+      pomocnici: document.getElementById('psModalPomocnici').value.trim() || null,
+      napomena: document.getElementById('psModalNapomena').value.trim() || null,
+      report_data: reportData,
+      updated_at: new Date().toISOString()
+    };
+
+    // UPSERT
+    var result;
+    if (report.id) {
+      // UPDATE
+      result = await initSupabase()
+        .from('prod_shift_reports')
+        .update(updateData)
+        .eq('id', report.id)
+        .select()
+        .single();
+    } else {
+      // INSERT (novi zapis)
+      updateData.production_line = report.production_line;
+      updateData.machine_type = report.machine_type;
+      updateData.shift_date = report.shift_date;
+      updateData.shift_number = report.shift_number;
+      updateData.created_at = new Date().toISOString();
+
+      result = await initSupabase()
+        .from('prod_shift_reports')
+        .insert(updateData)
+        .select()
+        .single();
+    }
+
+    if (result.error) throw result.error;
+
+    showMessage('Izvještaj spremljen!', 'success');
+    psCloseModal();
+
+    // Ponovno učitaj podatke
+    await psUcitajPodatke();
+
+    // Ponovno otvori detalje strojara
+    if (psData.selectedStrojar) {
+      setTimeout(function() {
+        psOtvoriDetalje(strojar);
+      }, 100);
+    }
+
+  } catch (e) {
+    console.error('Error saving:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// HELPER FUNKCIJE
+// ============================================
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ============================================
+// INIT
+// ============================================
+if (typeof initSupabase === 'function') {
+  initProduktivnostStrojaraView();
+} else {
+  document.addEventListener('DOMContentLoaded', function() {
+    initProduktivnostStrojaraView();
+  });
+}
+</script>

@@ -1,0 +1,29 @@
+# Data exports (contain production data)
+*.csv
+
+# Temporary scripts
+temp_*.ps1
+
+# Backup files
+*_backup.*
+*_backup_*
+
+# Claude Code settings
+.claude/
+
+# Environment files
+.env
+.env.*
+
+# Node (preventive)
+node_modules/
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/

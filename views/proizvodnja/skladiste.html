@@ -1,0 +1,3776 @@
+<style>
+  .inline-edit {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: inherit;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .inline-edit:hover {
+    border-color: #ccc;
+    background: #f8f9fa;
+  }
+  .inline-edit:focus {
+    border-color: #8e44ad;
+    background: white;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2);
+  }
+  input.inline-edit {
+    width: 80px;
+    text-align: center;
+  }
+  input.inline-edit[data-field="manufacturer"] {
+    width: 100px;
+    text-align: left;
+  }
+  select.inline-edit {
+    width: auto;
+    min-width: 90px;
+    cursor: pointer;
+  }
+  
+  /* Tab neusklađeno - pulsiranje ako ima zapisa */
+  .tab-btn.has-unmatched {
+    animation: pulse-unmatched 2s infinite;
+  }
+  @keyframes pulse-unmatched {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); }
+  }
+</style>
+
+<h1 style="margin-bottom: 30px; color: var(--primary);">🏭 Skladište</h1>
+
+<!-- KPI kartice -->
+<div class="status-grid">
+  <div class="status-card">
+    <div class="status-card-icon">📦</div>
+    <div class="status-card-value" id="kpiRolls">-</div>
+    <div class="status-card-label">Role papira</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon">📏</div>
+    <div class="status-card-value" id="kpiStrips">-</div>
+    <div class="status-card-label">Rezane trake</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon">🖨️</div>
+    <div class="status-card-value" id="kpiPrinted">-</div>
+    <div class="status-card-label">Otiskane role</div>
+  </div>
+  <div class="status-card" style="background: linear-gradient(135deg, #8e44ad, #9b59b6);">
+    <div class="status-card-icon">🎞️</div>
+    <div class="status-card-value" id="kpiFoils">-</div>
+    <div class="status-card-label">Folije</div>
+  </div>
+  <div class="status-card" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+    <div class="status-card-icon">🧻</div>
+    <div class="status-card-value" id="kpiPOP">-</div>
+    <div class="status-card-label">POP (tuljci)</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon">🛍️</div>
+    <div class="status-card-value" id="kpiGOP">-</div>
+    <div class="status-card-label">GOP (vreće)</div>
+  </div>
+  <div class="status-card" style="background: linear-gradient(135deg, #7f8c8d, #95a5a6);">
+    <div class="status-card-icon">🏗️</div>
+    <div class="status-card-value" id="kpiPalete">-</div>
+    <div class="status-card-label">Prazne palete</div>
+  </div>
+  <div class="status-card" style="background: linear-gradient(135deg, #5d4e37, #8b7355);">
+    <div class="status-card-icon">🔲</div>
+    <div class="status-card-value" id="kpiPoklopci">-</div>
+    <div class="status-card-label">Poklopci</div>
+  </div>
+</div>
+
+<!-- Tab navigacija -->
+<div class="tab-navigation">
+  <button class="tab-btn active" onclick="showTab('role')">📦 Role papira</button>
+  <button class="tab-btn" onclick="showTab('trake')">📏 Rezane trake</button>
+  <button class="tab-btn" onclick="showTab('otiskane')">🖨️ Otiskane role</button>
+  <button class="tab-btn" onclick="showTab('folije')">🎞️ Folije</button>
+  <button class="tab-btn" onclick="showTab('pop')">🧻 POP</button>
+  <button class="tab-btn" onclick="showTab('gop')">🛍️ GOP</button>
+  <button class="tab-btn" onclick="showTab('palete')">🏗️ Prazne palete</button>
+  <button class="tab-btn" onclick="showTab('korekcije')" style="background: #fff3e0; color: #e65100;">🔧 Korekcije rola</button>
+  <button class="tab-btn" onclick="showTab('neuskladjeno')" style="background: #ffebee; color: #c62828;">⚠️ Neusklađeno</button>
+</div>
+
+<!-- ==================== TAB: ROLE PAPIRA ==================== -->
+<div class="tab-content active" id="role">
+  <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="btn btn-secondary" onclick="toggleRoleSection()" id="toggleRoleBtn">🔽 Prikaži Skladište</button>
+    <button class="btn btn-primary" onclick="openModal('novaRolaModal'); setTimeout(function() { setupEnterNavigation('novaRolaForm'); document.getElementById('novaSifraRole').focus(); }, 100);">➕ Dodaj Novu Rolu</button>
+    <button class="btn btn-danger" onclick="openModal('skidanjeInventuraModal')" style="margin-left: auto;">🗑️ Skini s inventure</button>
+  </div>
+  
+  <div id="roleSkladisteSection" style="display: none;">
+    <div class="card">
+      <div class="card-header">
+        📦 Skladište Rola Papira
+        <div style="float: right; display: flex; gap: 10px;">
+          <span id="rollsCount" style="font-weight: normal; color: var(--text-secondary);"></span>
+          <button class="btn btn-sm btn-secondary" onclick="resetRoleFilteri()">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <!-- FILTERI -->
+      <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Boja</label>
+            <select class="form-control" id="filterBoja" onchange="applyRoleFilteri()">
+              <option value="">Sve</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Gramatura</label>
+            <select class="form-control" id="filterGramatura" onchange="applyRoleFilteri()">
+              <option value="">Sve</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Proizvođač</label>
+            <select class="form-control" id="filterProizvodac" onchange="applyRoleFilteri()">
+              <option value="">Svi</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Tip papira</label>
+            <select class="form-control" id="filterTipPapira" onchange="applyRoleFilteri()">
+              <option value="">Svi</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Status</label>
+            <select class="form-control" id="filterStatus" onchange="applyRoleFilteri()">
+              <option value="" selected>Svi</option>
+              <option value="Na skladištu">Na skladištu</option>
+              <option value="Djelomično">Djelomično</option>
+              <option value="Utrošena">Utrošena</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Širina (cm)</label>
+            <div style="display: flex; gap: 5px;">
+              <input type="number" class="form-control" id="filterSirinaMin" placeholder="Od" onchange="applyRoleFilteri()" style="width: 50%;">
+              <input type="number" class="form-control" id="filterSirinaMax" placeholder="Do" onchange="applyRoleFilteri()" style="width: 50%;">
+            </div>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Min. količina (kg)</label>
+            <input type="number" class="form-control" id="filterMinKolicina" placeholder="Min kg" onchange="applyRoleFilteri()">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Pretraži</label>
+            <input type="text" class="form-control" id="searchRolls" placeholder="Šifra..." oninput="applyRoleFilteri()">
+          </div>
+        </div>
+      </div>
+      
+      <!-- AGREGAT BAR -->
+      <div style="padding: 15px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 600; color: var(--primary);">📊 Ukupno Preostalo:</div>
+        <div style="font-size: 24px; font-weight: bold; color: var(--primary);" id="agregatPreostalo">0.00 kg</div>
+      </div>
+      
+      <div class="card-body" style="padding: 0;">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Šifra role</th>
+                <th>Proizvođač</th>
+                <th>Datum</th>
+                <th>Širina</th>
+                <th>Boja</th>
+                <th>Gramatura</th>
+                <th>Tip</th>
+                <th>Preostalo (kg)</th>
+                <th>Status</th>
+                <th>Akcije</th>
+              </tr>
+            </thead>
+            <tbody id="rollsTableBody">
+              <tr><td colspan="11" style="text-align: center;">Učitavanje...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: REZANE TRAKE ==================== -->
+<div class="tab-content" id="trake">
+  <div class="card">
+    <div class="card-header">
+      📏 Rezane trake
+      <span id="stripsCount" style="font-weight: normal; color: var(--text-secondary); float: right;"></span>
+    </div>
+    
+    <!-- Filteri za trake -->
+    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Status</label>
+          <select class="form-control" id="filterTrakeStatus" onchange="loadStrips()">
+            <option value="" selected>Svi</option>
+            <option value="Na skladištu">Na skladištu</option>
+            <option value="U proizvodnji">U proizvodnji</option>
+            <option value="Potrošeno">Potrošeno</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <input type="text" class="form-control" id="searchStrips" placeholder="Šifra trake ili role..." oninput="loadStrips()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Šifra trake</th>
+              <th>Matična rola</th>
+              <th>Br. trake</th>
+              <th>Prolaz</th>
+              <th>Širina (cm)</th>
+              <th>Težina (kg)</th>
+              <th>RN Rezanja</th>
+              <th>Datum</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="stripsTableBody">
+            <tr><td colspan="9" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: OTISKANE ROLE ==================== -->
+<div class="tab-content" id="otiskane">
+  <div class="card">
+    <div class="card-header">
+      🖨️ Otiskane role
+      <span id="printedCount" style="font-weight: normal; color: var(--text-secondary); float: right;"></span>
+    </div>
+    
+    <!-- Filteri -->
+    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Status</label>
+          <select class="form-control" id="filterPrintedStatus" onchange="loadPrinted()">
+            <option value="" selected>Svi</option>
+            <option value="Na skladištu">Na skladištu</option>
+            <option value="U proizvodnji">U proizvodnji</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <input type="text" class="form-control" id="searchPrinted" placeholder="Šifra, artikl, kupac..." oninput="loadPrinted()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Šifra</th>
+              <th>Matična rola</th>
+              <th>Artikl</th>
+              <th>Kupac</th>
+              <th>RN Tiska</th>
+              <th>Težina (kg)</th>
+              <th>Datum</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="printedTableBody">
+            <tr><td colspan="8" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: FOLIJE ==================== -->
+<div class="tab-content" id="folije">
+  <div style="margin-bottom: 15px;">
+    <button class="btn btn-primary" onclick="openModal('novaFolijaModal'); setTimeout(function() { setupEnterNavigation('novaFolijaForm'); document.getElementById('folijaSifra').focus(); }, 100);">➕ Dodaj Novu Foliju</button>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      🎞️ Folije
+      <div style="float: right; display: flex; gap: 10px; align-items: center;">
+        <span id="foilsCount" style="font-weight: normal; color: var(--text-secondary);"></span>
+        <button class="btn btn-sm btn-secondary" onclick="loadFoils()">🔄 Osvježi</button>
+      </div>
+    </div>
+    
+    <!-- Agregat -->
+    <div style="padding: 15px; background: linear-gradient(135deg, #f3e5f5, #e1bee7); border-bottom: 2px solid #8e44ad; display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: 600; color: #8e44ad;">📊 Ukupna Težina:</div>
+      <div style="font-size: 24px; font-weight: bold; color: #8e44ad;" id="agregatFolije">0.00 kg</div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Šifra</th>
+              <th>Tip</th>
+              <th>Širina (cm)</th>
+              <th>Gramatura</th>
+              <th>Težina (kg)</th>
+              <th>Proizvođač</th>
+              <th>Perforacija</th>
+              <th>Datum</th>
+              <th>Status</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody id="foilsTableBody">
+            <tr><td colspan="10" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: POP ==================== -->
+<div class="tab-content" id="pop">
+  <div class="card">
+    <div class="card-header">
+      🧻 POP - Poluproizvodi (Tuljci)
+      <span id="popCount" style="font-weight: normal; color: var(--text-secondary); float: right;"></span>
+    </div>
+    
+    <!-- Filteri -->
+    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Status</label>
+          <select class="form-control" id="filterPOPStatus" onchange="loadPOP()">
+            <option value="" selected>Svi</option>
+            <option value="Na skladištu">Na skladištu</option>
+            <option value="U obradi">U obradi</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <input type="text" class="form-control" id="searchPOP" placeholder="Šifra, artikl, RN..." oninput="loadPOP()">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Agregat -->
+    <div style="padding: 15px; background: linear-gradient(135deg, #e0f2f1, #b2dfdb); border-bottom: 2px solid #16a085; display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: 600; color: #16a085;">📊 Ukupno komada:</div>
+      <div style="font-size: 24px; font-weight: bold; color: #16a085;" id="agregatPOP">0 kom</div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Šifra POP</th>
+              <th>Radni nalog</th>
+              <th>Artikl</th>
+              <th>Kupac</th>
+              <th>Količina</th>
+              <th>Linija</th>
+              <th>Datum</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="popTableBody">
+            <tr><td colspan="8" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: GOP ==================== -->
+<div class="tab-content" id="gop">
+  <!-- Dodaj Paletu Button - samo za admin -->
+  <div style="margin-bottom: 15px;">
+    <button id="btnDodajGOPPaletu" class="btn btn-primary" onclick="openDodajGOPPaletu()" style="display: none;">
+      ➕ Dodaj Paletu
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      🛍️ GOP - Gotovi proizvodi (Palete)
+      <span id="gopCount" style="font-weight: normal; color: var(--text-secondary); float: right;"></span>
+    </div>
+
+    <!-- Filteri -->
+    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Radni Nalog</label>
+          <select class="form-control" id="filterGOPRN" onchange="loadGOP()">
+            <option value="">Svi</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Kupac</label>
+          <select class="form-control" id="filterGOPKupac" onchange="loadGOP()">
+            <option value="">Svi</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Artikl</label>
+          <select class="form-control" id="filterGOPArtikl" onchange="loadGOP()">
+            <option value="">Svi</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Datum od</label>
+          <input type="date" class="form-control" id="filterGOPDatumOd" onchange="loadGOP()">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Datum do</label>
+          <input type="date" class="form-control" id="filterGOPDatumDo" onchange="loadGOP()">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Smjena</label>
+          <select class="form-control" id="filterGOPSmjena" onchange="loadGOP()">
+            <option value="">Sve</option>
+            <option value="1">1. smjena</option>
+            <option value="2">2. smjena</option>
+            <option value="3">3. smjena</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Status</label>
+          <select class="form-control" id="filterGOPStatus" onchange="loadGOP()">
+            <option value="" selected>Svi</option>
+            <option value="Na skladištu">Na skladištu</option>
+            <option value="U pripremi">U pripremi</option>
+            <option value="Otpremljeno">Otpremljeno</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <input type="text" class="form-control" id="searchGOP" placeholder="Br. palete..." oninput="loadGOP()">
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <button class="btn btn-sm btn-secondary" onclick="resetGOPFilters()" style="font-size: 12px;">🔄 Resetiraj filtere</button>
+      </div>
+    </div>
+    
+    <!-- Agregat -->
+    <div style="padding: 15px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-bottom: 2px solid #27ae60; display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: 600; color: #27ae60;">📊 Ukupno vreća:</div>
+      <div style="font-size: 24px; font-weight: bold; color: #27ae60;" id="agregatGOP">0 kom</div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Paleta</th>
+              <th>Radni nalog</th>
+              <th>Artikl</th>
+              <th>Kupac</th>
+              <th>Količina</th>
+              <th>Dimenzija</th>
+              <th>Datum</th>
+              <th>Status</th>
+              <th id="gopAkcijeHeader" style="display: none;">Akcije</th>
+            </tr>
+          </thead>
+          <tbody id="gopTableBody">
+            <tr><td colspan="9" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: PRAZNE PALETE ==================== -->
+<div class="tab-content" id="palete">
+  <div style="margin-bottom: 15px;">
+    <button class="btn btn-primary" onclick="openModal('novaPaletaModal')">➕ Dodaj/Ažuriraj Palete</button>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      🏗️ Prazne Palete
+      <div style="float: right; display: flex; gap: 10px; align-items: center;">
+        <span id="paleteCount" style="font-weight: normal; color: var(--text-secondary);"></span>
+        <button class="btn btn-sm btn-secondary" onclick="loadPalete()">🔄 Osvježi</button>
+      </div>
+    </div>
+    
+    <!-- Agregat -->
+    <div style="padding: 15px; background: linear-gradient(135deg, #ecf0f1, #bdc3c7); border-bottom: 2px solid #7f8c8d; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div style="display: flex; gap: 30px;">
+        <div>
+          <div style="font-weight: 600; color: #555;">🏗️ Ukupno paleta:</div>
+          <div style="font-size: 24px; font-weight: bold; color: #333;" id="agregatPalete">0 kom</div>
+        </div>
+        <div>
+          <div style="font-weight: 600; color: #555;">🔲 Poklopci (stanje / rez. / dost.):</div>
+          <div style="font-size: 24px; font-weight: bold; color: #333;" id="agregatPoklopci">0 / 0 / 0</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimenzija</th>
+              <th style="text-align: right;">Palete</th>
+              <th style="text-align: right;">Min. Palete</th>
+              <th style="text-align: right;">🔲 Stanje</th>
+              <th style="text-align: right;">🔲 Rezerv.</th>
+              <th style="text-align: right;">🔲 Dostupno</th>
+              <th style="text-align: right;">🔲 Min.</th>
+              <th>Status</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody id="paleteTableBody">
+            <tr><td colspan="9" style="text-align: center;">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: KOREKCIJE POTROŠENIH ROLA ==================== -->
+<div class="tab-content" id="korekcije">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ff9800;">
+    <div class="card-body">
+      <h4 style="color: #e65100; margin-bottom: 10px;">🔧 Korekcije Potrošenih Rola</h4>
+      <p style="color: #666; margin: 0;">
+        Ovdje možete pregledati sve evidentirane potrošnje rola na Tuberu i napraviti korekcije ako je došlo do greške.<br>
+        <strong>Napomena:</strong> Korekcija će ažurirati stanje na originalnoj roli u skladištu.
+      </p>
+    </div>
+  </div>
+  
+  <!-- Filteri -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end;">
+        <div class="form-group" style="flex: 1;">
+          <label>Šifra Role</label>
+          <input type="text" id="korFilterSifra" class="form-control" placeholder="Pretraži po šifri..." oninput="filterKorekcije()">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Radni Nalog</label>
+          <input type="text" id="korFilterRN" class="form-control" placeholder="Broj RN..." oninput="filterKorekcije()">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Linija</label>
+          <select id="korFilterLinija" class="form-control" onchange="filterKorekcije()">
+            <option value="">Sve</option>
+            <option value="WH">W&H</option>
+            <option value="NLI">NLI</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Datum od</label>
+          <input type="date" id="korFilterDatumOd" class="form-control" onchange="filterKorekcije()">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Datum do</label>
+          <input type="date" id="korFilterDatumDo" class="form-control" onchange="filterKorekcije()">
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" onclick="loadConsumedRolls()">🔄 Osvježi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tablica potrošenih rola -->
+  <div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, #e65100, #ff9800); color: white;">
+      📋 Evidencija Potrošenih Rola
+      <span id="korekcijeBroj" style="float: right; font-weight: normal;"></span>
+    </div>
+    <div class="card-body" style="padding: 0; overflow-x: auto;">
+      <table style="width: 100%; min-width: 1000px;">
+        <thead>
+          <tr style="background: #f5f5f5;">
+            <th style="width: 40px;">
+              <input type="checkbox" id="korSelectAll" onchange="toggleKorSelectAll()">
+            </th>
+            <th>Datum</th>
+            <th>Šifra Role</th>
+            <th>Širina</th>
+            <th>Gram.</th>
+            <th>Skinuto (kg)</th>
+            <th>Preostalo</th>
+            <th>RN</th>
+            <th>Artikl</th>
+            <th>Sloj</th>
+            <th>POP</th>
+            <th>Linija</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="korekcijeTableBody">
+          <tr><td colspan="14" style="text-align: center; padding: 40px; color: #999;">
+            Kliknite "Osvježi" za učitavanje podataka
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Skupne akcije -->
+  <div id="korSkupneAkcije" style="display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span id="korOdabranoInfo" style="font-weight: 600;">Odabrano: 0</span>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-danger" onclick="ponistiOdabraneKorekcije()">❌ Poništi odabrane</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: NEUSKLAĐENA POTROŠNJA ==================== -->
+<div class="tab-content" id="neuskladjeno">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ffebee, #ffcdd2); border: 2px solid #c62828;">
+    <div class="card-body">
+      <h4 style="color: #c62828; margin-bottom: 10px;">⚠️ Neusklađena Potrošnja</h4>
+      <p style="color: #666; margin: 0;">
+        Ovdje se prikazuju materijali evidentirani <strong>bez šifre</strong> na Tuberu.<br>
+        Stanje skladišta NIJE promijenjeno za ove zapise. Administrator može povezati s pravom rolom ili označiti kao usklađeno.
+      </p>
+    </div>
+  </div>
+  
+  <!-- Filteri -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end;">
+        <div class="form-group" style="flex: 1;">
+          <label>Linija</label>
+          <select id="neuFilterLinija" class="form-control" onchange="filterNeuskladjeno()">
+            <option value="">Sve</option>
+            <option value="WH">W&H</option>
+            <option value="NLI">NLI</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Datum od</label>
+          <input type="date" id="neuFilterDatumOd" class="form-control" onchange="filterNeuskladjeno()">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Datum do</label>
+          <input type="date" id="neuFilterDatumDo" class="form-control" onchange="filterNeuskladjeno()">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Status</label>
+          <select id="neuFilterStatus" class="form-control" onchange="filterNeuskladjeno()">
+            <option value="">Svi</option>
+            <option value="false">Neusklađeni</option>
+            <option value="true">Usklađeni</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" onclick="loadNeuskladjeno()">🔄 Osvježi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tablica neusklađenih -->
+  <div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, #c62828, #e53935); color: white;">
+      ⚠️ Evidentirani Materijali Bez Šifre
+      <span id="neuskladjenoBroj" style="float: right; font-weight: normal;"></span>
+    </div>
+    <div class="card-body" style="padding: 0; overflow-x: auto;">
+      <table style="width: 100%; min-width: 900px;">
+        <thead>
+          <tr style="background: #f5f5f5;">
+            <th>Datum</th>
+            <th>Sloj</th>
+            <th>Boja</th>
+            <th>Širina</th>
+            <th>Gram.</th>
+            <th>Skinuto (kg)</th>
+            <th>RN</th>
+            <th>Artikl</th>
+            <th>Linija</th>
+            <th>Postava</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="neuskladjenoTableBody">
+          <tr><td colspan="12" style="text-align: center; padding: 40px; color: #999;">
+            Kliknite "Osvježi" za učitavanje podataka
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Info -->
+  <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 0.9em;">
+    <strong>💡 Opcije za usklađivanje:</strong>
+    <ul style="margin: 10px 0 0 20px;">
+      <li><strong>Poveži s rolom</strong> - Pronađi pravu rolu i skini količinu s nje</li>
+      <li><strong>Označi usklađeno</strong> - Ako je već ručno riješeno ili nije potrebna akcija</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== MODAL: KOREKCIJA POTROŠNJE ==================== -->
+<div id="korekcijaModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <span class="modal-close" onclick="closeModal('korekcijaModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #e65100;">🔧 Korekcija Potrošnje Role</h2>
+    
+    <input type="hidden" id="korId">
+    <input type="hidden" id="korRollId">
+    <input type="hidden" id="korOriginalConsumed">
+    
+    <!-- Info o roli -->
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div><strong>Šifra:</strong> <span id="korInfoSifra">-</span></div>
+        <div><strong>Datum:</strong> <span id="korInfoDatum">-</span></div>
+        <div><strong>RN:</strong> <span id="korInfoRN">-</span></div>
+        <div><strong>Linija:</strong> <span id="korInfoLinija">-</span></div>
+        <div><strong>Artikl:</strong> <span id="korInfoArtikl">-</span></div>
+        <div><strong>Sloj:</strong> <span id="korInfoSloj">-</span></div>
+      </div>
+    </div>
+    
+    <!-- Korekcija vrijednosti -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Originalno skinuto (kg)</label>
+        <input type="number" id="korOriginalno" class="form-control" readonly style="background: #e0e0e0;">
+      </div>
+      <div class="form-group">
+        <label style="color: #e65100;">Nova vrijednost (kg) *</label>
+        <input type="number" id="korNovaVrijednost" class="form-control" step="0.001" min="0" required 
+               style="border-color: #ff9800; font-size: 18px; font-weight: bold;" oninput="izracunajRazliku()">
+      </div>
+    </div>
+    
+    <!-- Razlika -->
+    <div id="korRazlikaInfo" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Razlika:</span>
+        <strong id="korRazlika" style="font-size: 20px;">0 kg</strong>
+      </div>
+      <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+        <span id="korEfekt">-</span>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label style="color: #e65100;">Razlog korekcije *</label>
+      <textarea id="korRazlog" class="form-control" rows="3" required placeholder="Opišite zašto je potrebna korekcija..."></textarea>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('korekcijaModal')">Odustani</button>
+      <button type="button" class="btn btn-warning" onclick="spremiKorekciju()" style="background: #e65100;">💾 Spremi Korekciju</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: SKIDANJE S INVENTURE ==================== -->
+<div id="skidanjeInventuraModal" class="modal">
+  <div class="modal-content" style="max-width: 700px;">
+    <span class="modal-close" onclick="closeModal('skidanjeInventuraModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #c62828;">🗑️ Skidanje Rola s Inventure</h2>
+    
+    <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+      <strong>⚠️ Upozorenje:</strong> Ova funkcija trajno označava role kao potrošene i evidentira ih u sustavu.
+      Koristite samo za korekcije nakon inventure!
+    </div>
+    
+    <!-- Unos šifre -->
+    <div class="form-group">
+      <label>Skeniraj ili upiši šifru role:</label>
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="invSifraInput" class="form-control" style="flex: 1; font-size: 18px;" 
+               placeholder="Skeniraj barkod ili upiši šifru..." 
+               onkeypress="if(event.key==='Enter') { event.preventDefault(); invDodajRolu(); }">
+        <button class="btn btn-primary" onclick="invDodajRolu()">➕ Dodaj</button>
+      </div>
+    </div>
+    
+    <!-- Lista rola za skidanje -->
+    <div style="margin-top: 20px;">
+      <h4 style="margin-bottom: 10px;">📋 Role za skidanje:</h4>
+      <div id="invRoleListaEmpty" style="text-align: center; padding: 30px; color: #999; background: #f5f5f5; border-radius: 8px;">
+        Dodajte role skeniranjem ili unosom šifre
+      </div>
+      <table id="invRoleTable" style="width: 100%; display: none;">
+        <thead>
+          <tr style="background: #f5f5f5;">
+            <th>Šifra</th>
+            <th>Širina</th>
+            <th>Gram.</th>
+            <th>Proizvođač</th>
+            <th>Preostalo (kg)</th>
+            <th>Akcija</th>
+          </tr>
+        </thead>
+        <tbody id="invRoleTableBody"></tbody>
+        <tfoot style="background: #ffebee;">
+          <tr>
+            <td colspan="4" style="text-align: right; font-weight: bold;">UKUPNO ZA SKIDANJE:</td>
+            <td style="font-weight: bold; font-size: 1.2em;" id="invUkupnoKg">0 kg</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    
+    <!-- Razlog -->
+    <div class="form-group" style="margin-top: 20px;">
+      <label style="color: #c62828;">Razlog skidanja *</label>
+      <select id="invRazlogSelect" class="form-control" onchange="invToggleCustomRazlog()">
+        <option value="">-- Odaberi razlog --</option>
+        <option value="Inventura - rola ne postoji">Inventura - rola ne postoji</option>
+        <option value="Inventura - oštećena rola">Inventura - oštećena rola</option>
+        <option value="Inventura - pogrešan unos">Inventura - pogrešan unos</option>
+        <option value="Proizvodnja - neevidentirana potrošnja">Proizvodnja - neevidentirana potrošnja</option>
+        <option value="custom">Drugi razlog...</option>
+      </select>
+      <textarea id="invRazlogCustom" class="form-control" rows="2" style="margin-top: 10px; display: none;" 
+                placeholder="Unesite razlog..."></textarea>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+      <button type="button" class="btn btn-secondary" onclick="invOdustani()">Odustani</button>
+      <button type="button" class="btn btn-danger" onclick="invSpremiSkidanje()">🗑️ Skini s inventure</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: USKLAĐIVANJE NEUSKLAĐENOG ==================== -->
+<div id="uskladiModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <span class="modal-close" onclick="closeModal('uskladiModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #1565c0;">🔗 Poveži s Rolom</h2>
+    
+    <input type="hidden" id="uskladiId">
+    <input type="hidden" id="uskladiKg">
+    
+    <!-- Info o zapisu -->
+    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <h4 style="margin: 0 0 10px 0;">Podaci iz evidencije:</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95em;">
+        <div><strong>Sloj:</strong> <span id="uskladiInfoSloj">-</span></div>
+        <div><strong>Boja:</strong> <span id="uskladiInfoBoja">-</span></div>
+        <div><strong>Širina:</strong> <span id="uskladiInfoSirina">-</span> cm</div>
+        <div><strong>Gramatura:</strong> <span id="uskladiInfoGram">-</span> g/m²</div>
+        <div><strong>Skinuto:</strong> <span id="uskladiInfoKg" style="color: #c62828; font-weight: bold;">-</span> kg</div>
+        <div><strong>Datum:</strong> <span id="uskladiInfoDatum">-</span></div>
+      </div>
+    </div>
+    
+    <!-- Pretraživanje rola -->
+    <div class="form-group">
+      <label>Pronađi rolu za povezivanje:</label>
+      <input type="text" id="uskladiSearchInput" class="form-control" 
+             placeholder="Upiši šifru role..." 
+             oninput="uskladiSearchRola()">
+    </div>
+    
+    <!-- Rezultati pretrage -->
+    <div id="uskladiSearchResults" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+      <div style="text-align: center; padding: 20px; color: #999;">
+        Upiši šifru za pretragu
+      </div>
+    </div>
+    
+    <!-- Odabrana rola -->
+    <div id="uskladiOdabranaRola" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <h4 style="margin: 0 0 10px 0; color: #2e7d32;">✓ Odabrana rola:</h4>
+      <div id="uskladiOdabranaInfo"></div>
+      <input type="hidden" id="uskladiOdabranaId">
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('uskladiModal')">Odustani</button>
+      <button type="button" class="btn btn-success" onclick="uskladiSpremi()">✓ Poveži i skini</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: NOVA ROLA ==================== -->
+<div id="novaRolaModal" class="modal">
+  <div class="modal-content" style="max-width: 650px; padding: 25px;">
+    <span class="modal-close" onclick="closeModal('novaRolaModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: var(--primary);">➕ Dodaj Novu Rolu Papira</h2>
+    
+    <form id="novaRolaForm" onsubmit="submitNovaRola(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Šifra Role *</label>
+          <input type="text" id="novaSifraRole" class="form-control" required placeholder="npr. B70-120-MO-001">
+        </div>
+        <div class="form-group">
+          <label>Proizvođač *</label>
+          <select id="novaProizvodac" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Širina (cm) *</label>
+          <input type="number" id="novaSirina" class="form-control" step="0.1" required placeholder="120.5">
+        </div>
+        <div class="form-group">
+          <label>Boja *</label>
+          <select id="novaBoja" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gramatura (g/m²) *</label>
+          <select id="novaGramatura" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tip Papira *</label>
+          <select id="novaTipPapira" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Težina (kg) *</label>
+          <input type="number" id="novaTezina" class="form-control" step="0.01" required placeholder="500.00">
+        </div>
+        <div class="form-group">
+          <label>Cijena (EUR)</label>
+          <input type="number" id="novaCijena" class="form-control" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Napomena</label>
+        <textarea id="novaRolaNapomena" class="form-control" rows="2" placeholder="Opcionalna napomena..."></textarea>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('novaRolaModal')">Odustani</button>
+        <button type="submit" class="btn btn-primary">💾 Spremi Rolu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: NOVA FOLIJA ==================== -->
+<div id="novaFolijaModal" class="modal">
+  <div class="modal-content" style="max-width: 650px; padding: 25px;">
+    <span class="modal-close" onclick="closeModal('novaFolijaModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #8e44ad;">➕ Dodaj Novu Foliju</h2>
+    
+    <form id="novaFolijaForm" onsubmit="submitNovaFolija(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Šifra Folije *</label>
+          <input type="text" id="folijaSifra" class="form-control" required placeholder="npr. FOL-001">
+        </div>
+        <div class="form-group">
+          <label>Tip Folije *</label>
+          <select id="folijaTip" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="HDPE">HDPE</option>
+            <option value="LDPE">LDPE</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Širina (cm) *</label>
+          <input type="number" id="folijaSirina" class="form-control" step="0.1" required placeholder="50.0">
+        </div>
+        <div class="form-group">
+          <label>Gramatura (g/m²) *</label>
+          <input type="number" id="folijaGramatura" class="form-control" required placeholder="30">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Težina (kg) *</label>
+          <input type="number" id="folijaTezina" class="form-control" step="0.1" required placeholder="25.0">
+        </div>
+        <div class="form-group">
+          <label>Proizvođač</label>
+          <input type="text" id="folijaProizvodac" class="form-control" placeholder="npr. Foliplast">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Perforacija</label>
+        <select id="folijaPerforacija" class="form-control">
+          <option value="">-- Odaberi --</option>
+          <option value="Slits">Slits</option>
+          <option value="Mikroperforacija">Mikroperforacija</option>
+          <option value="Bez perforacije">Bez perforacije</option>
+        </select>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('novaFolijaModal')">Odustani</button>
+        <button type="submit" class="btn btn-primary">💾 Spremi Foliju</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: DETALJI ROLE ==================== -->
+<div id="detaljiRoleModal" class="modal">
+  <div class="modal-content" style="max-width: 700px;">
+    <span class="modal-close" onclick="closeModal('detaljiRoleModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: var(--primary);">📦 Detalji Role</h2>
+    <div id="detaljiRoleContent">Učitavanje...</div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: PRAZNE PALETE ==================== -->
+<div id="novaPaletaModal" class="modal">
+  <div class="modal-content" style="max-width: 550px; padding: 25px;">
+    <span class="modal-close" onclick="closeModal('novaPaletaModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #7f8c8d;">🏗️ Dodaj/Ažuriraj Palete i Poklopce</h2>
+    
+    <form id="novaPaletaForm" onsubmit="submitPaleta(event)">
+      <div class="form-group">
+        <label>Dimenzija *</label>
+        <select id="paletaDimenzija" class="form-control" required>
+          <option value="">-- Odaberi --</option>
+          <option value="80x120">80 x 120 cm</option>
+          <option value="90x120">90 x 120 cm</option>
+          <option value="95x120">95 x 120 cm</option>
+          <option value="100x120">100 x 120 cm</option>
+          <option value="105x120">105 x 120 cm</option>
+          <option value="110x120">110 x 120 cm</option>
+          <option value="115x115">115 x 115 cm</option>
+          <option value="115x120">115 x 120 cm</option>
+          <option value="120x120">120 x 120 cm</option>
+          <option value="125x120">125 x 120 cm</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Akcija</label>
+        <select id="paletaAkcija" class="form-control">
+          <option value="set">Postavi količinu</option>
+          <option value="add">Dodaj na postojeće</option>
+          <option value="subtract">Oduzmi od postojećeg</option>
+        </select>
+      </div>
+      
+      <!-- Palete -->
+      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h4 style="margin: 0 0 10px 0; color: #7f8c8d;">🏗️ Palete</h4>
+        <div class="form-row">
+          <div class="form-group" style="margin: 0;">
+            <label>Količina</label>
+            <input type="number" id="paletaKolicina" class="form-control" min="0" placeholder="0">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label>Min. Zaliha</label>
+            <input type="number" id="paletaMinZaliha" class="form-control" min="0" placeholder="0">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Poklopci -->
+      <div style="background: #f9f6f2; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #5d4e37;">
+        <h4 style="margin: 0 0 10px 0; color: #5d4e37;">🔲 Poklopci (stanje na skladištu)</h4>
+        <p style="font-size: 0.85em; color: #666; margin: 0 0 10px 0;">Rezervirano se automatski dodaje kad Bottomer napravi paletu</p>
+        <div class="form-row">
+          <div class="form-group" style="margin: 0;">
+            <label>Stanje</label>
+            <input type="number" id="poklopacKolicina" class="form-control" min="0" placeholder="0">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label>Min. Zaliha</label>
+            <input type="number" id="poklopacMinZaliha" class="form-control" min="0" placeholder="0">
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('novaPaletaModal')">Odustani</button>
+        <button type="submit" class="btn btn-primary">💾 Spremi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: DODAJ GOP PALETU ==================== -->
+<div id="gopPaletaModal" class="modal">
+  <div class="modal-content" style="max-width: 700px; padding: 25px;">
+    <span class="modal-close" onclick="closeModal('gopPaletaModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #27ae60;">🛍️ Dodaj GOP Paletu</h2>
+
+    <form id="gopPaletaForm" onsubmit="dodajGOPPaletuSubmit(event)">
+      <!-- Osnovni podaci -->
+      <div class="form-group">
+        <label>Radni Nalog *</label>
+        <select id="gopNalog" class="form-control" required onchange="loadGOPArticleInfo()">
+          <option value="">-- Odaberi radni nalog --</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Linija *</label>
+          <select id="gopLinija" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="NLI">NLI</option>
+            <option value="WH">W&H</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Dimenzija *</label>
+          <select id="gopDimenzija" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="80x120">80 x 120 cm</option>
+            <option value="90x120">90 x 120 cm</option>
+            <option value="95x120">95 x 120 cm</option>
+            <option value="100x120">100 x 120 cm</option>
+            <option value="105x120">105 x 120 cm</option>
+            <option value="110x120">110 x 120 cm</option>
+            <option value="115x115">115 x 115 cm</option>
+            <option value="115x120">115 x 120 cm</option>
+            <option value="120x120">120 x 120 cm</option>
+            <option value="125x120">125 x 120 cm</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status *</label>
+        <select id="gopStatus" class="form-control" required>
+          <option value="Na skladištu">Na skladištu</option>
+          <option value="U pripremi">U pripremi</option>
+          <option value="Otpremljeno">Otpremljeno</option>
+        </select>
+      </div>
+
+      <!-- Broj palete -->
+      <div class="form-group">
+        <label>Broj Palete *</label>
+        <input type="text" id="gopBrojPalete" class="form-control" required placeholder="npr. P0001">
+        <small style="color: #666;">Format: P0001, P0002, itd.</small>
+      </div>
+
+      <!-- Datum i Smjena -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Datum *</label>
+          <input type="date" id="gopDatum" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Smjena *</label>
+          <select id="gopSmjena" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="1">1. smjena (06:00-14:00)</option>
+            <option value="2">2. smjena (14:00-22:00)</option>
+            <option value="3">3. smjena (22:00-06:00)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Postava i Količina -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Postava *</label>
+          <select id="gopPostava" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="Postava 1">Postava 1</option>
+            <option value="Postava 2">Postava 2</option>
+            <option value="Postava 3">Postava 3</option>
+            <option value="Postava 4">Postava 4</option>
+            <option value="Postava 5">Postava 5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Količina (kom) *</label>
+          <input type="number" id="gopKolicina" class="form-control" min="1" required placeholder="npr. 1000">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('gopPaletaModal')">Odustani</button>
+        <button type="submit" class="btn btn-primary">💾 Spremi Paletu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: UREDI GOP PALETU ==================== -->
+<div id="gopPaletaEditModal" class="modal">
+  <div class="modal-content" style="max-width: 700px; padding: 25px;">
+    <span class="modal-close" onclick="closeModal('gopPaletaEditModal')">&times;</span>
+    <h2 style="margin-bottom: 20px; color: #e67e22;">✏️ Uredi GOP Paletu</h2>
+
+    <form id="gopPaletaEditForm" onsubmit="urediGOPPaletuSubmit(event)">
+      <input type="hidden" id="editGOPPaletaId">
+      <input type="hidden" id="editGOPPaletaNumber">
+
+      <!-- Informacija o paleti -->
+      <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+        <strong>Paleta:</strong> <span id="editGOPPaletaInfo"></span>
+      </div>
+
+      <!-- Osnovni podaci -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Dimenzija *</label>
+          <select id="editGOPDimenzija" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="80x120">80 x 120 cm</option>
+            <option value="90x120">90 x 120 cm</option>
+            <option value="95x120">95 x 120 cm</option>
+            <option value="100x120">100 x 120 cm</option>
+            <option value="105x120">105 x 120 cm</option>
+            <option value="110x120">110 x 120 cm</option>
+            <option value="115x115">115 x 115 cm</option>
+            <option value="115x120">115 x 120 cm</option>
+            <option value="120x120">120 x 120 cm</option>
+            <option value="125x120">125 x 120 cm</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status *</label>
+          <select id="editGOPStatus" class="form-control" required>
+            <option value="Na skladištu">Na skladištu</option>
+            <option value="U pripremi">U pripremi</option>
+            <option value="Otpremljeno">Otpremljeno</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Datum i Smjena -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Datum *</label>
+          <input type="date" id="editGOPDatum" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Smjena *</label>
+          <select id="editGOPSmjena" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="1">1. smjena (06:00-14:00)</option>
+            <option value="2">2. smjena (14:00-22:00)</option>
+            <option value="3">3. smjena (22:00-06:00)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Postava i Količina -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Postava *</label>
+          <select id="editGOPPostava" class="form-control" required>
+            <option value="">-- Odaberi --</option>
+            <option value="Postava 1">Postava 1</option>
+            <option value="Postava 2">Postava 2</option>
+            <option value="Postava 3">Postava 3</option>
+            <option value="Postava 4">Postava 4</option>
+            <option value="Postava 5">Postava 5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Količina (kom) *</label>
+          <input type="number" id="editGOPKolicina" class="form-control" min="1" required placeholder="npr. 1000">
+        </div>
+      </div>
+
+      <!-- Razlog korekcije -->
+      <div class="form-group">
+        <label>Razlog korekcije *</label>
+        <textarea id="editGOPRazlog" class="form-control" rows="2" required placeholder="Opišite razlog korekcije..."></textarea>
+        <small style="color: #666;">OBAVEZNO unesite razlog korekcije za audit trail</small>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('gopPaletaEditModal')">Odustani</button>
+        <button type="submit" class="btn btn-primary">💾 Spremi Izmjene</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var allRolls = [];
+var dropdownData = {
+  boje: [],
+  gramature: [],
+  proizvodaci: [],
+  tipovi: []
+};
+
+// ============================================
+// TAB NAVIGACIJA
+// ============================================
+function showTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+  
+  // Lazy load data
+  if (tabId === 'trake') loadStrips();
+  if (tabId === 'otiskane') loadPrinted();
+  if (tabId === 'folije') loadFoils();
+  if (tabId === 'pop') loadPOP();
+  if (tabId === 'gop') loadGOP();
+  if (tabId === 'palete') loadPalete();
+  if (tabId === 'neuskladjeno') loadNeuskladjeno();
+}
+
+// ============================================
+// TOGGLE SEKCIJE
+// ============================================
+function toggleRoleSection() {
+  const section = document.getElementById('roleSkladisteSection');
+  const btn = document.getElementById('toggleRoleBtn');
+  
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.innerHTML = '🔼 Sakrij Skladište';
+  } else {
+    section.style.display = 'none';
+    btn.innerHTML = '🔽 Prikaži Skladište';
+  }
+}
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initSkladisteView() {
+  console.log('Initializing Skladiste view...');
+  
+  try {
+    showLoading('Učitavanje skladišta...');
+    
+    // Učitaj role - eksplicitni limit (Supabase default = 1000)
+    const { data: rolls, error } = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('*')
+      .order('entry_date', { ascending: false })
+      .limit(10000);
+    
+    if (error) throw error;
+    allRolls = rolls || [];
+    console.log('Loaded rolls:', allRolls.length);
+    
+    // Učitaj dropdown vrijednosti iz baze
+    await loadDropdownValues();
+    
+    // Popuni filtere
+    populateFilters();
+    
+    // Popuni forme
+    populateFormDropdowns();
+    
+    // Ažuriraj KPI
+    updateKPIs();
+    
+    // Renderaj tablicu
+    applyRoleFilteri();
+    
+    // Učitaj counts za ostale tabove
+    loadAllCounts();
+    
+    hideLoading();
+    
+  } catch (error) {
+    console.error('Error:', error);
+    hideLoading();
+    showMessage('Greška pri učitavanju skladišta: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// DROPDOWN VRIJEDNOSTI
+// ============================================
+async function loadDropdownValues() {
+  try {
+    // Dohvati iz prod_dropdown_values
+    const { data: ddv } = await initSupabase()
+      .from('prod_dropdown_values')
+      .select('category, value')
+      .eq('active', true)
+      .order('sort_order');
+    
+    if (ddv) {
+      dropdownData.boje = ddv.filter(d => d.category === 'paper_color').map(d => d.value);
+      dropdownData.gramature = ddv.filter(d => d.category === 'grammage').map(d => d.value);
+      dropdownData.tipovi = ddv.filter(d => d.category === 'paper_type').map(d => d.value);
+      dropdownData.proizvodaci = ddv.filter(d => d.category === 'manufacturer').map(d => d.value);
+    }
+    
+    // Ako nema u dropdown tablici, izvuci iz rola
+    if (dropdownData.boje.length === 0) {
+      dropdownData.boje = [...new Set(allRolls.map(r => r.color).filter(Boolean))];
+    }
+    if (dropdownData.gramature.length === 0) {
+      dropdownData.gramature = [...new Set(allRolls.map(r => r.grammage).filter(Boolean))];
+    }
+    if (dropdownData.proizvodaci.length === 0) {
+      dropdownData.proizvodaci = [...new Set(allRolls.map(r => r.manufacturer).filter(Boolean))];
+    }
+    if (dropdownData.tipovi.length === 0) {
+      dropdownData.tipovi = [...new Set(allRolls.map(r => r.paper_type).filter(Boolean))];
+    }
+    
+  } catch (e) {
+    console.log('Dropdown load fallback:', e);
+  }
+}
+
+function populateFilters() {
+  // Boja
+  const bojaSelect = document.getElementById('filterBoja');
+  dropdownData.boje.forEach(b => {
+    bojaSelect.innerHTML += `<option value="${b}">${b === 'S' ? 'Smeđa (S)' : b === 'B' ? 'Bijela (B)' : b}</option>`;
+  });
+  
+  // Gramatura
+  const gramSelect = document.getElementById('filterGramatura');
+  dropdownData.gramature.sort((a,b) => Number(a) - Number(b)).forEach(g => {
+    gramSelect.innerHTML += `<option value="${g}">${g}</option>`;
+  });
+  
+  // Proizvođač
+  const proizSelect = document.getElementById('filterProizvodac');
+  dropdownData.proizvodaci.sort().forEach(p => {
+    proizSelect.innerHTML += `<option value="${p}">${p}</option>`;
+  });
+  
+  // Tip papira
+  const tipSelect = document.getElementById('filterTipPapira');
+  dropdownData.tipovi.sort().forEach(t => {
+    tipSelect.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+}
+
+function populateFormDropdowns() {
+  // Proizvođač
+  const proizSelect = document.getElementById('novaProizvodac');
+  dropdownData.proizvodaci.forEach(p => {
+    proizSelect.innerHTML += `<option value="${p}">${p}</option>`;
+  });
+  
+  // Boja
+  const bojaSelect = document.getElementById('novaBoja');
+  dropdownData.boje.forEach(b => {
+    const label = b === 'S' ? 'Smeđa (S)' : b === 'B' ? 'Bijela (B)' : b === 'R' ? 'Reciklirani (R)' : b;
+    bojaSelect.innerHTML += `<option value="${b}">${label}</option>`;
+  });
+  
+  // Gramatura
+  const gramSelect = document.getElementById('novaGramatura');
+  dropdownData.gramature.sort((a,b) => Number(a) - Number(b)).forEach(g => {
+    gramSelect.innerHTML += `<option value="${g}">${g} g/m²</option>`;
+  });
+  
+  // Tip papira
+  const tipSelect = document.getElementById('novaTipPapira');
+  dropdownData.tipovi.forEach(t => {
+    tipSelect.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+}
+
+// ============================================
+// KPI AŽURIRANJE
+// ============================================
+function updateKPIs() {
+  const activeRolls = allRolls.filter(r => r.status !== 'Utrošena');
+  document.getElementById('kpiRolls').textContent = activeRolls.length;
+}
+
+async function loadAllCounts() {
+  try {
+    const sb = initSupabase();
+    
+    // Trake
+    const { data: stripsData } = await sb.from('prod_inventory_strips').select('id');
+    document.getElementById('kpiStrips').textContent = stripsData?.length || 0;
+    
+    // Otiskane
+    const { data: printedData } = await sb.from('prod_inventory_printed').select('id');
+    document.getElementById('kpiPrinted').textContent = printedData?.length || 0;
+    
+    // Folije
+    const { data: foilsData } = await sb.from('prod_inventory_foil').select('id');
+    document.getElementById('kpiFoils').textContent = foilsData?.length || 0;
+    
+    // POP - koristi prod_inventory_pop
+    const { data: popData } = await sb.from('prod_inventory_pop').select('quantity');
+    const popSum = popData ? popData.reduce((sum, p) => sum + (p.quantity || 0), 0) : 0;
+    document.getElementById('kpiPOP').textContent = formatBroj(popSum, 0) + ' kom';
+    
+    // GOP - koristi prod_inventory_gop
+    const { data: gopData } = await sb.from('prod_inventory_gop').select('quantity');
+    const gopSum = gopData ? gopData.reduce((sum, p) => sum + (p.quantity || 0), 0) : 0;
+    document.getElementById('kpiGOP').textContent = formatBroj(gopSum, 0) + ' kom';
+    
+    // Prazne palete - koristi prod_inventory_pallets
+    const { data: paleteData } = await sb.from('prod_inventory_pallets').select('quantity, cover_quantity, cover_reserved');
+    const paleteSum = paleteData ? paleteData.reduce((sum, p) => sum + (p.quantity || 0), 0) : 0;
+    const poklopciStanje = paleteData ? paleteData.reduce((sum, p) => sum + (p.cover_quantity || 0), 0) : 0;
+    const poklopciRezerv = paleteData ? paleteData.reduce((sum, p) => sum + (p.cover_reserved || 0), 0) : 0;
+    const poklopciDostupno = poklopciStanje - poklopciRezerv;
+    document.getElementById('kpiPalete').textContent = formatBroj(paleteSum, 0) + ' kom';
+    document.getElementById('kpiPoklopci').textContent = formatBroj(poklopciDostupno, 0) + ' dost.';
+    
+  } catch (e) {
+    console.log('Count error:', e);
+  }
+}
+
+// ============================================
+// FILTRIRANJE ROLA
+// ============================================
+function applyRoleFilteri() {
+  const boja = document.getElementById('filterBoja').value;
+  const gramatura = document.getElementById('filterGramatura').value;
+  const proizvodac = document.getElementById('filterProizvodac').value;
+  const tipPapira = document.getElementById('filterTipPapira').value;
+  const status = document.getElementById('filterStatus').value;
+  const sirinaMin = parseFloat(document.getElementById('filterSirinaMin').value) || 0;
+  const sirinaMax = parseFloat(document.getElementById('filterSirinaMax').value) || Infinity;
+  const minKolicina = parseFloat(document.getElementById('filterMinKolicina').value) || 0;
+  const search = document.getElementById('searchRolls').value.toLowerCase();
+  
+  let filtered = allRolls.filter(roll => {
+    const remaining = (roll.initial_weight_kg || 0) - (roll.consumed_kg || 0);
+    
+    const matchBoja = !boja || roll.color === boja;
+    const matchGram = !gramatura || String(roll.grammage) === gramatura;
+    const matchProiz = !proizvodac || roll.manufacturer === proizvodac;
+    const matchTip = !tipPapira || roll.paper_type === tipPapira;
+    const matchStatus = !status || (roll.status && roll.status.includes(status));
+    const matchSirina = (roll.width_cm || 0) >= sirinaMin && (roll.width_cm || 0) <= sirinaMax;
+    const matchMinKol = remaining >= minKolicina;
+    const matchSearch = !search || 
+      (roll.roll_code && roll.roll_code.toLowerCase().includes(search)) ||
+      (roll.manufacturer && roll.manufacturer.toLowerCase().includes(search));
+    
+    return matchBoja && matchGram && matchProiz && matchTip && matchStatus && matchSirina && matchMinKol && matchSearch;
+  });
+  
+  renderRollsTable(filtered);
+  updateAgregat(filtered);
+}
+
+function resetRoleFilteri() {
+  document.getElementById('filterBoja').value = '';
+  document.getElementById('filterGramatura').value = '';
+  document.getElementById('filterProizvodac').value = '';
+  document.getElementById('filterTipPapira').value = '';
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterSirinaMin').value = '';
+  document.getElementById('filterSirinaMax').value = '';
+  document.getElementById('filterMinKolicina').value = '';
+  document.getElementById('searchRolls').value = '';
+  applyRoleFilteri();
+}
+
+function updateAgregat(rolls) {
+  const ukupnoPreostalo = rolls.reduce((sum, r) => {
+    const remaining = (r.initial_weight_kg || 0) - (r.consumed_kg || 0);
+    return sum + remaining;
+  }, 0);
+  document.getElementById('agregatPreostalo').textContent = formatBroj(ukupnoPreostalo, 2) + ' kg';
+}
+
+// ============================================
+// RENDERIRANJE TABLICE ROLA
+// ============================================
+function renderRollsTable(rolls) {
+  const tbody = document.getElementById('rollsTableBody');
+  document.getElementById('rollsCount').textContent = `(${rolls.length} rola)`;
+  
+  if (!rolls || rolls.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 40px;">Nema rola za prikaz</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = rolls.slice(0, 200).map(roll => {
+    const remaining = (roll.initial_weight_kg || 0) - (roll.consumed_kg || 0);
+    const percent = roll.initial_weight_kg ? Math.round(remaining / roll.initial_weight_kg * 100) : 100;
+    
+    let statusClass = 'success';
+    let statusText = roll.status || 'Na skladištu';
+    if (statusText === 'Utrošena' || remaining <= 0) statusClass = 'secondary';
+    else if (statusText === 'Djelomično' || percent < 50) statusClass = 'warning';
+    
+    const bojaLabel = roll.color === 'S' ? 'Smeđa' : roll.color === 'B' ? 'Bijela' : roll.color || '-';
+    const datumUnosa = roll.entry_date ? formatDatum(roll.entry_date) : '-';
+    
+    return `
+      <tr>
+        <td>${roll.internal_id || '-'}</td>
+        <td><code style="font-size: 0.85em; background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${roll.roll_code || '-'}</code></td>
+        <td>${roll.manufacturer || '-'}</td>
+        <td>${datumUnosa}</td>
+        <td>${roll.width_cm || '-'} cm</td>
+        <td><span class="badge badge-${roll.color === 'S' ? 'warning' : 'info'}">${bojaLabel}</span></td>
+        <td>${roll.grammage || '-'} g</td>
+        <td>${roll.paper_type || '-'}</td>
+        <td style="text-align: right;">
+          <strong>${formatBroj(remaining, 1)} kg</strong>
+          <div style="background: #e0e0e0; height: 4px; border-radius: 2px; margin-top: 4px;">
+            <div style="background: var(--${statusClass}); height: 100%; width: ${percent}%; border-radius: 2px;"></div>
+          </div>
+        </td>
+        <td><span class="badge badge-${statusClass}">${statusText}</span></td>
+        <td>
+          <button class="action-btn view" onclick="viewRollDetails('${roll.id}')" title="Detalji">👁️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  if (rolls.length > 200) {
+    tbody.innerHTML += `<tr><td colspan="11" style="text-align: center; color: var(--text-secondary);">Prikazano 200 od ${rolls.length}. Koristite filtre za preciznije rezultate.</td></tr>`;
+  }
+}
+
+// ============================================
+// DETALJI ROLE
+// ============================================
+function viewRollDetails(id) {
+  const roll = allRolls.find(r => r.id === id);
+  if (!roll) return;
+  
+  const remaining = (roll.initial_weight_kg || 0) - (roll.consumed_kg || 0);
+  const content = document.getElementById('detaljiRoleContent');
+  
+  content.innerHTML = `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-section">
+        <h4>Osnovni podaci</h4>
+        <p><strong>Šifra:</strong> ${roll.roll_code || '-'}</p>
+        <p><strong>ID:</strong> ${roll.internal_id || '-'}</p>
+        <p><strong>Proizvođač:</strong> ${roll.manufacturer || '-'}</p>
+        <p><strong>Datum unosa:</strong> ${roll.entry_date ? formatDatum(roll.entry_date) : '-'}</p>
+      </div>
+      <div class="form-section">
+        <h4>Specifikacije</h4>
+        <p><strong>Širina:</strong> ${roll.width_cm || '-'} cm</p>
+        <p><strong>Boja:</strong> ${roll.color === 'S' ? 'Smeđa' : roll.color === 'B' ? 'Bijela' : roll.color || '-'}</p>
+        <p><strong>Gramatura:</strong> ${roll.grammage || '-'} g/m²</p>
+        <p><strong>Tip:</strong> ${roll.paper_type || '-'}</p>
+      </div>
+      <div class="form-section">
+        <h4>Količine</h4>
+        <p><strong>Početna težina:</strong> ${formatBroj(roll.initial_weight_kg, 2)} kg</p>
+        <p><strong>Potrošeno:</strong> ${formatBroj(roll.consumed_kg || 0, 2)} kg</p>
+        <p><strong>Preostalo:</strong> <span style="color: var(--success); font-weight: bold;">${formatBroj(remaining, 2)} kg</span></p>
+      </div>
+      <div class="form-section">
+        <h4>Status</h4>
+        <p><strong>Status:</strong> ${roll.status || '-'}</p>
+        <p><strong>Lokacija:</strong> ${roll.location || '-'}</p>
+        <p><strong>Cijena:</strong> ${roll.price_eur ? formatBroj(roll.price_eur, 2) + ' €' : '-'}</p>
+      </div>
+    </div>
+    ${roll.notes ? `<div class="form-section" style="margin-top: 15px;"><h4>Napomena</h4><p>${roll.notes}</p></div>` : ''}
+  `;
+  
+  openModal('detaljiRoleModal');
+}
+
+// ============================================
+// DODAVANJE NOVE ROLE
+// ============================================
+async function submitNovaRola(event) {
+  event.preventDefault();
+  
+  const rolaData = {
+    roll_code: document.getElementById('novaSifraRole').value.trim(),
+    manufacturer: document.getElementById('novaProizvodac').value,
+    width_cm: parseFloat(document.getElementById('novaSirina').value),
+    color: document.getElementById('novaBoja').value,
+    grammage: document.getElementById('novaGramatura').value,
+    paper_type: document.getElementById('novaTipPapira').value,
+    initial_weight_kg: parseFloat(document.getElementById('novaTezina').value),
+    consumed_kg: 0,
+    price_eur: parseFloat(document.getElementById('novaCijena').value) || null,
+    notes: document.getElementById('novaRolaNapomena').value.trim() || null,
+    entry_date: new Date().toISOString().split('T')[0],
+    status: 'Na skladištu'
+  };
+  
+  try {
+    showLoading('Spremanje role...');
+    
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_rolls')
+      .insert([rolaData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Dodaj u lokalni array
+    allRolls.unshift(data);
+    
+    // Osvježi prikaz
+    applyRoleFilteri();
+    updateKPIs();
+    
+    // Zatvori modal i resetiraj formu
+    closeModal('novaRolaModal');
+    document.getElementById('novaRolaForm').reset();
+    
+    hideLoading();
+    showMessage('✅ Rola uspješno dodana: ' + data.roll_code, 'success');
+    
+  } catch (error) {
+    hideLoading();
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// DODAVANJE NOVE FOLIJE
+// ============================================
+async function submitNovaFolija(event) {
+  event.preventDefault();
+  
+  const folijaData = {
+    foil_code: document.getElementById('folijaSifra').value.trim(),
+    foil_type: document.getElementById('folijaTip').value,
+    width_cm: parseFloat(document.getElementById('folijaSirina').value),
+    grammage: parseInt(document.getElementById('folijaGramatura').value),
+    weight_kg: parseFloat(document.getElementById('folijaTezina').value) || null,
+    manufacturer: document.getElementById('folijaProizvodac').value.trim() || null,
+    perforation: document.getElementById('folijaPerforacija').value || null,
+    entry_date: new Date().toISOString().split('T')[0],
+    status: 'Na skladištu'
+  };
+  
+  try {
+    showLoading('Spremanje folije...');
+    
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_foil')
+      .insert([folijaData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    closeModal('novaFolijaModal');
+    document.getElementById('novaFolijaForm').reset();
+    
+    // Osvježi tab folije
+    loadFoils();
+    loadAllCounts();
+    
+    hideLoading();
+    showMessage('✅ Folija uspješno dodana: ' + data.foil_code, 'success');
+    
+  } catch (error) {
+    hideLoading();
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// UČITAVANJE TRAKA
+// ============================================
+async function loadStrips() {
+  const tbody = document.getElementById('stripsTableBody');
+  const statusFilter = document.getElementById('filterTrakeStatus').value;
+  const search = document.getElementById('searchStrips').value.toLowerCase();
+  
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_strips')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    
+    if (error) throw error;
+    
+    let filtered = data || [];
+    
+    // Filter po statusu ako je odabran
+    if (statusFilter) {
+      filtered = filtered.filter(s => s.status === statusFilter);
+    }
+    
+    // Filter po pretrazi
+    if (search) {
+      filtered = filtered.filter(s => 
+        (s.strip_code && s.strip_code.toLowerCase().includes(search)) ||
+        (s.parent_roll_code && s.parent_roll_code.toLowerCase().includes(search))
+      );
+    }
+    
+    document.getElementById('stripsCount').textContent = `(${filtered.length})`;
+    
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Nema traka za prikaz</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = filtered.map(s => `
+      <tr>
+        <td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${s.strip_code || '-'}</code></td>
+        <td>${s.parent_roll_code || '-'}</td>
+        <td>${s.strip_number || '-'}</td>
+        <td>${s.pass_number || '-'}</td>
+        <td>${s.width_cm || '-'} cm</td>
+        <td style="text-align: right;">${formatBroj(s.weight_kg, 1)} kg</td>
+        <td>${s.work_order_number || '-'}</td>
+        <td>${s.created_at ? formatDatum(s.created_at) : '-'}</td>
+        <td><span class="badge badge-${s.status === 'Na skladištu' ? 'success' : s.status === 'Potrošeno' ? 'secondary' : 'warning'}">${s.status || '-'}</span></td>
+      </tr>
+    `).join('');
+    
+  } catch (e) {
+    console.error('loadStrips error:', e);
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--danger);">Greška pri učitavanju</td></tr>';
+  }
+}
+
+// ============================================
+// UČITAVANJE OTISKANIH
+// ============================================
+async function loadPrinted() {
+  const tbody = document.getElementById('printedTableBody');
+  const status = document.getElementById('filterPrintedStatus').value;
+  const search = document.getElementById('searchPrinted').value.toLowerCase();
+  
+  try {
+    let query = initSupabase().from('prod_inventory_printed').select('*');
+    
+    if (status) query = query.eq('status', status);
+    
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(200);
+    if (error) throw error;
+    
+    let filtered = data || [];
+    if (search) {
+      filtered = filtered.filter(p => 
+        (p.printed_roll_code && p.printed_roll_code.toLowerCase().includes(search)) ||
+        (p.article_name && p.article_name.toLowerCase().includes(search)) ||
+        (p.customer_name && p.customer_name.toLowerCase().includes(search))
+      );
+    }
+    
+    document.getElementById('printedCount').textContent = `(${filtered.length})`;
+    
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nema otiskanih rola</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td><code>${p.printed_roll_code || '-'}</code></td>
+        <td>${p.parent_strip_code || '-'}</td>
+        <td>${p.article_name || '-'}</td>
+        <td>${p.customer_name || '-'}</td>
+        <td>${p.work_order_number || '-'}</td>
+        <td>${formatBroj(p.weight_kg, 1)}</td>
+        <td>${p.created_at ? formatDatum(p.created_at) : '-'}</td>
+        <td><span class="badge badge-${p.status === 'Na skladištu' ? 'success' : 'info'}">${p.status || '-'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nema podataka</td></tr>';
+  }
+}
+
+// ============================================
+// UČITAVANJE FOLIJA
+// ============================================
+async function loadFoils() {
+  const tbody = document.getElementById('foilsTableBody');
+  
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_foil')
+      .select('*')
+      .order('entry_date', { ascending: false })
+      .limit(200);
+    
+    if (error) throw error;
+    
+    document.getElementById('foilsCount').textContent = `(${data?.length || 0})`;
+    
+    // Izračunaj agregat - ukupna težina
+    const ukupnaTezina = data ? data.reduce((sum, f) => sum + (f.weight_kg || 0), 0) : 0;
+    document.getElementById('agregatFolije').textContent = formatBroj(ukupnaTezina, 2) + ' kg';
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Nema folija</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.map(f => `
+      <tr data-id="${f.id}">
+        <td><code>${f.foil_code || '-'}</code></td>
+        <td>
+          <select class="inline-edit" data-field="foil_type" onchange="saveFoilField(this, '${f.id}')">
+            <option value="HDPE" ${f.foil_type === 'HDPE' ? 'selected' : ''}>HDPE</option>
+            <option value="LDPE" ${f.foil_type === 'LDPE' ? 'selected' : ''}>LDPE</option>
+          </select>
+        </td>
+        <td><input type="number" class="inline-edit" data-field="width_cm" value="${f.width_cm || ''}" step="0.1" onchange="saveFoilField(this, '${f.id}')"></td>
+        <td><input type="number" class="inline-edit" data-field="grammage" value="${f.grammage || f.microns || ''}" onchange="saveFoilField(this, '${f.id}')"></td>
+        <td><input type="number" class="inline-edit" data-field="weight_kg" value="${f.weight_kg || ''}" step="0.1" onchange="saveFoilField(this, '${f.id}')"></td>
+        <td><input type="text" class="inline-edit" data-field="manufacturer" value="${f.manufacturer || ''}" onchange="saveFoilField(this, '${f.id}')"></td>
+        <td>
+          <select class="inline-edit" data-field="perforation" onchange="saveFoilField(this, '${f.id}')">
+            <option value="" ${!f.perforation ? 'selected' : ''}>-</option>
+            <option value="Slits" ${f.perforation === 'Slits' ? 'selected' : ''}>Slits</option>
+            <option value="Mikroperforacija" ${f.perforation === 'Mikroperforacija' ? 'selected' : ''}>Mikroperforacija</option>
+            <option value="Bez perforacije" ${f.perforation === 'Bez perforacije' ? 'selected' : ''}>Bez perforacije</option>
+          </select>
+        </td>
+        <td>${f.entry_date ? formatDatum(f.entry_date) : '-'}</td>
+        <td>
+          <select class="inline-edit" data-field="status" onchange="saveFoilField(this, '${f.id}')">
+            <option value="Na skladištu" ${f.status === 'Na skladištu' ? 'selected' : ''}>Na skladištu</option>
+            <option value="U upotrebi" ${f.status === 'U upotrebi' ? 'selected' : ''}>U upotrebi</option>
+            <option value="Potrošeno" ${f.status === 'Potrošeno' ? 'selected' : ''}>Potrošeno</option>
+          </select>
+        </td>
+        <td>
+          <button class="action-btn delete" onclick="deleteFoil('${f.id}')" title="Obriši">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Nema podataka</td></tr>';
+  }
+}
+
+// Spremi polje folije inline
+async function saveFoilField(input, foilId) {
+  const field = input.dataset.field;
+  let value = input.value;
+  
+  // Konvertiraj brojeve
+  if (['width_cm', 'grammage', 'weight_kg'].includes(field)) {
+    value = value ? parseFloat(value) : null;
+  }
+  
+  try {
+    const { error } = await initSupabase()
+      .from('prod_inventory_foil')
+      .update({ [field]: value })
+      .eq('id', foilId);
+    
+    if (error) throw error;
+    
+    // Vizualna potvrda
+    input.style.backgroundColor = '#d4edda';
+    setTimeout(() => { input.style.backgroundColor = ''; }, 500);
+    
+    // Ako je promjenjena težina, ažuriraj agregat
+    if (field === 'weight_kg') {
+      loadFoils();
+    }
+  } catch (e) {
+    showMessage('Greška spremanja: ' + e.message, 'error');
+    input.style.backgroundColor = '#f8d7da';
+  }
+}
+
+// Obriši foliju
+async function deleteFoil(foilId) {
+  if (!confirm('Obrisati ovu foliju?')) return;
+  
+  try {
+    const { error } = await initSupabase()
+      .from('prod_inventory_foil')
+      .delete()
+      .eq('id', foilId);
+    
+    if (error) throw error;
+    
+    showMessage('✅ Folija obrisana', 'success');
+    loadFoils();
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// UČITAVANJE POP
+// ============================================
+async function loadPOP() {
+  const tbody = document.getElementById('popTableBody');
+  const status = document.getElementById('filterPOPStatus').value;
+  const search = document.getElementById('searchPOP').value.toLowerCase();
+  
+  try {
+    let query = initSupabase().from('prod_inventory_pop').select('*');
+    
+    if (status) query = query.eq('status', status);
+    
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(200);
+    if (error) throw error;
+    
+    let filtered = data || [];
+    if (search) {
+      filtered = filtered.filter(p => 
+        (p.pop_code && p.pop_code.toLowerCase().includes(search)) ||
+        (p.article_name && p.article_name.toLowerCase().includes(search)) ||
+        (p.work_order_number && p.work_order_number.toLowerCase().includes(search))
+      );
+    }
+    
+    document.getElementById('popCount').textContent = `(${filtered.length})`;
+    
+    // Agregat
+    const ukupno = filtered.reduce((sum, p) => sum + (p.quantity || 0), 0);
+    document.getElementById('agregatPOP').textContent = formatBroj(ukupno, 0) + ' kom';
+    
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nema poluproizvoda</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td><code>${p.pop_code || '-'}</code></td>
+        <td>${p.work_order_number || '-'}</td>
+        <td>${p.article_name || '-'}</td>
+        <td>${p.customer_name || '-'}</td>
+        <td><strong>${formatBroj(p.quantity, 0)}</strong></td>
+        <td>${p.production_line || '-'}</td>
+        <td>${p.created_at ? formatDatum(p.created_at) : '-'}</td>
+        <td><span class="badge badge-${p.status === 'Na skladištu' ? 'success' : 'warning'}">${p.status || '-'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nema podataka</td></tr>';
+  }
+}
+
+// ============================================
+// UČITAVANJE GOP
+// ============================================
+
+// Populiraj filter dropdowne
+async function populateGOPFilters(data) {
+  // Dohvati unique vrijednosti
+  const uniqueRN = [...new Set(data.map(p => p.work_order_number).filter(Boolean))].sort();
+  const uniqueKupci = [...new Set(data.map(p => p.customer_name).filter(Boolean))].sort();
+  const uniqueArtikli = [...new Set(data.map(p => p.article_name).filter(Boolean))].sort();
+
+  // Popuni RN dropdown
+  const rnSelect = document.getElementById('filterGOPRN');
+  const currentRN = rnSelect.value;
+  rnSelect.innerHTML = '<option value="">Svi</option>';
+  uniqueRN.forEach(rn => {
+    const option = document.createElement('option');
+    option.value = rn;
+    option.textContent = rn;
+    if (rn === currentRN) option.selected = true;
+    rnSelect.appendChild(option);
+  });
+
+  // Popuni Kupac dropdown
+  const kupacSelect = document.getElementById('filterGOPKupac');
+  const currentKupac = kupacSelect.value;
+  kupacSelect.innerHTML = '<option value="">Svi</option>';
+  uniqueKupci.forEach(kupac => {
+    const option = document.createElement('option');
+    option.value = kupac;
+    option.textContent = kupac;
+    if (kupac === currentKupac) option.selected = true;
+    kupacSelect.appendChild(option);
+  });
+
+  // Popuni Artikl dropdown
+  const artiklSelect = document.getElementById('filterGOPArtikl');
+  const currentArtikl = artiklSelect.value;
+  artiklSelect.innerHTML = '<option value="">Svi</option>';
+  uniqueArtikli.forEach(artikl => {
+    const option = document.createElement('option');
+    option.value = artikl;
+    option.textContent = artikl;
+    if (artikl === currentArtikl) option.selected = true;
+    artiklSelect.appendChild(option);
+  });
+}
+
+// Resetiraj GOP filtere
+function resetGOPFilters() {
+  document.getElementById('filterGOPRN').value = '';
+  document.getElementById('filterGOPKupac').value = '';
+  document.getElementById('filterGOPArtikl').value = '';
+  document.getElementById('filterGOPDatumOd').value = '';
+  document.getElementById('filterGOPDatumDo').value = '';
+  document.getElementById('filterGOPSmjena').value = '';
+  document.getElementById('filterGOPStatus').value = '';
+  document.getElementById('searchGOP').value = '';
+  loadGOP();
+}
+
+async function loadGOP() {
+  const tbody = document.getElementById('gopTableBody');
+
+  // Osvježi admin kontrole
+  initAdminControls();
+
+  // Dohvati filtere
+  const filterRN = document.getElementById('filterGOPRN').value;
+  const filterKupac = document.getElementById('filterGOPKupac').value;
+  const filterArtikl = document.getElementById('filterGOPArtikl').value;
+  const filterDatumOd = document.getElementById('filterGOPDatumOd').value;
+  const filterDatumDo = document.getElementById('filterGOPDatumDo').value;
+  const filterSmjena = document.getElementById('filterGOPSmjena').value;
+  const status = document.getElementById('filterGOPStatus').value;
+  const search = document.getElementById('searchGOP').value.toLowerCase();
+
+  try {
+    let query = initSupabase().from('prod_inventory_gop').select('*');
+
+    if (status) query = query.eq('status', status);
+
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(1000);
+    if (error) throw error;
+
+    let filtered = data || [];
+
+    // Popuni filter dropdowne sa svim dostupnim vrijednostima
+    await populateGOPFilters(data || []);
+
+    // Dohvati shift_details za sve palete ako je potreban filter po smjeni
+    let shiftDetailsMap = {};
+    if (filterSmjena) {
+      const { data: shiftData } = await initSupabase()
+        .from('prod_shift_details')
+        .select('referenca, smjena, datum')
+        .eq('vrsta_unosa', 'GOP')
+        .eq('smjena', parseInt(filterSmjena))
+        .limit(5000);
+
+      if (shiftData) {
+        shiftData.forEach(s => {
+          shiftDetailsMap[s.referenca] = { smjena: s.smjena, datum: s.datum };
+        });
+      }
+    }
+
+    // Primijeni filtere
+    filtered = filtered.filter(p => {
+      // Filter po RN (exact match)
+      if (filterRN && p.work_order_number !== filterRN) {
+        return false;
+      }
+
+      // Filter po kupcu (exact match)
+      if (filterKupac && p.customer_name !== filterKupac) {
+        return false;
+      }
+
+      // Filter po artiklu (exact match)
+      if (filterArtikl && p.article_name !== filterArtikl) {
+        return false;
+      }
+
+      // Filter po datumu (koristi created_at)
+      if (filterDatumOd) {
+        const createdDate = p.created_at ? p.created_at.split('T')[0] : null;
+        if (!createdDate || createdDate < filterDatumOd) {
+          return false;
+        }
+      }
+
+      if (filterDatumDo) {
+        const createdDate = p.created_at ? p.created_at.split('T')[0] : null;
+        if (!createdDate || createdDate > filterDatumDo) {
+          return false;
+        }
+      }
+
+      // Filter po smjeni (koristi shift_details)
+      if (filterSmjena && !shiftDetailsMap[p.pallet_number]) {
+        return false;
+      }
+
+      // Pretraga po broju palete
+      if (search && (!p.pallet_number || !p.pallet_number.toLowerCase().includes(search))) {
+        return false;
+      }
+
+      return true;
+    });
+
+    document.getElementById('gopCount').textContent = `(${filtered.length})`;
+
+    // Agregat
+    const ukupno = filtered.reduce((sum, p) => sum + (p.quantity || 0), 0);
+    document.getElementById('agregatGOP').textContent = formatBroj(ukupno, 0) + ' kom';
+
+    // Provjeri je li korisnik admin
+    const jeAdmin = window.imaAdminUlogu();
+    const colspanCount = jeAdmin ? 9 : 8;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${colspanCount}" style="text-align: center;">Nema gotovih proizvoda</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td><code>${p.pallet_number || '-'}</code></td>
+        <td>${p.work_order_number || '-'}</td>
+        <td>${p.article_name || '-'}</td>
+        <td>${p.customer_name || '-'}</td>
+        <td><strong>${formatBroj(p.quantity, 0)}</strong></td>
+        <td>${p.pallet_dimension || '-'}</td>
+        <td>${p.created_at ? formatDatum(p.created_at) : '-'}</td>
+        <td><span class="badge badge-${p.status === 'Na skladištu' ? 'success' : 'info'}">${p.status || '-'}</span></td>
+        ${jeAdmin ? `
+        <td>
+          <button class="action-btn edit" onclick="urediGOPPaletu('${p.id}')" title="Uredi">✏️</button>
+          <button class="action-btn delete" onclick="obrisiGOPPaletu('${p.id}')" title="Obriši">🗑️</button>
+        </td>
+        ` : ''}
+      </tr>
+    `).join('');
+  } catch (e) {
+    const colspanCount = window.imaAdminUlogu() ? 9 : 8;
+    tbody.innerHTML = `<tr><td colspan="${colspanCount}" style="text-align: center;">Nema podataka</td></tr>`;
+  }
+}
+
+// ============================================
+// UČITAVANJE PRAZNIH PALETA
+// ============================================
+async function loadPalete() {
+  const tbody = document.getElementById('paleteTableBody');
+  
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_pallets')
+      .select('*')
+      .order('dimension');
+    
+    if (error) throw error;
+    
+    document.getElementById('paleteCount').textContent = `(${data?.length || 0})`;
+    
+    // Agregati - palete i poklopci
+    const ukupnoPalete = data ? data.reduce((sum, p) => sum + (p.quantity || 0), 0) : 0;
+    const ukupnoStanje = data ? data.reduce((sum, p) => sum + (p.cover_quantity || 0), 0) : 0;
+    const ukupnoRezerv = data ? data.reduce((sum, p) => sum + (p.cover_reserved || 0), 0) : 0;
+    const ukupnoDostupno = ukupnoStanje - ukupnoRezerv;
+    
+    document.getElementById('agregatPalete').textContent = formatBroj(ukupnoPalete, 0) + ' kom';
+    document.getElementById('agregatPoklopci').textContent = formatBroj(ukupnoStanje, 0) + ' / ' + formatBroj(ukupnoRezerv, 0) + ' / ' + formatBroj(ukupnoDostupno, 0);
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nema praznih paleta</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.map(p => {
+      const kolicinaPalete = p.quantity || 0;
+      const minPalete = p.min_stock || 0;
+      const stanjePoklopci = p.cover_quantity || 0;
+      const rezervPoklopci = p.cover_reserved || 0;
+      const dostupnoPoklopci = stanjePoklopci - rezervPoklopci;
+      const minPoklopci = p.cover_min_stock || 0;
+      
+      // Status - provjeri palete i dostupne poklopce
+      var statusItems = [];
+      if (kolicinaPalete < minPalete) statusItems.push('🏗️ palete');
+      if (dostupnoPoklopci < minPoklopci) statusItems.push('🔲 poklopci');
+      
+      const statusBadge = statusItems.length > 0
+        ? '<span class="badge badge-danger">Niska zaliha: ' + statusItems.join(', ') + '</span>' 
+        : '<span class="badge badge-success">OK</span>';
+      
+      // Boja za dostupno poklopce
+      var dostupnoStyle = dostupnoPoklopci < 0 ? 'color: #dc3545; font-weight: bold;' : 
+                          dostupnoPoklopci < minPoklopci ? 'color: #fd7e14; font-weight: bold;' : 'color: #28a745;';
+      
+      return `
+        <tr>
+          <td><strong>${p.dimension || '-'}</strong></td>
+          <td style="text-align: right;"><strong>${formatBroj(kolicinaPalete, 0)}</strong></td>
+          <td style="text-align: right;">${formatBroj(minPalete, 0)}</td>
+          <td style="text-align: right; color: #5d4e37;">${formatBroj(stanjePoklopci, 0)}</td>
+          <td style="text-align: right; color: #5d4e37;">${formatBroj(rezervPoklopci, 0)}</td>
+          <td style="text-align: right; ${dostupnoStyle}"><strong>${formatBroj(dostupnoPoklopci, 0)}</strong></td>
+          <td style="text-align: right; color: #5d4e37;">${formatBroj(minPoklopci, 0)}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="action-btn edit" onclick="editPaleta('${p.dimension}', ${kolicinaPalete}, ${minPalete}, ${stanjePoklopci}, ${minPoklopci})" title="Uredi">✏️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+  } catch (e) {
+    console.error('loadPalete error:', e);
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nema podataka</td></tr>';
+  }
+}
+
+// ============================================
+// EDIT PALETA
+// ============================================
+function editPaleta(dimenzija, kolicinaPalete, minPalete, kolicinaPoklopci, minPoklopci) {
+  document.getElementById('paletaDimenzija').value = dimenzija;
+  document.getElementById('paletaKolicina').value = kolicinaPalete || 0;
+  document.getElementById('paletaMinZaliha').value = minPalete || 0;
+  document.getElementById('poklopacKolicina').value = kolicinaPoklopci || 0;
+  document.getElementById('poklopacMinZaliha').value = minPoklopci || 0;
+  document.getElementById('paletaAkcija').value = 'set';
+  openModal('novaPaletaModal');
+}
+
+// ============================================
+// SUBMIT PALETA
+// ============================================
+async function submitPaleta(event) {
+  event.preventDefault();
+  
+  const dimenzija = document.getElementById('paletaDimenzija').value;
+  const kolicinaPalete = parseInt(document.getElementById('paletaKolicina').value) || 0;
+  const minPalete = parseInt(document.getElementById('paletaMinZaliha').value) || 0;
+  const kolicinaPoklopci = parseInt(document.getElementById('poklopacKolicina').value) || 0;
+  const minPoklopci = parseInt(document.getElementById('poklopacMinZaliha').value) || 0;
+  const akcija = document.getElementById('paletaAkcija').value;
+  
+  if (!dimenzija) {
+    showMessage('Odaberi dimenziju!', 'warning');
+    return;
+  }
+  
+  try {
+    showLoading('Spremanje...');
+    
+    // Provjeri postoji li zapis
+    const { data: existing } = await initSupabase()
+      .from('prod_inventory_pallets')
+      .select('*')
+      .eq('dimension', dimenzija)
+      .single();
+    
+    let finalPalete = kolicinaPalete;
+    let finalPoklopci = kolicinaPoklopci;
+    
+    if (akcija === 'add' && existing) {
+      finalPalete = (existing.quantity || 0) + kolicinaPalete;
+      finalPoklopci = (existing.cover_quantity || 0) + kolicinaPoklopci;
+    } else if (akcija === 'subtract' && existing) {
+      finalPalete = Math.max(0, (existing.quantity || 0) - kolicinaPalete);
+      finalPoklopci = Math.max(0, (existing.cover_quantity || 0) - kolicinaPoklopci);
+    }
+    
+    if (existing) {
+      // Update
+      const { error } = await initSupabase()
+        .from('prod_inventory_pallets')
+        .update({ 
+          quantity: finalPalete, 
+          min_stock: minPalete,
+          cover_quantity: finalPoklopci,
+          cover_min_stock: minPoklopci
+        })
+        .eq('dimension', dimenzija);
+      
+      if (error) throw error;
+    } else {
+      // Insert
+      const { error } = await initSupabase()
+        .from('prod_inventory_pallets')
+        .insert([{ 
+          dimension: dimenzija, 
+          quantity: finalPalete, 
+          min_stock: minPalete,
+          cover_quantity: finalPoklopci,
+          cover_min_stock: minPoklopci
+        }]);
+      
+      if (error) throw error;
+    }
+    
+    closeModal('novaPaletaModal');
+    document.getElementById('novaPaletaForm').reset();
+    loadPalete();
+    loadAllCounts();
+    
+    hideLoading();
+    showMessage('✅ Ažurirano: ' + dimenzija + ' → Palete: ' + finalPalete + ', Poklopci: ' + finalPoklopci, 'success');
+    
+  } catch (error) {
+    hideLoading();
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// ENTER HANDLER ZA MODAL FORME
+// ============================================
+function setupEnterNavigation(formId) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  
+  const inputs = form.querySelectorAll('input, select');
+  const inputArray = Array.from(inputs);
+  
+  inputArray.forEach((input, index) => {
+    // Ukloni stari listener ako postoji
+    input.removeEventListener('keydown', input._enterHandler);
+    
+    input._enterHandler = function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        
+        // Pronađi sljedeći input
+        const nextIndex = index + 1;
+        if (nextIndex < inputArray.length) {
+          inputArray[nextIndex].focus();
+          // Ako je input type text ili number, selektiraj tekst
+          if (inputArray[nextIndex].type === 'text' || inputArray[nextIndex].type === 'number') {
+            inputArray[nextIndex].select();
+          }
+        } else {
+          // Zadnje polje - submit formu
+          form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      }
+    };
+    
+    input.addEventListener('keydown', input._enterHandler);
+  });
+}
+
+// Inicijaliziraj Enter navigaciju za sve modale
+document.addEventListener('DOMContentLoaded', function() {
+  setupEnterNavigation('novaFolijaForm');
+  setupEnterNavigation('novaRolaForm');
+});
+
+// ============================================
+// KOREKCIJE POTROŠENIH ROLA
+// ============================================
+var consumedRollsData = [];
+var odabraneKorekcije = [];
+
+// Helper funkcije (ako ne postoje globalno)
+if (typeof formatBroj !== 'function') {
+  window.formatBroj = function(num, decimals) {
+    if (decimals === undefined) decimals = 0;
+    return Number(num || 0).toLocaleString('hr-HR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  };
+}
+if (typeof escapeHtml !== 'function') {
+  window.escapeHtml = function(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+}
+
+async function loadConsumedRolls() {
+  showLoading('Učitavanje evidencije...');
+  
+  try {
+    // Dohvati evidenciju potrošenih rola
+    var query = initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    
+    var result = await query;
+    
+    if (result.error) throw result.error;
+    
+    consumedRollsData = result.data || [];
+    filterKorekcije();
+    
+    hideLoading();
+    showMessage('✅ Učitano ' + consumedRollsData.length + ' zapisa', 'success');
+    
+  } catch (error) {
+    hideLoading();
+    console.error('Greška učitavanja:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+function filterKorekcije() {
+  var sifra = (document.getElementById('korFilterSifra').value || '').toLowerCase();
+  var rn = (document.getElementById('korFilterRN').value || '').toLowerCase();
+  var linija = document.getElementById('korFilterLinija').value;
+  var datumOd = document.getElementById('korFilterDatumOd').value;
+  var datumDo = document.getElementById('korFilterDatumDo').value;
+  
+  var filtered = consumedRollsData.filter(function(r) {
+    if (sifra && !(r.roll_code || '').toLowerCase().includes(sifra)) return false;
+    if (rn && !(r.work_order_number || '').toLowerCase().includes(rn)) return false;
+    if (linija && r.production_line !== linija) return false;
+    if (datumOd && r.shift_date < datumOd) return false;
+    if (datumDo && r.shift_date > datumDo) return false;
+    return true;
+  });
+  
+  renderKorekcijeTable(filtered);
+}
+
+function renderKorekcijeTable(data) {
+  var tbody = document.getElementById('korekcijeTableBody');
+  var countEl = document.getElementById('korekcijeBroj');
+  
+  countEl.textContent = data.length + ' zapisa';
+  
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 40px; color: #999;">Nema podataka za prikaz</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  data.forEach(function(r) {
+    var datum = r.shift_date || (r.created_at ? r.created_at.split('T')[0] : '-');
+    var statusClass = r.status === 'Korigirano' ? 'warning' : (r.status === 'Poništeno' ? 'danger' : 'info');
+    var statusText = r.status || 'Aktivno';
+    
+    if (r.is_corrected) {
+      statusClass = 'warning';
+      statusText = '✏️ Korigirano';
+    }
+    
+    html += '<tr' + (r.is_corrected ? ' style="background: #fff3e0;"' : '') + '>';
+    html += '<td><input type="checkbox" class="korCheckbox" value="' + r.id + '" onchange="updateKorSelection()"></td>';
+    html += '<td>' + datum + '</td>';
+    html += '<td><strong>' + escapeHtml(r.roll_code || '-') + '</strong></td>';
+    html += '<td>' + (r.roll_width_cm || '-') + '</td>';
+    html += '<td>' + escapeHtml(r.roll_grammage || '-') + '</td>';
+    html += '<td style="font-weight: bold; color: #e65100;">' + (r.consumed_kg ? r.consumed_kg.toFixed(2) : '0') + '</td>';
+    html += '<td>' + (r.remaining_after_kg ? r.remaining_after_kg.toFixed(2) : '-') + '</td>';
+    html += '<td>' + escapeHtml(r.work_order_number || '-') + '</td>';
+    html += '<td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(r.article_name || '-') + '</td>';
+    html += '<td style="text-align: center;">S' + (r.layer_number || '-') + '</td>';
+    html += '<td style="text-align: right;">' + formatBroj(r.pop_quantity || 0, 0) + '</td>';
+    html += '<td><span class="badge badge-' + (r.production_line === 'WH' ? 'success' : 'warning') + '">' + (r.production_line || '-') + '</span></td>';
+    html += '<td><span class="badge badge-' + statusClass + '">' + statusText + '</span></td>';
+    html += '<td>';
+    if (r.status !== 'Poništeno') {
+      html += '<button class="btn btn-sm btn-warning" onclick="otvoriKorekciju(\'' + r.id + '\')" title="Korigiraj">✏️</button> ';
+      html += '<button class="btn btn-sm btn-danger" onclick="ponistiKorekciju(\'' + r.id + '\')" title="Poništi">❌</button>';
+    } else {
+      html += '<span style="color: #999; font-size: 0.8em;">Poništeno</span>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function toggleKorSelectAll() {
+  var selectAll = document.getElementById('korSelectAll').checked;
+  document.querySelectorAll('.korCheckbox').forEach(function(cb) {
+    cb.checked = selectAll;
+  });
+  updateKorSelection();
+}
+
+function updateKorSelection() {
+  var checkboxes = document.querySelectorAll('.korCheckbox:checked');
+  odabraneKorekcije = Array.from(checkboxes).map(function(cb) { return cb.value; });
+  
+  var akcije = document.getElementById('korSkupneAkcije');
+  var info = document.getElementById('korOdabranoInfo');
+  
+  if (odabraneKorekcije.length > 0) {
+    akcije.style.display = 'block';
+    info.textContent = 'Odabrano: ' + odabraneKorekcije.length;
+  } else {
+    akcije.style.display = 'none';
+  }
+}
+
+function otvoriKorekciju(id) {
+  var record = consumedRollsData.find(function(r) { return r.id === id; });
+  if (!record) {
+    showMessage('Zapis nije pronađen!', 'error');
+    return;
+  }
+  
+  // Popuni modal
+  document.getElementById('korId').value = record.id;
+  document.getElementById('korRollId').value = record.roll_id;
+  document.getElementById('korOriginalConsumed').value = record.consumed_kg;
+  
+  document.getElementById('korInfoSifra').textContent = record.roll_code || '-';
+  document.getElementById('korInfoDatum').textContent = record.shift_date || '-';
+  document.getElementById('korInfoRN').textContent = record.work_order_number || '-';
+  document.getElementById('korInfoLinija').textContent = record.production_line || '-';
+  document.getElementById('korInfoArtikl').textContent = record.article_name || '-';
+  document.getElementById('korInfoSloj').textContent = 'S' + (record.layer_number || '-');
+  
+  document.getElementById('korOriginalno').value = record.consumed_kg ? record.consumed_kg.toFixed(3) : '0';
+  document.getElementById('korNovaVrijednost').value = record.consumed_kg ? record.consumed_kg.toFixed(3) : '0';
+  document.getElementById('korRazlog').value = '';
+  
+  document.getElementById('korRazlikaInfo').style.display = 'none';
+  
+  openModal('korekcijaModal');
+}
+
+function izracunajRazliku() {
+  var originalno = parseFloat(document.getElementById('korOriginalno').value) || 0;
+  var novo = parseFloat(document.getElementById('korNovaVrijednost').value) || 0;
+  var razlika = novo - originalno;
+  
+  var razlikaEl = document.getElementById('korRazlika');
+  var efektEl = document.getElementById('korEfekt');
+  var infoEl = document.getElementById('korRazlikaInfo');
+  
+  if (razlika !== 0) {
+    infoEl.style.display = 'block';
+    razlikaEl.textContent = (razlika > 0 ? '+' : '') + razlika.toFixed(3) + ' kg';
+    razlikaEl.style.color = razlika > 0 ? '#f44336' : '#4caf50';
+    
+    if (razlika > 0) {
+      efektEl.textContent = '⬇️ Na roli će biti MANJE za ' + razlika.toFixed(3) + ' kg (više potrošeno)';
+      efektEl.style.color = '#f44336';
+    } else {
+      efektEl.textContent = '⬆️ Na roli će biti VIŠE za ' + Math.abs(razlika).toFixed(3) + ' kg (vraćamo na stanje)';
+      efektEl.style.color = '#4caf50';
+    }
+  } else {
+    infoEl.style.display = 'none';
+  }
+}
+
+async function spremiKorekciju() {
+  var id = document.getElementById('korId').value;
+  var rollId = document.getElementById('korRollId').value;
+  var originalno = parseFloat(document.getElementById('korOriginalConsumed').value) || 0;
+  var novo = parseFloat(document.getElementById('korNovaVrijednost').value) || 0;
+  var razlog = document.getElementById('korRazlog').value.trim();
+  
+  if (!razlog) {
+    showMessage('Unesite razlog korekcije!', 'warning');
+    return;
+  }
+  
+  var razlika = novo - originalno;
+  if (razlika === 0) {
+    showMessage('Nova vrijednost je ista kao originalna!', 'warning');
+    return;
+  }
+  
+  if (!confirm('Jeste li sigurni da želite promijeniti potrošnju?\n\nOriginalno: ' + originalno.toFixed(3) + ' kg\nNovo: ' + novo.toFixed(3) + ' kg\nRazlika: ' + razlika.toFixed(3) + ' kg')) {
+    return;
+  }
+  
+  showLoading('Spremanje korekcije...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Korisnik';
+    
+    // 1. Ažuriraj zapis u prod_inventory_consumed_rolls
+    var updateConsumed = await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .update({
+        consumed_kg: novo,
+        is_corrected: true,
+        original_consumed_kg: originalno,
+        correction_reason: razlog,
+        corrected_by: userName,
+        corrected_at: new Date().toISOString(),
+        status: 'Korigirano'
+      })
+      .eq('id', id);
+    
+    if (updateConsumed.error) throw updateConsumed.error;
+    
+    // 2. Ažuriraj stanje na originalnoj roli (consumed_kg)
+    // Dohvati trenutno stanje role
+    var rollResult = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('consumed_kg')
+      .eq('id', rollId)
+      .single();
+    
+    if (rollResult.error) {
+      console.warn('Ne mogu dohvatiti rolu:', rollResult.error);
+    } else if (rollResult.data) {
+      var currentConsumed = rollResult.data.consumed_kg || 0;
+      // Razlika: ako je novo veće od originalnog, trebamo dodati na consumed
+      // ako je novo manje od originalnog, trebamo oduzeti od consumed
+      var newConsumed = currentConsumed + razlika;
+      if (newConsumed < 0) newConsumed = 0;
+      
+      var updateRoll = await initSupabase()
+        .from('prod_inventory_rolls')
+        .update({ consumed_kg: newConsumed })
+        .eq('id', rollId);
+      
+      if (updateRoll.error) {
+        console.warn('Greška ažuriranja role:', updateRoll.error);
+      } else {
+        console.log('✅ Rola ažurirana: consumed_kg', currentConsumed.toFixed(3), '→', newConsumed.toFixed(3));
+      }
+    }
+    
+    closeModal('korekcijaModal');
+    await loadConsumedRolls();
+    
+    hideLoading();
+    showMessage('✅ Korekcija spremljena! Razlika: ' + razlika.toFixed(3) + ' kg', 'success');
+    
+  } catch (error) {
+    hideLoading();
+    console.error('Greška:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+async function ponistiKorekciju(id) {
+  var record = consumedRollsData.find(function(r) { return r.id === id; });
+  if (!record) return;
+  
+  if (!confirm('Poništiti ovu evidenciju potrošnje?\n\nŠifra: ' + record.roll_code + '\nSkinuto: ' + (record.consumed_kg || 0).toFixed(3) + ' kg\n\n⚠️ Količina će se vratiti na rolu!')) {
+    return;
+  }
+  
+  var razlog = prompt('Razlog poništenja:');
+  if (!razlog) return;
+  
+  showLoading('Poništavanje...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Korisnik';
+    var consumed = record.consumed_kg || 0;
+    
+    // 1. Označi kao poništeno
+    var update = await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .update({
+        status: 'Poništeno',
+        correction_reason: razlog,
+        corrected_by: userName,
+        corrected_at: new Date().toISOString()
+      })
+      .eq('id', id);
+    
+    if (update.error) throw update.error;
+    
+    // 2. Vrati količinu na rolu
+    var rollResult = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('consumed_kg, status')
+      .eq('id', record.roll_id)
+      .single();
+    
+    if (!rollResult.error && rollResult.data) {
+      var newConsumed = Math.max(0, (rollResult.data.consumed_kg || 0) - consumed);
+      var newStatus = rollResult.data.status;
+      
+      // Ako je bila Potrošena a vraćamo količinu, vrati na Djelomično utrošeno
+      if (newStatus === 'Potrošeno' && newConsumed > 0) {
+        newStatus = 'Djelomično utrošeno';
+      }
+      
+      await initSupabase()
+        .from('prod_inventory_rolls')
+        .update({ consumed_kg: newConsumed, status: newStatus })
+        .eq('id', record.roll_id);
+    }
+    
+    await loadConsumedRolls();
+    
+    hideLoading();
+    showMessage('✅ Evidencija poništena, ' + consumed.toFixed(3) + ' kg vraćeno na rolu', 'success');
+    
+  } catch (error) {
+    hideLoading();
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+async function ponistiOdabraneKorekcije() {
+  if (odabraneKorekcije.length === 0) return;
+  
+  if (!confirm('Poništiti ' + odabraneKorekcije.length + ' odabranih zapisa?\n\n⚠️ Količine će se vratiti na role!')) {
+    return;
+  }
+  
+  var razlog = prompt('Razlog skupnog poništenja:');
+  if (!razlog) return;
+  
+  showLoading('Poništavanje...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Korisnik';
+    var ukupnoVraceno = 0;
+    
+    for (var i = 0; i < odabraneKorekcije.length; i++) {
+      var id = odabraneKorekcije[i];
+      var record = consumedRollsData.find(function(r) { return r.id === id; });
+      if (!record || record.status === 'Poništeno') continue;
+      
+      // Označi kao poništeno
+      await initSupabase()
+        .from('prod_inventory_consumed_rolls')
+        .update({
+          status: 'Poništeno',
+          correction_reason: razlog,
+          corrected_by: userName,
+          corrected_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      // Vrati na rolu
+      var consumed = record.consumed_kg || 0;
+      var rollResult = await initSupabase()
+        .from('prod_inventory_rolls')
+        .select('consumed_kg')
+        .eq('id', record.roll_id)
+        .single();
+      
+      if (!rollResult.error && rollResult.data) {
+        var newConsumed = Math.max(0, (rollResult.data.consumed_kg || 0) - consumed);
+        await initSupabase()
+          .from('prod_inventory_rolls')
+          .update({ consumed_kg: newConsumed })
+          .eq('id', record.roll_id);
+        ukupnoVraceno += consumed;
+      }
+    }
+    
+    odabraneKorekcije = [];
+    document.getElementById('korSelectAll').checked = false;
+    document.getElementById('korSkupneAkcije').style.display = 'none';
+    
+    await loadConsumedRolls();
+    
+    hideLoading();
+    showMessage('✅ Poništeno! Vraćeno ukupno: ' + ukupnoVraceno.toFixed(3) + ' kg', 'success');
+    
+  } catch (error) {
+    hideLoading();
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// SKIDANJE S INVENTURE
+// ============================================
+var invRoleLista = [];
+
+function invToggleCustomRazlog() {
+  var select = document.getElementById('invRazlogSelect');
+  var custom = document.getElementById('invRazlogCustom');
+  custom.style.display = select.value === 'custom' ? 'block' : 'none';
+}
+
+async function invDodajRolu() {
+  var sifra = document.getElementById('invSifraInput').value.trim();
+  if (!sifra) {
+    showMessage('Unesite šifru role', 'warning');
+    return;
+  }
+  
+  // Provjeri da nije već dodana
+  if (invRoleLista.some(function(r) { return r.roll_code === sifra; })) {
+    showMessage('Rola je već dodana', 'warning');
+    return;
+  }
+  
+  showLoading('Tražim rolu...');
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('*')
+      .eq('roll_code', sifra)
+      .single();
+    
+    hideLoading();
+    
+    if (result.error || !result.data) {
+      showMessage('Rola nije pronađena: ' + sifra, 'error');
+      return;
+    }
+    
+    var rola = result.data;
+    var preostalo = (rola.initial_weight_kg || 0) - (rola.consumed_kg || 0);
+    
+    if (preostalo <= 0) {
+      showMessage('Rola je već potpuno potrošena', 'warning');
+      return;
+    }
+    
+    if (rola.status === 'Potrošeno') {
+      showMessage('Rola je već označena kao potrošena', 'warning');
+      return;
+    }
+    
+    invRoleLista.push({
+      id: rola.id,
+      roll_code: rola.roll_code,
+      width_cm: rola.width_cm,
+      grammage: rola.grammage,
+      manufacturer: rola.manufacturer,
+      preostalo: preostalo
+    });
+    
+    document.getElementById('invSifraInput').value = '';
+    invOsvjeziTablicu();
+    showMessage('✓ Rola dodana: ' + sifra, 'success');
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+function invUkloniRolu(index) {
+  invRoleLista.splice(index, 1);
+  invOsvjeziTablicu();
+}
+
+function invOsvjeziTablicu() {
+  var empty = document.getElementById('invRoleListaEmpty');
+  var table = document.getElementById('invRoleTable');
+  var tbody = document.getElementById('invRoleTableBody');
+  
+  if (invRoleLista.length === 0) {
+    empty.style.display = 'block';
+    table.style.display = 'none';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  table.style.display = 'table';
+  
+  var html = '';
+  var ukupno = 0;
+  
+  invRoleLista.forEach(function(r, idx) {
+    ukupno += r.preostalo;
+    html += '<tr>';
+    html += '<td><strong>' + r.roll_code + '</strong></td>';
+    html += '<td>' + (r.width_cm || '-') + ' cm</td>';
+    html += '<td>' + (r.grammage || '-') + ' g/m²</td>';
+    html += '<td>' + (r.manufacturer || '-') + '</td>';
+    html += '<td style="font-weight: bold; color: #c62828;">' + formatBroj(r.preostalo, 2) + ' kg</td>';
+    html += '<td><button class="btn btn-sm btn-secondary" onclick="invUkloniRolu(' + idx + ')">✕</button></td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+  document.getElementById('invUkupnoKg').textContent = formatBroj(ukupno, 2) + ' kg';
+}
+
+function invOdustani() {
+  invRoleLista = [];
+  document.getElementById('invSifraInput').value = '';
+  document.getElementById('invRazlogSelect').value = '';
+  document.getElementById('invRazlogCustom').value = '';
+  document.getElementById('invRazlogCustom').style.display = 'none';
+  invOsvjeziTablicu();
+  closeModal('skidanjeInventuraModal');
+}
+
+async function invSpremiSkidanje() {
+  if (invRoleLista.length === 0) {
+    showMessage('Dodajte barem jednu rolu', 'warning');
+    return;
+  }
+  
+  var razlogSelect = document.getElementById('invRazlogSelect').value;
+  var razlogCustom = document.getElementById('invRazlogCustom').value.trim();
+  var razlog = razlogSelect === 'custom' ? razlogCustom : razlogSelect;
+  
+  if (!razlog) {
+    showMessage('Odaberite ili unesite razlog skidanja', 'warning');
+    return;
+  }
+  
+  if (!confirm('Jeste li sigurni da želite skinuti ' + invRoleLista.length + ' rola s inventure?\n\nOva akcija će ih označiti kao potrošene!')) {
+    return;
+  }
+  
+  showLoading('Skidanje s inventure...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Administrator';
+    var ukupnoSkinuto = 0;
+    
+    for (var i = 0; i < invRoleLista.length; i++) {
+      var rola = invRoleLista[i];
+      
+      // 1. Ažuriraj rolu - označi kao potrošenu
+      await initSupabase()
+        .from('prod_inventory_rolls')
+        .update({
+          consumed_kg: rola.preostalo + (await getConsumedKg(rola.id)),
+          status: 'Potrošeno'
+        })
+        .eq('id', rola.id);
+      
+      // 2. Evidentiraj u consumed_rolls
+      await initSupabase()
+        .from('prod_inventory_consumed_rolls')
+        .insert({
+          material_code: rola.roll_code,
+          material_type: 'rolls',
+          source_table: 'prod_inventory_rolls',
+          source_material_id: rola.id,
+          width_cm: rola.width_cm,
+          grammage: rola.grammage,
+          consumed_kg: rola.preostalo,
+          remaining_after_kg: 0,
+          consumption_type: 'full',
+          production_line: null,
+          shift_date: new Date().toISOString().split('T')[0],
+          consumed_by: userName,
+          original_scanned_code: rola.roll_code,
+          notes: 'INVENTURA: ' + razlog
+        });
+      
+      ukupnoSkinuto += rola.preostalo;
+    }
+    
+    hideLoading();
+    showMessage('✅ Skinuto ' + invRoleLista.length + ' rola (' + formatBroj(ukupnoSkinuto, 2) + ' kg)', 'success');
+    
+    invOdustani();
+    loadRolls();
+    loadAllCounts();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+async function getConsumedKg(rollId) {
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('consumed_kg')
+      .eq('id', rollId)
+      .single();
+    return result.data?.consumed_kg || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+// ============================================
+// NEUSKLAĐENA POTROŠNJA
+// ============================================
+var neuskladjenoData = [];
+
+async function loadNeuskladjeno() {
+  showLoading('Učitavanje neusklađenih zapisa...');
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .select('*')
+      .eq('consumption_type', 'unmatched')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    
+    if (result.error) throw result.error;
+    
+    neuskladjenoData = result.data || [];
+    filterNeuskladjeno();
+    
+    hideLoading();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška učitavanja: ' + e.message, 'error');
+  }
+}
+
+function filterNeuskladjeno() {
+  var linija = document.getElementById('neuFilterLinija').value;
+  var datumOd = document.getElementById('neuFilterDatumOd').value;
+  var datumDo = document.getElementById('neuFilterDatumDo').value;
+  var status = document.getElementById('neuFilterStatus').value;
+  
+  var filtered = neuskladjenoData.filter(function(r) {
+    if (linija && r.production_line !== linija) return false;
+    if (datumOd && r.shift_date < datumOd) return false;
+    if (datumDo && r.shift_date > datumDo) return false;
+    if (status === 'true' && !r.reconciled) return false;
+    if (status === 'false' && r.reconciled) return false;
+    return true;
+  });
+  
+  renderNeuskladjenoTable(filtered);
+}
+
+function renderNeuskladjenoTable(data) {
+  var tbody = document.getElementById('neuskladjenoTableBody');
+  var countEl = document.getElementById('neuskladjenoBroj');
+  
+  countEl.textContent = '(' + data.length + ' zapisa)';
+  
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #999;">Nema neusklađenih zapisa</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  data.forEach(function(r) {
+    var statusClass = r.reconciled ? 'background: #e8f5e9;' : 'background: #ffebee;';
+    var statusText = r.reconciled ? '✅ Usklađeno' : '⚠️ Neusklađeno';
+    
+    html += '<tr style="' + statusClass + '">';
+    html += '<td>' + (r.shift_date || r.created_at?.split('T')[0] || '-') + '</td>';
+    html += '<td>S' + (r.layer_number || '-') + '</td>';
+    html += '<td>' + (r.color === 'S' ? '🟤' : r.color === 'B' ? '⚪' : r.color || '-') + '</td>';
+    html += '<td>' + (r.width_cm || '-') + ' cm</td>';
+    html += '<td>' + (r.grammage || '-') + '</td>';
+    html += '<td style="font-weight: bold; color: #c62828;">' + formatBroj(r.consumed_kg, 2) + ' kg</td>';
+    html += '<td>' + (r.work_order_number || '-') + '</td>';
+    html += '<td>' + (r.article_name || '-') + '</td>';
+    html += '<td>' + (r.production_line || '-') + '</td>';
+    html += '<td>' + (r.consumed_by || '-') + '</td>';
+    html += '<td>' + statusText + '</td>';
+    html += '<td>';
+    if (!r.reconciled) {
+      html += '<button class="btn btn-sm btn-primary" onclick="otvoriUskladiModal(\'' + r.id + '\')" style="margin-right: 5px;">🔗 Poveži</button>';
+      html += '<button class="btn btn-sm btn-success" onclick="oznaciUskladjeno(\'' + r.id + '\')">✓</button>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function otvoriUskladiModal(id) {
+  var record = neuskladjenoData.find(function(r) { return r.id === id; });
+  if (!record) return;
+  
+  document.getElementById('uskladiId').value = id;
+  document.getElementById('uskladiKg').value = record.consumed_kg;
+  
+  document.getElementById('uskladiInfoSloj').textContent = 'S' + (record.layer_number || '-');
+  document.getElementById('uskladiInfoBoja').textContent = record.color === 'S' ? 'Smeđa' : record.color === 'B' ? 'Bijela' : record.color || '-';
+  document.getElementById('uskladiInfoSirina').textContent = record.width_cm || '-';
+  document.getElementById('uskladiInfoGram').textContent = record.grammage || '-';
+  document.getElementById('uskladiInfoKg').textContent = formatBroj(record.consumed_kg, 2);
+  document.getElementById('uskladiInfoDatum').textContent = record.shift_date || '-';
+  
+  document.getElementById('uskladiSearchInput').value = '';
+  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Upiši šifru za pretragu</div>';
+  document.getElementById('uskladiOdabranaRola').style.display = 'none';
+  document.getElementById('uskladiOdabranaId').value = '';
+  
+  openModal('uskladiModal');
+}
+
+async function uskladiSearchRola() {
+  var search = document.getElementById('uskladiSearchInput').value.trim();
+  var resultsDiv = document.getElementById('uskladiSearchResults');
+  
+  if (search.length < 2) {
+    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Upiši barem 2 znaka za pretragu</div>';
+    return;
+  }
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('id, roll_code, width_cm, grammage, manufacturer, initial_weight_kg, consumed_kg, status')
+      .ilike('roll_code', '%' + search + '%')
+      .neq('status', 'Potrošeno')
+      .limit(10);
+    
+    if (!result.data || result.data.length === 0) {
+      resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Nema rezultata</div>';
+      return;
+    }
+    
+    var html = '';
+    result.data.forEach(function(r) {
+      var preostalo = (r.initial_weight_kg || 0) - (r.consumed_kg || 0);
+      html += '<div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;" ';
+      html += 'onmouseover="this.style.background=\'#e3f2fd\'" onmouseout="this.style.background=\'white\'" ';
+      html += 'onclick="uskladiOdaberiRolu(\'' + r.id + '\', \'' + r.roll_code + '\', ' + r.width_cm + ', ' + r.grammage + ', ' + preostalo + ')">';
+      html += '<strong>' + r.roll_code + '</strong><br>';
+      html += '<span style="font-size: 0.9em; color: #666;">' + r.width_cm + ' cm | ' + r.grammage + ' g/m² | Preostalo: ' + formatBroj(preostalo, 1) + ' kg</span>';
+      html += '</div>';
+    });
+    
+    resultsDiv.innerHTML = html;
+    
+  } catch (e) {
+    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #c62828;">Greška pretrage</div>';
+  }
+}
+
+function uskladiOdaberiRolu(id, code, width, gram, preostalo) {
+  document.getElementById('uskladiOdabranaId').value = id;
+  document.getElementById('uskladiOdabranaInfo').innerHTML = 
+    '<strong>' + code + '</strong> | ' + width + ' cm | ' + gram + ' g/m² | Preostalo: ' + formatBroj(preostalo, 1) + ' kg';
+  document.getElementById('uskladiOdabranaRola').style.display = 'block';
+  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 10px; color: #2e7d32;">Rola odabrana ✓</div>';
+}
+
+async function uskladiSpremi() {
+  var recordId = document.getElementById('uskladiId').value;
+  var rollId = document.getElementById('uskladiOdabranaId').value;
+  var kg = parseFloat(document.getElementById('uskladiKg').value) || 0;
+  
+  if (!rollId) {
+    showMessage('Odaberite rolu za povezivanje', 'warning');
+    return;
+  }
+  
+  if (!confirm('Povezati i skinuti ' + formatBroj(kg, 2) + ' kg s odabrane role?')) {
+    return;
+  }
+  
+  showLoading('Usklađivanje...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Administrator';
+    
+    // 1. Ažuriraj rolu - dodaj consumed_kg
+    var rollResult = await initSupabase()
+      .from('prod_inventory_rolls')
+      .select('consumed_kg, initial_weight_kg')
+      .eq('id', rollId)
+      .single();
+    
+    if (rollResult.error) throw rollResult.error;
+    
+    var newConsumed = (rollResult.data.consumed_kg || 0) + kg;
+    var preostalo = (rollResult.data.initial_weight_kg || 0) - newConsumed;
+    
+    var rollUpdate = { consumed_kg: newConsumed };
+    if (preostalo <= 0) {
+      rollUpdate.status = 'Potrošeno';
+    }
+    
+    await initSupabase()
+      .from('prod_inventory_rolls')
+      .update(rollUpdate)
+      .eq('id', rollId);
+    
+    // 2. Označi zapis kao usklađen
+    await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .update({
+        reconciled: true,
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: userName,
+        source_material_id: rollId,
+        notes: (await getRecordNotes(recordId)) + ' | USKLAĐENO: povezano s ' + rollId
+      })
+      .eq('id', recordId);
+    
+    hideLoading();
+    showMessage('✅ Usklađeno i skinuto s role!', 'success');
+    
+    closeModal('uskladiModal');
+    loadNeuskladjeno();
+    loadRolls();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+async function getRecordNotes(id) {
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .select('notes')
+      .eq('id', id)
+      .single();
+    return result.data?.notes || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+async function oznaciUskladjeno(id) {
+  if (!confirm('Označiti zapis kao usklađen bez povezivanja s rolom?\n\n(Koristite ovo ako je već ručno riješeno)')) {
+    return;
+  }
+  
+  showLoading('Označavanje...');
+  
+  try {
+    var userName = Auth.getUser()?.name || 'Administrator';
+    
+    await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .update({
+        reconciled: true,
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: userName,
+        notes: (await getRecordNotes(id)) + ' | USKLAĐENO: ručno označeno'
+      })
+      .eq('id', id);
+    
+    hideLoading();
+    showMessage('✅ Označeno kao usklađeno', 'success');
+    loadNeuskladjeno();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// GOP PALETE - RUČNI UNOS (ADMIN ONLY)
+// ============================================
+
+// Provjera admin uloge
+window.imaAdminUlogu = function() {
+  const user = Auth.getUser();
+  if (!user || !user.role) return false;
+  const adminRoles = ['admin', 'superadmin'];
+  return adminRoles.includes(user.role.toLowerCase());
+};
+
+// Inicijalizacija admin kontrola
+function initAdminControls() {
+  const jeAdmin = window.imaAdminUlogu();
+
+  // Prikaži/sakrij admin buttone
+  const btnDodaj = document.getElementById('btnDodajGOPPaletu');
+  if (btnDodaj) {
+    btnDodaj.style.display = jeAdmin ? 'inline-block' : 'none';
+  }
+
+  // Prikaži/sakrij Akcije kolonu header
+  const akcijeHeader = document.getElementById('gopAkcijeHeader');
+  if (akcijeHeader) {
+    akcijeHeader.style.display = jeAdmin ? '' : 'none';
+  }
+}
+
+// Pozovi na page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminControls);
+} else {
+  initAdminControls();
+}
+
+// Otvori modal za dodavanje GOP palete
+async function openDodajGOPPaletu() {
+  // Provjera admin dozvole
+  if (!window.imaAdminUlogu()) {
+    showMessage('Nemate dozvolu za dodavanje paleta', 'error');
+    return;
+  }
+
+  showLoading('Učitavanje radnih naloga...');
+
+  try {
+    // Dohvat aktivnih/završenih naloga
+    const { data: nalozi, error } = await initSupabase()
+      .from('prod_work_orders')
+      .select('id, wo_number, article_name, article_id, customer_name, quantity')
+      .in('status', ['U tijeku', 'Završeno'])
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    // Popuni dropdown
+    const select = document.getElementById('gopNalog');
+    select.innerHTML = '<option value="">-- Odaberi radni nalog --</option>';
+
+    (nalozi || []).forEach(n => {
+      const option = document.createElement('option');
+      option.value = n.id;
+      option.textContent = `${n.wo_number} - ${n.article_name} (${n.customer_name})`;
+      option.dataset.articleId = n.article_id;
+      option.dataset.articleName = n.article_name;
+      option.dataset.woNumber = n.wo_number;
+      option.dataset.customerName = n.customer_name;
+      select.appendChild(option);
+    });
+
+    // Reset forme
+    document.getElementById('gopPaletaForm').reset();
+
+    // Postavi današnji datum i trenutnu smjenu
+    const productionDate = getProductionDate();
+    const currentShift = getCurrentShiftNumber();
+    document.getElementById('gopDatum').value = productionDate;
+    document.getElementById('gopSmjena').value = currentShift;
+
+    hideLoading();
+    openModal('gopPaletaModal');
+
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// Submit forme za dodavanje GOP palete
+async function dodajGOPPaletuSubmit(event) {
+  event.preventDefault();
+
+  const nalogId = document.getElementById('gopNalog').value;
+  const nalogSelect = document.getElementById('gopNalog');
+  const selectedOption = nalogSelect.options[nalogSelect.selectedIndex];
+
+  const brojPalete = document.getElementById('gopBrojPalete').value.trim();
+  const datum = document.getElementById('gopDatum').value;
+  const smjena = document.getElementById('gopSmjena').value;
+  const postava = document.getElementById('gopPostava').value;
+  const kolicina = parseInt(document.getElementById('gopKolicina').value) || 0;
+  const linija = document.getElementById('gopLinija').value;
+  const dimenzija = document.getElementById('gopDimenzija').value;
+  const status = document.getElementById('gopStatus').value;
+
+  // Validacija
+  if (!brojPalete) {
+    showMessage('Unesite broj palete', 'error');
+    return;
+  }
+  if (kolicina <= 0) {
+    showMessage('Količina mora biti veća od 0', 'error');
+    return;
+  }
+
+  showLoading('Spremanje palete...');
+
+  try {
+    // Provjeri postoji li već paleta s tim brojem
+    const { data: postojeca } = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('pallet_number')
+      .eq('pallet_number', brojPalete)
+      .maybeSingle();
+
+    if (postojeca) {
+      hideLoading();
+      showMessage(`Paleta ${brojPalete} već postoji u sustavu`, 'error');
+      return;
+    }
+
+    // INSERT u prod_inventory_gop
+    const { data: paleta, error: insertError } = await initSupabase()
+      .from('prod_inventory_gop')
+      .insert({
+        pallet_number: brojPalete,
+        work_order_id: nalogId,
+        work_order_number: selectedOption.dataset.woNumber,
+        article_id: selectedOption.dataset.articleId,
+        article_name: selectedOption.dataset.articleName,
+        customer_name: selectedOption.dataset.customerName,
+        quantity: kolicina,
+        pallet_dimension: dimenzija,
+        production_line: linija,
+        operator_name: postava,
+        status: status
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // INSERT u prod_shift_details
+    await initSupabase()
+      .from('prod_shift_details')
+      .insert({
+        shift_id: `${linija}-Bottomer-${datum}-${smjena}`,
+        datum: datum,
+        smjena: parseInt(smjena),
+        linija: linija,
+        stroj_tip: 'Bottomer',
+        vrsta_unosa: 'GOP',
+        referenca: brojPalete,
+        kolicina: kolicina,
+        operater: postava
+      });
+
+    hideLoading();
+    closeModal('gopPaletaModal');
+    showMessage(`✅ Paleta ${brojPalete} uspješno dodana (${kolicina} kom)`, 'success');
+    await loadGOP();
+
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// Uredi GOP paletu
+async function urediGOPPaletu(paletaId) {
+  // Provjera admin dozvole
+  if (!window.imaAdminUlogu()) {
+    showMessage('Nemate dozvolu za uređivanje paleta', 'error');
+    return;
+  }
+
+  showLoading('Učitavanje palete...');
+
+  try {
+    // Dohvat palete
+    const { data: paleta, error: paletaError } = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('*')
+      .eq('id', paletaId)
+      .single();
+
+    if (paletaError) throw paletaError;
+
+    // Dohvat shift_details za paletu (očekujemo samo jedan zapis)
+    const { data: shifts, error: shiftsError } = await initSupabase()
+      .from('prod_shift_details')
+      .select('*')
+      .eq('referenca', paleta.pallet_number)
+      .eq('vrsta_unosa', 'GOP')
+      .order('datum', { ascending: true })
+      .order('smjena', { ascending: true })
+      .limit(1);
+
+    if (shiftsError) throw shiftsError;
+
+    // Popuni formu
+    document.getElementById('editGOPPaletaId').value = paleta.id;
+    document.getElementById('editGOPPaletaNumber').value = paleta.pallet_number;
+    document.getElementById('editGOPPaletaInfo').textContent = `${paleta.pallet_number} - ${paleta.article_name}`;
+    document.getElementById('editGOPDimenzija').value = paleta.pallet_dimension;
+    document.getElementById('editGOPStatus').value = paleta.status;
+    document.getElementById('editGOPRazlog').value = '';
+
+    // Popuni datum, smjenu, postavu i količinu
+    if (shifts && shifts.length > 0) {
+      const shift = shifts[0];
+      document.getElementById('editGOPDatum').value = shift.datum;
+      document.getElementById('editGOPSmjena').value = shift.smjena;
+      document.getElementById('editGOPPostava').value = shift.operater || paleta.operator_name || '';
+      document.getElementById('editGOPKolicina').value = paleta.quantity;
+    } else {
+      // Ako nema shift details, popuni samo količinu i postavu iz palete
+      document.getElementById('editGOPDatum').value = getProductionDate();
+      document.getElementById('editGOPSmjena').value = getCurrentShiftNumber();
+      document.getElementById('editGOPPostava').value = paleta.operator_name || '';
+      document.getElementById('editGOPKolicina').value = paleta.quantity;
+    }
+
+    hideLoading();
+    openModal('gopPaletaEditModal');
+
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// Submit forme za uređivanje GOP palete
+async function urediGOPPaletuSubmit(event) {
+  event.preventDefault();
+
+  const paletaId = document.getElementById('editGOPPaletaId').value;
+  const paletaNumber = document.getElementById('editGOPPaletaNumber').value;
+  const datum = document.getElementById('editGOPDatum').value;
+  const smjena = document.getElementById('editGOPSmjena').value;
+  const postava = document.getElementById('editGOPPostava').value;
+  const kolicina = parseInt(document.getElementById('editGOPKolicina').value) || 0;
+  const dimenzija = document.getElementById('editGOPDimenzija').value;
+  const status = document.getElementById('editGOPStatus').value;
+  const razlog = document.getElementById('editGOPRazlog').value.trim();
+
+  // Validacija razloga
+  if (!razlog) {
+    showMessage('Morate unijeti razlog korekcije', 'error');
+    return;
+  }
+
+  // Validacija količine
+  if (kolicina <= 0) {
+    showMessage('Količina mora biti veća od 0', 'error');
+    return;
+  }
+
+  showLoading('Spremanje izmjena...');
+
+  try {
+    // Dohvat stare verzije za audit
+    const { data: staraVerzija } = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('*')
+      .eq('id', paletaId)
+      .single();
+
+    // UPDATE prod_inventory_gop
+    const { error: updateError } = await initSupabase()
+      .from('prod_inventory_gop')
+      .update({
+        quantity: kolicina,
+        pallet_dimension: dimenzija,
+        status: status,
+        operator_name: postava,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', paletaId);
+
+    if (updateError) throw updateError;
+
+    // DELETE postojećih shift_details
+    await initSupabase()
+      .from('prod_shift_details')
+      .delete()
+      .eq('referenca', paletaNumber)
+      .eq('vrsta_unosa', 'GOP');
+
+    // INSERT novog shift_details
+    const linija = staraVerzija.production_line;
+    await initSupabase()
+      .from('prod_shift_details')
+      .insert({
+        shift_id: `${linija}-Bottomer-${datum}-${smjena}`,
+        datum: datum,
+        smjena: parseInt(smjena),
+        linija: linija,
+        stroj_tip: 'Bottomer',
+        vrsta_unosa: 'GOP',
+        referenca: paletaNumber,
+        kolicina: kolicina,
+        operater: postava
+      });
+
+    hideLoading();
+    closeModal('gopPaletaEditModal');
+    showMessage(`✅ Paleta ${paletaNumber} uspješno ažurirana (Razlog: ${razlog})`, 'success');
+    await loadGOP();
+
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// Obriši GOP paletu
+async function obrisiGOPPaletu(paletaId) {
+  // Provjera admin dozvole
+  if (!window.imaAdminUlogu()) {
+    showMessage('Nemate dozvolu za brisanje paleta', 'error');
+    return;
+  }
+
+  // Potvrda
+  if (!confirm('Jeste li sigurni da želite obrisati ovu paletu?\n\nOva radnja se ne može poništiti.')) {
+    return;
+  }
+
+  // Traži razlog brisanja
+  const razlog = prompt('Razlog brisanja:');
+  if (!razlog || !razlog.trim()) {
+    showMessage('Morate unijeti razlog brisanja', 'error');
+    return;
+  }
+
+  showLoading('Brisanje palete...');
+
+  try {
+    // Dohvat palete za audit
+    const { data: paleta, error: fetchError } = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('*')
+      .eq('id', paletaId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // DELETE shift_details PRVO (foreign key)
+    await initSupabase()
+      .from('prod_shift_details')
+      .delete()
+      .eq('referenca', paleta.pallet_number)
+      .eq('vrsta_unosa', 'GOP');
+
+    // DELETE paleta
+    const { error: deleteError } = await initSupabase()
+      .from('prod_inventory_gop')
+      .delete()
+      .eq('id', paletaId);
+
+    if (deleteError) throw deleteError;
+
+    hideLoading();
+    showMessage(`✅ Paleta ${paleta.pallet_number} uspješno obrisana`, 'success');
+    await loadGOP();
+
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+</script>

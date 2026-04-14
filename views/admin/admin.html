@@ -1,0 +1,431 @@
+<!-- ============================================ -->
+<!-- ADMIN - Upravljanje korisnicima -->
+<!-- ============================================ -->
+
+<style>
+  .admin-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  
+  .admin-controls input[type="text"] {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 250px;
+  }
+  
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+  }
+  
+  .users-table th {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+  }
+  
+  .users-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  
+  .users-table tr:hover { background: #f8f9fa; }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .status-aktivan { background: #e8f5e9; color: #2e7d32; }
+  .status-neaktivan { background: #ffebee; color: #c62828; }
+  
+  .role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  .role-badge.superadmin { background: #f3e5f5; color: #7b1fa2; }
+  .role-badge.admin { background: #fff3e0; color: #e65100; }
+  
+  .action-btns { display: flex; gap: 5px; }
+  
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .btn-edit { background: #e3f2fd; color: #1565c0; }
+  .btn-edit:hover { background: #bbdefb; }
+  .btn-delete { background: #ffebee; color: #c62828; }
+  .btn-delete:hover { background: #ffcdd2; }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .stat-card.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+  .stat-card.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+  
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; opacity: 0.9; margin-top: 5px; }
+
+  #userModal .modal-content { max-width: 500px; }
+  
+  .form-row { display: flex; gap: 15px; }
+  .form-row .form-group { flex: 1; }
+</style>
+
+<div class="card">
+  <div class="card-header">Upravljanje Korisnicima</div>
+  
+  <!-- STATISTIKE -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statUkupno">0</div>
+      <div class="stat-label">Ukupno korisnika</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value" id="statAktivni">0</div>
+      <div class="stat-label">Aktivnih</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-value" id="statUloga">0</div>
+      <div class="stat-label">Uloga</div>
+    </div>
+  </div>
+  
+  <!-- KONTROLE -->
+  <div class="admin-controls">
+    <input type="text" id="searchUsers" placeholder="Pretrazi korisnike..." oninput="filterUsers()">
+    <select id="filterRole" class="form-control" style="width:180px;" onchange="filterUsers()">
+      <option value="">Sve uloge</option>
+    </select>
+    <button class="btn btn-primary" onclick="otvoriDodajKorisnika()">+ Novi korisnik</button>
+  </div>
+  
+  <!-- TABLICA -->
+  <div class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Ime</th>
+          <th>Email</th>
+          <th>PIN</th>
+          <th>Uloga</th>
+          <th>Status</th>
+          <th>Zadnja prijava</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="usersTableBody">
+        <tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Ucitavam...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL: Korisnik -->
+<div id="userModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="userModalTitle">Novi korisnik</h3>
+      <button class="modal-close" onclick="closeModal('userModal')">x</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="userId">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ime *</label>
+          <input type="text" id="userIme" class="form-control" placeholder="Ime korisnika">
+        </div>
+        <div class="form-group">
+          <label>PIN *</label>
+          <input type="text" id="userPin" class="form-control" placeholder="4 znamenke" maxlength="6">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="userEmail" class="form-control" placeholder="email@domena.hr">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Uloga *</label>
+          <select id="userUloga" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="userAktivan" class="form-control">
+            <option value="true">Aktivan</option>
+            <option value="false">Neaktivan</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('userModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiKorisnika()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+console.log('Admin view ucitan');
+
+var sviKorisnici = [];
+var sveUloge = [];
+
+// INIT
+(function() {
+  ucitajUloge();
+  ucitajKorisnike();
+})();
+
+// Ucitaj uloge
+async function ucitajUloge() {
+  try {
+    var result = await initSupabase()
+      .from('prod_roles')
+      .select('naziv, opis')
+      .eq('aktivan', true)
+      .order('naziv');
+    
+    if (result.error) throw result.error;
+    
+    sveUloge = result.data || [];
+    
+    // Popuni filter dropdown
+    var filterSelect = document.getElementById('filterRole');
+    var userSelect = document.getElementById('userUloga');
+    
+    sveUloge.forEach(function(role) {
+      filterSelect.innerHTML += '<option value="' + role.naziv + '">' + role.naziv + '</option>';
+      userSelect.innerHTML += '<option value="' + role.naziv + '">' + role.naziv + '</option>';
+    });
+    
+    document.getElementById('statUloga').textContent = sveUloge.length;
+    
+  } catch (e) {
+    console.error('Greska pri ucitavanju uloga:', e);
+  }
+}
+
+// Ucitaj korisnike
+async function ucitajKorisnike() {
+  try {
+    var result = await initSupabase()
+      .from('prod_users')
+      .select('*')
+      .order('ime');
+    
+    if (result.error) throw result.error;
+    
+    sviKorisnici = result.data || [];
+    
+    // Statistike
+    var aktivni = sviKorisnici.filter(function(u) { return u.aktivan; }).length;
+    document.getElementById('statUkupno').textContent = sviKorisnici.length;
+    document.getElementById('statAktivni').textContent = aktivni;
+    
+    renderKorisnici(sviKorisnici);
+    
+  } catch (e) {
+    console.error('Greska:', e);
+    showMessage('Greska pri ucitavanju korisnika', 'error');
+  }
+}
+
+// Renderaj tablicu
+function renderKorisnici(korisnici) {
+  var tbody = document.getElementById('usersTableBody');
+  
+  if (korisnici.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Nema korisnika</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  korisnici.forEach(function(user) {
+    var roleClass = '';
+    if (user.uloga === 'superadmin') roleClass = 'superadmin';
+    else if (user.uloga === 'admin') roleClass = 'admin';
+    
+    var lastLogin = user.last_login ? formatDatumVrijeme(user.last_login) : 'Nikad';
+    
+    html += '<tr>';
+    html += '<td><strong>' + escapeHtml(user.ime) + '</strong></td>';
+    html += '<td>' + escapeHtml(user.email) + '</td>';
+    html += '<td>' + user.pin_code + '</td>';
+    html += '<td><span class="role-badge ' + roleClass + '">' + user.uloga + '</span></td>';
+    html += '<td><span class="status-badge status-' + (user.aktivan ? 'aktivan' : 'neaktivan') + '">' + (user.aktivan ? 'Aktivan' : 'Neaktivan') + '</span></td>';
+    html += '<td>' + lastLogin + '</td>';
+    html += '<td class="action-btns">';
+    html += '<button class="btn-sm btn-edit" onclick="urediKorisnika(\'' + user.id + '\')">Uredi</button>';
+    
+    // Ne dopusti brisanje superadmina
+    if (user.uloga !== 'superadmin') {
+      html += '<button class="btn-sm btn-delete" onclick="obrisiKorisnika(\'' + user.id + '\', \'' + escapeHtml(user.ime) + '\')">Obrisi</button>';
+    }
+    
+    html += '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// Filter korisnika
+function filterUsers() {
+  var search = document.getElementById('searchUsers').value.toLowerCase();
+  var roleFilter = document.getElementById('filterRole').value;
+  
+  var filtered = sviKorisnici.filter(function(user) {
+    var matchSearch = !search || 
+      user.ime.toLowerCase().indexOf(search) !== -1 || 
+      user.email.toLowerCase().indexOf(search) !== -1;
+    var matchRole = !roleFilter || user.uloga === roleFilter;
+    return matchSearch && matchRole;
+  });
+  
+  renderKorisnici(filtered);
+}
+
+// Otvori modal za dodavanje
+function otvoriDodajKorisnika() {
+  document.getElementById('userModalTitle').textContent = 'Novi korisnik';
+  document.getElementById('userId').value = '';
+  document.getElementById('userIme').value = '';
+  document.getElementById('userEmail').value = '';
+  document.getElementById('userPin').value = '';
+  document.getElementById('userUloga').value = sveUloge.length > 0 ? sveUloge[0].naziv : '';
+  document.getElementById('userAktivan').value = 'true';
+  openModal('userModal');
+}
+
+// Uredi korisnika
+function urediKorisnika(id) {
+  var user = sviKorisnici.find(function(u) { return u.id === id; });
+  if (!user) return;
+  
+  document.getElementById('userModalTitle').textContent = 'Uredi korisnika';
+  document.getElementById('userId').value = user.id;
+  document.getElementById('userIme').value = user.ime;
+  document.getElementById('userEmail').value = user.email;
+  document.getElementById('userPin').value = user.pin_code;
+  document.getElementById('userUloga').value = user.uloga;
+  document.getElementById('userAktivan').value = user.aktivan ? 'true' : 'false';
+  openModal('userModal');
+}
+
+// Spremi korisnika
+async function spremiKorisnika() {
+  var id = document.getElementById('userId').value;
+  var ime = document.getElementById('userIme').value.trim();
+  var email = document.getElementById('userEmail').value.trim();
+  var pin = document.getElementById('userPin').value.trim();
+  var uloga = document.getElementById('userUloga').value;
+  var aktivan = document.getElementById('userAktivan').value === 'true';
+  
+  if (!ime || !email || !pin || !uloga) {
+    showMessage('Popunite sva obavezna polja', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    var data = {
+      ime: ime,
+      email: email,
+      pin_code: pin,
+      uloga: uloga,
+      aktivan: aktivan
+    };
+    
+    var result;
+    if (id) {
+      // Update
+      result = await initSupabase()
+        .from('prod_users')
+        .update(data)
+        .eq('id', id);
+    } else {
+      // Insert
+      result = await initSupabase()
+        .from('prod_users')
+        .insert(data);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Korisnik spremljen', 'success');
+    closeModal('userModal');
+    ucitajKorisnike();
+    
+  } catch (e) {
+    console.error('Greska:', e);
+    showMessage('Greska: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Obrisi korisnika
+async function obrisiKorisnika(id, ime) {
+  if (!confirm('Obrisati korisnika "' + ime + '"?')) return;
+  
+  showLoading();
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_users')
+      .delete()
+      .eq('id', id);
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Korisnik obrisan', 'success');
+    ucitajKorisnike();
+    
+  } catch (e) {
+    showMessage('Greska: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+</script>

@@ -1,0 +1,1574 @@
+<!-- Kuhinja za ljepilo - VNC upravljanje i upute -->
+<style>
+.kuhinja-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.kuhinja-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kuhinja-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+.kuhinja-status.online {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.kuhinja-status.offline {
+  background: #ffebee;
+  color: #c62828;
+}
+.kuhinja-status.connecting {
+  background: #fff3e0;
+  color: #e65100;
+}
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+.status-dot.online { background: #4caf50; }
+.status-dot.offline { background: #f44336; }
+.status-dot.connecting { background: #ff9800; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Tabs */
+.kuhinja-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0;
+}
+.kuhinja-tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.kuhinja-tab:hover {
+  color: #1976d2;
+  background: #f5f5f5;
+}
+.kuhinja-tab.active {
+  color: #1976d2;
+  border-bottom-color: #1976d2;
+  background: white;
+}
+
+.kuhinja-content {
+  display: none;
+}
+.kuhinja-content.active {
+  display: block;
+}
+
+/* VNC Container */
+.vnc-container {
+  background: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.vnc-toolbar {
+  background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.vnc-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.vnc-toolbar-title {
+  color: white;
+  font-weight: 600;
+  font-size: 1.1em;
+}
+.vnc-toolbar-right {
+  display: flex;
+  gap: 10px;
+}
+.vnc-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+.vnc-btn-primary {
+  background: #4caf50;
+  color: white;
+}
+.vnc-btn-primary:hover {
+  background: #43a047;
+}
+.vnc-btn-secondary {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.vnc-btn-secondary:hover {
+  background: rgba(255,255,255,0.3);
+}
+.vnc-btn-danger {
+  background: #f44336;
+  color: white;
+}
+.vnc-btn-danger:hover {
+  background: #e53935;
+}
+
+.vnc-screen {
+  width: 100%;
+  height: 600px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.vnc-screen iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.vnc-placeholder {
+  text-align: center;
+  color: #888;
+}
+.vnc-placeholder-icon {
+  font-size: 4em;
+  margin-bottom: 20px;
+}
+.vnc-placeholder h3 {
+  color: #ccc;
+  margin-bottom: 10px;
+}
+.vnc-placeholder p {
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* Connection form */
+.vnc-connect-form {
+  background: #2d2d2d;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 100%;
+}
+.vnc-connect-form h3 {
+  color: white;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+.vnc-form-group {
+  margin-bottom: 15px;
+}
+.vnc-form-group label {
+  display: block;
+  color: #aaa;
+  font-size: 0.85em;
+  margin-bottom: 5px;
+}
+.vnc-form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 1em;
+}
+.vnc-form-group input:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+.vnc-form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+/* Status cards */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.status-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.status-card-icon {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+.status-card-label {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 5px;
+}
+.status-card-value {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--primary);
+}
+.status-card-value.warning {
+  color: #ff9800;
+}
+.status-card-value.danger {
+  color: #f44336;
+}
+.status-card-value.success {
+  color: #4caf50;
+}
+.status-card-unit {
+  font-size: 0.5em;
+  color: #999;
+  margin-left: 3px;
+}
+
+/* Language Toggle */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  padding: 4px;
+  border-radius: 20px;
+  margin-right: 10px;
+}
+.lang-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: 600;
+  transition: all 0.2s;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+}
+.lang-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.lang-btn.active {
+  background: white;
+  color: #1565c0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.lang-btn .flag {
+  margin-right: 4px;
+}
+
+/* Upute section */
+.upute-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.upute-header {
+  background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.upute-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.upute-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.upute-body {
+  padding: 20px;
+}
+.upute-section {
+  margin-bottom: 30px;
+}
+.upute-section:last-child {
+  margin-bottom: 0;
+}
+.upute-section h4 {
+  color: #1565c0;
+  border-bottom: 2px solid #e3f2fd;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.upute-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.upute-section li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+.upute-section li strong {
+  color: #333;
+}
+.upute-warning {
+  background: #fff3e0;
+  border-left: 4px solid #ff9800;
+  padding: 15px;
+  border-radius: 0 8px 8px 0;
+  margin: 15px 0;
+}
+.upute-warning-title {
+  font-weight: 700;
+  color: #e65100;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.upute-danger {
+  background: #ffebee;
+  border-left: 4px solid #f44336;
+  padding: 15px;
+  border-radius: 0 8px 8px 0;
+  margin: 15px 0;
+}
+.upute-danger-title {
+  font-weight: 700;
+  color: #c62828;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.upute-tip {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 15px;
+  border-radius: 0 8px 8px 0;
+  margin: 15px 0;
+}
+.upute-tip-title {
+  font-weight: 700;
+  color: #2e7d32;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Edit mode */
+.upute-edit-area {
+  display: none;
+}
+.upute-edit-area.active {
+  display: block;
+}
+.upute-view-area.hidden {
+  display: none;
+}
+.upute-editor {
+  width: 100%;
+  min-height: 400px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1em;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* Quick actions */
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.quick-action-btn {
+  padding: 12px 24px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.quick-action-btn:hover {
+  border-color: #1976d2;
+  background: #e3f2fd;
+}
+.quick-action-btn.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vnc-screen {
+    height: 400px;
+  }
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+
+<div class="kuhinja-header">
+  <div class="kuhinja-title">
+    🍯 Kuhinja za ljepilo
+  </div>
+  <div class="kuhinja-status connecting" id="connectionStatus">
+    <span class="status-dot connecting"></span>
+    <span id="statusText">Nije spojeno</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="kuhinja-tabs">
+  <button class="kuhinja-tab active" onclick="switchKuhinjaTab('vnc')">
+    🖥️ Upravljanje
+  </button>
+  <button class="kuhinja-tab" onclick="switchKuhinjaTab('upute')">
+    📖 Upute za korištenje
+  </button>
+  <button class="kuhinja-tab" onclick="switchKuhinjaTab('info')">
+    ℹ️ O sustavu
+  </button>
+</div>
+
+<!-- TAB 1: VNC Upravljanje -->
+<div class="kuhinja-content active" id="contentVnc">
+  
+  <!-- Status kartice (placeholder za buduće podatke) -->
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-card-icon">🌡️</div>
+      <div class="status-card-label">Temperatura</div>
+      <div class="status-card-value" id="tempValue">--<span class="status-card-unit">°C</span></div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">🪣</div>
+      <div class="status-card-label">Razina ljepila</div>
+      <div class="status-card-value" id="levelValue">--<span class="status-card-unit">%</span></div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">🔄</div>
+      <div class="status-card-label">Miješanje</div>
+      <div class="status-card-value success" id="mixingValue">--</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">📋</div>
+      <div class="status-card-label">Aktivni recept</div>
+      <div class="status-card-value" id="recipeValue">--</div>
+    </div>
+  </div>
+  
+  <!-- VNC Container -->
+  <div class="vnc-container">
+    <div class="vnc-toolbar">
+      <div class="vnc-toolbar-left">
+        <span class="vnc-toolbar-title">🖥️ Udaljeni pristup - Kuhinja kontroler</span>
+      </div>
+      <div class="vnc-toolbar-right">
+        <button class="vnc-btn vnc-btn-secondary" onclick="toggleFullscreen()" title="Puni ekran">
+          ⛶ Puni ekran
+        </button>
+        <button class="vnc-btn vnc-btn-primary" onclick="connectVNC()" id="connectBtn">
+          🔌 Spoji se
+        </button>
+      </div>
+    </div>
+    
+    <div class="vnc-screen" id="vncScreen">
+      <div class="vnc-placeholder" id="vncPlaceholder">
+        <div class="vnc-placeholder-icon">🖥️</div>
+        
+        <!-- Connection form -->
+        <div class="vnc-connect-form">
+          <h3>Spoji se na kuhinju</h3>
+          <div class="vnc-form-row">
+            <div class="vnc-form-group">
+              <label>IP adresa kuhinje</label>
+              <input type="text" id="vncHost" placeholder="192.168.1.100" value="">
+            </div>
+            <div class="vnc-form-group">
+              <label>Port</label>
+              <input type="text" id="vncPort" placeholder="5900" value="5900">
+            </div>
+          </div>
+          <div class="vnc-form-group">
+            <label>Lozinka (ako je potrebna)</label>
+            <input type="password" id="vncPassword" placeholder="••••••••">
+          </div>
+          <button class="vnc-btn vnc-btn-primary" onclick="connectVNC()" style="width: 100%; margin-top: 10px; padding: 15px;">
+            🔌 Spoji se
+          </button>
+          <p style="color: #666; font-size: 0.85em; margin-top: 15px; text-align: center;">
+            💡 IP adresu i lozinku dobiti ćete od instalatera
+          </p>
+        </div>
+      </div>
+      
+      <!-- VNC iframe - prikazuje se nakon spajanja -->
+      <iframe id="vncFrame" style="display: none;" allow="fullscreen"></iframe>
+    </div>
+  </div>
+  
+  <div style="margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+    <strong>💡 Napomena:</strong> VNC veza omogućuje direktno upravljanje računalom kuhinje. 
+    Svi podaci o temperaturi, razini ljepila i receptima prikazuju se u VNC prozoru.
+    <br><br>
+    <strong>🔐 Sigurnost:</strong> Veza je dostupna samo unutar lokalne mreže tvrtke.
+  </div>
+</div>
+
+<!-- TAB 2: Upute za korištenje -->
+<div class="kuhinja-content" id="contentUpute">
+  <div class="upute-container">
+    <div class="upute-header">
+      <h3 id="uputeTitle">📖 Upute za korištenje kuhinje za ljepilo</h3>
+      <div class="upute-header-right">
+        <div class="lang-toggle">
+          <button class="lang-btn active" id="langHR" onclick="switchLanguage('hr')">
+            <span class="flag">🇭🇷</span> HR
+          </button>
+          <button class="lang-btn" id="langEN" onclick="switchLanguage('en')">
+            <span class="flag">🇬🇧</span> EN
+          </button>
+        </div>
+        <div id="uputeButtons">
+          <button class="btn btn-sm btn-secondary" onclick="startUputeEdit()" id="editUputeBtn">
+            ✏️ Uredi
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="upute-body">
+      
+      <!-- View/Edit mode - contenteditable -->
+      <div class="upute-view-area" id="uputeViewArea" style="min-height: 400px; outline: none;">
+        
+        <div class="upute-section">
+          <h4>🚀 1. Pokretanje sustava</h4>
+          <ul>
+            <li><strong>Uključivanje:</strong> Pritisnite glavni prekidač na kontrolnoj ploči</li>
+            <li><strong>Čekanje:</strong> Pričekajte da sustav dođe na radnu temperaturu (cca 15-20 min)</li>
+            <li><strong>Provjera:</strong> Zeleno svjetlo označava da je sustav spreman za rad</li>
+          </ul>
+          <div class="upute-warning">
+            <div class="upute-warning-title">⚠️ Upozorenje</div>
+            Ne započinjte proizvodnju dok temperatura ne dosegne zadanu vrijednost!
+          </div>
+        </div>
+        
+        <div class="upute-section">
+          <h4>🌡️ 2. Podešavanje temperature</h4>
+          <ul>
+            <li><strong>Standardna temperatura:</strong> 60-65°C za većinu ljepila</li>
+            <li><strong>Podešavanje:</strong> Koristite strelice gore/dolje na ekranu</li>
+            <li><strong>Potvrda:</strong> Pritisnite "OK" za spremanje postavki</li>
+          </ul>
+          <div class="upute-tip">
+            <div class="upute-tip-title">💡 Savjet</div>
+            Temperatura ovisi o vrsti ljepila - provjerite specifikaciju na ambalaži.
+          </div>
+        </div>
+        
+        <div class="upute-section">
+          <h4>🔄 3. Pokretanje miješanja</h4>
+          <ul>
+            <li><strong>Automatsko:</strong> Miješanje se pokreće automatski prema receptu</li>
+            <li><strong>Ručno:</strong> Pritisnite "MIX" za ručno pokretanje</li>
+            <li><strong>Zaustavljanje:</strong> Pritisnite "STOP" za zaustavljanje</li>
+          </ul>
+        </div>
+        
+        <div class="upute-section">
+          <h4>📋 4. Odabir recepta</h4>
+          <ul>
+            <li><strong>Pristup:</strong> Menu → Recepti → Odaberi recept</li>
+            <li><strong>Aktivacija:</strong> Pritisnite "Učitaj" za aktiviranje recepta</li>
+            <li><strong>Provjera:</strong> Aktivni recept prikazuje se na glavnom ekranu</li>
+          </ul>
+        </div>
+        
+        <div class="upute-section">
+          <h4>🪣 5. Dopunjavanje ljepila</h4>
+          <ul>
+            <li><strong>Provjera razine:</strong> Pratite indikator razine na ekranu</li>
+            <li><strong>Dopuna:</strong> Kad razina padne ispod 20%, dopunite ljepilo</li>
+            <li><strong>Maksimum:</strong> Ne prelazite oznaku MAX na spremniku</li>
+          </ul>
+          <div class="upute-danger">
+            <div class="upute-danger-title">🚨 Opasnost</div>
+            Ljepilo je vruće! Koristite zaštitne rukavice i zaštitu za oči pri dopunjavanju.
+          </div>
+        </div>
+        
+        <div class="upute-section">
+          <h4>🛑 6. Gašenje sustava</h4>
+          <ul>
+            <li><strong>Zaustavljanje:</strong> Pritisnite "STOP" na kontrolnoj ploči</li>
+            <li><strong>Ispiranje:</strong> Pokrenite ciklus ispiranja ako je potrebno</li>
+            <li><strong>Gašenje:</strong> Isključite glavni prekidač</li>
+          </ul>
+        </div>
+        
+        <div class="upute-section">
+          <h4>🔧 7. Rješavanje problema</h4>
+          <ul>
+            <li><strong>Alarm temperature:</strong> Provjerite grijače i senzore</li>
+            <li><strong>Alarm razine:</strong> Dopunite ljepilo</li>
+            <li><strong>Alarm miješanja:</strong> Provjerite motor mješalice</li>
+            <li><strong>Kontakt:</strong> Za ostale probleme kontaktirajte održavanje</li>
+          </ul>
+        </div>
+        
+      </div>
+      
+      <!-- Edit mode textarea -->
+      <div class="upute-edit-area" id="uputeEditArea">
+        <p style="margin-bottom: 15px; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+          <strong>Format:</strong><br>
+          <code>## Naslov sekcije</code> - za naslov<br>
+          <code>- **Bold:** tekst</code> - za stavku s podebljanim tekstom<br>
+          <code>---</code> - za razdvajanje sekcija<br>
+          <code>⚠️ UPOZORENJE: tekst</code> - žuto upozorenje<br>
+          <code>🚨 OPASNOST: tekst</code> - crveno upozorenje<br>
+          <code>💡 SAVJET: tekst</code> - zeleni savjet
+        </p>
+        <textarea class="upute-editor" id="uputeEditor" style="width:100%; min-height:400px; padding:15px; font-family:inherit; font-size:1em; border:1px solid #ddd; border-radius:8px; resize:vertical;"></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+          <button class="btn btn-success" onclick="saveUpute()">💾 Spremi</button>
+          <button class="btn btn-secondary" onclick="cancelUputeEdit()">Odustani</button>
+        </div>
+      </div>
+      
+      </div>
+      
+    </div>
+  </div>
+</div>
+<div class="kuhinja-content" id="contentInfo">
+  <div class="card">
+    <div class="card-header">ℹ️ Informacije o sustavu</div>
+    <div class="card-body">
+      
+      <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        
+        <div class="info-item">
+          <div class="info-label">Proizvođač kuhinje</div>
+          <div class="info-value" id="infoManufacturer">-</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">Model</div>
+          <div class="info-value" id="infoModel">-</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">Serijski broj</div>
+          <div class="info-value" id="infoSerial">-</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">Datum instalacije</div>
+          <div class="info-value" id="infoInstallDate">09.01.2026.</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">IP adresa</div>
+          <div class="info-value" id="infoIP">-</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">Zadnji servis</div>
+          <div class="info-value" id="infoLastService">-</div>
+        </div>
+        
+      </div>
+      
+      <hr style="margin: 30px 0;">
+      
+      <h4 style="margin-bottom: 15px;">📞 Kontakti za podršku</h4>
+      
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tip podrške</th>
+            <th>Kontakt</th>
+            <th>Telefon</th>
+          </tr>
+        </thead>
+        <tbody id="supportContacts">
+          <tr>
+            <td>Dobavljač - tehnička podrška</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>Interno održavanje</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="editSystemInfo()">✏️ Uredi podatke</button>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- Buduća integracija -->
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-header">🔮 Planirana proširenja</div>
+    <div class="card-body">
+      <p>U budućnosti planiramo implementirati:</p>
+      <ul>
+        <li>✅ VNC udaljeni pristup (trenutno aktivno)</li>
+        <li>⏳ Automatsko čitanje temperature i razine ljepila</li>
+        <li>⏳ Grafovi i analitika potrošnje</li>
+        <li>⏳ Alarmi i notifikacije</li>
+        <li>⏳ Upravljanje receptima iz ERP-a</li>
+        <li>⏳ Integracija s proizvodnim modulima</li>
+      </ul>
+      <p style="margin-top: 15px; color: #666;">
+        Za aktivaciju naprednih funkcija potrebna je API integracija s kontrolerom kuhinje.
+        Kontaktirajte dobavljača za više informacija.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Uređivanje info -->
+<div id="systemInfoModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3>ℹ️ Uredi podatke o sustavu</h3>
+      <span class="modal-close" onclick="closeModal('systemInfoModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Proizvođač kuhinje</label>
+        <input type="text" class="form-control" id="editManufacturer">
+      </div>
+      <div class="form-group">
+        <label>Model</label>
+        <input type="text" class="form-control" id="editModel">
+      </div>
+      <div class="form-group">
+        <label>Serijski broj</label>
+        <input type="text" class="form-control" id="editSerial">
+      </div>
+      <div class="form-group">
+        <label>IP adresa</label>
+        <input type="text" class="form-control" id="editIP" placeholder="192.168.1.xxx">
+      </div>
+      <div class="form-group">
+        <label>Datum zadnjeg servisa</label>
+        <input type="date" class="form-control" id="editLastService">
+      </div>
+      <hr>
+      <h4>Kontakt dobavljača</h4>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ime/Tvrtka</label>
+          <input type="text" class="form-control" id="editSupplierName">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="text" class="form-control" id="editSupplierPhone">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('systemInfoModal')">Odustani</button>
+      <button class="btn btn-success" onclick="saveSystemInfo()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// VARIJABLE
+// ============================================
+var vncConnected = false;
+var kuhinjaSettings = null;
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initKuhinjaView() {
+  console.log('🍯 Kuhinja init...');
+  await loadKuhinjaSettings();
+  loadUpute();
+  console.log('🍯 Kuhinja loaded');
+}
+
+async function loadKuhinjaSettings() {
+  try {
+    // Pokušaj učitati postavke iz baze (prod_settings ili lokalno)
+    var saved = localStorage.getItem('kuhinja_settings');
+    if (saved) {
+      kuhinjaSettings = JSON.parse(saved);
+      applySettings();
+    }
+  } catch (e) {
+    console.log('No saved settings');
+  }
+}
+
+function applySettings() {
+  if (!kuhinjaSettings) return;
+  
+  if (kuhinjaSettings.vncHost) {
+    document.getElementById('vncHost').value = kuhinjaSettings.vncHost;
+  }
+  if (kuhinjaSettings.vncPort) {
+    document.getElementById('vncPort').value = kuhinjaSettings.vncPort;
+  }
+  if (kuhinjaSettings.manufacturer) {
+    document.getElementById('infoManufacturer').textContent = kuhinjaSettings.manufacturer;
+  }
+  if (kuhinjaSettings.model) {
+    document.getElementById('infoModel').textContent = kuhinjaSettings.model;
+  }
+  if (kuhinjaSettings.serial) {
+    document.getElementById('infoSerial').textContent = kuhinjaSettings.serial;
+  }
+  if (kuhinjaSettings.ip) {
+    document.getElementById('infoIP').textContent = kuhinjaSettings.ip;
+  }
+  if (kuhinjaSettings.lastService) {
+    document.getElementById('infoLastService').textContent = formatDate(kuhinjaSettings.lastService);
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem('kuhinja_settings', JSON.stringify(kuhinjaSettings));
+}
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchKuhinjaTab(tabId) {
+  document.querySelectorAll('.kuhinja-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.kuhinja-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById('content' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+}
+
+// ============================================
+// VNC FUNKCIJE
+// ============================================
+function connectVNC() {
+  var host = document.getElementById('vncHost').value.trim();
+  var port = document.getElementById('vncPort').value.trim() || '5900';
+  var password = document.getElementById('vncPassword').value;
+  
+  if (!host) {
+    showMessage('Unesite IP adresu kuhinje', 'warning');
+    return;
+  }
+  
+  // Spremi postavke
+  kuhinjaSettings = kuhinjaSettings || {};
+  kuhinjaSettings.vncHost = host;
+  kuhinjaSettings.vncPort = port;
+  kuhinjaSettings.ip = host;
+  saveSettings();
+  
+  // Za pravi VNC potreban je websockify proxy
+  // Ovdje prikazujemo upute za spajanje
+  
+  setConnectionStatus('connecting', 'Spajanje...');
+  
+  // Simulacija spajanja - u produkciji koristiti noVNC
+  setTimeout(function() {
+    // Opcija 1: Ako imate noVNC server
+    // var vncUrl = 'http://' + host + ':6080/vnc.html?host=' + host + '&port=' + port;
+    // document.getElementById('vncFrame').src = vncUrl;
+    // document.getElementById('vncFrame').style.display = 'block';
+    // document.getElementById('vncPlaceholder').style.display = 'none';
+    
+    // Opcija 2: Prikaz uputa za vanjski VNC klijent
+    showVNCInstructions(host, port);
+    
+  }, 1000);
+}
+
+function showVNCInstructions(host, port) {
+  var placeholder = document.getElementById('vncPlaceholder');
+  placeholder.innerHTML = `
+    <div style="max-width: 500px; text-align: left;">
+      <h3 style="color: #4caf50; margin-bottom: 20px;">✅ Podaci spremljeni!</h3>
+      
+      <p style="color: #ccc; margin-bottom: 20px;">
+        Za spajanje na kuhinju koristite VNC klijent na računalu:
+      </p>
+      
+      <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="color: #888; font-size: 0.9em; margin-bottom: 5px;">Adresa za spajanje:</div>
+        <div style="color: #4caf50; font-size: 1.3em; font-family: monospace;">${host}:${port}</div>
+      </div>
+      
+      <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">
+        <strong>Preporučeni VNC klijenti:</strong>
+      </p>
+      <ul style="color: #888; font-size: 0.9em; padding-left: 20px;">
+        <li>RealVNC Viewer (besplatan)</li>
+        <li>TightVNC</li>
+        <li>UltraVNC</li>
+      </ul>
+      
+      <div style="margin-top: 20px; padding: 15px; background: rgba(255,152,0,0.2); border-radius: 8px;">
+        <strong style="color: #ff9800;">💡 Savjet:</strong>
+        <span style="color: #ccc;">Za web pristup potreban je noVNC server. Kontaktirajte IT odjel za instalaciju.</span>
+      </div>
+      
+      <button class="vnc-btn vnc-btn-secondary" onclick="resetVNCForm()" style="margin-top: 20px;">
+        ← Promijeni adresu
+      </button>
+    </div>
+  `;
+  
+  setConnectionStatus('online', 'Konfigurirano');
+  document.getElementById('infoIP').textContent = host;
+}
+
+function resetVNCForm() {
+  location.reload();
+}
+
+function setConnectionStatus(status, text) {
+  var statusEl = document.getElementById('connectionStatus');
+  var statusText = document.getElementById('statusText');
+  var dot = statusEl.querySelector('.status-dot');
+  
+  statusEl.className = 'kuhinja-status ' + status;
+  dot.className = 'status-dot ' + status;
+  statusText.textContent = text;
+}
+
+function toggleFullscreen() {
+  var screen = document.getElementById('vncScreen');
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    screen.requestFullscreen();
+  }
+}
+
+// ============================================
+// UPUTE FUNKCIJE (contenteditable)
+// ============================================
+var isEditingUpute = false;
+var originalUputeContent = '';
+
+function loadUpute() {
+  var viewArea = document.getElementById('uputeViewArea');
+  var lang = localStorage.getItem('kuhinja_language') || 'hr';
+  var savedKey = lang === 'hr' ? 'kuhinja_upute_html_hr' : 'kuhinja_upute_html_en';
+  var saved = localStorage.getItem(savedKey);
+  
+  if (saved) {
+    viewArea.innerHTML = saved;
+  } else {
+    viewArea.innerHTML = lang === 'hr' ? getDefaultUputeHTML() : getDefaultUputeHTML_EN();
+  }
+  
+  // Initialize language buttons
+  initLanguage();
+}
+
+function startUputeEdit() {
+  var viewArea = document.getElementById('uputeViewArea');
+  var buttonsDiv = document.getElementById('uputeButtons');
+  var lang = localStorage.getItem('kuhinja_language') || 'hr';
+  
+  if (!isEditingUpute) {
+    isEditingUpute = true;
+    originalUputeContent = viewArea.innerHTML;
+    viewArea.contentEditable = 'true';
+    viewArea.style.border = '2px dashed #1976d2';
+    viewArea.style.padding = '15px';
+    viewArea.style.borderRadius = '8px';
+    viewArea.style.background = '#f8f9ff';
+    viewArea.focus();
+    
+    if (lang === 'hr') {
+      buttonsDiv.innerHTML = 
+        '<button class="btn btn-sm btn-success" onclick="saveUpute()">💾 Spremi</button> ' +
+        '<button class="btn btn-sm btn-secondary" onclick="cancelUputeEdit()">Odustani</button>';
+      showMessage('📝 Uređivanje aktivirano - klikni na tekst za promjenu', 'info');
+    } else {
+      buttonsDiv.innerHTML = 
+        '<button class="btn btn-sm btn-success" onclick="saveUpute()">💾 Save</button> ' +
+        '<button class="btn btn-sm btn-secondary" onclick="cancelUputeEdit()">Cancel</button>';
+      showMessage('📝 Edit mode active - click on text to modify', 'info');
+    }
+  }
+}
+
+function cancelUputeEdit() {
+  var viewArea = document.getElementById('uputeViewArea');
+  var buttonsDiv = document.getElementById('uputeButtons');
+  var lang = localStorage.getItem('kuhinja_language') || 'hr';
+  
+  viewArea.innerHTML = originalUputeContent;
+  viewArea.contentEditable = 'false';
+  viewArea.style.border = 'none';
+  viewArea.style.padding = '0';
+  viewArea.style.background = 'transparent';
+  
+  var editText = lang === 'hr' ? '✏️ Uredi' : '✏️ Edit';
+  buttonsDiv.innerHTML = '<button class="btn btn-sm btn-secondary" onclick="startUputeEdit()" id="editUputeBtn">' + editText + '</button>';
+  isEditingUpute = false;
+  showMessage(lang === 'hr' ? 'Uređivanje otkazano' : 'Edit cancelled', 'info');
+}
+
+function saveUpute() {
+  var viewArea = document.getElementById('uputeViewArea');
+  var buttonsDiv = document.getElementById('uputeButtons');
+  var lang = localStorage.getItem('kuhinja_language') || 'hr';
+  var savedKey = lang === 'hr' ? 'kuhinja_upute_html_hr' : 'kuhinja_upute_html_en';
+  
+  localStorage.setItem(savedKey, viewArea.innerHTML);
+  
+  viewArea.contentEditable = 'false';
+  viewArea.style.border = 'none';
+  viewArea.style.padding = '0';
+  viewArea.style.background = 'transparent';
+  
+  var editText = lang === 'hr' ? '✏️ Uredi' : '✏️ Edit';
+  buttonsDiv.innerHTML = '<button class="btn btn-sm btn-secondary" onclick="startUputeEdit()" id="editUputeBtn">' + editText + '</button>';
+  isEditingUpute = false;
+  showMessage(lang === 'hr' ? '✅ Upute spremljene!' : '✅ Instructions saved!', 'success');
+}
+
+function getDefaultUputeHTML() {
+  return '<div class="upute-section">' +
+    '<h4>🚀 1. Brzi start - Dnevno pokretanje</h4>' +
+    '<ul>' +
+      '<li><strong>1.</strong> Provjerite da su ventili ispravno otvoreni/zatvoreni prema shemi</li>' +
+      '<li><strong>2.</strong> Otvorite poklopac miksera i provjerite da je prazan</li>' +
+      '<li><strong>3.</strong> Uključite glavni prekidač (pozicija 1)</li>' +
+      '<li><strong>4.</strong> Provjerite alarme na HMI panelu</li>' +
+      '<li><strong>5.</strong> Otvorite stranicu <strong>Recepti</strong> i provjerite/unesite podatke recepta</li>' +
+      '<li><strong>6.</strong> Otvorite stranicu <strong>Parametri</strong> i provjerite postavke</li>' +
+      '<li><strong>7.</strong> Aktivirajte željeni recept (R1, R2 ili R3)</li>' +
+      '<li><strong>8.</strong> Uključite kontrolni napon (tipka Control Voltage)</li>' +
+      '<li><strong>9.</strong> Uključite Auto mod</li>' +
+      '<li><strong>10.</strong> Pritisnite <strong>Start Process</strong></li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 Savjet</div>' +
+      'Nakon uključivanja napajanja, pričekajte 20 sekundi prije pokretanja motora miksera.' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📋 2. Recepti (R1, R2, R3)</h4>' +
+    '<ul>' +
+      '<li><strong>Recept 1:</strong> Ljepilo ide u spremnik 1 (automatski)</li>' +
+      '<li><strong>Recept 2:</strong> Ljepilo ide u spremnik 2 (automatski)</li>' +
+      '<li><strong>Recept 3:</strong> Ljepilo ostaje u mikseru (ručno prebacivanje)</li>' +
+    '</ul>' +
+    '<p style="margin-top:10px;"><strong>Parametri recepta:</strong></p>' +
+    '<ul>' +
+      '<li><strong>Water:</strong> Količina vode (0-700 kg)</li>' +
+      '<li><strong>Powder:</strong> Količina praška/škroba (0-500 kg)</li>' +
+      '<li><strong>Pre-mixing time:</strong> Prvo miješanje nakon doziranja praška</li>' +
+      '<li><strong>Pause time:</strong> Pauza nakon prvog miješanja</li>' +
+      '<li><strong>Final mixing time:</strong> Završno miješanje</li>' +
+      '<li><strong>V mix:</strong> Brzina miješanja (0-100%)</li>' +
+      '<li><strong>Fine dossing:</strong> Količina za fino doziranje (sporiji pužni transporter)</li>' +
+    '</ul>' +
+    '<div class="upute-warning">' +
+      '<div class="upute-warning-title">⚠️ Važno</div>' +
+      'Aktivni recept ima ZELENU tipku. Provjerite koji je recept aktivan prije pokretanja!' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🌡️ 3. Miješanje temeljeno na temperaturi</h4>' +
+    '<ul>' +
+      '<li>Aktivirajte opciju <strong>"Temperature based process stoppage"</strong> na stranici Recepti</li>' +
+      '<li><strong>Min mixing time:</strong> Minimalno vrijeme miješanja</li>' +
+      '<li><strong>Max mixing time:</strong> Maksimalno vrijeme (ako temperatura nije dostignuta)</li>' +
+      '<li><strong>Set glue temperature:</strong> Željena temperatura ljepila</li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 Kako radi</div>' +
+      'Miješanje završava kad ljepilo dostigne zadanu temperaturu I prođe minimalno vrijeme. Ako temperatura nije dostignuta, zaustavlja se nakon maksimalnog vremena.' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>⚙️ 4. Ključni parametri</h4>' +
+    '<ul>' +
+      '<li><strong>Initial level storage 1/2:</strong> Razina ispod koje se automatski pokreće novo miješanje (0-80%)</li>' +
+      '<li><strong>Transfer level storage 1/2:</strong> Razina ispod koje se prebacuje ljepilo (10-50%)</li>' +
+      '<li><strong>Alarm level storage 1/2:</strong> Razina alarma za nisku razinu</li>' +
+      '<li><strong>Empty max weight:</strong> Maksimalna težina "praznog" miksera (0-50 kg)</li>' +
+      '<li><strong>Screw feeder delay:</strong> Kašnjenje pužnog transportera</li>' +
+      '<li><strong>Water correction:</strong> Korekcija za vodu koja ostaje u cijevi</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🖐️ 5. Ručno upravljanje</h4>' +
+    '<ul>' +
+      '<li>Prebacite u <strong>Manual Mode</strong> za ručno upravljanje</li>' +
+      '<li><strong>M1:</strong> Motor miksera</li>' +
+      '<li><strong>M2:</strong> Pužni transporter</li>' +
+      '<li><strong>M3/M4:</strong> Miješalice spremnika 1/2 (rade u bilo kojem modu)</li>' +
+      '<li><strong>M5/M6:</strong> Dozirne pumpe 1/2</li>' +
+      '<li><strong>P1:</strong> Pumpa miksera</li>' +
+      '<li><strong>P2/P3:</strong> Pumpe spremnika 1/2 (rade u bilo kojem modu)</li>' +
+      '<li><strong>V1-V4:</strong> Ventili</li>' +
+    '</ul>' +
+    '<div class="upute-warning">' +
+      '<div class="upute-warning-title">⚠️ Prekid procesa</div>' +
+      'Za prekid miješanja: prebacite u Manual Mode → pritisnite "Cancel Mixing"' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🔧 6. Čišćenje i održavanje</h4>' +
+    '<ul>' +
+      '<li><strong>Mikser:</strong> Ulijte vodu, pokrenite motor miksera, ili koristite visokotlačni perač</li>' +
+      '<li><strong>Spremnici:</strong> Preporučuje se visokotlačni perač (miješalica je spora)</li>' +
+      '<li><strong>Cijevi:</strong> Dozirajte vodu u mikser i ručno prebacite pumpom</li>' +
+      '<li><strong>Izlaz pužnog transportera:</strong> Čistite najmanje svaka 2 tjedna</li>' +
+      '<li><strong>Silo:</strong> Prije čišćenja zatvorite klizni lim!</li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 Filter stanica</div>' +
+      'Za čišćenje/zamjenu vrećice: 1) Polako otvorite ventil za ispust tlaka, 2) Odvijte matice, 3) Izvadite i operite vrećicu, 4) Vratite sve i dobro zategnite.' +
+    '</div>' +
+    '<p style="margin-top:10px;"><strong>Redovno održavanje:</strong></p>' +
+    '<ul>' +
+      '<li>Svakih 6 mjeseci ili 1000 sati: provjerite ulje u reduktoru i curenje</li>' +
+      '<li>Redovno praznite kondenzat iz pneumatskog filtera</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🚨 7. Najčešći alarmi i rješenja</h4>' +
+    '<table style="width:100%; border-collapse:collapse; margin-top:10px;">' +
+      '<tr style="background:#f5f5f5;"><th style="padding:8px; border:1px solid #ddd; text-align:left;">Alarm</th><th style="padding:8px; border:1px solid #ddd; text-align:left;">Rješenje</th></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Inverter error (INV1-4)</td><td style="padding:8px; border:1px solid #ddd;">Provjerite motornu zaštitu (F10-F13). Reset: isključite zaštitu, pričekajte da se inverter ugasi, uključite.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">High level (mikser/spremnik)</td><td style="padding:8px; border:1px solid #ddd;">Očistite vilice senzora od ostataka ljepila.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Low level silo</td><td style="padding:8px; border:1px solid #ddd;">Dopunite prašak u silo. Proces se neće pokrenuti dok je alarm aktivan.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Water low pressure</td><td style="padding:8px; border:1px solid #ddd;">Provjerite dovod vode i ventil.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Pump works too long</td><td style="padding:8px; border:1px solid #ddd;">Provjerite filter, prohodnost pumpe i otvorenost ventila.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Hatch is open</td><td style="padding:8px; border:1px solid #ddd;">Zatvorite poklopac i provjerite poravnanje sigurnosnog senzora (zelena LED = OK).</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Emergency button pressed</td><td style="padding:8px; border:1px solid #ddd;">Otpustite crvenu gljivu na kontrolnom ormaru.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Weight scale error</td><td style="padding:8px; border:1px solid #ddd;">Kontaktirajte Pro Control.</td></tr>' +
+    '</table>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>⚠️ 8. Sigurnosne upute</h4>' +
+    '<ul>' +
+      '<li>Koristite zaštitnu masku, rukavice i naočale</li>' +
+      '<li>Pazite na rotirajuće dijelove</li>' +
+      '<li>Sustav je pod naponom - oprez!</li>' +
+      '<li>Ne otvarajte poklopce dok motori rade (sigurnosni senzori će isključiti pogon)</li>' +
+      '<li>Ne radite s filter stanicom dok pumpa radi</li>' +
+      '<li>Pneumatske pumpe mogu kratko raditi "na suho", ali izbjegavajte dulje periode</li>' +
+    '</ul>' +
+    '<div class="upute-danger">' +
+      '<div class="upute-danger-title">🚨 Hitni slučaj</div>' +
+      'U slučaju opasnosti pritisnite CRVENU GLJIVU na kontrolnom ormaru!' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📊 9. Statistika i kalibracija</h4>' +
+    '<ul>' +
+      '<li><strong>Stats stranica:</strong> Prikazuje zadnjih 20 ciklusa (datum, recept, težine)</li>' +
+      '<li><strong>Weight scale cal.:</strong> Kalibracija vage - slijedite upute na ekranu</li>' +
+      '<li><strong>RTC:</strong> Podešavanje datuma i vremena</li>' +
+      '<li><strong>Storage mix time:</strong> Vrijeme rada/pauze miješalica u spremnicima</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🔐 10. Pristup i lozinke</h4>' +
+    '<ul>' +
+      '<li><strong>Lozinka za puni pristup:</strong> <code style="background:#e0e0e0; padding:2px 8px; border-radius:4px;">5437</code></li>' +
+      '<li>Bez prijave nemate pristup promjeni parametara</li>' +
+      '<li>Pritisnite "Password" na glavnom ekranu za prijavu</li>' +
+      '<li>Pritisnite "Logout" za odjavu</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📞 11. Tehnička podrška</h4>' +
+    '<p><strong>Proizvođač:</strong> Pro Control - Marek Sadowski</p>' +
+    '<p><strong>Adresa:</strong> Małopolska 4, 75-393 Koszalin, Poljska</p>' +
+    '<p><strong>Email:</strong> <a href="mailto:m.sadowski@4dcontrol.pl">m.sadowski@4dcontrol.pl</a></p>' +
+  '</div>';
+}
+
+// ============================================
+// ENGLISH VERSION OF INSTRUCTIONS
+// ============================================
+function getDefaultUputeHTML_EN() {
+  return '<div class="upute-section">' +
+    '<h4>🚀 1. Quick Start - Daily Startup</h4>' +
+    '<ul>' +
+      '<li><strong>1.</strong> Check that valves are correctly open/closed according to the diagram</li>' +
+      '<li><strong>2.</strong> Open mixer hatch and verify it is empty</li>' +
+      '<li><strong>3.</strong> Turn on the main power switch (position 1)</li>' +
+      '<li><strong>4.</strong> Check for alarms on the HMI panel</li>' +
+      '<li><strong>5.</strong> Open <strong>Recipes</strong> page and check/enter recipe data</li>' +
+      '<li><strong>6.</strong> Open <strong>Parameters</strong> page and verify settings</li>' +
+      '<li><strong>7.</strong> Activate the desired recipe (R1, R2 or R3)</li>' +
+      '<li><strong>8.</strong> Turn on control voltage (Control Voltage button)</li>' +
+      '<li><strong>9.</strong> Turn on Auto mode</li>' +
+      '<li><strong>10.</strong> Press <strong>Start Process</strong></li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 Tip</div>' +
+      'After power-on, wait 20 seconds before starting the mixer motor.' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📋 2. Recipes (R1, R2, R3)</h4>' +
+    '<ul>' +
+      '<li><strong>Recipe 1:</strong> Glue goes to storage tank 1 (automatic)</li>' +
+      '<li><strong>Recipe 2:</strong> Glue goes to storage tank 2 (automatic)</li>' +
+      '<li><strong>Recipe 3:</strong> Glue stays in mixer (manual transfer)</li>' +
+    '</ul>' +
+    '<p style="margin-top:10px;"><strong>Recipe parameters:</strong></p>' +
+    '<ul>' +
+      '<li><strong>Water:</strong> Water amount (0-700 kg)</li>' +
+      '<li><strong>Powder:</strong> Powder/starch amount (0-500 kg)</li>' +
+      '<li><strong>Pre-mixing time:</strong> First mixing after powder dosing</li>' +
+      '<li><strong>Pause time:</strong> Pause after first mixing</li>' +
+      '<li><strong>Final mixing time:</strong> Final mixing</li>' +
+      '<li><strong>V mix:</strong> Mixing speed (0-100%)</li>' +
+      '<li><strong>Fine dossing:</strong> Amount for fine dosing (slower screw conveyor)</li>' +
+    '</ul>' +
+    '<div class="upute-warning">' +
+      '<div class="upute-warning-title">⚠️ Important</div>' +
+      'Active recipe has a GREEN button. Check which recipe is active before starting!' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🌡️ 3. Temperature-Based Mixing</h4>' +
+    '<ul>' +
+      '<li>Activate <strong>"Temperature based process stoppage"</strong> option on Recipes page</li>' +
+      '<li><strong>Min mixing time:</strong> Minimum mixing time</li>' +
+      '<li><strong>Max mixing time:</strong> Maximum time (if temperature not reached)</li>' +
+      '<li><strong>Set glue temperature:</strong> Desired glue temperature</li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 How it works</div>' +
+      'Mixing ends when glue reaches set temperature AND minimum time has passed. If temperature is not reached, it stops after maximum time.' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>⚙️ 4. Key Parameters</h4>' +
+    '<ul>' +
+      '<li><strong>Initial level storage 1/2:</strong> Level below which new mixing starts automatically (0-80%)</li>' +
+      '<li><strong>Transfer level storage 1/2:</strong> Level below which glue is transferred (10-50%)</li>' +
+      '<li><strong>Alarm level storage 1/2:</strong> Low level alarm threshold</li>' +
+      '<li><strong>Empty max weight:</strong> Maximum weight of "empty" mixer (0-50 kg)</li>' +
+      '<li><strong>Screw feeder delay:</strong> Screw conveyor delay</li>' +
+      '<li><strong>Water correction:</strong> Correction for water remaining in pipe</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🖐️ 5. Manual Control</h4>' +
+    '<ul>' +
+      '<li>Switch to <strong>Manual Mode</strong> for manual control</li>' +
+      '<li><strong>M1:</strong> Mixer motor</li>' +
+      '<li><strong>M2:</strong> Screw feeder</li>' +
+      '<li><strong>M3/M4:</strong> Storage tank 1/2 agitators (work in any mode)</li>' +
+      '<li><strong>M5/M6:</strong> Dosing pumps 1/2</li>' +
+      '<li><strong>P1:</strong> Mixer pump</li>' +
+      '<li><strong>P2/P3:</strong> Storage tank 1/2 pumps (work in any mode)</li>' +
+      '<li><strong>V1-V4:</strong> Valves</li>' +
+    '</ul>' +
+    '<div class="upute-warning">' +
+      '<div class="upute-warning-title">⚠️ Cancel Process</div>' +
+      'To cancel mixing: switch to Manual Mode → press "Cancel Mixing"' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🔧 6. Cleaning and Maintenance</h4>' +
+    '<ul>' +
+      '<li><strong>Mixer:</strong> Pour water, run mixer motor, or use pressure washer</li>' +
+      '<li><strong>Storage tanks:</strong> Pressure washer recommended (agitator is slow)</li>' +
+      '<li><strong>Pipes:</strong> Dose water into mixer and transfer manually with pump</li>' +
+      '<li><strong>Screw conveyor exit:</strong> Clean at least every 2 weeks</li>' +
+      '<li><strong>Silo:</strong> Close sliding metal sheet before cleaning!</li>' +
+    '</ul>' +
+    '<div class="upute-tip">' +
+      '<div class="upute-tip-title">💡 Filter Station</div>' +
+      'To clean/replace filter bag: 1) Slowly open valve to release pressure, 2) Unscrew nuts, 3) Remove and wash bag, 4) Reassemble and tighten firmly.' +
+    '</div>' +
+    '<p style="margin-top:10px;"><strong>Regular maintenance:</strong></p>' +
+    '<ul>' +
+      '<li>Every 6 months or 1000 hours: check gearbox oil and leaks</li>' +
+      '<li>Regularly drain condensate from pneumatic filter</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🚨 7. Common Alarms and Solutions</h4>' +
+    '<table style="width:100%; border-collapse:collapse; margin-top:10px;">' +
+      '<tr style="background:#f5f5f5;"><th style="padding:8px; border:1px solid #ddd; text-align:left;">Alarm</th><th style="padding:8px; border:1px solid #ddd; text-align:left;">Solution</th></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Inverter error (INV1-4)</td><td style="padding:8px; border:1px solid #ddd;">Check motor protection (F10-F13). Reset: switch off protection, wait for inverter to turn off, switch on.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">High level (mixer/tank)</td><td style="padding:8px; border:1px solid #ddd;">Clean sensor forks from glue residue.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Low level silo</td><td style="padding:8px; border:1px solid #ddd;">Refill powder in silo. Process will not start while alarm is active.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Water low pressure</td><td style="padding:8px; border:1px solid #ddd;">Check water supply and valve.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Pump works too long</td><td style="padding:8px; border:1px solid #ddd;">Check filter, pump patency and valve opening.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Hatch is open</td><td style="padding:8px; border:1px solid #ddd;">Close hatch and check safety sensor alignment (green LED = OK).</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Emergency button pressed</td><td style="padding:8px; border:1px solid #ddd;">Release the red mushroom button on control cabinet.</td></tr>' +
+      '<tr><td style="padding:8px; border:1px solid #ddd;">Weight scale error</td><td style="padding:8px; border:1px solid #ddd;">Contact Pro Control.</td></tr>' +
+    '</table>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>⚠️ 8. Safety Instructions</h4>' +
+    '<ul>' +
+      '<li>Wear protective mask, gloves and goggles</li>' +
+      '<li>Watch for rotating parts</li>' +
+      '<li>System is under voltage - caution!</li>' +
+      '<li>Do not open hatches while motors are running (safety sensors will cut power)</li>' +
+      '<li>Do not work on filter station while pump is running</li>' +
+      '<li>Pneumatic pumps can run dry briefly, but avoid longer periods</li>' +
+    '</ul>' +
+    '<div class="upute-danger">' +
+      '<div class="upute-danger-title">🚨 Emergency</div>' +
+      'In case of danger press the RED MUSHROOM BUTTON on the control cabinet!' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📊 9. Statistics and Calibration</h4>' +
+    '<ul>' +
+      '<li><strong>Stats page:</strong> Shows last 20 cycles (date, recipe, weights)</li>' +
+      '<li><strong>Weight scale cal.:</strong> Scale calibration - follow on-screen instructions</li>' +
+      '<li><strong>RTC:</strong> Date and time settings</li>' +
+      '<li><strong>Storage mix time:</strong> Agitator work/pause time in storage tanks</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>🔐 10. Access and Passwords</h4>' +
+    '<ul>' +
+      '<li><strong>Full access password:</strong> <code style="background:#e0e0e0; padding:2px 8px; border-radius:4px;">5437</code></li>' +
+      '<li>Without login you cannot change parameters</li>' +
+      '<li>Press "Password" on main screen to log in</li>' +
+      '<li>Press "Logout" to log out</li>' +
+    '</ul>' +
+  '</div>' +
+
+  '<div class="upute-section">' +
+    '<h4>📞 11. Technical Support</h4>' +
+    '<p><strong>Manufacturer:</strong> Pro Control - Marek Sadowski</p>' +
+    '<p><strong>Address:</strong> Małopolska 4, 75-393 Koszalin, Poland</p>' +
+    '<p><strong>Email:</strong> <a href="mailto:m.sadowski@4dcontrol.pl">m.sadowski@4dcontrol.pl</a></p>' +
+  '</div>';
+}
+
+// ============================================
+// LANGUAGE SWITCHING
+// ============================================
+var currentLanguage = localStorage.getItem('kuhinja_language') || 'hr';
+
+function switchLanguage(lang) {
+  currentLanguage = lang;
+  localStorage.setItem('kuhinja_language', lang);
+  
+  // Update button states
+  document.getElementById('langHR').classList.toggle('active', lang === 'hr');
+  document.getElementById('langEN').classList.toggle('active', lang === 'en');
+  
+  // Update title
+  var title = document.getElementById('uputeTitle');
+  if (lang === 'hr') {
+    title.textContent = '📖 Upute za korištenje kuhinje za ljepilo';
+  } else {
+    title.textContent = '📖 Glue Kitchen Operating Instructions';
+  }
+  
+  // Update edit button text
+  var editBtn = document.getElementById('editUputeBtn');
+  if (editBtn) {
+    if (isEditingUpute) {
+      // Don't change if editing
+    } else {
+      editBtn.textContent = lang === 'hr' ? '✏️ Uredi' : '✏️ Edit';
+    }
+  }
+  
+  // Check if user has custom saved content for this language
+  var savedKey = lang === 'hr' ? 'kuhinja_upute_html_hr' : 'kuhinja_upute_html_en';
+  var saved = localStorage.getItem(savedKey);
+  
+  var viewArea = document.getElementById('uputeViewArea');
+  if (saved) {
+    viewArea.innerHTML = saved;
+  } else {
+    // Load default content for selected language
+    viewArea.innerHTML = lang === 'hr' ? getDefaultUputeHTML() : getDefaultUputeHTML_EN();
+  }
+  
+  showMessage(lang === 'hr' ? '🇭🇷 Jezik promijenjen na Hrvatski' : '🇬🇧 Language changed to English', 'info');
+}
+
+function initLanguage() {
+  // Set initial language state
+  var lang = localStorage.getItem('kuhinja_language') || 'hr';
+  document.getElementById('langHR').classList.toggle('active', lang === 'hr');
+  document.getElementById('langEN').classList.toggle('active', lang === 'en');
+  
+  // Update title based on saved language
+  var title = document.getElementById('uputeTitle');
+  if (title) {
+    if (lang === 'hr') {
+      title.textContent = '📖 Upute za korištenje kuhinje za ljepilo';
+    } else {
+      title.textContent = '📖 Glue Kitchen Operating Instructions';
+    }
+  }
+}
+
+// ============================================
+// SYSTEM INFO
+// ============================================
+function editSystemInfo() {
+  kuhinjaSettings = kuhinjaSettings || {};
+  
+  document.getElementById('editManufacturer').value = kuhinjaSettings.manufacturer || '';
+  document.getElementById('editModel').value = kuhinjaSettings.model || '';
+  document.getElementById('editSerial').value = kuhinjaSettings.serial || '';
+  document.getElementById('editIP').value = kuhinjaSettings.ip || '';
+  document.getElementById('editLastService').value = kuhinjaSettings.lastService || '';
+  document.getElementById('editSupplierName').value = kuhinjaSettings.supplierName || '';
+  document.getElementById('editSupplierPhone').value = kuhinjaSettings.supplierPhone || '';
+  
+  openModal('systemInfoModal');
+}
+
+function saveSystemInfo() {
+  kuhinjaSettings = kuhinjaSettings || {};
+  
+  kuhinjaSettings.manufacturer = document.getElementById('editManufacturer').value;
+  kuhinjaSettings.model = document.getElementById('editModel').value;
+  kuhinjaSettings.serial = document.getElementById('editSerial').value;
+  kuhinjaSettings.ip = document.getElementById('editIP').value;
+  kuhinjaSettings.lastService = document.getElementById('editLastService').value;
+  kuhinjaSettings.supplierName = document.getElementById('editSupplierName').value;
+  kuhinjaSettings.supplierPhone = document.getElementById('editSupplierPhone').value;
+  
+  saveSettings();
+  applySettings();
+  
+  // Update contacts table
+  var contactsTable = document.getElementById('supportContacts');
+  contactsTable.innerHTML = `
+    <tr>
+      <td>Dobavljač - tehnička podrška</td>
+      <td>${escapeHtml(kuhinjaSettings.supplierName || '-')}</td>
+      <td>${escapeHtml(kuhinjaSettings.supplierPhone || '-')}</td>
+    </tr>
+    <tr>
+      <td>Interno održavanje</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  `;
+  
+  closeModal('systemInfoModal');
+  showMessage('✅ Podaci spremljeni', 'success');
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('hr-HR');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Cleanup
+window.cleanupCurrentView = function() {
+  vncConnected = false;
+  console.log('🧹 Kuhinja cleanup');
+};
+
+// Auto-init
+initKuhinjaView();
+</script>

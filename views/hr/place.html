@@ -1,0 +1,1285 @@
+<h1 style="margin-bottom: 20px; color: var(--primary);">💰 Plaće</h1>
+
+<!-- TAB NAVIGACIJA -->
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('unos')">📝 Unos sati</button>
+    <button class="tab" onclick="switchTab('obracun')">🧮 Obračun</button>
+    <button class="tab" onclick="switchTab('postave')">👥 Po postavama</button>
+  </div>
+</div>
+
+<!-- ZAJEDNIČKI FILTRI -->
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Godina</label>
+      <select class="form-control" id="filterGodina" onchange="loadPayroll()"></select>
+    </div>
+    <div class="form-group">
+      <label>Mjesec</label>
+      <select class="form-control" id="filterMjesec" onchange="loadPayroll()"></select>
+    </div>
+    <div class="form-group" style="flex:2;">
+      <label>Fond sati: <strong id="displayFondSati">176</strong>h</label>
+      <div style="font-size: 12px; color: #666; margin-top: 5px;">
+        Min. plaća: <strong>970 €</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 1: UNOS SATI -->
+<!-- ============================================ -->
+<div id="tabUnos" class="tab-content active" style="display: block;">
+  <div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>📝 Unos sati - <span id="unosPeriod">-</span></span>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary btn-sm" onclick="copyFromLastMonth()">📋 Kopiraj prošli mjesec</button>
+        <button class="btn btn-success btn-sm" onclick="saveAllHours()">💾 Spremi sve</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="hours-table-wrapper">
+        <table class="hours-table" id="hoursTable">
+          <thead>
+            <tr>
+              <th class="sticky-col" style="min-width: 180px;">Djelatnik</th>
+              <th class="hour-col" title="Redovan rad">RR</th>
+              <th class="hour-col" title="Prekovremeni">P1D</th>
+              <th class="hour-col" title="Noćni rad">RNR</th>
+              <th class="hour-col" title="Praznik">RDP</th>
+              <th class="hour-col" title="Praznik noćni">RDC</th>
+              <th class="hour-col" title="Bolovanje">BOL</th>
+              <th class="hour-col" title="Nedjelja">RRV</th>
+              <th class="hour-col" title="Prekovremeni nedjelja">RPV</th>
+              <th class="hour-col" title="Prekovremeni noćni">RPN</th>
+              <th class="hour-col" title="Nedjelja noćni">RNN</th>
+              <th class="hour-col" title="Prekovremeni praznik">RPP</th>
+              <th class="hour-col" title="Plaćeni dopust">PD</th>
+              <th class="hour-col" title="Dolasci van RV (broj)">DVRV</th>
+              <th class="total-col">Ukupno</th>
+            </tr>
+            <tr class="koef-row">
+              <th></th>
+              <th>×1.00</th>
+              <th>×1.50</th>
+              <th>×1.30</th>
+              <th>×1.50</th>
+              <th>×1.80</th>
+              <th>×0.70</th>
+              <th>×1.50</th>
+              <th>×2.00</th>
+              <th>×1.80</th>
+              <th>×1.65</th>
+              <th>×1.80</th>
+              <th>×1.00</th>
+              <th>1%</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="hoursTableBody">
+            <tr><td colspan="15" class="empty-state">Učitavanje...</td></tr>
+          </tbody>
+          <tfoot id="hoursTableFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 2: OBRAČUN -->
+<!-- ============================================ -->
+<div id="tabObracun" class="tab-content" style="display: none;">
+  <!-- Akcije -->
+  <div class="card" style="margin-bottom: 15px;">
+    <div class="form-row">
+      <button class="btn btn-primary" onclick="calculateAll()">🧮 Izračunaj sve</button>
+      <button class="btn btn-success" onclick="odobriSve()">✅ Odobri sve</button>
+      <button class="btn btn-info" onclick="exportPayroll()">📥 Export CSV</button>
+    </div>
+  </div>
+  
+  <!-- KPI -->
+  <div class="status-grid" style="margin-bottom: 20px;">
+    <div class="status-card">
+      <div class="status-card-value" id="kpiBrojDjelatnika">0</div>
+      <div class="status-card-label">Djelatnika</div>
+    </div>
+    <div class="status-card info">
+      <div class="status-card-value" id="kpiUkupnoBruto">0 €</div>
+      <div class="status-card-label">Ukupno bruto</div>
+    </div>
+    <div class="status-card success">
+      <div class="status-card-value" id="kpiUkupnoNeto">0 €</div>
+      <div class="status-card-label">Ukupno neto</div>
+    </div>
+    <div class="status-card warning">
+      <div class="status-card-value" id="kpiUkupnoIsplata">0 €</div>
+      <div class="status-card-label">Ukupno za isplatu</div>
+    </div>
+  </div>
+  
+  <!-- Tablica obračuna -->
+  <div class="card">
+    <div class="card-header">
+      Obračun plaća - <span id="headerPeriod">-</span>
+    </div>
+    <div class="card-body">
+      <div class="form-row" style="margin-bottom: 15px;">
+        <div class="form-group">
+          <input type="text" class="form-control" id="searchPayroll" placeholder="Pretraži djelatnika..." oninput="filterPayroll()">
+        </div>
+        <div class="form-group">
+          <select class="form-control" id="filterStatus" onchange="filterPayroll()">
+            <option value="">Svi statusi</option>
+            <option value="draft">Nacrt</option>
+            <option value="calculated">Izračunato</option>
+            <option value="approved">Odobreno</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+            <tr>
+              <th>Djelatnik</th>
+              <th>Tim</th>
+              <th>Koef.</th>
+              <th>Sati</th>
+              <th style="text-align: right;">Bruto</th>
+              <th style="text-align: right;">Neto</th>
+              <th style="text-align: right;">Dodaci</th>
+              <th style="text-align: right;">Za isplatu</th>
+              <th>Status</th>
+              <th>Akcije</th>
+            </tr>
+          </thead>
+          <tbody id="payrollTableBody">
+            <tr><td colspan="10" class="empty-state">Učitavanje...</td></tr>
+          </tbody>
+          <tfoot id="payrollTableFoot" style="background: #f8f9fa; font-weight: bold;"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 3: PO POSTAVAMA -->
+<!-- ============================================ -->
+<div id="tabPostave" class="tab-content" style="display: none;">
+  <div class="card" style="margin-bottom: 15px;">
+    <div class="form-row">
+      <div class="form-group" style="flex: 2;">
+        <label>Filtriraj postavu</label>
+        <select class="form-control" id="filterPostava" onchange="filterByPostava()">
+          <option value="">-- Sve postave --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-info" onclick="exportByTeam()">📥 Export po timu</button>
+      </div>
+    </div>
+  </div>
+  <div id="postaveResults"></div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL PLATNA LISTA -->
+<!-- ============================================ -->
+<div class="modal" id="payslipModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 id="payslipTitle">📄 Platna lista</h2>
+      <span class="modal-close" onclick="closeModal('payslipModal')">&times;</span>
+    </div>
+    <div class="modal-body" id="payslipContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('payslipModal')">Zatvori</button>
+      <button class="btn btn-info" onclick="printPayslip()">🖨️ Ispis</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Tab styles */
+.tabs-container { margin-bottom: 20px; }
+.tabs { display: flex; gap: 5px; border-bottom: 2px solid #e0e0e0; padding-bottom: 0; }
+.tab {
+  padding: 12px 24px;
+  border: none;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s;
+  color: #666;
+}
+.tab:hover { background: #e8e8e8; }
+.tab.active {
+  background: var(--primary);
+  color: white;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Hours table */
+.hours-table-wrapper {
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+.hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.hours-table th, .hours-table td {
+  border: 1px solid #ddd;
+  padding: 6px 4px;
+  text-align: center;
+}
+.hours-table thead {
+  position: sticky;
+  top: 0;
+  background: #1e3a5f;
+  color: white;
+  z-index: 10;
+}
+.hours-table thead th { font-weight: 500; }
+.koef-row { background: #2e5a8f !important; }
+.koef-row th { font-size: 10px; font-weight: normal; padding: 2px; }
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background: #1e3a5f;
+  z-index: 5;
+  text-align: left !important;
+  padding-left: 10px !important;
+}
+.hours-table tbody .sticky-col {
+  background: white;
+  font-weight: 500;
+}
+.hours-table tbody tr:nth-child(even) .sticky-col { background: #f9f9f9; }
+
+.hour-col { width: 55px; }
+.total-col { width: 70px; background: #e8f5e9 !important; font-weight: bold; }
+
+.hours-table input {
+  width: 50px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+}
+.hours-table input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #e3f2fd;
+}
+.hours-table input.has-value { background: #e8f5e9; }
+.hours-table input.warning { background: #fff3e0; border-color: #ff9800; }
+
+.hours-table tfoot {
+  position: sticky;
+  bottom: 0;
+  background: #f5f5f5;
+  font-weight: bold;
+}
+.hours-table tfoot td { border-top: 2px solid #1e3a5f; }
+
+/* Postave cards */
+.postava-card {
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.postava-header {
+  background: linear-gradient(135deg, #1e3a5f, #2e5a8f);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.postava-header h3 { margin: 0; font-size: 16px; }
+.postava-stats { display: flex; gap: 20px; font-size: 14px; }
+.postava-body { padding: 0; }
+.postava-body table { margin: 0; }
+
+/* Status badges */
+.badge-draft { background: #9e9e9e; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+.badge-calculated { background: #2196f3; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+.badge-approved { background: #4caf50; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+
+/* Payslip */
+.payslip-section { margin-bottom: 20px; }
+.payslip-section h4 { color: var(--primary); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--primary); font-size: 0.95em; }
+.payslip-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+.payslip-row.total { font-weight: 700; font-size: 1.1em; background: #e8f5e9; padding: 12px; margin: 10px -10px; border-radius: 8px; }
+.payslip-row.deduction { color: #c62828; }
+
+/* Kompaktne platne liste po postavama */
+.postava-section { margin-bottom: 30px; }
+.postava-header-full {
+  background: linear-gradient(135deg, #1e3a5f, #2e5a8f);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.postava-header-full h2 { margin: 0; font-size: 18px; }
+.postava-summary { display: flex; gap: 15px; font-size: 13px; flex-wrap: wrap; }
+.postava-summary .sum-bruto { color: #90caf9; }
+.postava-summary .sum-neto { color: #a5d6a7; }
+.postava-summary .sum-isplata { color: #fff59d; font-weight: bold; }
+
+.payslip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 0 0 10px 10px;
+}
+
+.mini-payslip {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  font-size: 12px;
+}
+.mini-payslip-header {
+  background: #1e3a5f;
+  color: white;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mini-payslip-header strong { font-size: 12px; }
+.koef-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+.mini-payslip-body { padding: 8px 10px; }
+.mini-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.mini-row:last-child { border-bottom: none; }
+.mini-row.deduction { color: #c62828; font-size: 11px; }
+.mini-row.neto { font-weight: 600; color: #1565c0; }
+.mini-payslip-footer {
+  background: #e8f5e9;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+.mini-payslip-footer span:first-child { font-size: 10px; color: #666; }
+.total-amount { color: #2e7d32; font-size: 14px; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+@media (max-width: 768px) {
+  .tabs { flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 100px; text-align: center; }
+}
+</style>
+
+<script>
+// ============================================
+// PLACE MODUL - GLOBALNE VARIJABLE
+// ============================================
+
+// Fallback za MJESECI
+if (typeof MJESECI === 'undefined') {
+  window.MJESECI = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj',
+                    'Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+}
+
+// Fallback za utility funkcije
+if (typeof showLoading === 'undefined') window.showLoading = (msg) => console.log('Loading:', msg);
+if (typeof hideLoading === 'undefined') window.hideLoading = () => {};
+if (typeof showMessage === 'undefined') window.showMessage = (msg, type) => { alert(msg); };
+
+// Varijable specifične za PLACE modul (var dopušta redeklaraciju)
+var placeEmps = [];
+var placePayroll = [];
+var placeBonuses = [];
+var placeFiltered = [];
+var placeSettings = {};
+var placeMonthlyHours = {};
+var placeHourTypes = [];
+var placeEdits = {};
+
+// Koristi var umjesto const da izbjegne grešku pri ponovnom učitavanju
+var HOUR_CODES = HOUR_CODES || ['RR','P1D','RNR','RDP','RDC','BOL','RRV','RPV','RPN','RNN','RPP','PD','DVRV'];
+var KOEF = KOEF || {
+  RR: 1.00, P1D: 1.50, RNR: 1.30, RDP: 1.50, RDC: 1.80, BOL: 0.70,
+  RRV: 1.50, RPV: 2.00, RPN: 1.80, RNN: 1.65, RPP: 1.80, PD: 1.00, DVRV: 0
+};
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+console.log('💰 PlaceView učitan!');
+
+async function initPlaceView() {
+  initSelectors();
+  await loadSettings();
+  await loadMonthlyHours();
+  await loadHourTypes();
+  await loadPayroll();
+}
+
+function initSelectors() {
+  const monthSelect = document.getElementById('filterMjesec');
+  const yearSelect = document.getElementById('filterGodina');
+  const now = new Date();
+  
+  MJESECI.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = m;
+    if (i === now.getMonth()) opt.selected = true;
+    monthSelect.appendChild(opt);
+  });
+  
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 2; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+}
+
+initPlaceView();
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchTab(tabName) {
+  // Ukloni active sa svih tabova i sadržaja
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.remove('active');
+    c.style.display = 'none';
+  });
+  
+  // Aktiviraj odgovarajući tab button
+  const tabs = document.querySelectorAll('.tab');
+  if (tabName === 'unos') tabs[0].classList.add('active');
+  else if (tabName === 'obracun') tabs[1].classList.add('active');
+  else if (tabName === 'postave') tabs[2].classList.add('active');
+  
+  // Prikaži odgovarajući sadržaj
+  if (tabName === 'unos') {
+    document.getElementById('tabUnos').classList.add('active');
+    document.getElementById('tabUnos').style.display = 'block';
+  } else if (tabName === 'obracun') {
+    document.getElementById('tabObracun').classList.add('active');
+    document.getElementById('tabObracun').style.display = 'block';
+    filterPayroll();
+  } else if (tabName === 'postave') {
+    document.getElementById('tabPostave').classList.add('active');
+    document.getElementById('tabPostave').style.display = 'block';
+    renderPostaveTab();
+  }
+}
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function loadSettings() {
+  try {
+    if (typeof initSupabase === 'undefined') {
+      console.error('❌ initSupabase nije definiran!');
+      return;
+    }
+    const { data } = await initSupabase().from('settings').select('*');
+    (data || []).forEach(s => { placeSettings[s.key] = isNaN(parseFloat(s.value)) ? s.value : parseFloat(s.value); });
+    console.log('⚙️ Settings:', Object.keys(placeSettings).length);
+  } catch (e) { console.error('Greška placeSettings:', e); }
+}
+
+async function loadMonthlyHours() {
+  try {
+    const { data } = await initSupabase().from('monthly_hours').select('*');
+    (data || []).forEach(h => { placeMonthlyHours[`${h.year}-${h.month}`] = h.working_hours; });
+    console.log('📅 Monthly hours:', Object.keys(placeMonthlyHours).length);
+  } catch (e) { console.error('Greška monthly_hours:', e); }
+}
+
+async function loadHourTypes() {
+  try {
+    const { data } = await initSupabase().from('hour_types').select('*').order('sort_order');
+    placeHourTypes = data || [];
+    placeHourTypes.forEach(h => { KOEF[h.code] = parseFloat(h.coefficient) || 1; });
+    console.log('⏱️ Hour types:', placeHourTypes.length);
+  } catch (e) { console.error('Greška hour_types:', e); }
+}
+
+async function loadPayroll() {
+  const godina = document.getElementById('filterGodina').value;
+  const mjesec = document.getElementById('filterMjesec').value;
+  const fondSati = placeMonthlyHours[`${godina}-${mjesec}`] || 176;
+  
+  document.getElementById('displayFondSati').textContent = fondSati;
+  document.getElementById('headerPeriod').textContent = `${MJESECI[mjesec-1]} ${godina}`;
+  document.getElementById('unosPeriod').textContent = `${MJESECI[mjesec-1]} ${godina}`;
+  
+  try {
+    showLoading('Učitavanje...');
+    
+    const { data: emps } = await initSupabase()
+      .from('employees')
+      .select('*')
+      .eq('active', true)
+      .order('last_name');
+    placeEmps = emps || [];
+    
+    const { data: payroll } = await initSupabase()
+      .from('payroll')
+      .select('*')
+      .eq('year', parseInt(godina))
+      .eq('month', parseInt(mjesec));
+    placePayroll = payroll || [];
+    
+    const { data: bonuses } = await initSupabase()
+      .from('bonuses')
+      .select('*')
+      .eq('year', parseInt(godina))
+      .eq('month', parseInt(mjesec));
+    placeBonuses = bonuses || [];
+    
+    placeEdits = {};
+    
+    renderHoursTable();
+    filterPayroll();
+    populatePostavaFilter();
+    
+    // Ako je Po postavama tab aktivan, osvježi ga
+    if (document.getElementById('tabPostave').classList.contains('active')) {
+      renderPostaveTab();
+    }
+    
+    console.log(`💰 Učitano: ${placeEmps.length} djelatnika, ${placePayroll.length} payroll`);
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// TAB 1: UNOS SATI
+// ============================================
+function renderHoursTable() {
+  const tbody = document.getElementById('hoursTableBody');
+  const tfoot = document.getElementById('hoursTableFoot');
+  const fondSati = parseInt(document.getElementById('displayFondSati').textContent) || 176;
+  
+  if (placeEmps.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="15" class="empty-state">Nema djelatnika</td></tr>';
+    return;
+  }
+  
+  const totals = {};
+  HOUR_CODES.forEach(c => totals[c] = 0);
+  
+  tbody.innerHTML = placeEmps.map(emp => {
+    const payroll = placePayroll.find(p => p.employee_id === emp.id);
+    const hours = payroll?.hours_breakdown || {};
+    
+    // Prekovremeni sati - jedini koji se DODAJU na fond
+    const prekovremeni = ['P1D', 'RPV', 'RPN', 'RPP'];
+    
+    // Izračunaj ukupno = RR + prekovremeni
+    const rrVal = parseFloat(hours.RR) || 0;
+    let rowTotal = rrVal;
+    prekovremeni.forEach(code => {
+      rowTotal += parseFloat(hours[code]) || 0;
+    });
+    
+    // Totali za footer (sve sate zbrajamo za statistiku)
+    HOUR_CODES.forEach(code => {
+      const val = parseFloat(hours[code]) || 0;
+      totals[code] += val;
+    });
+    
+    const warningClass = rrVal > fondSati ? 'warning' : '';
+    
+    return `
+      <tr data-emp-id="${emp.id}">
+        <td class="sticky-col">${emp.last_name} ${emp.first_name}</td>
+        ${HOUR_CODES.map(code => {
+          const val = hours[code] || '';
+          const hasVal = val !== '' && val !== 0 ? 'has-value' : '';
+          const warn = code === 'RR' ? warningClass : '';
+          return `<td><input type="number" class="${hasVal} ${warn}" value="${val}" 
+                    data-code="${code}" min="0" step="1" 
+                    onchange="onHourChange('${emp.id}', '${code}', this.value)"></td>`;
+        }).join('')}
+        <td class="total-col" id="total-${emp.id}">${rowTotal}h</td>
+      </tr>
+    `;
+  }).join('');
+  
+  // Grand total = suma RR + suma prekovremenih
+  const prekovremeniCodes = ['P1D', 'RPV', 'RPN', 'RPP'];
+  let grandTotal = totals['RR'] || 0;
+  prekovremeniCodes.forEach(c => { grandTotal += totals[c] || 0; });
+  
+  tfoot.innerHTML = `
+    <tr>
+      <td class="sticky-col"><strong>UKUPNO</strong></td>
+      ${HOUR_CODES.map(code => `<td><strong>${totals[code] || 0}</strong></td>`).join('')}
+      <td class="total-col"><strong>${grandTotal}h</strong></td>
+    </tr>
+  `;
+}
+
+function onHourChange(empId, code, value) {
+  const val = parseFloat(value) || 0;
+  
+  if (!placeEdits[empId]) placeEdits[empId] = {};
+  placeEdits[empId][code] = val;
+  
+  const input = document.querySelector(`tr[data-emp-id="${empId}"] input[data-code="${code}"]`);
+  if (input) {
+    input.classList.toggle('has-value', val > 0);
+    if (code === 'RR') {
+      const fondSati = parseInt(document.getElementById('displayFondSati').textContent) || 176;
+      input.classList.toggle('warning', val > fondSati);
+    }
+  }
+  
+  updateRowTotal(empId);
+}
+
+function updateRowTotal(empId) {
+  const row = document.querySelector(`tr[data-emp-id="${empId}"]`);
+  if (!row) return;
+  
+  // Prekovremeni sati - jedini koji se DODAJU na RR
+  const prekovremeni = ['P1D', 'RPV', 'RPN', 'RPP'];
+  
+  // Ukupno = RR + prekovremeni
+  const rrInput = row.querySelector('input[data-code="RR"]');
+  let total = parseFloat(rrInput?.value) || 0;
+  
+  prekovremeni.forEach(code => {
+    const input = row.querySelector(`input[data-code="${code}"]`);
+    total += parseFloat(input?.value) || 0;
+  });
+  
+  document.getElementById(`total-${empId}`).textContent = `${total}h`;
+}
+
+async function saveAllHours() {
+  const godina = parseInt(document.getElementById('filterGodina').value);
+  const mjesec = parseInt(document.getElementById('filterMjesec').value);
+  const fondSati = placeMonthlyHours[`${godina}-${mjesec}`] || 176;
+  
+  try {
+    showLoading('Spremam sate...');
+    let saved = 0;
+    
+    for (const emp of placeEmps) {
+      const row = document.querySelector(`tr[data-emp-id="${emp.id}"]`);
+      if (!row) continue;
+      
+      const hours = {};
+      let hasAny = false;
+      
+      HOUR_CODES.forEach(code => {
+        const input = row.querySelector(`input[data-code="${code}"]`);
+        const val = parseFloat(input?.value) || 0;
+        if (val > 0) {
+          hours[code] = val;
+          hasAny = true;
+        }
+      });
+      
+      if (!hasAny) continue;
+      
+      const existing = placePayroll.find(p => p.employee_id === emp.id);
+      
+      if (existing) {
+        await initSupabase().from('payroll')
+          .update({ hours_breakdown: hours, fond_sati: fondSati, status: 'draft' })
+          .eq('id', existing.id);
+      } else {
+        await initSupabase().from('payroll').insert({
+          employee_id: emp.id,
+          year: godina,
+          month: mjesec,
+          hours_breakdown: hours,
+          fond_sati: fondSati,
+          status: 'draft'
+        });
+      }
+      saved++;
+    }
+    
+    placeEdits = {};
+    await loadPayroll();
+    showMessage(`Spremljeno ${saved} zapisa!`, 'success');
+    
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function copyFromLastMonth() {
+  const godina = parseInt(document.getElementById('filterGodina').value);
+  const mjesec = parseInt(document.getElementById('filterMjesec').value);
+  
+  let prevYear = godina, prevMonth = mjesec - 1;
+  if (prevMonth < 1) { prevMonth = 12; prevYear--; }
+  
+  try {
+    showLoading('Kopiram prošli mjesec...');
+    
+    const { data: prevPayroll } = await initSupabase()
+      .from('payroll')
+      .select('employee_id, hours_breakdown')
+      .eq('year', prevYear)
+      .eq('month', prevMonth);
+    
+    if (!prevPayroll || prevPayroll.length === 0) {
+      showMessage('Nema podataka za prošli mjesec!', 'warning');
+      return;
+    }
+    
+    prevPayroll.forEach(pp => {
+      if (!pp.hours_breakdown) return;
+      const row = document.querySelector(`tr[data-emp-id="${pp.employee_id}"]`);
+      if (!row) return;
+      
+      HOUR_CODES.forEach(code => {
+        const input = row.querySelector(`input[data-code="${code}"]`);
+        if (input && pp.hours_breakdown[code]) {
+          input.value = pp.hours_breakdown[code];
+          input.classList.add('has-value');
+          onHourChange(pp.employee_id, code, pp.hours_breakdown[code]);
+        }
+      });
+    });
+    
+    showMessage(`Kopirano ${prevPayroll.length} zapisa. Klikni "Spremi sve" za spremanje.`, 'info');
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// TAB 2: OBRAČUN
+// ============================================
+function filterPayroll() {
+  const search = (document.getElementById('searchPayroll')?.value || '').toLowerCase();
+  const status = document.getElementById('filterStatus')?.value || '';
+  
+  placeFiltered = placeEmps.map(emp => {
+    const payroll = placePayroll.find(p => p.employee_id === emp.id) || {};
+    const bonus = placeBonuses.find(b => b.employee_id === emp.id) || {};
+    return { ...emp, payroll, bonus };
+  });
+  
+  placeFiltered = placeFiltered.filter(e => {
+    const fullName = `${e.first_name} ${e.last_name}`.toLowerCase();
+    const matchSearch = !search || fullName.includes(search);
+    const matchStatus = !status || (e.payroll.status === status);
+    return matchSearch && matchStatus;
+  });
+  
+  renderPayrollTable();
+  updateKPIs();
+}
+
+function renderPayrollTable() {
+  const tbody = document.getElementById('payrollTableBody');
+  const tfoot = document.getElementById('payrollTableFoot');
+  
+  if (placeFiltered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Nema podataka</td></tr>';
+    tfoot.innerHTML = '';
+    return;
+  }
+  
+  let sumBruto = 0, sumNeto = 0, sumIsplata = 0;
+  
+  tbody.innerHTML = placeFiltered.map(e => {
+    const p = e.payroll;
+    const b = e.bonus;
+    
+    const transport = parseFloat(p.transport_allowance) || 0;
+    const iznosDVRV = parseFloat(p.iznos_dolasci_van_rv) || 0;
+    const prodBonus = parseFloat(b.productivity_bonus_eur) || parseFloat(p.productivity_bonus_eur) || 0;
+    const dodaci = transport + iznosDVRV + prodBonus;
+    
+    const bruto = parseFloat(p.gross_salary) || 0;
+    const neto = parseFloat(p.net_salary) || 0;
+    const isplata = parseFloat(p.total_payment) || 0;
+    
+    sumBruto += bruto;
+    sumNeto += neto;
+    sumIsplata += isplata;
+    
+    const statusBadge = p.status ? `<span class="badge-${p.status}">${p.status}</span>` : '-';
+    const totalHours = p.total_hours || 0;
+    
+    return `
+      <tr>
+        <td><strong>${e.last_name} ${e.first_name}</strong></td>
+        <td>${e.team_name || '-'}${e.linija ? ` <small style="color:#666;">(${e.linija})</small>` : ''}</td>
+        <td style="text-align:center;">${e.coefficient || 1}</td>
+        <td style="text-align:center;">${totalHours}h</td>
+        <td style="text-align:right;">${bruto.toFixed(2)} €</td>
+        <td style="text-align:right;">${neto.toFixed(2)} €</td>
+        <td style="text-align:right;">${dodaci.toFixed(2)} €</td>
+        <td style="text-align:right;font-weight:bold;color:#2e7d32;">${isplata.toFixed(2)} €</td>
+        <td>${statusBadge}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="calculateOne('${e.id}')" title="Izračunaj">🧮</button>
+          <button class="btn btn-info btn-sm" onclick="showPayslip('${e.id}')" title="Platna lista" ${!p.id ? 'disabled' : ''}>📄</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  tfoot.innerHTML = `
+    <tr>
+      <td colspan="4">UKUPNO (${placeFiltered.length} djelatnika)</td>
+      <td style="text-align:right;">${sumBruto.toFixed(2)} €</td>
+      <td style="text-align:right;">${sumNeto.toFixed(2)} €</td>
+      <td></td>
+      <td style="text-align:right;color:#2e7d32;">${sumIsplata.toFixed(2)} €</td>
+      <td colspan="2"></td>
+    </tr>
+  `;
+}
+
+function updateKPIs() {
+  // Null check - elementi postoje samo na Obračun tabu
+  const kpiBroj = document.getElementById('kpiBrojDjelatnika');
+  const kpiBruto = document.getElementById('kpiUkupnoBruto');
+  const kpiNeto = document.getElementById('kpiUkupnoNeto');
+  const kpiIsplata = document.getElementById('kpiUkupnoIsplata');
+  
+  // Ako bilo koji element ne postoji, izađi
+  if (!kpiBroj || !kpiBruto || !kpiNeto || !kpiIsplata) return;
+  
+  let bruto = 0, neto = 0, isplata = 0;
+  
+  placeFiltered.forEach(e => {
+    bruto += parseFloat(e.payroll.gross_salary) || 0;
+    neto += parseFloat(e.payroll.net_salary) || 0;
+    isplata += parseFloat(e.payroll.total_payment) || 0;
+  });
+  
+  kpiBroj.textContent = placeFiltered.length;
+  kpiBruto.textContent = bruto.toFixed(2) + ' €';
+  kpiNeto.textContent = neto.toFixed(2) + ' €';
+  kpiIsplata.textContent = isplata.toFixed(2) + ' €';
+}
+
+// ============================================
+// IZRAČUN PLAĆE
+// ============================================
+function calculateSalary(emp, hours) {
+  const godina = document.getElementById('filterGodina').value;
+  const mjesec = document.getElementById('filterMjesec').value;
+  const fondSati = placeMonthlyHours[`${godina}-${mjesec}`] || 176;
+  
+  const minPlaca = placeSettings.MINIMALNA_PLACA || 970;
+  const koef = emp.coefficient || 1;
+  const baseSalary = minPlaca * koef;
+  const hourlyRate = baseSalary / fondSati;
+  
+  const oduzimiOdRR = ['RNR','RDP','RDC','RRV','RNN','BOL','PD'];
+  const prekovremeni = ['P1D','RPV','RPN','RPP'];
+  
+  let satiZaOduzeti = 0, satiPrekovremeni = 0;
+  oduzimiOdRR.forEach(code => { satiZaOduzeti += parseFloat(hours[code]) || 0; });
+  prekovremeni.forEach(code => { satiPrekovremeni += parseFloat(hours[code]) || 0; });
+  
+  const uneseniRR = parseFloat(hours.RR) || 0;
+  const efektivniRR = Math.max(0, uneseniRR - satiZaOduzeti);
+  const totalHours = efektivniRR + satiZaOduzeti + satiPrekovremeni;
+  
+  let grossSalary = efektivniRR * hourlyRate;
+  oduzimiOdRR.forEach(code => { grossSalary += (parseFloat(hours[code]) || 0) * hourlyRate * (KOEF[code] || 1); });
+  prekovremeni.forEach(code => { grossSalary += (parseFloat(hours[code]) || 0) * hourlyRate * (KOEF[code] || 1); });
+  
+  const mio1 = grossSalary * (placeSettings.MIO_1_STUP || 0.15);
+  const mio2 = grossSalary * (placeSettings.MIO_2_STUP || 0.05);
+  const dohodak = grossSalary - mio1 - mio2;
+  
+  const children = emp.children_count || 0;
+  let personalDeduction = placeSettings[`OSOBNI_ODBITAK_${children === 0 ? '0_DJECE' : children === 1 ? '1_DIJETE' : children + '_DJECE'}`] || 600;
+  if (children >= 4) personalDeduction = placeSettings.OSOBNI_ODBITAK_4_DJECE || 2760;
+  
+  const taxBase = Math.max(0, dohodak - personalDeduction);
+  
+  let incomeTax = 0, surtax = 0;
+  if (emp.tax_rate_override && emp.tax_rate_override > 0) {
+    incomeTax = taxBase * (emp.tax_rate_override / 100);
+  } else {
+    const prag = (placeSettings.POREZ_PRAG_GODISNJI || 50400) / 12;
+    incomeTax = taxBase <= prag ? taxBase * 0.20 : prag * 0.20 + (taxBase - prag) * 0.30;
+    surtax = incomeTax * ((emp.surtax_rate || 0) / 100);
+  }
+  
+  const netSalary = dohodak - incomeTax - surtax;
+  const transport = emp.transport_allowance || 0;
+  const dolasciVanRV = hours.DVRV || 0;
+  const iznosDVRV = (emp.average_net_salary || 0) * 0.01 * dolasciVanRV;
+  
+  const bonus = placeBonuses.find(b => b.employee_id === emp.id) || {};
+  const totalBonusEur = (bonus.manual_bonus_eur || 0) + (bonus.productivity_bonus_eur || 0);
+  
+  const totalPayment = netSalary + transport + iznosDVRV + totalBonusEur;
+  
+  return {
+    total_hours: totalHours, fond_sati: fondSati, gross_salary: grossSalary,
+    mio_1: mio1, mio_2: mio2, personal_deduction: personalDeduction,
+    tax_base: taxBase, income_tax: incomeTax, surtax: surtax,
+    surtax_rate: emp.tax_rate_override || (emp.surtax_rate || 0),
+    net_salary: netSalary, transport_allowance: transport,
+    dolasci_van_rv: dolasciVanRV, iznos_dolasci_van_rv: iznosDVRV,
+    productivity_bonus_eur: bonus.productivity_bonus_eur || 0,
+    total_payment: totalPayment
+  };
+}
+
+async function calculateOne(empId, showMsg = true) {
+  const emp = placeEmps.find(e => e.id === empId);
+  const payroll = placePayroll.find(p => p.employee_id === empId);
+  
+  if (!payroll?.hours_breakdown || Object.keys(payroll.hours_breakdown).length === 0) {
+    if (showMsg) showMessage('Najprije unesite sate!', 'warning');
+    return;
+  }
+  
+  const result = calculateSalary(emp, payroll.hours_breakdown);
+  
+  try {
+    await initSupabase().from('payroll').update({ ...result, status: 'calculated' }).eq('id', payroll.id);
+    if (showMsg) { showMessage(`Izračunato za ${emp.first_name} ${emp.last_name}`, 'success'); await loadPayroll(); }
+  } catch (e) { showMessage('Greška: ' + e.message, 'error'); }
+}
+
+async function calculateAll() {
+  const toCalc = placeEmps.filter(emp => {
+    const p = placePayroll.find(pr => pr.employee_id === emp.id);
+    return p?.hours_breakdown && Object.keys(p.hours_breakdown).length > 0;
+  });
+  
+  if (toCalc.length === 0) { showMessage('Nema djelatnika sa unesenim satima!', 'warning'); return; }
+  
+  try {
+    showLoading(`Izračunavam ${toCalc.length} plaća...`);
+    for (const emp of toCalc) await calculateOne(emp.id, false);
+    await loadPayroll();
+    showMessage(`Izračunato ${toCalc.length} plaća!`, 'success');
+  } finally { hideLoading(); }
+}
+
+async function odobriSve() {
+  const toApprove = placePayroll.filter(p => p.status === 'calculated');
+  if (toApprove.length === 0) { showMessage('Nema izračunatih plaća za odobrenje!', 'warning'); return; }
+  
+  try {
+    showLoading('Odobravam...');
+    for (const p of toApprove) {
+      await initSupabase().from('payroll').update({ status: 'approved' }).eq('id', p.id);
+    }
+    await loadPayroll();
+    showMessage(`Odobreno ${toApprove.length} plaća!`, 'success');
+  } finally { hideLoading(); }
+}
+
+// ============================================
+// TAB 3: PO POSTAVAMA
+// ============================================
+function populatePostavaFilter() {
+  const filter = document.getElementById('filterPostava');
+  const teams = [...new Set(placeEmps.map(e => e.team_name).filter(t => t))].sort();
+  
+  filter.innerHTML = '<option value="">-- Sve postave --</option>';
+  teams.forEach(t => { filter.innerHTML += `<option value="${t}">${t}</option>`; });
+}
+
+function renderPostaveTab() {
+  const container = document.getElementById('postaveResults');
+  const selectedTeam = document.getElementById('filterPostava').value;
+  
+  // Ako je odabrana postava, prikaži samo nju
+  const teams = selectedTeam 
+    ? [selectedTeam] 
+    : [...new Set(placeEmps.map(e => e.team_name).filter(t => t))].sort();
+  
+  const month = document.getElementById('filterMjesec').value;
+  const year = document.getElementById('filterGodina').value;
+  const periodLabel = `${MJESECI[month-1]} ${year}`;
+  
+  let html = '';
+  
+  teams.forEach(team => {
+    const teamEmps = placeEmps.filter(e => e.team_name === team);
+    const teamPayroll = placePayroll.filter(p => teamEmps.some(e => e.id === p.employee_id));
+    
+    let sumBruto = 0, sumNeto = 0, sumIsplata = 0;
+    teamPayroll.forEach(p => {
+      sumBruto += parseFloat(p.gross_salary) || 0;
+      sumNeto += parseFloat(p.net_salary) || 0;
+      sumIsplata += parseFloat(p.total_payment) || 0;
+    });
+    
+    html += `
+      <div class="postava-section">
+        <div class="postava-header-full">
+          <h2>${team}</h2>
+          <div class="postava-summary">
+            <span>👥 ${teamEmps.length} djelatnika</span>
+            <span>📅 ${periodLabel}</span>
+            <span class="sum-bruto">Bruto: ${sumBruto.toFixed(2)} €</span>
+            <span class="sum-neto">Neto: ${sumNeto.toFixed(2)} €</span>
+            <span class="sum-isplata">Za isplatu: ${sumIsplata.toFixed(2)} €</span>
+          </div>
+        </div>
+        <div class="payslip-grid">
+          ${teamEmps.map(emp => {
+            const p = teamPayroll.find(pr => pr.employee_id === emp.id) || {};
+            const b = placeBonuses.find(bo => bo.employee_id === emp.id) || {};
+            const transport = parseFloat(p.transport_allowance) || 0;
+            const iznosDVRV = parseFloat(p.iznos_dolasci_van_rv) || 0;
+            const prodBonus = parseFloat(b.productivity_bonus_eur) || parseFloat(p.productivity_bonus_eur) || 0;
+            const dodaci = transport + iznosDVRV + prodBonus;
+            
+            return `
+              <div class="mini-payslip">
+                <div class="mini-payslip-header">
+                  <strong>${emp.last_name} ${emp.first_name}</strong>
+                  <span class="koef-badge">×${emp.coefficient || 1}</span>
+                </div>
+                <div class="mini-payslip-body">
+                  <div class="mini-row">
+                    <span>Sati</span>
+                    <span>${p.total_hours || 0}h / ${p.fond_sati || 176}h</span>
+                  </div>
+                  <div class="mini-row">
+                    <span>Bruto</span>
+                    <span>${(parseFloat(p.gross_salary) || 0).toFixed(2)} €</span>
+                  </div>
+                  <div class="mini-row deduction">
+                    <span>MIO (20%)</span>
+                    <span>-${((parseFloat(p.mio_1) || 0) + (parseFloat(p.mio_2) || 0)).toFixed(2)} €</span>
+                  </div>
+                  <div class="mini-row deduction">
+                    <span>Porez + prirez</span>
+                    <span>-${((parseFloat(p.income_tax) || 0) + (parseFloat(p.surtax) || 0)).toFixed(2)} €</span>
+                  </div>
+                  <div class="mini-row neto">
+                    <span>Neto</span>
+                    <span>${(parseFloat(p.net_salary) || 0).toFixed(2)} €</span>
+                  </div>
+                  <div class="mini-row">
+                    <span>Prijevoz</span>
+                    <span>${transport.toFixed(2)} €</span>
+                  </div>
+                  ${iznosDVRV > 0 ? `<div class="mini-row"><span>DVRV (${p.dolasci_van_rv || 0}×)</span><span>${iznosDVRV.toFixed(2)} €</span></div>` : ''}
+                  ${prodBonus > 0 ? `<div class="mini-row"><span>Bonus</span><span>${prodBonus.toFixed(2)} €</span></div>` : ''}
+                </div>
+                <div class="mini-payslip-footer">
+                  <span>ZA ISPLATU</span>
+                  <span class="total-amount">${(parseFloat(p.total_payment) || 0).toFixed(2)} €</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  // Bez postave
+  if (!selectedTeam) {
+    const noTeam = placeEmps.filter(e => !e.team_name);
+    if (noTeam.length > 0) {
+      const noTeamPayroll = placePayroll.filter(p => noTeam.some(e => e.id === p.employee_id));
+      let sum = 0;
+      noTeamPayroll.forEach(p => sum += parseFloat(p.total_payment) || 0);
+      
+      html += `
+        <div class="postava-section">
+          <div class="postava-header-full" style="background: linear-gradient(135deg, #757575, #9e9e9e);">
+            <h2>Bez postave</h2>
+            <div class="postava-summary">
+              <span>👥 ${noTeam.length} djelatnika</span>
+              <span class="sum-isplata">Za isplatu: ${sum.toFixed(2)} €</span>
+            </div>
+          </div>
+          <div class="payslip-grid">
+            ${noTeam.map(emp => {
+              const p = noTeamPayroll.find(pr => pr.employee_id === emp.id) || {};
+              return `
+                <div class="mini-payslip">
+                  <div class="mini-payslip-header">
+                    <strong>${emp.last_name} ${emp.first_name}</strong>
+                    <span class="koef-badge">×${emp.coefficient || 1}</span>
+                  </div>
+                  <div class="mini-payslip-body">
+                    <div class="mini-row neto"><span>Neto</span><span>${(parseFloat(p.net_salary) || 0).toFixed(2)} €</span></div>
+                  </div>
+                  <div class="mini-payslip-footer">
+                    <span>ZA ISPLATU</span>
+                    <span class="total-amount">${(parseFloat(p.total_payment) || 0).toFixed(2)} €</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:#999;">Nema podataka za prikaz</p>';
+}
+
+function filterByPostava() {
+  renderPostaveTab();
+}
+
+// ============================================
+// PLATNA LISTA
+// ============================================
+function showPayslip(empId) {
+  const emp = placeEmps.find(e => e.id === empId);
+  const payroll = placePayroll.find(p => p.employee_id === empId);
+  if (!payroll) { showMessage('Nema obračuna!', 'warning'); return; }
+  
+  const bonus = placeBonuses.find(b => b.employee_id === empId) || {};
+  const month = document.getElementById('filterMjesec').value;
+  const year = document.getElementById('filterGodina').value;
+  
+  document.getElementById('payslipTitle').textContent = `📄 ${emp.first_name} ${emp.last_name} - ${MJESECI[month-1]} ${year}`;
+  
+  const prodBonus = parseFloat(bonus.productivity_bonus_eur) || parseFloat(payroll.productivity_bonus_eur) || 0;
+  const iznosDVRV = parseFloat(payroll.iznos_dolasci_van_rv) || 0;
+  const transport = parseFloat(payroll.transport_allowance) || 0;
+  
+  document.getElementById('payslipContent').innerHTML = `
+    <div class="payslip-section">
+      <h4>Podaci o djelatniku</h4>
+      <div class="payslip-row"><span>Ime i prezime</span><span>${emp.first_name} ${emp.last_name}</span></div>
+      <div class="payslip-row"><span>Radno mjesto</span><span>${emp.position || '-'}</span></div>
+      <div class="payslip-row"><span>Koeficijent</span><span>${emp.coefficient || 1}</span></div>
+      <div class="payslip-row"><span>Tim</span><span>${emp.team_name || '-'}${emp.linija ? ` (${emp.linija}${emp.stroj_tip ? ' - ' + emp.stroj_tip : ''})` : ''}</span></div>
+    </div>
+    <div class="payslip-section">
+      <h4>Bruto plaća</h4>
+      <div class="payslip-row"><span>Fond sati</span><span>${payroll.fond_sati || 176}h</span></div>
+      <div class="payslip-row"><span>Odrađeni sati</span><span>${payroll.total_hours || 0}h</span></div>
+      <div class="payslip-row total"><span>BRUTO PLAĆA</span><span>${(payroll.gross_salary || 0).toFixed(2)} €</span></div>
+    </div>
+    <div class="payslip-section">
+      <h4>Doprinosi i porez</h4>
+      <div class="payslip-row deduction"><span>MIO I. stup (15%)</span><span>-${(payroll.mio_1 || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row deduction"><span>MIO II. stup (5%)</span><span>-${(payroll.mio_2 || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row"><span>Osobni odbitak</span><span>${(payroll.personal_deduction || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row"><span>Porezna osnovica</span><span>${(payroll.tax_base || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row deduction"><span>Porez na dohodak</span><span>-${(payroll.income_tax || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row deduction"><span>Prirez (${payroll.surtax_rate || 0}%)</span><span>-${(payroll.surtax || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row total"><span>NETO PLAĆA</span><span>${(payroll.net_salary || 0).toFixed(2)} €</span></div>
+    </div>
+    <div class="payslip-section">
+      <h4>Dodaci</h4>
+      <div class="payslip-row"><span>Prijevoz</span><span>${transport.toFixed(2)} €</span></div>
+      <div class="payslip-row"><span>DVRV (${payroll.dolasci_van_rv || 0}×)</span><span>${iznosDVRV.toFixed(2)} €</span></div>
+      <div class="payslip-row"><span>Bonus produktivnosti</span><span>${prodBonus.toFixed(2)} €</span></div>
+      <div class="payslip-row total" style="background:#c8e6c9;"><span>UKUPNO ZA ISPLATU</span><span>${(payroll.total_payment || 0).toFixed(2)} €</span></div>
+    </div>
+  `;
+  
+  openModal('payslipModal');
+}
+
+function printPayslip() {
+  const content = document.getElementById('payslipContent').innerHTML;
+  const title = document.getElementById('payslipTitle').textContent;
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><title>' + title + '<\/title><style>body{font-family:Arial;padding:20px;}.payslip-section{margin-bottom:20px;}.payslip-section h4{border-bottom:2px solid #1e3a5f;padding-bottom:5px;}.payslip-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;}.payslip-row.total{font-weight:bold;background:#e8f5e9;padding:12px;}.payslip-row.deduction{color:#c62828;}<\/style><\/head><body><h2>' + title + '<\/h2>' + content + '<\/body><\/html>');
+  win.document.close();
+  win.print();
+}
+
+function exportPayroll() {
+  let csv = 'Prezime,Ime,Tim,Koef,Sati,Bruto,Neto,Prijevoz,Bonus,Za isplatu,Status\n';
+  placeFiltered.forEach(e => {
+    const p = e.payroll;
+    const b = e.bonus;
+    csv += `${e.last_name},${e.first_name},${e.team_name || ''},${e.coefficient || 1},${p.total_hours || 0},${(p.gross_salary || 0).toFixed(2)},${(p.net_salary || 0).toFixed(2)},${(p.transport_allowance || 0).toFixed(2)},${(b.productivity_bonus_eur || 0).toFixed(2)},${(p.total_payment || 0).toFixed(2)},${p.status || 'draft'}\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `place_${document.getElementById('filterGodina').value}_${document.getElementById('filterMjesec').value}.csv`;
+  link.click();
+}
+
+function exportByTeam() {
+  const team = document.getElementById('filterPostava').value;
+  const teamEmps = team ? placeEmps.filter(e => e.team_name === team) : placeEmps;
+  
+  let csv = 'Tim,Prezime,Ime,Neto,Dodaci,Za isplatu\n';
+  teamEmps.forEach(emp => {
+    const p = placePayroll.find(pr => pr.employee_id === emp.id) || {};
+    const b = placeBonuses.find(bo => bo.employee_id === emp.id) || {};
+    const dodaci = (parseFloat(p.transport_allowance) || 0) + (parseFloat(b.productivity_bonus_eur) || 0);
+    csv += `${emp.team_name || 'Bez tima'},${emp.last_name},${emp.first_name},${(p.net_salary || 0).toFixed(2)},${dodaci.toFixed(2)},${(p.total_payment || 0).toFixed(2)}\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `place_po_timu_${team || 'svi'}.csv`;
+  link.click();
+}
+
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+</script>

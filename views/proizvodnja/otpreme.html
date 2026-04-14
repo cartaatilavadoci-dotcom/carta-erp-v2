@@ -1,0 +1,3290 @@
+<!-- ============================================
+     CARTA ERP - Otpreme v2.0
+     Gantt kalendar, lista narudžbi, upravljanje otpremama
+     ============================================ -->
+<style>
+/* ============================================
+   LAYOUT I HEADER
+   ============================================ */
+.otpreme-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.otpreme-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--primary);
+}
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   TAB NAVIGACIJA
+   ============================================ */
+.otpreme-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  flex-wrap: wrap;
+}
+.otpreme-tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #666;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.otpreme-tab:hover { background: #f5f5f5; color: #333; }
+.otpreme-tab.active { background: var(--primary); color: white; }
+.otpreme-tab .badge {
+  background: rgba(0,0,0,0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8em;
+}
+.otpreme-tab.active .badge { background: rgba(255,255,255,0.3); }
+
+/* ============================================
+   KPI KARTICE
+   ============================================ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.kpi-icon { font-size: 2em; margin-bottom: 10px; }
+.kpi-value { font-size: 1.8em; font-weight: 700; color: var(--primary); }
+.kpi-label { font-size: 0.85em; color: #666; margin-top: 5px; }
+.kpi-card.warning .kpi-value { color: #e65100; }
+.kpi-card.success .kpi-value { color: #2e7d32; }
+.kpi-card.info .kpi-value { color: #1565c0; }
+
+/* ============================================
+   KALENDAR
+   ============================================ */
+.calendar-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.calendar-header {
+  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.calendar-title { font-size: 1.3em; font-weight: 600; }
+.calendar-nav { display: flex; gap: 10px; }
+.calendar-nav button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.calendar-nav button:hover { background: rgba(255,255,255,0.3); }
+.calendar-nav button.active { background: white; color: #1a237e; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e0e0e0;
+}
+.calendar-day-header {
+  background: #f5f5f5;
+  padding: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.85em;
+}
+.calendar-day {
+  background: white;
+  min-height: 100px;
+  padding: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.calendar-day:hover { background: #f8f9fa; }
+.calendar-day.other-month { background: #fafafa; color: #bbb; }
+
+/* Drag zone za navigaciju između mjeseci */
+.calendar-drag-zone {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 10;
+  background: rgba(25, 118, 210, 0.12);
+  color: #1565c0;
+  font-size: 11px;
+  font-weight: 700;
+  writing-mode: vertical-lr;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #90caf9;
+  cursor: default;
+  transition: background 0.2s, border-color 0.2s;
+}
+.calendar-drag-zone.left { left: 0; border-radius: 0; border-left: none; border-top: none; border-bottom: none; }
+.calendar-drag-zone.right { right: 0; border-radius: 0; border-right: none; border-top: none; border-bottom: none; }
+.calendar-drag-zone.active { background: rgba(25, 118, 210, 0.3); border-color: #1565c0; }
+body.is-dragging .calendar-drag-zone { display: flex; }
+.calendar-day.today { background: #e3f2fd; }
+.calendar-day.selected { background: #bbdefb; box-shadow: inset 0 0 0 2px #1976d2; }
+.calendar-day.has-ready { border-left: 4px solid #4caf50; }
+.calendar-day.has-overdue { border-left: 4px solid #f44336; }
+.calendar-date { font-weight: 600; margin-bottom: 5px; font-size: 0.9em; }
+
+.calendar-order {
+  font-size: 0.75em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 3px;
+  cursor: grab;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e3f2fd;
+  color: #1565c0;
+  border-left: 3px solid #2196f3;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.calendar-order:hover { transform: translateX(3px); }
+.calendar-order.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.calendar-day.drag-over {
+  background: #bbdefb !important;
+  box-shadow: inset 0 0 0 3px #1976d2;
+}
+.calendar-order.ready { background: #e8f5e9; color: #2e7d32; border-left-color: #4caf50; }
+.calendar-order.partial { background: #fff3e0; color: #e65100; border-left-color: #ff9800; }
+.calendar-order.dispatched { background: #f5f5f5; color: #999; border-left-color: #9e9e9e; text-decoration: line-through; }
+.calendar-order .order-num { font-weight: 700; }
+.calendar-order .order-badge { font-size: 0.7em; padding: 1px 4px; border-radius: 3px; background: rgba(0,0,0,0.1); }
+.calendar-more { font-size: 0.7em; color: #1976d2; text-align: center; padding: 2px; cursor: pointer; }
+.calendar-more:hover { text-decoration: underline; }
+
+/* ============================================
+   FILTERI
+   ============================================ */
+.filters-bar {
+  background: white;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label { font-weight: 600; color: #555; font-size: 0.8em; }
+.filter-group select, .filter-group input { 
+  padding: 8px 12px; 
+  border: 1px solid #ddd; 
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+.filter-group select:focus, .filter-group input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1);
+}
+
+/* ============================================
+   LISTA NARUDŽBI TABLICA
+   ============================================ */
+.orders-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.orders-table th {
+  background: #f8f9fa;
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85em;
+  color: #555;
+  border-bottom: 2px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+}
+.orders-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9em;
+}
+.orders-table tr:hover td { background: #f8f9fa; }
+.orders-table tr.selected td { background: #e3f2fd; }
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 600;
+  display: inline-block;
+}
+.status-badge.production { background: #e3f2fd; color: #1565c0; }
+.status-badge.ready { background: #e8f5e9; color: #2e7d32; }
+.status-badge.partial { background: #fff3e0; color: #e65100; }
+.status-badge.complete { background: #f3e5f5; color: #7b1fa2; }
+.status-badge.pripremljeno { background: #fff3e0; color: #e65100; }
+.status-badge.otpremljeno { background: #e8f5e9; color: #2e7d32; }
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 100px;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.progress-bar .fill.low { background: #f44336; }
+.progress-bar .fill.medium { background: #ff9800; }
+.progress-bar .fill.high { background: #4caf50; }
+.progress-bar .fill.complete { background: #9c27b0; }
+
+/* ============================================
+   DETALJI NARUDŽBE PANEL
+   ============================================ */
+.order-panel {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-top: 20px;
+  overflow: hidden;
+  display: none;
+}
+.order-panel.active { display: block; }
+.order-panel-header {
+  background: linear-gradient(135deg, #37474f 0%, #546e7a 100%);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.order-panel-header h3 { margin: 0; font-size: 1.2em; }
+.order-panel-body { padding: 20px; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.info-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+.info-label { font-size: 0.75em; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+.info-value { font-size: 1.1em; font-weight: 600; color: #333; }
+.info-value.large { font-size: 1.4em; color: var(--primary); }
+.info-value.success { color: #2e7d32; }
+.info-value.warning { color: #e65100; }
+
+/* ============================================
+   PALETE LISTA (za odabir)
+   ============================================ */
+.pallets-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+.pallet-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pallet-item:hover { background: #f8f9fa; }
+.pallet-item.selected { background: #e3f2fd; }
+.pallet-item.dispatched { background: #f5f5f5; opacity: 0.6; cursor: not-allowed; }
+.pallet-checkbox { margin-right: 12px; width: 20px; height: 20px; cursor: pointer; }
+.pallet-info { flex: 1; }
+.pallet-number { font-weight: 700; color: #333; }
+.pallet-details { font-size: 0.85em; color: #666; margin-top: 3px; }
+.pallet-quantity { font-weight: 700; color: var(--primary); font-size: 1.1em; }
+.pallet-line { 
+  padding: 3px 8px; 
+  border-radius: 4px; 
+  font-size: 0.75em; 
+  font-weight: 600;
+  margin-left: 10px;
+}
+.pallet-line.wh { background: #e8f5e9; color: #2e7d32; }
+.pallet-line.nli { background: #fff3e0; color: #e65100; }
+
+/* ============================================
+   OTPREME LISTA
+   ============================================ */
+.dispatch-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  margin-bottom: 15px;
+  overflow: hidden;
+  border-left: 4px solid #1976d2;
+}
+.dispatch-card.otpremljeno { border-left-color: #4caf50; }
+.dispatch-card.pripremljeno { border-left-color: #ff9800; }
+.dispatch-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  cursor: pointer;
+}
+.dispatch-header:hover { background: #f0f0f0; }
+.dispatch-number { font-weight: 700; font-size: 1.1em; color: #333; }
+.dispatch-meta { display: flex; gap: 20px; font-size: 0.9em; color: #666; }
+.dispatch-body { padding: 15px 20px; display: none; border-top: 1px solid #e0e0e0; }
+.dispatch-card.expanded .dispatch-body { display: block; }
+.dispatch-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.dispatch-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; border-top: 1px solid #eee; }
+
+/* ============================================
+   KOMENTARI
+   ============================================ */
+.comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+.comments-title { font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.comment-list { max-height: 250px; overflow-y: auto; }
+.comment-item {
+  background: #f8f9fa;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 3px solid #1976d2;
+}
+.comment-item.transport { border-left-color: #ff9800; }
+.comment-item.urgent { border-left-color: #f44336; background: #fff8f8; }
+.comment-item.pinned { border-left-color: #9c27b0; background: #faf5ff; }
+.comment-header { display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-bottom: 5px; }
+.comment-text { color: #333; line-height: 1.4; }
+.comment-input { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+.comment-input textarea { 
+  flex: 1; 
+  min-width: 200px;
+  padding: 10px; 
+  border: 1px solid #ddd; 
+  border-radius: 6px; 
+  resize: none; 
+  height: 60px; 
+}
+.comment-type-select { width: 150px; }
+
+/* ============================================
+   MODALI
+   ============================================ */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal.active { display: flex; }
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h3 { margin: 0; font-size: 1.3em; }
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 5px 10px;
+  opacity: 0.8;
+}
+.modal-close:hover { opacity: 1; }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* ============================================
+   FORME
+   ============================================ */
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-weight: 600; color: #555; margin-bottom: 5px; font-size: 0.9em; }
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95em;
+  transition: border-color 0.2s;
+}
+.form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1); }
+.form-control[readonly] { background: #f5f5f5; }
+
+/* ============================================
+   DOKUMENTI PREVIEW
+   ============================================ */
+.document-preview {
+  background: white;
+  padding: 30px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #1a237e;
+}
+.document-logo img { height: 50px; }
+.document-title { text-align: right; }
+.document-title h1 { margin: 0; color: #1a237e; font-size: 1.6em; }
+.document-title .number { font-size: 1.1em; color: #666; }
+.document-info { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+.document-box { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+.document-box h4 { margin: 0 0 10px 0; color: #1a237e; font-size: 0.85em; text-transform: uppercase; }
+.document-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+.document-table th { background: #1a237e; color: white; padding: 10px; text-align: left; font-weight: 600; font-size: 0.85em; }
+.document-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+.document-table tr:nth-child(even) td { background: #f8f9fa; }
+.document-totals { text-align: right; margin-bottom: 30px; }
+.document-totals .row { display: inline-flex; justify-content: space-between; width: 280px; padding: 8px 0; border-bottom: 1px solid #eee; }
+.document-totals .row.final { font-weight: 700; font-size: 1.1em; border-bottom: 2px solid #1a237e; }
+.document-signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 50px; }
+.signature-box { text-align: center; }
+.signature-line { border-top: 1px solid #333; padding-top: 10px; margin-top: 60px; font-size: 0.85em; color: #666; }
+.document-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.75em; color: #666; text-align: center; }
+
+/* ============================================
+   NOTIFIKACIJE
+   ============================================ */
+.notifications-bell {
+  position: relative;
+  cursor: pointer;
+}
+.notifications-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f44336;
+  color: white;
+  font-size: 0.7em;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.notifications-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 350px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 100;
+  display: none;
+}
+.notifications-dropdown.active { display: block; }
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.notification-item:hover { background: #f8f9fa; }
+.notification-item.unread { background: #e3f2fd; }
+.notification-title { font-weight: 600; color: #333; margin-bottom: 3px; }
+.notification-message { font-size: 0.85em; color: #666; }
+.notification-time { font-size: 0.75em; color: #999; margin-top: 5px; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .otpreme-header { flex-direction: column; align-items: flex-start; }
+  .otpreme-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .otpreme-tab { padding: 10px 16px; white-space: nowrap; }
+  .calendar-day { min-height: 70px; padding: 5px; }
+  .calendar-day-header { padding: 5px; font-size: 0.75em; }
+  .calendar-order { font-size: 0.65em; padding: 3px 5px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .info-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal-content { max-height: 95vh; }
+  .document-info { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .document-preview { box-shadow: none; padding: 0; }
+  body { background: white; }
+}
+</style>
+
+<!-- ============================================
+     HTML STRUKTURA
+     ============================================ -->
+<div class="otpreme-header no-print">
+  <div class="otpreme-title">🚛 Otpreme</div>
+  <div class="header-actions">
+    <div class="notifications-bell" onclick="toggleNotifications()">
+      🔔 <span class="notifications-count" id="notifCount" style="display:none;">0</span>
+      <div class="notifications-dropdown" id="notifDropdown"></div>
+    </div>
+    <button class="btn btn-primary" onclick="openNewDispatchModal()">➕ Nova otprema</button>
+    <button class="btn btn-secondary" onclick="refreshOtpreme()">🔄 Osvježi</button>
+  </div>
+</div>
+
+<!-- KPI Kartice -->
+<div class="kpi-grid no-print">
+  <div class="kpi-card">
+    <div class="kpi-icon">📦</div>
+    <div class="kpi-value" id="kpiNarudzbe">-</div>
+    <div class="kpi-label">Aktivne narudžbe</div>
+  </div>
+  <div class="kpi-card success">
+    <div class="kpi-icon">✅</div>
+    <div class="kpi-value" id="kpiSpremno">-</div>
+    <div class="kpi-label">Spremno za otpremu</div>
+  </div>
+  <div class="kpi-card warning">
+    <div class="kpi-icon">🚛</div>
+    <div class="kpi-value" id="kpiPripremljeno">-</div>
+    <div class="kpi-label">Pripremljene otpreme</div>
+  </div>
+  <div class="kpi-card info">
+    <div class="kpi-icon">📤</div>
+    <div class="kpi-value" id="kpiOtpremljeno">-</div>
+    <div class="kpi-label">Otpremljeno (mjesec)</div>
+  </div>
+</div>
+
+<!-- Tab navigacija -->
+<div class="otpreme-tabs no-print">
+  <button class="otpreme-tab active" data-tab="kalendar" onclick="switchOtpremeTab('kalendar')">
+    📅 Kalendar
+  </button>
+  <button class="otpreme-tab" data-tab="narudzbe" onclick="switchOtpremeTab('narudzbe')">
+    📋 Lista narudžbi <span class="badge" id="tabNarudzbeBadge">0</span>
+  </button>
+  <button class="otpreme-tab" data-tab="otpreme" onclick="switchOtpremeTab('otpreme')">
+    🚛 Sve otpreme <span class="badge" id="tabOtpremeBadge">0</span>
+  </button>
+  <button class="otpreme-tab" data-tab="povrati" onclick="switchOtpremeTab('povrati')">
+    ↩️ Povrati
+  </button>
+</div>
+
+<!-- ==================== TAB: KALENDAR ==================== -->
+<div class="tab-content active" id="tabKalendar">
+  <!-- Filteri -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Kupac</label>
+      <select id="filterKupac" onchange="applyFilters()">
+        <option value="">Svi kupci</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filterStatusNarudzbe" onchange="applyFilters()">
+        <option value="">Svi</option>
+        <option value="production">U proizvodnji</option>
+        <option value="ready">Spremno</option>
+        <option value="partial">Djelomično otpremljeno</option>
+        <option value="complete">Potpuno otpremljeno</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Pretraži</label>
+      <input type="text" id="filterSearch" placeholder="Broj narudžbe..." oninput="applyFilters()">
+    </div>
+  </div>
+
+  <!-- Kalendar -->
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <div class="calendar-title" id="calendarTitle">Siječanj 2026</div>
+      <div class="calendar-nav">
+        <button onclick="calendarPrev()">◀ Prethodni</button>
+        <button onclick="calendarToday()" class="active">Danas</button>
+        <button onclick="calendarNext()">Sljedeći ▶</button>
+      </div>
+    </div>
+    <div style="position: relative;">
+      <div id="dragZonePrev" class="calendar-drag-zone left" ondragover="dragZoneOver(event, 'prev')" ondragleave="dragZoneLeave('prev')" ondrop="event.preventDefault()">◀ Prethodni mjesec</div>
+      <div id="dragZoneNext" class="calendar-drag-zone right" ondragover="dragZoneOver(event, 'next')" ondragleave="dragZoneLeave('next')" ondrop="event.preventDefault()">Sljedeći mjesec ▶</div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: LISTA NARUDŽBI ==================== -->
+<div class="tab-content" id="tabNarudzbe" style="display:none;">
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Kupac</label>
+      <select id="filterKupac2" onchange="applyOrdersFilter()">
+        <option value="">Svi kupci</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status otpreme</label>
+      <select id="filterDispatchStatus" onchange="applyOrdersFilter()">
+        <option value="">Svi</option>
+        <option value="U proizvodnji">U proizvodnji</option>
+        <option value="Spremno za otpremu">Spremno za otpremu</option>
+        <option value="Djelomično otpremljeno">Djelomično otpremljeno</option>
+        <option value="Potpuno otpremljeno">Potpuno otpremljeno</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Period</label>
+      <select id="filterPeriod" onchange="applyOrdersFilter()">
+        <option value="30">Sljedećih 30 dana</option>
+        <option value="7">Sljedećih 7 dana</option>
+        <option value="90">Sljedećih 90 dana</option>
+        <option value="all">Sve</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Pretraži</label>
+      <input type="text" id="filterSearch2" placeholder="Broj narudžbe..." oninput="applyOrdersFilter()">
+    </div>
+  </div>
+
+  <div class="orders-table-container">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th style="width:40px;"><input type="checkbox" id="selectAllOrders" onchange="toggleSelectAllOrders()"></th>
+          <th>Narudžba</th>
+          <th>Kupac</th>
+          <th>Rok isporuke</th>
+          <th style="text-align:right;">Naručeno</th>
+          <th style="text-align:right;">Proizvedeno</th>
+          <th style="text-align:right;">Otpremljeno</th>
+          <th>Progress</th>
+          <th>Status</th>
+          <th style="width:100px;">Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table>
+  </div>
+  
+  <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="btn btn-success" onclick="createDispatchFromSelected()" id="btnDispatchSelected" disabled>
+      🚛 Otpremi odabrane (<span id="selectedCount">0</span>)
+    </button>
+  </div>
+</div>
+
+<!-- ==================== TAB: SVE OTPREME ==================== -->
+<div class="tab-content" id="tabOtpreme" style="display:none;">
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filterOtpremeStatus" onchange="applyDispatchesFilter()">
+        <option value="">Svi</option>
+        <option value="Pripremljeno">Pripremljeno</option>
+        <option value="Otpremljeno">Otpremljeno</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Period</label>
+      <select id="filterOtpremePeriod" onchange="applyDispatchesFilter()">
+        <option value="30">Zadnjih 30 dana</option>
+        <option value="7">Zadnjih 7 dana</option>
+        <option value="90">Zadnjih 90 dana</option>
+        <option value="all">Sve</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Pretraži</label>
+      <input type="text" id="filterOtpremeSearch" placeholder="Broj otpreme, kupac..." oninput="applyDispatchesFilter()">
+    </div>
+  </div>
+
+  <div id="dispatchesList"></div>
+</div>
+
+<!-- ==================== TAB: POVRATI ==================== -->
+<div class="tab-content" id="tabPovrati" style="display:none;">
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Period</label>
+      <select id="filterPovratiPeriod" onchange="loadReturns()">
+        <option value="30">Zadnjih 30 dana</option>
+        <option value="90">Zadnjih 90 dana</option>
+        <option value="all">Sve</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="orders-table-container">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Otprema</th>
+          <th>Paleta</th>
+          <th style="text-align:right;">Količina</th>
+          <th>Razlog</th>
+          <th>Napomena</th>
+          <th>Vratio</th>
+        </tr>
+      </thead>
+      <tbody id="returnsTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== PANEL: DETALJI NARUDŽBE ==================== -->
+<div class="order-panel" id="orderPanel">
+  <div class="order-panel-header">
+    <h3>📋 Narudžba: <span id="panelOrderNumber">-</span></h3>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-sm btn-success" onclick="openDispatchForOrder()">🚛 Kreiraj otpremu</button>
+      <button class="btn btn-sm btn-outline" onclick="closeOrderPanel()">✕ Zatvori</button>
+    </div>
+  </div>
+  <div class="order-panel-body">
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Kupac</div>
+        <div class="info-value" id="panelCustomer">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Rok isporuke</div>
+        <div class="info-value" id="panelDeadline">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Naručeno</div>
+        <div class="info-value large" id="panelOrdered">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Proizvedeno</div>
+        <div class="info-value large" id="panelProduced">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Otpremljeno</div>
+        <div class="info-value large success" id="panelDispatched">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Dostupno za otpremu</div>
+        <div class="info-value large warning" id="panelAvailable">-</div>
+      </div>
+    </div>
+
+    <!-- Artikli -->
+    <h4 style="margin:20px 0 10px;">📦 Artikli</h4>
+    <div class="orders-table-container" style="box-shadow:none; border:1px solid #e0e0e0;">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Artikl</th>
+            <th>Šifra</th>
+            <th style="text-align:right;">Naručeno</th>
+            <th style="text-align:right;">Proizvedeno</th>
+            <th style="text-align:right;">Otpremljeno</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="panelArticlesBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Dostupne palete -->
+    <h4 style="margin:20px 0 10px;">🏗️ Dostupne palete (<span id="panelPalletsCount">0</span>)</h4>
+    <div class="pallets-list" id="panelPalletsList"></div>
+
+    <!-- Povijest otprema -->
+    <h4 style="margin:20px 0 10px;">📤 Povijest otprema</h4>
+    <div id="panelDispatchHistory"></div>
+
+    <!-- Komentari -->
+    <div class="comments-section">
+      <div class="comments-title">💬 Komentari</div>
+      <div class="comment-list" id="panelComments"></div>
+      <div class="comment-input">
+        <select class="form-control comment-type-select" id="newCommentType">
+          <option value="general">Općenito</option>
+          <option value="transport">Prijevoz</option>
+          <option value="quality">Kvaliteta</option>
+          <option value="urgent">Hitno</option>
+          <option value="price">Cijena</option>
+        </select>
+        <textarea id="newCommentText" placeholder="Dodaj komentar..."></textarea>
+        <button class="btn btn-primary" onclick="addComment()">Dodaj</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: NOVA OTPREMA ==================== -->
+<div class="modal" id="newDispatchModal">
+  <div class="modal-content" style="max-width:1000px;">
+    <div class="modal-header">
+      <h3>🚛 Nova otprema</h3>
+      <button class="modal-close" onclick="closeModal('newDispatchModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Korak 1: Osnovni podaci -->
+      <div id="dispatchStep1">
+        <h4 style="margin-bottom:15px;">1. Osnovni podaci</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Broj otpreme</label>
+            <input type="text" class="form-control" id="dispatchNumber" readonly>
+          </div>
+          <div class="form-group">
+            <label>Datum otpreme</label>
+            <input type="date" class="form-control" id="dispatchDate">
+          </div>
+          <div class="form-group">
+            <label>Tip otpreme</label>
+            <select class="form-control" id="dispatchType">
+              <option value="full">Kompletna (sve dostupne palete)</option>
+              <option value="partial">Parcijalna (odabir paleta)</option>
+            </select>
+          </div>
+        </div>
+
+        <h4 style="margin:20px 0 15px;">2. Kupac i dostava</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kupac</label>
+            <input type="text" class="form-control" id="dispatchCustomer" readonly>
+          </div>
+          <div class="form-group">
+            <label>Adresa isporuke</label>
+            <input type="text" class="form-control" id="dispatchAddress" placeholder="Ulica i broj">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Grad</label>
+            <input type="text" class="form-control" id="dispatchCity" placeholder="Grad">
+          </div>
+          <div class="form-group">
+            <label>Država</label>
+            <input type="text" class="form-control" id="dispatchCountry" value="Hrvatska">
+          </div>
+          <div class="form-group">
+            <label>Kontakt osoba</label>
+            <input type="text" class="form-control" id="dispatchContact" placeholder="Ime i prezime">
+          </div>
+          <div class="form-group">
+            <label>Kontakt telefon</label>
+            <input type="text" class="form-control" id="dispatchPhone" placeholder="+385...">
+          </div>
+        </div>
+
+        <h4 style="margin:20px 0 15px;">3. Prijevoz</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Vozilo (registracija)</label>
+            <input type="text" class="form-control" id="dispatchVehicle" placeholder="OS-123-AB">
+          </div>
+          <div class="form-group">
+            <label>Vozač</label>
+            <input type="text" class="form-control" id="dispatchDriver" placeholder="Ime vozača">
+          </div>
+          <div class="form-group">
+            <label>CMR broj (međunarodni)</label>
+            <input type="text" class="form-control" id="dispatchCMR" placeholder="Opciono">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Napomene</label>
+          <textarea class="form-control" id="dispatchNotes" rows="2" placeholder="Dodatne napomene..."></textarea>
+        </div>
+      </div>
+
+      <!-- Korak 2: Odabir paleta (za parcijalnu otpremu) -->
+      <div id="dispatchStep2" style="display:none;">
+        <h4 style="margin-bottom:15px;">4. Odabir paleta</h4>
+        <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <strong>Narudžba:</strong> <span id="dispatchOrderNumbers">-</span>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="selectAllPallets()">☑️ Odaberi sve</button>
+            <button class="btn btn-sm btn-secondary" onclick="deselectAllPallets()">☐ Poništi odabir</button>
+          </div>
+        </div>
+        
+        <div class="pallets-list" id="dispatchPalletsList"></div>
+        
+        <div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+          <div>
+            <strong>Odabrano paleta:</strong> <span id="selectedPalletsCount">0</span>
+          </div>
+          <div>
+            <strong>Ukupna količina:</strong> <span id="selectedQuantity">0</span> kom
+          </div>
+          <div>
+            <strong>Poklopaca za skinuti:</strong> <span id="selectedCovers">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pregled prije slanja -->
+      <div id="dispatchStep3" style="display:none;">
+        <h4 style="margin-bottom:15px;">5. Pregled otpreme</h4>
+        <div class="info-grid" id="dispatchSummary"></div>
+        
+        <h4 style="margin:20px 0 10px;">Stavke otpreme</h4>
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Paleta</th>
+              <th>Artikl</th>
+              <th>Narudžba</th>
+              <th style="text-align:right;">Količina</th>
+              <th>Linija</th>
+            </tr>
+          </thead>
+          <tbody id="dispatchItemsPreview"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('newDispatchModal')">Odustani</button>
+      <button class="btn btn-secondary" id="btnDispatchBack" style="display:none;" onclick="dispatchPrevStep()">◀ Natrag</button>
+      <button class="btn btn-primary" id="btnDispatchNext" onclick="dispatchNextStep()">Dalje ▶</button>
+      <button class="btn btn-success" id="btnDispatchSave" style="display:none;" onclick="saveDispatch()">💾 Spremi otpremu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: PREGLED OTPREME ==================== -->
+<div class="modal" id="viewDispatchModal">
+  <div class="modal-content" style="max-width:900px;">
+    <div class="modal-header">
+      <h3>📋 Otprema: <span id="viewDispatchNumber">-</span></h3>
+      <button class="modal-close" onclick="closeModal('viewDispatchModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="viewDispatchBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('viewDispatchModal')">Zatvori</button>
+      <button class="btn btn-info" id="btnLinkPallets" onclick="openLinkPalletsFromView()">🔗 Poveži palete</button>
+      <button class="btn btn-info" id="btnPrintPalletList" onclick="printPalletList()">🏗️ Paletna lista</button>
+      <button class="btn btn-info" onclick="printOtpremnica()">📄 Otpremnica</button>
+      <button class="btn btn-warning" id="btnCMR" onclick="printCMR()">📋 CMR</button>
+      <button class="btn btn-success" id="btnConfirmDispatch" onclick="confirmDispatch()">🚛 Potvrdi otpremu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: POVRAT PALETE ==================== -->
+<div class="modal" id="returnModal">
+  <div class="modal-content" style="max-width:500px;">
+    <div class="modal-header" style="background:linear-gradient(135deg, #e65100 0%, #ff9800 100%);">
+      <h3>↩️ Povrat palete</h3>
+      <button class="modal-close" onclick="closeModal('returnModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Paleta</label>
+        <input type="text" class="form-control" id="returnPalletNumber" readonly>
+        <input type="hidden" id="returnGopId">
+        <input type="hidden" id="returnDispatchId">
+      </div>
+      <div class="form-group">
+        <label>Količina za vratiti</label>
+        <input type="number" class="form-control" id="returnQuantity" readonly>
+      </div>
+      <div class="form-group">
+        <label>Razlog povrata</label>
+        <select class="form-control" id="returnReason">
+          <option value="damaged">Oštećena roba</option>
+          <option value="wrong_order">Pogrešna narudžba</option>
+          <option value="quality">Problem s kvalitetom</option>
+          <option value="overdelivery">Višak isporuke</option>
+          <option value="other">Ostalo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Napomena</label>
+        <textarea class="form-control" id="returnNotes" rows="3" placeholder="Dodatne informacije o povratu..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('returnModal')">Odustani</button>
+      <button class="btn btn-warning" onclick="processReturn()">↩️ Evidentiraj povrat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: POVEZIVANJE PALETA ==================== -->
+<div class="modal" id="linkPalletsModal">
+  <div class="modal-content" style="max-width:800px;">
+    <div class="modal-header" style="background:linear-gradient(135deg, #1565c0 0%, #1976d2 100%);">
+      <h3>🔗 Poveži palete s otpremom</h3>
+      <button class="modal-close" onclick="closeModal('linkPalletsModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:15px; padding:15px; background:#e3f2fd; border-radius:8px;">
+        <strong>Otprema:</strong> <span id="linkDispatchNumber">-</span><br>
+        <strong>Kupac:</strong> <span id="linkCustomerName">-</span><br>
+        <strong>Količina:</strong> <span id="linkTotalQuantity">-</span> kom
+      </div>
+      
+      <div class="form-group">
+        <label>Filtriraj po narudžbi</label>
+        <select class="form-control" id="linkOrderFilter" onchange="filterLinkPallets()">
+          <option value="">Sve narudžbe</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Dostupne palete:</span>
+        <div>
+          <button class="btn btn-sm btn-secondary" onclick="selectAllLinkPallets()">☑️ Odaberi sve</button>
+          <button class="btn btn-sm btn-secondary" onclick="deselectAllLinkPallets()">☐ Poništi</button>
+        </div>
+      </div>
+      
+      <div class="pallets-list" id="linkPalletsList" style="max-height:350px;"></div>
+      
+      <div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div><strong>Odabrano:</strong> <span id="linkSelectedCount">0</span> paleta</div>
+        <div><strong>Količina:</strong> <span id="linkSelectedQty">0</span> kom</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('linkPalletsModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveLinkPallets()">🔗 Poveži palete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: OTPREMNICA PRINT ==================== -->
+<div class="modal" id="printModal">
+  <div class="modal-content" style="max-width:900px;">
+    <div class="modal-header no-print">
+      <h3 id="printModalTitle">📄 Dokument</h3>
+      <button class="modal-close" onclick="closeModal('printModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="document-preview" id="printContent"></div>
+    </div>
+    <div class="modal-footer no-print">
+      <button class="btn btn-secondary" onclick="closeModal('printModal')">Zatvori</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Ispiši</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var ordersData = [];           // Sirovi podaci narudžbi
+var ordersGrouped = {};        // Grupirano po order_number
+var ordersDispatchStatus = []; // View v_orders_dispatch_status
+var dispatchesData = [];       // Sve otpreme
+var palletsData = [];          // Dostupne palete
+var returnsData = [];          // Povrati
+var notificationsData = [];    // Notifikacije
+var commentsData = {};         // Komentari po order_number
+
+var selectedOrderNumber = null;
+var selectedOrders = [];       // Odabrane narudžbe za grupnu otpremu
+var selectedPallets = [];      // Odabrane palete za otpremu
+var calendarDate = new Date();
+var currentDispatchStep = 1;
+var currentDispatch = null;    // Otprema koja se pregledava
+
+var CARTA_LOGO = 'https://gusudzydgofdcywmvwbh.supabase.co/storage/v1/object/public/assets/carta-logo.png';
+
+// Podaci tvrtke
+var COMPANY_INFO = {
+  name: 'Carta d.o.o.',
+  address: 'Vukovarska cesta 229c',
+  city: '31000 Osijek',
+  oib: '56138534279'
+};
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initOtpremeView() {
+  console.log('🚛 Otpreme v2.0 init...');
+  showLoading('Učitavanje...');
+  
+  try {
+    await Promise.all([
+      loadOrdersData(),
+      loadDispatchesData(),
+      loadNotifications()
+    ]);
+    
+    renderKPIs();
+    renderCalendar();
+    populateFilters();
+    
+    console.log('🚛 Otpreme loaded');
+  } catch (e) {
+    console.error('Init error:', e);
+    showMessage('Greška pri učitavanju: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function loadOrdersData() {
+  // Učitaj sirove narudžbe
+  var result = await initSupabase()
+    .from('prod_orders')
+    .select('*')
+    .order('delivery_deadline', { ascending: true })
+    .limit(5000);
+  
+  ordersData = result.data || [];
+  
+  // Grupiraj po order_number
+  ordersGrouped = {};
+  ordersData.forEach(function(o) {
+    if (!o.order_number) return;
+    
+    if (!ordersGrouped[o.order_number]) {
+      ordersGrouped[o.order_number] = {
+        order_number: o.order_number,
+        customer_name: o.customer_name,
+        delivery_deadline: o.delivery_deadline,
+        status: o.status,
+        articles: [],
+        total_ordered: 0
+      };
+    }
+    
+    ordersGrouped[o.order_number].articles.push({
+      id: o.id,
+      article_name: o.article_name,
+      article_code: o.article_code,
+      quantity_ordered: o.quantity_ordered || 0
+    });
+    
+    ordersGrouped[o.order_number].total_ordered += (o.quantity_ordered || 0);
+  });
+  
+  // Učitaj dispatch status view
+  var statusResult = await initSupabase()
+    .from('v_orders_dispatch_status')
+    .select('*')
+    .limit(5000);
+  
+  ordersDispatchStatus = statusResult.data || [];
+  
+  // Spoji podatke
+  ordersDispatchStatus.forEach(function(s) {
+    if (ordersGrouped[s.order_number]) {
+      ordersGrouped[s.order_number].total_produced = s.total_produced || 0;
+      ordersGrouped[s.order_number].total_dispatched = s.total_dispatched || 0;
+      ordersGrouped[s.order_number].available_for_dispatch = s.available_for_dispatch || 0;
+      ordersGrouped[s.order_number].pallets_available = s.pallets_available || 0;
+      ordersGrouped[s.order_number].dispatch_status = s.dispatch_status;
+    }
+  });
+}
+
+async function loadDispatchesData() {
+  var result = await initSupabase()
+    .from('v_dispatch_summary')
+    .select('*')
+    .order('dispatch_date', { ascending: false })
+    .limit(1000);
+  
+  dispatchesData = result.data || [];
+}
+
+async function loadNotifications() {
+  var result = await initSupabase()
+    .from('prod_notifications')
+    .select('*')
+    .eq('is_read', false)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  
+  notificationsData = result.data || [];
+  updateNotificationsBadge();
+}
+
+async function loadPalletsForOrder(orderNumber) {
+  var result = await initSupabase().rpc('get_available_pallets_for_dispatch', {
+    p_order_number: orderNumber
+  });
+  
+  return result.data || [];
+}
+
+async function loadComments(orderNumber) {
+  var result = await initSupabase()
+    .from('prod_order_comments')
+    .select('*')
+    .eq('order_number', orderNumber)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  
+  commentsData[orderNumber] = result.data || [];
+  return commentsData[orderNumber];
+}
+
+async function loadReturns() {
+  var period = document.getElementById('filterPovratiPeriod')?.value || '30';
+  var query = initSupabase()
+    .from('prod_dispatch_returns')
+    .select('*, prod_dispatch(dispatch_number)')
+    .order('returned_at', { ascending: false })
+    .limit(500);
+  
+  if (period !== 'all') {
+    var date = new Date();
+    date.setDate(date.getDate() - parseInt(period));
+    query = query.gte('returned_at', date.toISOString());
+  }
+  
+  var result = await query;
+  returnsData = result.data || [];
+  renderReturns();
+}
+
+// ============================================
+// REFRESH
+// ============================================
+async function refreshOtpreme() {
+  showLoading('Osvježavanje...');
+  try {
+    await Promise.all([
+      loadOrdersData(),
+      loadDispatchesData(),
+      loadNotifications()
+    ]);
+    
+    renderKPIs();
+    renderCalendar();
+    applyOrdersFilter();
+    applyDispatchesFilter();
+    
+    if (selectedOrderNumber) {
+      showOrderPanel(selectedOrderNumber);
+    }
+    
+    showMessage('✅ Osvježeno', 'success');
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// KPI KARTICE
+// ============================================
+function renderKPIs() {
+  var aktivne = Object.values(ordersGrouped).filter(function(o) {
+    return o.status === 'Aktivno';
+  }).length;
+  
+  var spremno = Object.values(ordersGrouped).filter(function(o) {
+    return o.dispatch_status === 'Spremno za otpremu';
+  }).length;
+  
+  var pripremljeno = dispatchesData.filter(function(d) {
+    return d.status === 'Pripremljeno';
+  }).length;
+  
+  var thisMonth = new Date();
+  thisMonth.setDate(1);
+  var otpremljeno = dispatchesData.filter(function(d) {
+    return d.status === 'Otpremljeno' && new Date(d.dispatched_at) >= thisMonth;
+  }).length;
+  
+  document.getElementById('kpiNarudzbe').textContent = aktivne;
+  document.getElementById('kpiSpremno').textContent = spremno;
+  document.getElementById('kpiPripremljeno').textContent = pripremljeno;
+  document.getElementById('kpiOtpremljeno').textContent = otpremljeno;
+  
+  document.getElementById('tabNarudzbeBadge').textContent = Object.keys(ordersGrouped).length;
+  document.getElementById('tabOtpremeBadge').textContent = dispatchesData.length;
+}
+
+// ============================================
+// TAB NAVIGACIJA
+// ============================================
+function switchOtpremeTab(tabId) {
+  document.querySelectorAll('.otpreme-tab').forEach(function(t) {
+    t.classList.remove('active');
+    if (t.dataset.tab === tabId) t.classList.add('active');
+  });
+  
+  document.querySelectorAll('.tab-content').forEach(function(c) {
+    c.style.display = 'none';
+  });
+  
+  var tabContent = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+  if (tabContent) tabContent.style.display = 'block';
+  
+  // Učitaj podatke ako treba
+  if (tabId === 'narudzbe') applyOrdersFilter();
+  if (tabId === 'otpreme') applyDispatchesFilter();
+  if (tabId === 'povrati') loadReturns();
+}
+
+// ============================================
+// FILTERI
+// ============================================
+function populateFilters() {
+  var customers = [...new Set(ordersData.map(function(o) { return o.customer_name; }).filter(Boolean))].sort();
+  
+  var html = '<option value="">Svi kupci</option>' + 
+    customers.map(function(c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join('');
+  
+  var filterKupac = document.getElementById('filterKupac');
+  var filterKupac2 = document.getElementById('filterKupac2');
+  if (filterKupac) filterKupac.innerHTML = html;
+  if (filterKupac2) filterKupac2.innerHTML = html;
+}
+
+function applyFilters() {
+  renderCalendar();
+}
+
+// ============================================
+// KALENDAR
+// ============================================
+function renderCalendar() {
+  var grid = document.getElementById('calendarGrid');
+  var title = document.getElementById('calendarTitle');
+  if (!grid || !title) return;
+  
+  var y = calendarDate.getFullYear();
+  var m = calendarDate.getMonth();
+  var monthNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj',
+                    'Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+  
+  title.textContent = monthNames[m] + ' ' + y;
+  
+  var html = ['Pon','Uto','Sri','Čet','Pet','Sub','Ned'].map(function(d) {
+    return '<div class="calendar-day-header">' + d + '</div>';
+  }).join('');
+  
+  var firstDay = new Date(y, m, 1);
+  var lastDay = new Date(y, m + 1, 0);
+  var startDay = (firstDay.getDay() + 6) % 7;
+  
+  // Filteri
+  var filterKupac = document.getElementById('filterKupac')?.value || '';
+  var filterStatus = document.getElementById('filterStatusNarudzbe')?.value || '';
+  var filterSearch = (document.getElementById('filterSearch')?.value || '').toLowerCase();
+  
+  // Prethodni mjesec (s drag & drop podrškom za premještanje između mjeseci)
+  var prevLast = new Date(y, m, 0).getDate();
+  var prevMonthDate = new Date(y, m, 0);
+  var prevY = prevMonthDate.getFullYear();
+  var prevM = prevMonthDate.getMonth();
+  for (var i = startDay - 1; i >= 0; i--) {
+    var pDay = prevLast - i;
+    var pDateStr = prevY + '-' + String(prevM + 1).padStart(2, '0') + '-' + String(pDay).padStart(2, '0');
+    html += '<div class="calendar-day other-month" data-date="' + pDateStr + '" ';
+    html += 'ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ';
+    html += 'ondrop="handleDrop(event, \'' + pDateStr + '\')">';
+    html += '<div class="calendar-date">' + pDay + '</div></div>';
+  }
+  
+  var today = new Date();
+  var todayStr = today.toISOString().split('T')[0];
+  
+  // Dani mjeseca
+  for (var d = 1; d <= lastDay.getDate(); d++) {
+    var dateStr = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    var isToday = dateStr === todayStr;
+    var isSelected = selectedOrderNumber && ordersGrouped[selectedOrderNumber]?.delivery_deadline === dateStr;
+    
+    // Filtrirane narudžbe za ovaj dan
+    var dayOrders = [];
+    Object.values(ordersGrouped).forEach(function(order) {
+      if (order.delivery_deadline !== dateStr) return;
+      if (filterKupac && order.customer_name !== filterKupac) return;
+      if (filterSearch && !order.order_number.toLowerCase().includes(filterSearch)) return;
+      if (filterStatus) {
+        var status = getOrderStatusClass(order);
+        if (status !== filterStatus) return;
+      }
+      dayOrders.push(order);
+    });
+    
+    var hasReady = dayOrders.some(function(o) { return o.dispatch_status === 'Spremno za otpremu'; });
+    var hasOverdue = dateStr < todayStr && dayOrders.some(function(o) { return o.dispatch_status !== 'Potpuno otpremljeno'; });
+    
+    var classes = 'calendar-day';
+    if (isToday) classes += ' today';
+    if (isSelected) classes += ' selected';
+    if (hasReady) classes += ' has-ready';
+    if (hasOverdue) classes += ' has-overdue';
+    
+    html += '<div class="' + classes + '" data-date="' + dateStr + '" ';
+    html += 'onclick="handleDayClick(\'' + dateStr + '\')" ';
+    html += 'ondragover="handleDragOver(event)" ';
+    html += 'ondragleave="handleDragLeave(event)" ';
+    html += 'ondrop="handleDrop(event, \'' + dateStr + '\')">';
+    html += '<div class="calendar-date">' + d + '</div>';
+    
+    // Narudžbe (max 3)
+    dayOrders.slice(0, 3).forEach(function(order) {
+      var statusClass = getOrderStatusClass(order);
+      var palletsInfo = order.pallets_available ? order.pallets_available + ' pal.' : '';
+      
+      html += '<div class="calendar-order ' + statusClass + '" draggable="true" ';
+      html += 'data-order="' + escapeHtml(order.order_number) + '" ';
+      html += 'ondragstart="handleDragStart(event, \'' + escapeHtml(order.order_number) + '\')" ';
+      html += 'ondragend="handleDragEnd(event)" ';
+      html += 'onclick="event.stopPropagation(); showOrderPanel(\'' + order.order_number + '\')">';
+      html += '<span class="order-num">' + escapeHtml(order.order_number) + '</span>';
+      if (palletsInfo) html += '<span class="order-badge">' + palletsInfo + '</span>';
+      html += '</div>';
+    });
+    
+    if (dayOrders.length > 3) {
+      html += '<div class="calendar-more" onclick="event.stopPropagation(); showDayOrders(\'' + dateStr + '\')">+' + (dayOrders.length - 3) + ' više</div>';
+    }
+    
+    html += '</div>';
+  }
+  
+  // Sljedeći mjesec (s drag & drop podrškom za premještanje između mjeseci)
+  var remaining = 42 - (startDay + lastDay.getDate());
+  for (var i = 1; i <= remaining; i++) {
+    var nDate = new Date(y, m + 1, i);
+    var nDateStr = nDate.getFullYear() + '-' + String(nDate.getMonth() + 1).padStart(2, '0') + '-' + String(i).padStart(2, '0');
+    html += '<div class="calendar-day other-month" data-date="' + nDateStr + '" ';
+    html += 'ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ';
+    html += 'ondrop="handleDrop(event, \'' + nDateStr + '\')">';
+    html += '<div class="calendar-date">' + i + '</div></div>';
+  }
+  
+  grid.innerHTML = html;
+}
+
+function getOrderStatusClass(order) {
+  if (order.dispatch_status === 'Potpuno otpremljeno') return 'dispatched';
+  if (order.dispatch_status === 'Djelomično otpremljeno') return 'partial';
+  if (order.dispatch_status === 'Spremno za otpremu') return 'ready';
+  return 'production';
+}
+
+function calendarPrev() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderCalendar(); }
+function calendarNext() { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); }
+function calendarToday() { calendarDate = new Date(); renderCalendar(); }
+
+function handleDayClick(dateStr) {
+  console.log('Day clicked:', dateStr);
+}
+
+// ============================================
+// DRAG & DROP ZA KALENDAR
+// ============================================
+var draggedOrderNumber = null;
+
+var dragZoneTimer = null;
+
+function handleDragStart(event, orderNumber) {
+  draggedOrderNumber = orderNumber;
+  event.target.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', orderNumber);
+  document.body.classList.add('is-dragging');
+}
+
+function handleDragEnd(event) {
+  event.target.classList.remove('dragging');
+  draggedOrderNumber = null;
+  document.body.classList.remove('is-dragging');
+  clearTimeout(dragZoneTimer);
+  dragZoneTimer = null;
+  
+  // Ukloni drag-over klasu sa svih dana
+  document.querySelectorAll('.calendar-day.drag-over').forEach(function(el) {
+    el.classList.remove('drag-over');
+  });
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  
+  var dayEl = event.target.closest('.calendar-day');
+  if (dayEl) {
+    dayEl.classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(event) {
+  var dayEl = event.target.closest('.calendar-day');
+  if (dayEl) {
+    dayEl.classList.remove('drag-over');
+  }
+}
+
+async function handleDrop(event, newDate) {
+  event.preventDefault();
+  
+  var dayEl = event.target.closest('.calendar-day');
+  if (dayEl) {
+    dayEl.classList.remove('drag-over');
+  }
+  
+  var orderNumber = event.dataTransfer.getData('text/plain') || draggedOrderNumber;
+  if (!orderNumber) return;
+  
+  var order = ordersGrouped[orderNumber];
+  if (!order) return;
+  
+  var oldDate = order.delivery_deadline;
+  if (oldDate === newDate) return; // Isti datum
+  
+  // Potvrda
+  if (!confirm('Premjestiti narudžbu ' + orderNumber + ' sa ' + formatDate(oldDate) + ' na ' + formatDate(newDate) + '?')) {
+    return;
+  }
+  
+  showLoading('Ažuriranje roka isporuke...');
+  
+  try {
+    // Ažuriraj sve stavke narudžbe s istim order_number
+    var result = await initSupabase()
+      .from('prod_orders')
+      .update({ delivery_deadline: newDate })
+      .eq('order_number', orderNumber);
+    
+    if (result.error) throw result.error;
+    
+    // Ažuriraj lokalne podatke
+    order.delivery_deadline = newDate;
+    ordersData.forEach(function(o) {
+      if (o.order_number === orderNumber) {
+        o.delivery_deadline = newDate;
+      }
+    });
+    
+    hideLoading();
+    showMessage('✅ Rok isporuke ažuriran: ' + orderNumber + ' → ' + formatDate(newDate), 'success');
+    
+    // Ako je novi datum u drugom mjesecu, prebaci kalendar na taj mjesec
+    var dropMonth = new Date(newDate + 'T12:00:00');
+    if (dropMonth.getMonth() !== calendarDate.getMonth() || dropMonth.getFullYear() !== calendarDate.getFullYear()) {
+      calendarDate = new Date(dropMonth.getFullYear(), dropMonth.getMonth(), 1);
+    }
+    renderCalendar();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+    console.error('Drop error:', e);
+  }
+}
+
+function showDayOrders(dateStr) {
+  // TODO: Modal s listom svih narudžbi za taj dan
+  alert('Narudžbe za ' + dateStr);
+}
+
+// Drag zone navigacija - prebaci mjesec dok korisnik draga narudžbu
+function dragZoneOver(event, direction) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  var zoneId = direction === 'prev' ? 'dragZonePrev' : 'dragZoneNext';
+  document.getElementById(zoneId).classList.add('active');
+
+  // Nakon 600ms prebaci mjesec (ako korisnik i dalje drži nad zonom)
+  if (!dragZoneTimer) {
+    dragZoneTimer = setTimeout(function() {
+      dragZoneTimer = null;
+      if (direction === 'prev') {
+        calendarDate.setMonth(calendarDate.getMonth() - 1);
+      } else {
+        calendarDate.setMonth(calendarDate.getMonth() + 1);
+      }
+      renderCalendar();
+    }, 600);
+  }
+}
+
+function dragZoneLeave(direction) {
+  var zoneId = direction === 'prev' ? 'dragZonePrev' : 'dragZoneNext';
+  document.getElementById(zoneId).classList.remove('active');
+  clearTimeout(dragZoneTimer);
+  dragZoneTimer = null;
+}
+
+// ============================================
+// LISTA NARUDŽBI
+// ============================================
+function applyOrdersFilter() {
+  var filterKupac = document.getElementById('filterKupac2')?.value || '';
+  var filterStatus = document.getElementById('filterDispatchStatus')?.value || '';
+  var filterPeriod = document.getElementById('filterPeriod')?.value || '30';
+  var filterSearch = (document.getElementById('filterSearch2')?.value || '').toLowerCase();
+  
+  var today = new Date();
+  var maxDate = null;
+  if (filterPeriod !== 'all') {
+    maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + parseInt(filterPeriod));
+  }
+  
+  var filtered = Object.values(ordersGrouped).filter(function(order) {
+    if (filterKupac && order.customer_name !== filterKupac) return false;
+    if (filterStatus && order.dispatch_status !== filterStatus) return false;
+    if (filterSearch && !order.order_number.toLowerCase().includes(filterSearch)) return false;
+    if (maxDate && order.delivery_deadline) {
+      var deadline = new Date(order.delivery_deadline);
+      if (deadline > maxDate) return false;
+    }
+    return true;
+  });
+  
+  // Sortiraj po roku isporuke
+  filtered.sort(function(a, b) {
+    return new Date(a.delivery_deadline) - new Date(b.delivery_deadline);
+  });
+  
+  renderOrdersTable(filtered);
+}
+
+function renderOrdersTable(orders) {
+  var tbody = document.getElementById('ordersTableBody');
+  if (!tbody) return;
+  
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; color:#999;">Nema narudžbi za prikaz</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  orders.forEach(function(order) {
+    var progress = order.total_ordered > 0 ? Math.round((order.total_dispatched || 0) / order.total_ordered * 100) : 0;
+    var progressClass = progress >= 100 ? 'complete' : (progress >= 50 ? 'high' : (progress > 0 ? 'medium' : 'low'));
+    var statusClass = getOrderStatusClass(order).replace('dispatched', 'complete');
+    var isSelected = selectedOrders.includes(order.order_number);
+    var isOverdue = new Date(order.delivery_deadline) < new Date() && order.dispatch_status !== 'Potpuno otpremljeno';
+    
+    html += '<tr class="' + (isSelected ? 'selected' : '') + '" style="' + (isOverdue ? 'background:#fff8f8;' : '') + '">';
+    html += '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="toggleOrderSelection(\'' + order.order_number + '\')"></td>';
+    html += '<td><strong>' + escapeHtml(order.order_number) + '</strong></td>';
+    html += '<td>' + escapeHtml(order.customer_name || '-') + '</td>';
+    html += '<td>' + (isOverdue ? '⚠️ ' : '') + formatDate(order.delivery_deadline) + '</td>';
+    html += '<td style="text-align:right">' + formatBroj(order.total_ordered, 0) + '</td>';
+    html += '<td style="text-align:right">' + formatBroj(order.total_produced || 0, 0) + '</td>';
+    html += '<td style="text-align:right">' + formatBroj(order.total_dispatched || 0, 0) + '</td>';
+    html += '<td><div class="progress-bar"><div class="fill ' + progressClass + '" style="width:' + Math.min(progress, 100) + '%"></div></div><small>' + progress + '%</small></td>';
+    html += '<td><span class="status-badge ' + statusClass + '">' + escapeHtml(order.dispatch_status || 'U proizvodnji') + '</span></td>';
+    html += '<td><button class="btn btn-sm btn-primary" onclick="showOrderPanel(\'' + order.order_number + '\')">👁️</button></td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function toggleSelectAllOrders() {
+  var checkbox = document.getElementById('selectAllOrders');
+  var checkboxes = document.querySelectorAll('#ordersTableBody input[type="checkbox"]');
+  
+  selectedOrders = [];
+  if (checkbox.checked) {
+    checkboxes.forEach(function(cb) {
+      cb.checked = true;
+      var orderNum = cb.closest('tr').querySelector('strong').textContent;
+      selectedOrders.push(orderNum);
+    });
+  } else {
+    checkboxes.forEach(function(cb) { cb.checked = false; });
+  }
+  
+  updateSelectedCount();
+}
+
+function toggleOrderSelection(orderNumber) {
+  var idx = selectedOrders.indexOf(orderNumber);
+  if (idx >= 0) {
+    selectedOrders.splice(idx, 1);
+  } else {
+    selectedOrders.push(orderNumber);
+  }
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  document.getElementById('selectedCount').textContent = selectedOrders.length;
+  document.getElementById('btnDispatchSelected').disabled = selectedOrders.length === 0;
+}
+
+// ============================================
+// LISTA OTPREMA
+// ============================================
+function applyDispatchesFilter() {
+  var filterStatus = document.getElementById('filterOtpremeStatus')?.value || '';
+  var filterPeriod = document.getElementById('filterOtpremePeriod')?.value || '30';
+  var filterSearch = (document.getElementById('filterOtpremeSearch')?.value || '').toLowerCase();
+  
+  var minDate = null;
+  if (filterPeriod !== 'all') {
+    minDate = new Date();
+    minDate.setDate(minDate.getDate() - parseInt(filterPeriod));
+  }
+  
+  var filtered = dispatchesData.filter(function(d) {
+    if (filterStatus && d.status !== filterStatus) return false;
+    if (filterSearch) {
+      var searchStr = (d.dispatch_number + ' ' + d.customer_name).toLowerCase();
+      if (!searchStr.includes(filterSearch)) return false;
+    }
+    if (minDate && d.dispatch_date) {
+      if (new Date(d.dispatch_date) < minDate) return false;
+    }
+    return true;
+  });
+  
+  renderDispatchesList(filtered);
+}
+
+function renderDispatchesList(dispatches) {
+  var container = document.getElementById('dispatchesList');
+  if (!container) return;
+  
+  if (dispatches.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Nema otprema za prikaz</div>';
+    return;
+  }
+  
+  var html = '';
+  dispatches.forEach(function(d) {
+    var statusClass = (d.status || 'Pripremljeno').toLowerCase();
+    
+    html += '<div class="dispatch-card ' + statusClass + '" data-id="' + d.id + '">';
+    html += '<div class="dispatch-header" onclick="toggleDispatchCard(this)">';
+    html += '<div>';
+    html += '<span class="dispatch-number">' + escapeHtml(d.dispatch_number) + '</span>';
+    html += '<span class="status-badge ' + statusClass + '" style="margin-left:10px;">' + escapeHtml(d.status) + '</span>';
+    html += '</div>';
+    html += '<div class="dispatch-meta">';
+    html += '<span>📅 ' + formatDate(d.dispatch_date) + '</span>';
+    html += '<span>👤 ' + escapeHtml(d.customer_name || '-') + '</span>';
+    html += '<span>📦 ' + (d.total_pallets || 0) + ' pal.</span>';
+    html += '<span>🔢 ' + formatBroj(d.total_quantity || 0, 0) + ' kom</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="dispatch-body">';
+    html += '<div class="dispatch-info-grid">';
+    html += '<div><strong>Vozilo:</strong> ' + escapeHtml(d.vehicle || '-') + '</div>';
+    html += '<div><strong>Vozač:</strong> ' + escapeHtml(d.driver || '-') + '</div>';
+    html += '<div><strong>CMR:</strong> ' + escapeHtml(d.cmr_number || '-') + '</div>';
+    html += '<div><strong>Poklopaca:</strong> ' + (d.covers_used || 0) + '</div>';
+    if (d.order_numbers) {
+      html += '<div><strong>Narudžbe:</strong> ' + d.order_numbers.join(', ') + '</div>';
+    }
+    if (d.dispatched_at) {
+      html += '<div><strong>Otpremljeno:</strong> ' + formatDateTime(d.dispatched_at) + '</div>';
+    }
+    html += '</div>';
+    html += '<div class="dispatch-actions">';
+    html += '<button class="btn btn-sm btn-info" onclick="viewDispatch(\'' + d.id + '\')">👁️ Detalji</button>';
+    html += '<button class="btn btn-sm btn-info" onclick="printOtpremnicaForDispatch(\'' + d.id + '\')">📄 Otpremnica</button>';
+    html += '<button class="btn btn-sm btn-info" onclick="printPalletListForDispatch(\'' + d.id + '\')">🏗️ Paletna lista</button>';
+    html += '<button class="btn btn-sm btn-secondary" onclick="openLinkPalletsModal(\'' + d.id + '\')">🔗 Poveži palete</button>';
+    if (d.status === 'Pripremljeno') {
+      html += '<button class="btn btn-sm btn-success" onclick="confirmDispatchById(\'' + d.id + '\')">🚛 Potvrdi otpremu</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+function toggleDispatchCard(header) {
+  header.closest('.dispatch-card').classList.toggle('expanded');
+}
+
+// ============================================
+// POVRATI
+// ============================================
+function renderReturns() {
+  var tbody = document.getElementById('returnsTableBody');
+  if (!tbody) return;
+  
+  if (returnsData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#999;">Nema povrata</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  returnsData.forEach(function(r) {
+    var reasonText = {
+      'damaged': 'Oštećena roba',
+      'wrong_order': 'Pogrešna narudžba',
+      'quality': 'Problem s kvalitetom',
+      'overdelivery': 'Višak isporuke',
+      'other': 'Ostalo'
+    }[r.return_reason] || r.return_reason;
+    
+    html += '<tr>';
+    html += '<td>' + formatDateTime(r.returned_at) + '</td>';
+    html += '<td>' + escapeHtml(r.prod_dispatch?.dispatch_number || '-') + '</td>';
+    html += '<td>' + escapeHtml(r.pallet_number || '-') + '</td>';
+    html += '<td style="text-align:right">' + formatBroj(r.quantity_returned, 0) + '</td>';
+    html += '<td>' + escapeHtml(reasonText) + '</td>';
+    html += '<td>' + escapeHtml(r.return_notes || '-') + '</td>';
+    html += '<td>' + escapeHtml(r.returned_by || '-') + '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// ============================================
+// PANEL DETALJI NARUDŽBE
+// ============================================
+async function showOrderPanel(orderNumber) {
+  selectedOrderNumber = orderNumber;
+  var order = ordersGrouped[orderNumber];
+  if (!order) return;
+  
+  renderCalendar();
+  
+  document.getElementById('panelOrderNumber').textContent = order.order_number;
+  document.getElementById('panelCustomer').textContent = order.customer_name || '-';
+  document.getElementById('panelDeadline').textContent = formatDate(order.delivery_deadline);
+  document.getElementById('panelOrdered').textContent = formatBroj(order.total_ordered, 0);
+  document.getElementById('panelProduced').textContent = formatBroj(order.total_produced || 0, 0);
+  document.getElementById('panelDispatched').textContent = formatBroj(order.total_dispatched || 0, 0);
+  document.getElementById('panelAvailable').textContent = formatBroj(order.available_for_dispatch || 0, 0);
+  
+  // Artikli
+  var articlesHtml = '';
+  order.articles.forEach(function(a) {
+    articlesHtml += '<tr>';
+    articlesHtml += '<td><strong>' + escapeHtml(a.article_name || '-') + '</strong></td>';
+    articlesHtml += '<td>' + escapeHtml(a.article_code || '-') + '</td>';
+    articlesHtml += '<td style="text-align:right">' + formatBroj(a.quantity_ordered, 0) + '</td>';
+    articlesHtml += '<td style="text-align:right">-</td>';
+    articlesHtml += '<td style="text-align:right">-</td>';
+    articlesHtml += '<td>-</td>';
+    articlesHtml += '</tr>';
+  });
+  document.getElementById('panelArticlesBody').innerHTML = articlesHtml;
+  
+  // Dostupne palete
+  var pallets = await loadPalletsForOrder(orderNumber);
+  document.getElementById('panelPalletsCount').textContent = pallets.length;
+  renderPalletsList(pallets, 'panelPalletsList', false);
+  
+  // Povijest otprema
+  var orderDispatches = dispatchesData.filter(function(d) {
+    return d.order_numbers && d.order_numbers.includes(orderNumber);
+  });
+  renderOrderDispatchHistory(orderDispatches);
+  
+  // Komentari
+  var comments = await loadComments(orderNumber);
+  renderComments(comments);
+  
+  document.getElementById('orderPanel').classList.add('active');
+  document.getElementById('orderPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeOrderPanel() {
+  selectedOrderNumber = null;
+  document.getElementById('orderPanel').classList.remove('active');
+  renderCalendar();
+}
+
+function renderPalletsList(pallets, containerId, selectable) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  
+  if (pallets.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">Nema dostupnih paleta</div>';
+    return;
+  }
+  
+  var html = '';
+  pallets.forEach(function(p) {
+    var lineClass = (p.production_line || '').toLowerCase().replace('w&h', 'wh');
+    var isSelected = selectedPallets.includes(p.id);
+    
+    html += '<div class="pallet-item ' + (isSelected ? 'selected' : '') + '" data-id="' + p.id + '"' + 
+      (selectable ? ' onclick="togglePalletSelection(\'' + p.id + '\')"' : '') + '>';
+    
+    if (selectable) {
+      html += '<input type="checkbox" class="pallet-checkbox" ' + (isSelected ? 'checked' : '') + '>';
+    }
+    
+    html += '<div class="pallet-info">';
+    html += '<div class="pallet-number">' + escapeHtml(p.pallet_number) + '</div>';
+    html += '<div class="pallet-details">' + escapeHtml(p.article_name || '-') + ' • ' + escapeHtml(p.order_number || '-') + '</div>';
+    html += '</div>';
+    html += '<span class="pallet-quantity">' + formatBroj(p.quantity, 0) + '</span>';
+    html += '<span class="pallet-line ' + lineClass + '">' + escapeHtml(p.production_line || '-') + '</span>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+function renderOrderDispatchHistory(dispatches) {
+  var container = document.getElementById('panelDispatchHistory');
+  if (!container) return;
+  
+  if (dispatches.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Nema prethodnih otprema</div>';
+    return;
+  }
+  
+  var html = '';
+  dispatches.forEach(function(d) {
+    var statusClass = (d.status || 'Pripremljeno').toLowerCase();
+    html += '<div class="dispatch-card ' + statusClass + '" style="margin-bottom:10px;">';
+    html += '<div class="dispatch-header" style="padding:10px 15px;">';
+    html += '<span class="dispatch-number">' + escapeHtml(d.dispatch_number) + '</span>';
+    html += '<span class="status-badge ' + statusClass + '">' + escapeHtml(d.status) + '</span>';
+    html += '<span>' + formatDate(d.dispatch_date) + '</span>';
+    html += '<span>' + formatBroj(d.total_quantity || 0, 0) + ' kom</span>';
+    html += '</div></div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+// ============================================
+// KOMENTARI
+// ============================================
+function renderComments(comments) {
+  var container = document.getElementById('panelComments');
+  if (!container) return;
+  
+  if (!comments || comments.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Nema komentara</div>';
+    return;
+  }
+  
+  var html = '';
+  comments.forEach(function(c) {
+    var typeClass = c.comment_type || 'general';
+    if (c.is_pinned) typeClass += ' pinned';
+    
+    html += '<div class="comment-item ' + typeClass + '">';
+    html += '<div class="comment-header">';
+    html += '<span>' + escapeHtml(c.created_by || 'Korisnik') + ' • ' + formatDateTime(c.created_at) + '</span>';
+    html += '<span style="text-transform:capitalize;">' + escapeHtml(c.comment_type || 'Općenito') + '</span>';
+    html += '</div>';
+    html += '<div class="comment-text">' + escapeHtml(c.comment_text) + '</div>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+async function addComment() {
+  if (!selectedOrderNumber) return;
+  
+  var text = document.getElementById('newCommentText')?.value.trim();
+  var type = document.getElementById('newCommentType')?.value || 'general';
+  
+  if (!text) {
+    showMessage('Unesite komentar', 'warning');
+    return;
+  }
+  
+  try {
+    await initSupabase().from('prod_order_comments').insert({
+      order_number: selectedOrderNumber,
+      comment_text: text,
+      comment_type: type,
+      created_by: Auth.getUser()?.name || 'Korisnik'
+    });
+    
+    document.getElementById('newCommentText').value = '';
+    var comments = await loadComments(selectedOrderNumber);
+    renderComments(comments);
+    showMessage('✅ Komentar dodan', 'success');
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// NOTIFIKACIJE
+// ============================================
+function updateNotificationsBadge() {
+  var count = notificationsData.length;
+  var badge = document.getElementById('notifCount');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function toggleNotifications() {
+  var dropdown = document.getElementById('notifDropdown');
+  dropdown.classList.toggle('active');
+  
+  if (dropdown.classList.contains('active')) {
+    renderNotifications();
+  }
+}
+
+function renderNotifications() {
+  var dropdown = document.getElementById('notifDropdown');
+  
+  if (notificationsData.length === 0) {
+    dropdown.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Nema novih obavijesti</div>';
+    return;
+  }
+  
+  var html = '';
+  notificationsData.forEach(function(n) {
+    html += '<div class="notification-item unread" onclick="markNotificationRead(\'' + n.id + '\')">';
+    html += '<div class="notification-title">' + escapeHtml(n.title) + '</div>';
+    html += '<div class="notification-message">' + escapeHtml(n.message || '') + '</div>';
+    html += '<div class="notification-time">' + formatDateTime(n.created_at) + '</div>';
+    html += '</div>';
+  });
+  
+  dropdown.innerHTML = html;
+}
+
+async function markNotificationRead(id) {
+  try {
+    await initSupabase()
+      .from('prod_notifications')
+      .update({ is_read: true, read_at: new Date().toISOString(), read_by: Auth.getUser()?.name })
+      .eq('id', id);
+    
+    notificationsData = notificationsData.filter(function(n) { return n.id !== id; });
+    updateNotificationsBadge();
+    renderNotifications();
+  } catch (e) {
+    console.error('Notification error:', e);
+  }
+}
+
+// ============================================
+// NOVA OTPREMA - MODAL
+// ============================================
+async function openNewDispatchModal() {
+  currentDispatchStep = 1;
+  selectedPallets = [];
+  
+  // Generiraj broj otpreme
+  var year = new Date().getFullYear();
+  var result = await initSupabase()
+    .from('prod_dispatch')
+    .select('dispatch_number')
+    .like('dispatch_number', 'OTP-' + year + '-%')
+    .order('dispatch_number', { ascending: false })
+    .limit(1);
+  
+  var nextNum = 1;
+  if (result.data?.[0]) {
+    var match = result.data[0].dispatch_number.match(/OTP-\d+-(\d+)/);
+    if (match) nextNum = parseInt(match[1]) + 1;
+  }
+  
+  document.getElementById('dispatchNumber').value = 'OTP-' + year + '-' + String(nextNum).padStart(4, '0');
+  document.getElementById('dispatchDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dispatchType').value = 'full';
+  document.getElementById('dispatchCustomer').value = '';
+  document.getElementById('dispatchAddress').value = '';
+  document.getElementById('dispatchCity').value = '';
+  document.getElementById('dispatchCountry').value = 'Hrvatska';
+  document.getElementById('dispatchContact').value = '';
+  document.getElementById('dispatchPhone').value = '';
+  document.getElementById('dispatchVehicle').value = '';
+  document.getElementById('dispatchDriver').value = '';
+  document.getElementById('dispatchCMR').value = '';
+  document.getElementById('dispatchNotes').value = '';
+  
+  updateDispatchModalButtons();
+  showDispatchStep(1);
+  openModal('newDispatchModal');
+}
+
+async function openDispatchForOrder() {
+  if (!selectedOrderNumber) return;
+  
+  await openNewDispatchModal();
+  
+  var order = ordersGrouped[selectedOrderNumber];
+  if (order) {
+    document.getElementById('dispatchCustomer').value = order.customer_name || '';
+  }
+  
+  selectedOrders = [selectedOrderNumber];
+}
+
+function createDispatchFromSelected() {
+  if (selectedOrders.length === 0) return;
+  
+  openNewDispatchModal().then(function() {
+    // Postavi kupca ako su sve narudžbe istog kupca
+    var customers = [...new Set(selectedOrders.map(function(on) {
+      return ordersGrouped[on]?.customer_name;
+    }).filter(Boolean))];
+    
+    if (customers.length === 1) {
+      document.getElementById('dispatchCustomer').value = customers[0];
+    }
+  });
+}
+
+function showDispatchStep(step) {
+  document.getElementById('dispatchStep1').style.display = step === 1 ? 'block' : 'none';
+  document.getElementById('dispatchStep2').style.display = step === 2 ? 'block' : 'none';
+  document.getElementById('dispatchStep3').style.display = step === 3 ? 'block' : 'none';
+  currentDispatchStep = step;
+  updateDispatchModalButtons();
+}
+
+function updateDispatchModalButtons() {
+  var btnBack = document.getElementById('btnDispatchBack');
+  var btnNext = document.getElementById('btnDispatchNext');
+  var btnSave = document.getElementById('btnDispatchSave');
+  
+  btnBack.style.display = currentDispatchStep > 1 ? 'inline-block' : 'none';
+  btnNext.style.display = currentDispatchStep < 3 ? 'inline-block' : 'none';
+  btnSave.style.display = currentDispatchStep === 3 ? 'inline-block' : 'none';
+}
+
+async function dispatchNextStep() {
+  if (currentDispatchStep === 1) {
+    // Validacija
+    var customer = document.getElementById('dispatchCustomer').value;
+    if (!customer && selectedOrders.length === 0) {
+      showMessage('Odaberite narudžbu ili unesite kupca', 'warning');
+      return;
+    }
+    
+    var dispatchType = document.getElementById('dispatchType').value;
+    
+    if (dispatchType === 'partial') {
+      // Učitaj palete za odabir
+      await loadPalletsForDispatch();
+      showDispatchStep(2);
+    } else {
+      // Preskoči korak 2 za kompletnu otpremu
+      await loadPalletsForDispatch();
+      selectAllPallets();
+      await prepareDispatchSummary();
+      showDispatchStep(3);
+    }
+    
+  } else if (currentDispatchStep === 2) {
+    if (selectedPallets.length === 0) {
+      showMessage('Odaberite barem jednu paletu', 'warning');
+      return;
+    }
+    await prepareDispatchSummary();
+    showDispatchStep(3);
+  }
+}
+
+function dispatchPrevStep() {
+  if (currentDispatchStep === 2) {
+    showDispatchStep(1);
+  } else if (currentDispatchStep === 3) {
+    var dispatchType = document.getElementById('dispatchType').value;
+    showDispatchStep(dispatchType === 'partial' ? 2 : 1);
+  }
+}
+
+async function loadPalletsForDispatch() {
+  var allPallets = [];
+  
+  if (selectedOrders.length > 0) {
+    for (var i = 0; i < selectedOrders.length; i++) {
+      var pallets = await loadPalletsForOrder(selectedOrders[i]);
+      allPallets = allPallets.concat(pallets);
+    }
+  } else {
+    // Dohvati sve dostupne palete
+    var result = await initSupabase().rpc('get_available_pallets_for_dispatch', {});
+    allPallets = result.data || [];
+  }
+  
+  palletsData = allPallets;
+  document.getElementById('dispatchOrderNumbers').textContent = selectedOrders.join(', ') || 'Sve narudžbe';
+  renderPalletsList(allPallets, 'dispatchPalletsList', true);
+  updatePalletsSelection();
+}
+
+function togglePalletSelection(palletId) {
+  var idx = selectedPallets.indexOf(palletId);
+  if (idx >= 0) {
+    selectedPallets.splice(idx, 1);
+  } else {
+    selectedPallets.push(palletId);
+  }
+  
+  // Update UI
+  var item = document.querySelector('.pallet-item[data-id="' + palletId + '"]');
+  if (item) {
+    item.classList.toggle('selected');
+    var checkbox = item.querySelector('.pallet-checkbox');
+    if (checkbox) checkbox.checked = selectedPallets.includes(palletId);
+  }
+  
+  updatePalletsSelection();
+}
+
+function selectAllPallets() {
+  selectedPallets = palletsData.map(function(p) { return p.id; });
+  document.querySelectorAll('#dispatchPalletsList .pallet-item').forEach(function(item) {
+    item.classList.add('selected');
+    var checkbox = item.querySelector('.pallet-checkbox');
+    if (checkbox) checkbox.checked = true;
+  });
+  updatePalletsSelection();
+}
+
+function deselectAllPallets() {
+  selectedPallets = [];
+  document.querySelectorAll('#dispatchPalletsList .pallet-item').forEach(function(item) {
+    item.classList.remove('selected');
+    var checkbox = item.querySelector('.pallet-checkbox');
+    if (checkbox) checkbox.checked = false;
+  });
+  updatePalletsSelection();
+}
+
+function updatePalletsSelection() {
+  var selectedData = palletsData.filter(function(p) {
+    return selectedPallets.includes(p.id);
+  });
+  
+  var totalQty = selectedData.reduce(function(sum, p) { return sum + (p.quantity || 0); }, 0);
+  var dimensions = [...new Set(selectedData.map(function(p) { return p.pallet_dimension; }).filter(Boolean))];
+  
+  document.getElementById('selectedPalletsCount').textContent = selectedPallets.length;
+  document.getElementById('selectedQuantity').textContent = formatBroj(totalQty, 0);
+  document.getElementById('selectedCovers').textContent = selectedPallets.length; // 1 poklopac po paleti
+}
+
+async function prepareDispatchSummary() {
+  var selectedData = palletsData.filter(function(p) {
+    return selectedPallets.includes(p.id);
+  });
+  
+  var totalQty = selectedData.reduce(function(sum, p) { return sum + (p.quantity || 0); }, 0);
+  
+  // Summary info
+  var summaryHtml = '';
+  summaryHtml += '<div class="info-item"><div class="info-label">Broj otpreme</div><div class="info-value">' + document.getElementById('dispatchNumber').value + '</div></div>';
+  summaryHtml += '<div class="info-item"><div class="info-label">Datum</div><div class="info-value">' + formatDate(document.getElementById('dispatchDate').value) + '</div></div>';
+  summaryHtml += '<div class="info-item"><div class="info-label">Kupac</div><div class="info-value">' + escapeHtml(document.getElementById('dispatchCustomer').value) + '</div></div>';
+  summaryHtml += '<div class="info-item"><div class="info-label">Broj paleta</div><div class="info-value large">' + selectedPallets.length + '</div></div>';
+  summaryHtml += '<div class="info-item"><div class="info-label">Ukupna količina</div><div class="info-value large">' + formatBroj(totalQty, 0) + '</div></div>';
+  summaryHtml += '<div class="info-item"><div class="info-label">Poklopaca</div><div class="info-value">' + selectedPallets.length + '</div></div>';
+  
+  document.getElementById('dispatchSummary').innerHTML = summaryHtml;
+  
+  // Items preview
+  var itemsHtml = '';
+  selectedData.forEach(function(p) {
+    itemsHtml += '<tr>';
+    itemsHtml += '<td><strong>' + escapeHtml(p.pallet_number) + '</strong></td>';
+    itemsHtml += '<td>' + escapeHtml(p.article_name || '-') + '</td>';
+    itemsHtml += '<td>' + escapeHtml(p.order_number || '-') + '</td>';
+    itemsHtml += '<td style="text-align:right">' + formatBroj(p.quantity, 0) + '</td>';
+    itemsHtml += '<td>' + escapeHtml(p.production_line || '-') + '</td>';
+    itemsHtml += '</tr>';
+  });
+  
+  document.getElementById('dispatchItemsPreview').innerHTML = itemsHtml;
+}
+
+async function saveDispatch() {
+  showLoading('Spremanje otpreme...');
+  
+  try {
+    var selectedData = palletsData.filter(function(p) {
+      return selectedPallets.includes(p.id);
+    });
+    
+    var totalQty = selectedData.reduce(function(sum, p) { return sum + (p.quantity || 0); }, 0);
+    var orderNumbers = [...new Set(selectedData.map(function(p) { return p.order_number; }).filter(Boolean))];
+    
+    // 1. Kreiraj otpremu
+    var dispatchData = {
+      dispatch_number: document.getElementById('dispatchNumber').value,
+      dispatch_date: document.getElementById('dispatchDate').value,
+      customer_name: document.getElementById('dispatchCustomer').value,
+      dispatch_type: document.getElementById('dispatchType').value,
+      destination_address: document.getElementById('dispatchAddress').value || null,
+      destination_city: document.getElementById('dispatchCity').value || null,
+      destination_country: document.getElementById('dispatchCountry').value || null,
+      contact_person: document.getElementById('dispatchContact').value || null,
+      contact_phone: document.getElementById('dispatchPhone').value || null,
+      vehicle: document.getElementById('dispatchVehicle').value || null,
+      driver: document.getElementById('dispatchDriver').value || null,
+      cmr_number: document.getElementById('dispatchCMR').value || null,
+      notes: document.getElementById('dispatchNotes').value || null,
+      total_pallets: selectedPallets.length,
+      total_quantity: totalQty,
+      status: 'Pripremljeno',
+      created_by: Auth.getUser()?.name || 'System'
+    };
+    
+    var insertResult = await initSupabase()
+      .from('prod_dispatch')
+      .insert(dispatchData)
+      .select()
+      .single();
+    
+    if (insertResult.error) throw insertResult.error;
+    
+    var dispatchId = insertResult.data.id;
+    
+    // 2. Kreiraj dispatch_items (grupirano po order_number)
+    var itemsByOrder = {};
+    selectedData.forEach(function(p) {
+      var on = p.order_number || 'UNKNOWN';
+      if (!itemsByOrder[on]) {
+        itemsByOrder[on] = {
+          order_number: on,
+          article_code: p.article_code,
+          article_name: p.article_name,
+          quantity_dispatched: 0,
+          pallets_count: 0,
+          pallet_dimension: p.pallet_dimension
+        };
+      }
+      itemsByOrder[on].quantity_dispatched += (p.quantity || 0);
+      itemsByOrder[on].pallets_count += 1;
+    });
+    
+    var itemsToInsert = Object.values(itemsByOrder).map(function(item) {
+      return {
+        dispatch_id: dispatchId,
+        order_number: item.order_number,
+        article_code: item.article_code,
+        article_name: item.article_name,
+        quantity_dispatched: item.quantity_dispatched,
+        pallets_count: item.pallets_count,
+        pallet_dimension: item.pallet_dimension
+      };
+    });
+    
+    var itemsResult = await initSupabase()
+      .from('prod_dispatch_items')
+      .insert(itemsToInsert)
+      .select();
+    
+    if (itemsResult.error) throw itemsResult.error;
+    
+    // 3. Kreiraj dispatch_pallets (veza sa GOP paletama)
+    var palletsToInsert = selectedData.map(function(p) {
+      var dispatchItem = itemsResult.data.find(function(di) { return di.order_number === p.order_number; });
+      return {
+        dispatch_id: dispatchId,
+        dispatch_item_id: dispatchItem?.id,
+        gop_id: p.id,
+        pallet_number: p.pallet_number,
+        quantity: p.quantity,
+        pallet_dimension: p.pallet_dimension
+      };
+    });
+    
+    await initSupabase()
+      .from('prod_dispatch_pallets')
+      .insert(palletsToInsert);
+    
+    // 4. Ažuriraj GOP status na 'reserved'
+    await initSupabase()
+      .from('prod_inventory_gop')
+      .update({ dispatch_status: 'reserved' })
+      .in('id', selectedPallets);
+    
+    // 5. Kreiraj notifikaciju
+    await initSupabase().rpc('create_notification', {
+      p_type: 'dispatch_ready',
+      p_title: 'Nova otprema pripremljena',
+      p_message: 'Otprema ' + dispatchData.dispatch_number + ' za ' + dispatchData.customer_name + ' je spremna.',
+      p_related_id: dispatchId,
+      p_related_type: 'dispatch',
+      p_created_by: Auth.getUser()?.name || 'System'
+    });
+    
+    hideLoading();
+    closeModal('newDispatchModal');
+    showMessage('✅ Otprema kreirana: ' + dispatchData.dispatch_number, 'success');
+    
+    // Refresh
+    await refreshOtpreme();
+    
+  } catch (e) {
+    hideLoading();
+    console.error('Save dispatch error:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// PREGLED I POTVRDA OTPREME
+// ============================================
+async function viewDispatch(dispatchId) {
+  showLoading('Učitavanje...');
+  
+  try {
+    var dispatch = dispatchesData.find(function(d) { return d.id === dispatchId; });
+    if (!dispatch) {
+      // Dohvati iz baze
+      var result = await initSupabase()
+        .from('v_dispatch_summary')
+        .select('*')
+        .eq('id', dispatchId)
+        .single();
+      dispatch = result.data;
+    }
+    
+    if (!dispatch) throw new Error('Otprema nije pronađena');
+    
+    currentDispatch = dispatch;
+    
+    // Dohvati palete
+    var palletsResult = await initSupabase()
+      .from('prod_dispatch_pallets')
+      .select('*, prod_inventory_gop(article_name, production_line)')
+      .eq('dispatch_id', dispatchId);
+    
+    var pallets = palletsResult.data || [];
+    
+    // Render
+    document.getElementById('viewDispatchNumber').textContent = dispatch.dispatch_number;
+    
+    var html = '';
+    html += '<div class="info-grid">';
+    html += '<div class="info-item"><div class="info-label">Kupac</div><div class="info-value">' + escapeHtml(dispatch.customer_name) + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Datum</div><div class="info-value">' + formatDate(dispatch.dispatch_date) + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Status</div><div class="info-value"><span class="status-badge ' + (dispatch.status || '').toLowerCase() + '">' + escapeHtml(dispatch.status) + '</span></div></div>';
+    html += '<div class="info-item"><div class="info-label">Paleta</div><div class="info-value large">' + (dispatch.total_pallets || 0) + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Količina</div><div class="info-value large">' + formatBroj(dispatch.total_quantity || 0, 0) + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Poklopaca</div><div class="info-value">' + (dispatch.covers_used || pallets.length) + '</div></div>';
+    html += '</div>';
+    
+    html += '<div class="info-grid" style="margin-top:15px;">';
+    html += '<div class="info-item"><div class="info-label">Vozilo</div><div class="info-value">' + escapeHtml(dispatch.vehicle || '-') + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Vozač</div><div class="info-value">' + escapeHtml(dispatch.driver || '-') + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">CMR</div><div class="info-value">' + escapeHtml(dispatch.cmr_number || '-') + '</div></div>';
+    html += '<div class="info-item"><div class="info-label">Adresa</div><div class="info-value">' + escapeHtml(dispatch.destination_city || '-') + ', ' + escapeHtml(dispatch.destination_country || '-') + '</div></div>';
+    html += '</div>';
+    
+    if (dispatch.notes) {
+      html += '<div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px;"><strong>Napomene:</strong> ' + escapeHtml(dispatch.notes) + '</div>';
+    }
+    
+    html += '<h4 style="margin:20px 0 10px;">📦 Palete</h4>';
+    html += '<table class="orders-table"><thead><tr><th>Paleta</th><th>Artikl</th><th style="text-align:right">Količina</th><th>Linija</th>';
+    if (dispatch.status === 'Otpremljeno') {
+      html += '<th>Akcije</th>';
+    }
+    html += '</tr></thead><tbody>';
+    
+    pallets.forEach(function(p) {
+      html += '<tr>';
+      html += '<td><strong>' + escapeHtml(p.pallet_number) + '</strong></td>';
+      html += '<td>' + escapeHtml(p.prod_inventory_gop?.article_name || '-') + '</td>';
+      html += '<td style="text-align:right">' + formatBroj(p.quantity, 0) + '</td>';
+      html += '<td>' + escapeHtml(p.prod_inventory_gop?.production_line || '-') + '</td>';
+      if (dispatch.status === 'Otpremljeno') {
+        html += '<td><button class="btn btn-sm btn-warning" onclick="openReturnModal(\'' + dispatchId + '\', \'' + p.gop_id + '\', \'' + p.pallet_number + '\', ' + p.quantity + ')">↩️ Povrat</button></td>';
+      }
+      html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    
+    document.getElementById('viewDispatchBody').innerHTML = html;
+    
+    // Update buttons
+    document.getElementById('btnConfirmDispatch').style.display = dispatch.status === 'Pripremljeno' ? 'inline-block' : 'none';
+    document.getElementById('btnCMR').style.display = dispatch.cmr_number ? 'inline-block' : 'none';
+    
+    hideLoading();
+    openModal('viewDispatchModal');
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+async function confirmDispatch() {
+  if (!currentDispatch) return;
+  
+  if (!confirm('Potvrditi otpremu ' + currentDispatch.dispatch_number + '?\n\nOvo će:\n- Označiti palete kao otpremljene\n- Skinuti poklopce sa stanja')) {
+    return;
+  }
+  
+  showLoading('Potvrda otpreme...');
+  
+  try {
+    // Dohvati palete za ovu otpremu
+    var palletsResult = await initSupabase()
+      .from('prod_dispatch_pallets')
+      .select('gop_id')
+      .eq('dispatch_id', currentDispatch.id);
+    
+    var palletIds = (palletsResult.data || []).map(function(p) { return p.gop_id; });
+    
+    // Pozovi RPC funkciju koja skida poklopce i ažurira status
+    var result = await initSupabase().rpc('dispatch_pallets', {
+      p_dispatch_id: currentDispatch.id,
+      p_pallet_ids: palletIds,
+      p_user_name: Auth.getUser()?.name || 'System'
+    });
+    
+    if (result.error) throw result.error;
+    
+    // Kreiraj notifikaciju
+    await initSupabase().rpc('create_notification', {
+      p_type: 'dispatch_sent',
+      p_title: 'Otprema potvrđena',
+      p_message: 'Otprema ' + currentDispatch.dispatch_number + ' je otpremljena. Poklopaca skinuto: ' + result.data.covers_used,
+      p_related_id: currentDispatch.id,
+      p_related_type: 'dispatch',
+      p_created_by: Auth.getUser()?.name || 'System'
+    });
+    
+    hideLoading();
+    closeModal('viewDispatchModal');
+    showMessage('✅ Otprema potvrđena! Poklopaca skinuto: ' + result.data.covers_used, 'success');
+    
+    await refreshOtpreme();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+async function confirmDispatchById(dispatchId) {
+  currentDispatch = dispatchesData.find(function(d) { return d.id === dispatchId; });
+  if (currentDispatch) {
+    await confirmDispatch();
+  }
+}
+
+// ============================================
+// POVRAT PALETE
+// ============================================
+function openReturnModal(dispatchId, gopId, palletNumber, quantity) {
+  document.getElementById('returnDispatchId').value = dispatchId;
+  document.getElementById('returnGopId').value = gopId;
+  document.getElementById('returnPalletNumber').value = palletNumber;
+  document.getElementById('returnQuantity').value = quantity;
+  document.getElementById('returnReason').value = 'damaged';
+  document.getElementById('returnNotes').value = '';
+  
+  openModal('returnModal');
+}
+
+async function processReturn() {
+  var dispatchId = document.getElementById('returnDispatchId').value;
+  var gopId = document.getElementById('returnGopId').value;
+  var quantity = parseInt(document.getElementById('returnQuantity').value) || 0;
+  var reason = document.getElementById('returnReason').value;
+  var notes = document.getElementById('returnNotes').value;
+  
+  if (!dispatchId || !gopId) {
+    showMessage('Nedostaju podaci', 'error');
+    return;
+  }
+  
+  showLoading('Evidentiranje povrata...');
+  
+  try {
+    var result = await initSupabase().rpc('return_pallet', {
+      p_dispatch_id: dispatchId,
+      p_gop_id: gopId,
+      p_quantity: quantity,
+      p_reason: reason,
+      p_notes: notes,
+      p_user_name: Auth.getUser()?.name || 'System'
+    });
+    
+    if (result.error) throw result.error;
+    
+    hideLoading();
+    closeModal('returnModal');
+    closeModal('viewDispatchModal');
+    showMessage('✅ Povrat evidentiran', 'success');
+    
+    await refreshOtpreme();
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// ============================================
+// DOKUMENTI - PRINT
+// ============================================
+function printOtpremnica() {
+  if (!currentDispatch) return;
+  printOtpremnicaForDispatch(currentDispatch.id);
+}
+
+async function printOtpremnicaForDispatch(dispatchId) {
+  var dispatch = dispatchesData.find(function(d) { return d.id === dispatchId; });
+  if (!dispatch) return;
+  
+  // Dohvati stavke
+  var itemsResult = await initSupabase()
+    .from('prod_dispatch_items')
+    .select('*')
+    .eq('dispatch_id', dispatchId);
+  
+  var items = itemsResult.data || [];
+  
+  var html = '<div class="document-header">';
+  html += '<div class="document-logo"><img src="' + CARTA_LOGO + '" alt="Carta" onerror="this.style.display=\'none\'"></div>';
+  html += '<div class="document-title"><h1>OTPREMNICA</h1><div class="number">' + escapeHtml(dispatch.dispatch_number) + '</div></div>';
+  html += '</div>';
+  
+  html += '<div class="document-info">';
+  html += '<div class="document-box"><h4>Pošiljatelj</h4><strong>' + COMPANY_INFO.name + '</strong><br>' + COMPANY_INFO.address + '<br>' + COMPANY_INFO.city + '<br>OIB: ' + COMPANY_INFO.oib + '</div>';
+  html += '<div class="document-box"><h4>Primatelj</h4><strong>' + escapeHtml(dispatch.customer_name) + '</strong>';
+  if (dispatch.destination_address) html += '<br>' + escapeHtml(dispatch.destination_address);
+  if (dispatch.destination_city) html += '<br>' + escapeHtml(dispatch.destination_city);
+  if (dispatch.destination_country && dispatch.destination_country !== 'Hrvatska') html += ', ' + escapeHtml(dispatch.destination_country);
+  html += '</div>';
+  html += '</div>';
+  
+  html += '<div class="document-info">';
+  html += '<div class="document-box"><h4>Datum otpreme</h4><strong>' + formatDate(dispatch.dispatch_date) + '</strong></div>';
+  html += '<div class="document-box"><h4>Prijevoz</h4><strong>' + escapeHtml(dispatch.vehicle || '-') + '</strong><br>Vozač: ' + escapeHtml(dispatch.driver || '-') + '</div>';
+  html += '</div>';
+  
+  html += '<table class="document-table">';
+  html += '<thead><tr><th>#</th><th>Artikl</th><th>Šifra</th><th style="text-align:right">Količina</th><th style="text-align:right">Paleta</th></tr></thead>';
+  html += '<tbody>';
+  
+  items.forEach(function(item, i) {
+    html += '<tr>';
+    html += '<td>' + (i + 1) + '</td>';
+    html += '<td>' + escapeHtml(item.article_name || '-') + '</td>';
+    html += '<td>' + escapeHtml(item.article_code || '-') + '</td>';
+    html += '<td style="text-align:right">' + formatBroj(item.quantity_dispatched || 0, 0) + '</td>';
+    html += '<td style="text-align:right">' + (item.pallets_count || 0) + '</td>';
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table>';
+  
+  html += '<div class="document-totals">';
+  html += '<div class="row"><span>Ukupno stavki:</span><span>' + items.length + '</span></div>';
+  html += '<div class="row"><span>Ukupno paleta:</span><span>' + (dispatch.total_pallets || 0) + '</span></div>';
+  html += '<div class="row final"><span>Ukupno količina:</span><span>' + formatBroj(dispatch.total_quantity || 0, 0) + ' kom</span></div>';
+  html += '</div>';
+  
+  html += '<div class="document-signatures">';
+  html += '<div class="signature-box"><div class="signature-line">Predao</div></div>';
+  html += '<div class="signature-box"><div class="signature-line">Preuzeo</div></div>';
+  html += '</div>';
+  
+  html += '<div class="document-footer">Dokument generiran: ' + new Date().toLocaleString('hr-HR') + ' | ' + COMPANY_INFO.name + '</div>';
+  
+  document.getElementById('printModalTitle').textContent = '📄 Otpremnica';
+  document.getElementById('printContent').innerHTML = html;
+  openModal('printModal');
+}
+
+async function printPalletList() {
+  if (!currentDispatch) {
+    showMessage('Nema učitane otpreme', 'warning');
+    return;
+  }
+  await printPalletListForDispatch(currentDispatch.id);
+}
+
+async function printPalletListForDispatch(dispatchId) {
+  var dispatch = dispatchesData.find(function(d) { return d.id === dispatchId; });
+  if (!dispatch) {
+    // Dohvati iz baze
+    var result = await initSupabase()
+      .from('v_dispatch_summary')
+      .select('*')
+      .eq('id', dispatchId)
+      .single();
+    dispatch = result.data;
+  }
+  
+  if (!dispatch) {
+    showMessage('Otprema nije pronađena', 'error');
+    return;
+  }
+  
+  // Dohvati palete
+  var palletsResult = await initSupabase()
+    .from('prod_dispatch_pallets')
+    .select('*, prod_inventory_gop(article_name, production_line, pallet_dimension)')
+    .eq('dispatch_id', dispatchId);
+  
+  var pallets = palletsResult.data || [];
+  
+  var html = '<div class="document-header">';
+  html += '<div class="document-logo"><img src="' + CARTA_LOGO + '" alt="Carta" onerror="this.style.display=\'none\'"></div>';
+  html += '<div class="document-title"><h1>PALETNA LISTA</h1><div class="number">' + escapeHtml(dispatch.dispatch_number) + '</div></div>';
+  html += '</div>';
+  
+  html += '<div class="document-info">';
+  html += '<div class="document-box"><h4>Kupac</h4><strong>' + escapeHtml(dispatch.customer_name) + '</strong></div>';
+  html += '<div class="document-box"><h4>Datum</h4><strong>' + formatDate(dispatch.dispatch_date) + '</strong></div>';
+  html += '</div>';
+  
+  html += '<table class="document-table">';
+  html += '<thead><tr><th>#</th><th>Broj palete</th><th>Artikl</th><th>Dimenzija</th><th style="text-align:right">Količina</th><th>Linija</th></tr></thead>';
+  html += '<tbody>';
+  
+  if (pallets.length === 0) {
+    html += '<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">Nema povezanih paleta u sustavu.<br><small>Ova otprema je možda kreirana prije uvođenja sustava praćenja paleta.</small></td></tr>';
+  } else {
+    pallets.forEach(function(p, i) {
+      html += '<tr>';
+      html += '<td>' + (i + 1) + '</td>';
+      html += '<td><strong>' + escapeHtml(p.pallet_number) + '</strong></td>';
+      html += '<td>' + escapeHtml(p.prod_inventory_gop?.article_name || '-') + '</td>';
+      html += '<td>' + escapeHtml(p.pallet_dimension || p.prod_inventory_gop?.pallet_dimension || '-') + '</td>';
+      html += '<td style="text-align:right">' + formatBroj(p.quantity, 0) + '</td>';
+      html += '<td>' + escapeHtml(p.prod_inventory_gop?.production_line || '-') + '</td>';
+      html += '</tr>';
+    });
+  }
+  
+  html += '</tbody></table>';
+  
+  html += '<div class="document-totals">';
+  html += '<div class="row final"><span>Ukupno paleta:</span><span>' + pallets.length + '</span></div>';
+  html += '</div>';
+  
+  html += '<div class="document-footer">Dokument generiran: ' + new Date().toLocaleString('hr-HR') + '</div>';
+  
+  document.getElementById('printModalTitle').textContent = '🏗️ Paletna lista';
+  document.getElementById('printContent').innerHTML = html;
+  openModal('printModal');
+}
+
+function printCMR() {
+  if (!currentDispatch) return;
+  
+  var html = '<div class="document-header">';
+  html += '<div class="document-title" style="text-align:center; width:100%;"><h1>CMR - MEĐUNARODNI TERETNI LIST</h1><div class="number">' + escapeHtml(currentDispatch.cmr_number || currentDispatch.dispatch_number) + '</div></div>';
+  html += '</div>';
+  
+  html += '<div class="document-info">';
+  html += '<div class="document-box"><h4>1. Pošiljatelj</h4><strong>' + COMPANY_INFO.name + '</strong><br>' + COMPANY_INFO.address + '<br>' + COMPANY_INFO.city + ', HRVATSKA</div>';
+  html += '<div class="document-box"><h4>2. Primatelj</h4><strong>' + escapeHtml(currentDispatch.customer_name) + '</strong>';
+  if (currentDispatch.destination_address) html += '<br>' + escapeHtml(currentDispatch.destination_address);
+  if (currentDispatch.destination_city) html += '<br>' + escapeHtml(currentDispatch.destination_city);
+  html += '<br>' + escapeHtml(currentDispatch.destination_country || '');
+  html += '</div>';
+  html += '</div>';
+  
+  html += '<div class="document-info">';
+  html += '<div class="document-box"><h4>16. Prijevoznik</h4>Vozilo: <strong>' + escapeHtml(currentDispatch.vehicle || '-') + '</strong><br>Vozač: ' + escapeHtml(currentDispatch.driver || '-') + '</div>';
+  html += '<div class="document-box"><h4>Datum</h4><strong>' + formatDate(currentDispatch.dispatch_date) + '</strong></div>';
+  html += '</div>';
+  
+  html += '<div class="document-box" style="margin-bottom:30px;">';
+  html += '<h4>6. Oznake i brojevi, broj koleta, vrsta ambalaže, opis robe</h4>';
+  html += '<p>Papirne vreće - ' + formatBroj(currentDispatch.total_quantity || 0, 0) + ' kom na ' + (currentDispatch.total_pallets || 0) + ' EUR paletama</p>';
+  html += '</div>';
+  
+  html += '<div class="document-signatures">';
+  html += '<div class="signature-box"><div class="signature-line">22. Potpis i pečat pošiljatelja</div></div>';
+  html += '<div class="signature-box"><div class="signature-line">23. Potpis i pečat prijevoznika</div></div>';
+  html += '</div>';
+  
+  html += '<div class="document-footer">CMR generiran: ' + new Date().toLocaleString('hr-HR') + '</div>';
+  
+  document.getElementById('printModalTitle').textContent = '📋 CMR';
+  document.getElementById('printContent').innerHTML = html;
+  openModal('printModal');
+}
+
+// ============================================
+// POMOĆNE FUNKCIJE
+// ============================================
+function formatDate(str) {
+  if (!str) return '-';
+  return new Date(str).toLocaleDateString('hr-HR');
+}
+
+function formatDateTime(str) {
+  if (!str) return '-';
+  return new Date(str).toLocaleString('hr-HR');
+}
+
+function formatBroj(broj, decimale) {
+  if (broj === null || broj === undefined) return '-';
+  decimale = decimale !== undefined ? decimale : 2;
+  return Number(broj).toLocaleString('hr-HR', {
+    minimumFractionDigits: decimale,
+    maximumFractionDigits: decimale
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(modalId) {
+  var modal = document.getElementById(modalId);
+  if (modal) modal.classList.add('active');
+}
+
+function closeModal(modalId) {
+  var modal = document.getElementById(modalId);
+  if (modal) modal.classList.remove('active');
+}
+
+// Zatvori modal klikom izvan
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal')) {
+    e.target.classList.remove('active');
+  }
+});
+
+function openLinkPalletsFromView() {
+  if (!currentDispatch) return;
+  closeModal('viewDispatchModal');
+  openLinkPalletsModal(currentDispatch.id);
+}
+
+// ============================================
+// POVEZIVANJE PALETA SA STARIM OTPREMAMA
+// ============================================
+var linkDispatchId = null;
+var linkPalletsData = [];
+var linkSelectedPallets = [];
+
+async function openLinkPalletsModal(dispatchId) {
+  var dispatch = dispatchesData.find(function(d) { return d.id === dispatchId; });
+  if (!dispatch) {
+    // Dohvati iz baze
+    var result = await initSupabase()
+      .from('v_dispatch_summary')
+      .select('*')
+      .eq('id', dispatchId)
+      .single();
+    dispatch = result.data;
+  }
+  
+  if (!dispatch) {
+    showMessage('Otprema nije pronađena', 'error');
+    return;
+  }
+  
+  linkDispatchId = dispatchId;
+  linkSelectedPallets = [];
+  
+  document.getElementById('linkDispatchNumber').textContent = dispatch.dispatch_number;
+  document.getElementById('linkCustomerName').textContent = dispatch.customer_name || '-';
+  document.getElementById('linkTotalQuantity').textContent = formatBroj(dispatch.total_quantity || 0, 0);
+  
+  showLoading('Učitavanje paleta...');
+  
+  try {
+    // Dohvati sve dostupne palete + već otpremljene za ovog kupca
+    var result = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('*')
+      .or('status.eq.Na skladištu,dispatch_status.eq.dispatched')
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    
+    linkPalletsData = result.data || [];
+    
+    // Dohvati već povezane palete za ovu otpremu
+    var linkedResult = await initSupabase()
+      .from('prod_dispatch_pallets')
+      .select('gop_id')
+      .eq('dispatch_id', dispatchId);
+    
+    var linkedIds = (linkedResult.data || []).map(function(p) { return p.gop_id; });
+    
+    // Označi već povezane
+    linkPalletsData.forEach(function(p) {
+      p.alreadyLinked = linkedIds.includes(p.id);
+    });
+    
+    // Popuni filter narudžbi
+    var orderNumbers = [...new Set(linkPalletsData.map(function(p) { return p.order_number; }).filter(Boolean))].sort();
+    var filterHtml = '<option value="">Sve narudžbe</option>';
+    orderNumbers.forEach(function(on) {
+      filterHtml += '<option value="' + escapeHtml(on) + '">' + escapeHtml(on) + '</option>';
+    });
+    document.getElementById('linkOrderFilter').innerHTML = filterHtml;
+    
+    renderLinkPallets();
+    hideLoading();
+    openModal('linkPalletsModal');
+    
+  } catch (e) {
+    hideLoading();
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+function filterLinkPallets() {
+  renderLinkPallets();
+}
+
+function renderLinkPallets() {
+  var container = document.getElementById('linkPalletsList');
+  var filterOrder = document.getElementById('linkOrderFilter')?.value || '';
+  
+  var filtered = linkPalletsData.filter(function(p) {
+    if (filterOrder && p.order_number !== filterOrder) return false;
+    return true;
+  });
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">Nema paleta za prikaz</div>';
+    return;
+  }
+  
+  var html = '';
+  filtered.forEach(function(p) {
+    var isSelected = linkSelectedPallets.includes(p.id);
+    var lineClass = (p.production_line || '').toLowerCase().replace('w&h', 'wh');
+    var statusText = '';
+    var itemClass = 'pallet-item';
+    
+    if (p.alreadyLinked) {
+      itemClass += ' dispatched';
+      statusText = '<span style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Već povezano</span>';
+    } else if (p.dispatch_status === 'dispatched') {
+      itemClass += ' dispatched';
+      statusText = '<span style="background:#f5f5f5; color:#999; padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Otpremljeno</span>';
+    } else if (isSelected) {
+      itemClass += ' selected';
+    }
+    
+    var canSelect = !p.alreadyLinked;
+    
+    html += '<div class="' + itemClass + '" data-id="' + p.id + '"' + 
+      (canSelect ? ' onclick="toggleLinkPallet(\'' + p.id + '\')"' : '') + '>';
+    
+    if (canSelect) {
+      html += '<input type="checkbox" class="pallet-checkbox" ' + (isSelected ? 'checked' : '') + '>';
+    } else {
+      html += '<div style="width:32px;"></div>';
+    }
+    
+    html += '<div class="pallet-info">';
+    html += '<div class="pallet-number">' + escapeHtml(p.pallet_number) + statusText + '</div>';
+    html += '<div class="pallet-details">' + escapeHtml(p.article_name || '-') + ' • ' + escapeHtml(p.order_number || '-') + '</div>';
+    html += '</div>';
+    html += '<span class="pallet-quantity">' + formatBroj(p.quantity, 0) + '</span>';
+    html += '<span class="pallet-line ' + lineClass + '">' + escapeHtml(p.production_line || '-') + '</span>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+  updateLinkSelection();
+}
+
+function toggleLinkPallet(palletId) {
+  var idx = linkSelectedPallets.indexOf(palletId);
+  if (idx >= 0) {
+    linkSelectedPallets.splice(idx, 1);
+  } else {
+    linkSelectedPallets.push(palletId);
+  }
+  
+  var item = document.querySelector('#linkPalletsList .pallet-item[data-id="' + palletId + '"]');
+  if (item) {
+    item.classList.toggle('selected');
+    var checkbox = item.querySelector('.pallet-checkbox');
+    if (checkbox) checkbox.checked = linkSelectedPallets.includes(palletId);
+  }
+  
+  updateLinkSelection();
+}
+
+function selectAllLinkPallets() {
+  var filterOrder = document.getElementById('linkOrderFilter')?.value || '';
+  
+  linkSelectedPallets = [];
+  linkPalletsData.forEach(function(p) {
+    if (p.alreadyLinked) return;
+    if (p.dispatch_status === 'dispatched') return;
+    if (filterOrder && p.order_number !== filterOrder) return;
+    linkSelectedPallets.push(p.id);
+  });
+  
+  renderLinkPallets();
+}
+
+function deselectAllLinkPallets() {
+  linkSelectedPallets = [];
+  renderLinkPallets();
+}
+
+function updateLinkSelection() {
+  var selectedData = linkPalletsData.filter(function(p) {
+    return linkSelectedPallets.includes(p.id);
+  });
+  
+  var totalQty = selectedData.reduce(function(sum, p) { return sum + (p.quantity || 0); }, 0);
+  
+  document.getElementById('linkSelectedCount').textContent = linkSelectedPallets.length;
+  document.getElementById('linkSelectedQty').textContent = formatBroj(totalQty, 0);
+}
+
+async function saveLinkPallets() {
+  if (linkSelectedPallets.length === 0) {
+    showMessage('Odaberite barem jednu paletu', 'warning');
+    return;
+  }
+  
+  showLoading('Povezivanje paleta...');
+  
+  try {
+    var selectedData = linkPalletsData.filter(function(p) {
+      return linkSelectedPallets.includes(p.id);
+    });
+    
+    // Grupiraj po order_number za dispatch_items
+    var itemsByOrder = {};
+    selectedData.forEach(function(p) {
+      var on = p.order_number || 'UNKNOWN';
+      if (!itemsByOrder[on]) {
+        itemsByOrder[on] = {
+          order_number: on,
+          article_code: p.article_code,
+          article_name: p.article_name,
+          quantity_dispatched: 0,
+          pallets_count: 0,
+          pallet_dimension: p.pallet_dimension
+        };
+      }
+      itemsByOrder[on].quantity_dispatched += (p.quantity || 0);
+      itemsByOrder[on].pallets_count += 1;
+    });
+    
+    // Provjeri postoje li dispatch_items za ovu otpremu
+    var existingItems = await initSupabase()
+      .from('prod_dispatch_items')
+      .select('id, order_number')
+      .eq('dispatch_id', linkDispatchId);
+    
+    var existingItemsMap = {};
+    (existingItems.data || []).forEach(function(item) {
+      existingItemsMap[item.order_number] = item.id;
+    });
+    
+    // Kreiraj nove dispatch_items ako ne postoje
+    for (var orderNum in itemsByOrder) {
+      if (!existingItemsMap[orderNum]) {
+        var item = itemsByOrder[orderNum];
+        var insertResult = await initSupabase()
+          .from('prod_dispatch_items')
+          .insert({
+            dispatch_id: linkDispatchId,
+            order_number: item.order_number,
+            article_code: item.article_code,
+            article_name: item.article_name,
+            quantity_dispatched: item.quantity_dispatched,
+            pallets_count: item.pallets_count,
+            pallet_dimension: item.pallet_dimension
+          })
+          .select()
+          .single();
+        
+        if (insertResult.data) {
+          existingItemsMap[orderNum] = insertResult.data.id;
+        }
+      }
+    }
+    
+    // Kreiraj dispatch_pallets veze
+    var palletsToInsert = selectedData.map(function(p) {
+      var dispatchItemId = existingItemsMap[p.order_number] || null;
+      return {
+        dispatch_id: linkDispatchId,
+        dispatch_item_id: dispatchItemId,
+        gop_id: p.id,
+        pallet_number: p.pallet_number,
+        quantity: p.quantity,
+        pallet_dimension: p.pallet_dimension
+      };
+    });
+    
+    await initSupabase()
+      .from('prod_dispatch_pallets')
+      .insert(palletsToInsert);
+    
+    // Ažuriraj GOP status
+    await initSupabase()
+      .from('prod_inventory_gop')
+      .update({ dispatch_status: 'dispatched', dispatch_id: linkDispatchId })
+      .in('id', linkSelectedPallets);
+    
+    // Ažuriraj total na otpremi
+    var dispatch = dispatchesData.find(function(d) { return d.id === linkDispatchId; });
+    var totalQty = selectedData.reduce(function(sum, p) { return sum + (p.quantity || 0); }, 0);
+    var newTotalPallets = (dispatch?.total_pallets || 0) + linkSelectedPallets.length;
+    var newTotalQty = (dispatch?.total_quantity || 0) + totalQty;
+    
+    await initSupabase()
+      .from('prod_dispatch')
+      .update({ 
+        total_pallets: newTotalPallets,
+        total_quantity: newTotalQty
+      })
+      .eq('id', linkDispatchId);
+    
+    hideLoading();
+    closeModal('linkPalletsModal');
+    showMessage('✅ Povezano ' + linkSelectedPallets.length + ' paleta', 'success');
+    
+    await refreshOtpreme();
+    
+    // Ako je otvoren view modal, refreshaj ga
+    if (currentDispatch && currentDispatch.id === linkDispatchId) {
+      viewDispatch(linkDispatchId);
+    }
+    
+  } catch (e) {
+    hideLoading();
+    console.error('Link pallets error:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  }
+}
+
+// Cleanup
+window.cleanupCurrentView = function() {
+  selectedOrderNumber = null;
+  selectedOrders = [];
+  selectedPallets = [];
+  currentDispatch = null;
+  console.log('🧹 Otpreme v2.0 cleanup');
+};
+
+// AUTO-INIT
+initOtpremeView();
+</script>

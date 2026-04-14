@@ -1,0 +1,947 @@
+<h1 style="margin-bottom: 30px; color: var(--primary);">👥 Djelatnici</h1>
+
+<!-- KPI KARTICE -->
+<div class="status-grid" style="margin-bottom: 20px;">
+  <div class="status-card">
+    <div class="status-card-value" id="kpiUkupno">0</div>
+    <div class="status-card-label">Ukupno djelatnika</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-value" id="kpiAktivni">0</div>
+    <div class="status-card-label">Aktivnih</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-value" id="kpiNeaktivni">0</div>
+    <div class="status-card-label">Neaktivnih</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-value" id="kpiProsjecnaPlaca">0 €</div>
+    <div class="status-card-label">Prosječna plaća</div>
+  </div>
+</div>
+
+<!-- FILTRI -->
+<div class="card">
+  <div class="form-row">
+    <div class="form-group" style="flex: 2;">
+      <label>Pretraži djelatnike</label>
+      <input type="text" class="form-control" id="searchDjelatnici" placeholder="Ime, prezime, email..." oninput="filterDjelatnici()">
+    </div>
+    <div class="form-group">
+      <label>Tim / Postava</label>
+      <select class="form-control" id="filterTim" onchange="filterDjelatnici()">
+        <option value="">Svi timovi</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Pozicija</label>
+      <select class="form-control" id="filterPozicija" onchange="filterDjelatnici()">
+        <option value="">Sve pozicije</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select class="form-control" id="filterStatus" onchange="filterDjelatnici()">
+        <option value="">Svi</option>
+        <option value="true" selected>Aktivni</option>
+        <option value="false">Neaktivni</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- TABLICA DJELATNIKA -->
+<div class="card">
+  <div class="card-header">
+    Popis djelatnika
+    <button class="btn btn-sm btn-success" onclick="openDjelatnikModal()">+ Novi djelatnik</button>
+  </div>
+  <div class="card-body">
+    <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+          <tr>
+            <th>Ime i prezime</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Pozicija</th>
+            <th>Tim</th>
+            <th>Linija</th>
+            <th>Stroj</th>
+            <th>PIN</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="djelatniciTableBody">
+          <tr>
+            <td colspan="10" class="empty-state">Učitavanje...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL ZA DJELATNIKA (NOVI/UREDI) -->
+<!-- ============================================ -->
+<div class="modal" id="djelatnikModal">
+  <div class="modal-content" style="max-width: 900px; max-height: 95vh;">
+    <div class="modal-header">
+      <h2 id="djelatnikModalTitle">👤 Novi djelatnik</h2>
+      <span class="modal-close" onclick="closeModal('djelatnikModal')">&times;</span>
+    </div>
+    
+    <!-- Tabovi -->
+    <div style="display: flex; border-bottom: 2px solid #e0e0e0; background: #f8f9fa;">
+      <button class="tab-btn active" data-tab="tabOsnovni" onclick="switchDjelatnikTab(this, 'tabOsnovni')">📋 Osnovni podaci</button>
+      <button class="tab-btn" data-tab="tabRadnoMjesto" onclick="switchDjelatnikTab(this, 'tabRadnoMjesto')">🏢 Radno mjesto</button>
+      <button class="tab-btn" data-tab="tabPlaca" onclick="switchDjelatnikTab(this, 'tabPlaca')">💰 Plaća i dodaci</button>
+    </div>
+    
+    <div class="modal-body" style="overflow-y: auto; max-height: calc(95vh - 200px); padding: 20px;">
+      <input type="hidden" id="djelatnikId">
+      
+      <!-- ==================== TAB: OSNOVNI PODACI ==================== -->
+      <div id="tabOsnovni" class="tab-content-djel active">
+        <div class="form-section">
+          <h4>👤 Osobni podaci</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ime *</label>
+              <input type="text" class="form-control" id="djelFirstName" placeholder="Ime">
+            </div>
+            <div class="form-group">
+              <label>Prezime *</label>
+              <input type="text" class="form-control" id="djelLastName" placeholder="Prezime">
+            </div>
+            <div class="form-group">
+              <label>OIB</label>
+              <input type="text" class="form-control" id="djelOib" placeholder="12345678901" maxlength="11">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" id="djelEmail" placeholder="ime.prezime@carta.hr">
+            </div>
+            <div class="form-group">
+              <label>Telefon</label>
+              <input type="text" class="form-control" id="djelPhone" placeholder="+385 91 234 5678">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🔐 Pristup sustavu</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>PIN kod (4 znamenke)</label>
+              <input type="text" class="form-control" id="djelPinCode" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+            </div>
+            <div class="form-group">
+              <label>Datum zaposlenja</label>
+              <input type="date" class="form-control" id="djelHireDate">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select class="form-control" id="djelActive">
+                <option value="true">Aktivan</option>
+                <option value="false">Neaktivan</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==================== TAB: RADNO MJESTO ==================== -->
+      <div id="tabRadnoMjesto" class="tab-content-djel" style="display: none;">
+        <div class="form-section">
+          <h4>🏢 Radno mjesto</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pozicija</label>
+              <input type="text" class="form-control" id="djelPosition" placeholder="npr. Strojar, Radnik na slaganju...">
+            </div>
+            <div class="form-group">
+              <label>Uloga</label>
+              <input type="text" class="form-control" id="djelRole" placeholder="npr. Strojar, Radnik na slaganju...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tim / Postava</label>
+              <select class="form-control" id="djelTeamName" onchange="onTeamChange()">
+                <option value="">-- Odaberi tim --</option>
+                <!-- Dinamički se popunjava iz prod_schedule_teams -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Linija</label>
+              <select class="form-control" id="djelLinija">
+                <option value="">-- Odaberi --</option>
+                <option value="NLI">NLI</option>
+                <option value="WH">W&H</option>
+                <option value="TISAK">Tisak</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Stroj</label>
+              <select class="form-control" id="djelStrojTip">
+                <option value="">-- Odaberi --</option>
+                <option value="Bottomer">Bottomer</option>
+                <option value="Tuber">Tuber</option>
+                <option value="Tisak">Tisak</option>
+                <option value="Rezač">Rezač</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tjedni sati</label>
+              <input type="number" class="form-control" id="djelWeeklyHours" value="40" min="0" max="60">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==================== TAB: PLAĆA I DODACI ==================== -->
+      <div id="tabPlaca" class="tab-content-djel" style="display: none;">
+        <div class="form-section">
+          <h4>💰 Plaća</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Osnovna plaća (€)</label>
+              <input type="number" step="0.01" class="form-control" id="djelBaseSalary" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Koeficijent</label>
+              <input type="number" step="0.01" class="form-control" id="djelCoefficient" value="1.00" min="0.5" max="3.0">
+            </div>
+            <div class="form-group">
+              <label>Prosječna neto plaća (€)</label>
+              <input type="number" step="0.01" class="form-control" id="djelAverageNetSalary" placeholder="0.00" readonly style="background: #f5f5f5;">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📊 Porezni podaci</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Osobni odbitak (€)</label>
+              <input type="number" step="0.01" class="form-control" id="djelPersonalDeduction" value="600.00">
+            </div>
+            <div class="form-group">
+              <label>Stopa prireza (%)</label>
+              <input type="number" step="0.01" class="form-control" id="djelSurtaxRate" value="0.00" min="0" max="30">
+            </div>
+            <div class="form-group">
+              <label>Override poreza (%)</label>
+              <input type="number" step="0.01" class="form-control" id="djelTaxRateOverride" placeholder="Ostaviti prazno za auto">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Broj djece</label>
+              <input type="number" class="form-control" id="djelChildrenCount" value="0" min="0" max="10">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🚗 Prijevoz</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Zona prijevoza</label>
+              <select class="form-control" id="djelTransportZone">
+                <option value="1">Zona 1 (do 10 km)</option>
+                <option value="2">Zona 2 (10-20 km)</option>
+                <option value="3">Zona 3 (20-30 km)</option>
+                <option value="4">Zona 4 (30-50 km)</option>
+                <option value="5">Zona 5 (50+ km)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Dodatak za prijevoz (€)</label>
+              <input type="number" step="0.01" class="form-control" id="djelTransportAllowance" value="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('djelatnikModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveDjelatnik()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL ZA PREGLED DJELATNIKA -->
+<!-- ============================================ -->
+<div class="modal" id="djelatnikViewModal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h2>👤 <span id="viewDjelatnikName">Djelatnik</span></h2>
+      <span class="modal-close" onclick="closeModal('djelatnikViewModal')">&times;</span>
+    </div>
+    <div class="modal-body" id="viewDjelatnikBody">
+      <!-- Popunjava se dinamički -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('djelatnikViewModal')">Zatvori</button>
+      <button class="btn btn-primary" onclick="editFromView()">✏️ Uredi</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+  }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: white;
+  }
+  .tab-content-djel {
+    display: none;
+  }
+  .tab-content-djel.active {
+    display: block;
+  }
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .form-section h4 {
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+    color: #333;
+  }
+  .badge-active {
+    background: #28a745;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+  .badge-inactive {
+    background: #dc3545;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+  .view-section {
+    margin-bottom: 20px;
+  }
+  .view-section h4 {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+  .view-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .view-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .view-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+  }
+  .view-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* Badge za liniju */
+  .badge-linija {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-nli { background: #e3f2fd; color: #1565c0; }
+  .badge-wh { background: #efebe9; color: #5d4037; }
+  .badge-tisak { background: #f3e5f5; color: #7b1fa2; }
+  
+  /* Badge za stroj */
+  .badge-stroj {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #f5f5f5;
+    color: #616161;
+  }
+</style>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var sviDjelatnici = [];
+var filtriraniDjelatnici = [];
+var currentViewDjelatnikId = null;
+var svePostave = []; // Postave iz prod_schedule_teams
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+console.log('👥 DjelatniciView učitan!');
+
+async function initDjelatniciView() {
+  console.log('✅ initDjelatniciView()');
+  await loadPostave();
+  await loadDjelatnici();
+  populateFilters();
+}
+
+// ============================================
+// UČITAVANJE POSTAVA IZ BAZE
+// ============================================
+async function loadPostave() {
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_schedule_teams')
+      .select('*')
+      .eq('status', 'Aktivan')
+      .order('postava_broj', { ascending: true });
+    
+    if (error) throw error;
+    
+    svePostave = data || [];
+    console.log(`📋 Učitano ${svePostave.length} postava`);
+    
+    // Popuni dropdown timova
+    populateTeamDropdown();
+    
+  } catch (e) {
+    console.error('Greška učitavanja postava:', e);
+    // Fallback na hardkodirane postave
+    populateTeamDropdownFallback();
+  }
+}
+
+function populateTeamDropdown() {
+  const select = document.getElementById('djelTeamName');
+  select.innerHTML = '<option value="">-- Odaberi tim --</option>';
+  
+  // Grupiraj po postava_broj da ne bude duplikata
+  const uniquePostave = {};
+  svePostave.forEach(p => {
+    const key = p.naziv_tima;
+    if (!uniquePostave[key]) {
+      uniquePostave[key] = {
+        naziv: p.naziv_tima,
+        postava_broj: p.postava_broj,
+        linije: new Set(),
+        strojevi: new Set()
+      };
+    }
+    uniquePostave[key].linije.add(p.linija);
+    uniquePostave[key].strojevi.add(p.stroj_tip);
+  });
+  
+  // Sortiraj po postava_broj
+  const sorted = Object.values(uniquePostave).sort((a, b) => a.postava_broj - b.postava_broj);
+  
+  sorted.forEach(p => {
+    const linija = [...p.linije].join('/');
+    select.innerHTML += `<option value="${p.naziv}" data-linija="${linija}">${p.naziv} (${linija})</option>`;
+  });
+  
+  // Dodaj ostale opcije
+  select.innerHTML += '<option value="Administracija">Administracija</option>';
+  select.innerHTML += '<option value="Održavanje">Održavanje</option>';
+  select.innerHTML += '<option value="Skladište">Skladište</option>';
+}
+
+function populateTeamDropdownFallback() {
+  const select = document.getElementById('djelTeamName');
+  select.innerHTML = '<option value="">-- Odaberi tim --</option>';
+  for (let i = 1; i <= 9; i++) {
+    select.innerHTML += `<option value="Postava ${i}">Postava ${i}</option>`;
+  }
+  select.innerHTML += '<option value="Administracija">Administracija</option>';
+  select.innerHTML += '<option value="Održavanje">Održavanje</option>';
+  select.innerHTML += '<option value="Skladište">Skladište</option>';
+}
+
+function onTeamChange() {
+  const teamName = document.getElementById('djelTeamName').value;
+  
+  // Pronađi postavu u svePostave
+  const postava = svePostave.find(p => p.naziv_tima === teamName);
+  
+  if (postava) {
+    // Auto-fill linija i stroj
+    document.getElementById('djelLinija').value = postava.linija || '';
+    document.getElementById('djelStrojTip').value = postava.stroj_tip || '';
+  }
+}
+
+// Pokreni inicijalizaciju
+initDjelatniciView();
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function loadDjelatnici() {
+  try {
+    showLoading('Učitavanje djelatnika...');
+    
+    const { data, error } = await initSupabase()
+      .from('employees')
+      .select('*')
+      .order('last_name', { ascending: true });
+    
+    if (error) throw error;
+    
+    sviDjelatnici = data || [];
+    console.log(`📊 Učitano ${sviDjelatnici.length} djelatnika`);
+    
+    updateKPIs();
+    filterDjelatnici();
+    
+  } catch (e) {
+    console.error('Greška učitavanja:', e);
+    showMessage('Greška pri učitavanju djelatnika: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// KPI KARTICE
+// ============================================
+function updateKPIs() {
+  const ukupno = sviDjelatnici.length;
+  const aktivni = sviDjelatnici.filter(d => d.active === true).length;
+  const neaktivni = ukupno - aktivni;
+  
+  const place = sviDjelatnici
+    .filter(d => d.base_salary && d.base_salary > 0)
+    .map(d => parseFloat(d.base_salary) || 0);
+  const prosjecna = place.length > 0 
+    ? (place.reduce((a, b) => a + b, 0) / place.length).toFixed(2)
+    : 0;
+  
+  document.getElementById('kpiUkupno').textContent = ukupno;
+  document.getElementById('kpiAktivni').textContent = aktivni;
+  document.getElementById('kpiNeaktivni').textContent = neaktivni;
+  document.getElementById('kpiProsjecnaPlaca').textContent = prosjecna + ' €';
+}
+
+// ============================================
+// FILTRI
+// ============================================
+function populateFilters() {
+  // Timovi
+  const timovi = [...new Set(sviDjelatnici.map(d => d.team_name).filter(Boolean))].sort();
+  const filterTim = document.getElementById('filterTim');
+  filterTim.innerHTML = '<option value="">Svi timovi</option>';
+  timovi.forEach(t => {
+    filterTim.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+  
+  // Pozicije
+  const pozicije = [...new Set(sviDjelatnici.map(d => d.position).filter(Boolean))].sort();
+  const filterPozicija = document.getElementById('filterPozicija');
+  filterPozicija.innerHTML = '<option value="">Sve pozicije</option>';
+  pozicije.forEach(p => {
+    filterPozicija.innerHTML += `<option value="${p}">${p}</option>`;
+  });
+}
+
+function filterDjelatnici() {
+  const search = document.getElementById('searchDjelatnici').value.toLowerCase();
+  const tim = document.getElementById('filterTim').value;
+  const pozicija = document.getElementById('filterPozicija').value;
+  const status = document.getElementById('filterStatus').value;
+  
+  filtriraniDjelatnici = sviDjelatnici.filter(d => {
+    // Pretraga
+    const fullName = `${d.first_name || ''} ${d.last_name || ''}`.toLowerCase();
+    const email = (d.email || '').toLowerCase();
+    const matchSearch = !search || fullName.includes(search) || email.includes(search);
+    
+    // Tim
+    const matchTim = !tim || d.team_name === tim;
+    
+    // Pozicija
+    const matchPozicija = !pozicija || d.position === pozicija;
+    
+    // Status
+    const matchStatus = status === '' || String(d.active) === status;
+    
+    return matchSearch && matchTim && matchPozicija && matchStatus;
+  });
+  
+  renderTable();
+}
+
+// ============================================
+// RENDERIRANJE TABLICE
+// ============================================
+function renderTable() {
+  const tbody = document.getElementById('djelatniciTableBody');
+  
+  if (filtriraniDjelatnici.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Nema djelatnika za prikaz</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtriraniDjelatnici.map(d => {
+    const fullName = `${d.first_name || ''} ${d.last_name || ''}`.trim() || '-';
+    const statusBadge = d.active 
+      ? '<span class="badge-active">Aktivan</span>'
+      : '<span class="badge-inactive">Neaktivan</span>';
+    
+    // Linija badge
+    const linijaBadge = d.linija 
+      ? `<span class="badge-linija badge-${(d.linija || '').toLowerCase()}">${d.linija}</span>` 
+      : '-';
+    
+    // Stroj badge
+    const strojBadge = d.stroj_tip 
+      ? `<span class="badge-stroj">${d.stroj_tip}</span>` 
+      : '-';
+    
+    return `
+      <tr>
+        <td><strong>${fullName}</strong></td>
+        <td>${d.email || '-'}</td>
+        <td>${d.phone || '-'}</td>
+        <td>${d.position || '-'}</td>
+        <td>${d.team_name || '-'}</td>
+        <td>${linijaBadge}</td>
+        <td>${strojBadge}</td>
+        <td><code>${d.pin_code || '-'}</code></td>
+        <td>${statusBadge}</td>
+        <td>
+          <button class="btn btn-sm btn-info" onclick="viewDjelatnik('${d.id}')" title="Pregled">👁️</button>
+          <button class="btn btn-sm btn-primary" onclick="editDjelatnik('${d.id}')" title="Uredi">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteDjelatnik('${d.id}')" title="Obriši">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// MODAL - TABOVI
+// ============================================
+function switchDjelatnikTab(btn, tabId) {
+  // Deaktiviraj sve tabove
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content-djel').forEach(t => {
+    t.classList.remove('active');
+    t.style.display = 'none';
+  });
+  
+  // Aktiviraj odabrani
+  btn.classList.add('active');
+  const tab = document.getElementById(tabId);
+  tab.classList.add('active');
+  tab.style.display = 'block';
+}
+
+// ============================================
+// MODAL - OTVARANJE
+// ============================================
+function openDjelatnikModal(djelatnik = null) {
+  document.getElementById('djelatnikModalTitle').textContent = djelatnik ? '✏️ Uredi djelatnika' : '👤 Novi djelatnik';
+  
+  // Reset forme
+  document.getElementById('djelatnikId').value = djelatnik?.id || '';
+  document.getElementById('djelFirstName').value = djelatnik?.first_name || '';
+  document.getElementById('djelLastName').value = djelatnik?.last_name || '';
+  document.getElementById('djelOib').value = djelatnik?.oib || '';
+  document.getElementById('djelEmail').value = djelatnik?.email || '';
+  document.getElementById('djelPhone').value = djelatnik?.phone || '';
+  document.getElementById('djelPinCode').value = djelatnik?.pin_code || '';
+  document.getElementById('djelHireDate').value = djelatnik?.hire_date || '';
+  document.getElementById('djelActive').value = djelatnik?.active !== false ? 'true' : 'false';
+  
+  document.getElementById('djelPosition').value = djelatnik?.position || '';
+  document.getElementById('djelRole').value = djelatnik?.role || '';
+  document.getElementById('djelTeamName').value = djelatnik?.team_name || '';
+  document.getElementById('djelLinija').value = djelatnik?.linija || '';
+  document.getElementById('djelStrojTip').value = djelatnik?.stroj_tip || '';
+  document.getElementById('djelWeeklyHours').value = djelatnik?.weekly_hours || 40;
+  
+  document.getElementById('djelBaseSalary').value = djelatnik?.base_salary || '';
+  document.getElementById('djelCoefficient').value = djelatnik?.coefficient || 1.00;
+  document.getElementById('djelAverageNetSalary').value = djelatnik?.average_net_salary || '';
+  document.getElementById('djelPersonalDeduction').value = djelatnik?.personal_deduction || 600.00;
+  document.getElementById('djelSurtaxRate').value = djelatnik?.surtax_rate || 0;
+  document.getElementById('djelTaxRateOverride').value = djelatnik?.tax_rate_override || '';
+  document.getElementById('djelChildrenCount').value = djelatnik?.children_count || 0;
+  document.getElementById('djelTransportZone').value = djelatnik?.transport_zone || 1;
+  document.getElementById('djelTransportAllowance').value = djelatnik?.transport_allowance || 0;
+  
+  // Reset na prvi tab
+  document.querySelector('.tab-btn[data-tab="tabOsnovni"]').click();
+  
+  openModal('djelatnikModal');
+}
+
+function editDjelatnik(id) {
+  const djelatnik = sviDjelatnici.find(d => d.id === id);
+  if (djelatnik) {
+    openDjelatnikModal(djelatnik);
+  }
+}
+
+// ============================================
+// SPREMANJE
+// ============================================
+async function saveDjelatnik() {
+  const id = document.getElementById('djelatnikId').value;
+  const firstName = document.getElementById('djelFirstName').value.trim();
+  const lastName = document.getElementById('djelLastName').value.trim();
+  
+  if (!firstName || !lastName) {
+    showMessage('Ime i prezime su obavezni!', 'error');
+    return;
+  }
+  
+  const payload = {
+    first_name: firstName,
+    last_name: lastName,
+    oib: document.getElementById('djelOib').value.trim() || null,
+    email: document.getElementById('djelEmail').value.trim() || null,
+    phone: document.getElementById('djelPhone').value.trim() || null,
+    pin_code: document.getElementById('djelPinCode').value.trim() || null,
+    hire_date: document.getElementById('djelHireDate').value || null,
+    active: document.getElementById('djelActive').value === 'true',
+    position: document.getElementById('djelPosition').value.trim() || null,
+    role: document.getElementById('djelRole').value.trim() || null,
+    team_name: document.getElementById('djelTeamName').value || null,
+    linija: document.getElementById('djelLinija').value || null,
+    stroj_tip: document.getElementById('djelStrojTip').value || null,
+    weekly_hours: parseInt(document.getElementById('djelWeeklyHours').value) || 40,
+    base_salary: parseFloat(document.getElementById('djelBaseSalary').value) || null,
+    coefficient: parseFloat(document.getElementById('djelCoefficient').value) || 1.00,
+    personal_deduction: parseFloat(document.getElementById('djelPersonalDeduction').value) || 600.00,
+    surtax_rate: parseFloat(document.getElementById('djelSurtaxRate').value) || 0,
+    tax_rate_override: parseFloat(document.getElementById('djelTaxRateOverride').value) || null,
+    children_count: parseInt(document.getElementById('djelChildrenCount').value) || 0,
+    transport_zone: parseInt(document.getElementById('djelTransportZone').value) || 1,
+    transport_allowance: parseFloat(document.getElementById('djelTransportAllowance').value) || 0
+  };
+  
+  try {
+    showLoading('Spremanje...');
+    
+    let result;
+    if (id) {
+      // Update
+      result = await initSupabase()
+        .from('employees')
+        .update(payload)
+        .eq('id', id);
+    } else {
+      // Insert - dodaj company_id
+      payload.company_id = 'b61f3e81-fd26-468b-a359-71f08ca6e0f8'; // CARTA d.o.o.
+      result = await initSupabase()
+        .from('employees')
+        .insert(payload);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage(id ? 'Djelatnik ažuriran!' : 'Djelatnik dodan!', 'success');
+    closeModal('djelatnikModal');
+    await loadDjelatnici();
+    populateFilters();
+    
+  } catch (e) {
+    console.error('Greška spremanja:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// BRISANJE
+// ============================================
+async function deleteDjelatnik(id) {
+  const djelatnik = sviDjelatnici.find(d => d.id === id);
+  if (!djelatnik) return;
+  
+  const fullName = `${djelatnik.first_name} ${djelatnik.last_name}`;
+  
+  if (!confirm(`Jeste li sigurni da želite obrisati djelatnika "${fullName}"?\n\nOva akcija se ne može poništiti!`)) {
+    return;
+  }
+  
+  try {
+    showLoading('Brisanje...');
+    
+    const { error } = await initSupabase()
+      .from('employees')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    showMessage('Djelatnik obrisan!', 'success');
+    await loadDjelatnici();
+    populateFilters();
+    
+  } catch (e) {
+    console.error('Greška brisanja:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// PREGLED DJELATNIKA
+// ============================================
+function viewDjelatnik(id) {
+  const d = sviDjelatnici.find(x => x.id === id);
+  if (!d) return;
+  
+  currentViewDjelatnikId = id;
+  const fullName = `${d.first_name || ''} ${d.last_name || ''}`.trim();
+  
+  document.getElementById('viewDjelatnikName').textContent = fullName;
+  
+  const statusBadge = d.active 
+    ? '<span class="badge-active">Aktivan</span>'
+    : '<span class="badge-inactive">Neaktivan</span>';
+  
+  document.getElementById('viewDjelatnikBody').innerHTML = `
+    <div class="view-section">
+      <h4>👤 Osobni podaci</h4>
+      <div class="view-grid">
+        <div class="view-item">
+          <span class="view-label">Ime i prezime</span>
+          <span class="view-value">${fullName}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">OIB</span>
+          <span class="view-value">${d.oib || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Email</span>
+          <span class="view-value">${d.email || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Telefon</span>
+          <span class="view-value">${d.phone || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">PIN kod</span>
+          <span class="view-value"><code>${d.pin_code || '-'}</code></span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Status</span>
+          <span class="view-value">${statusBadge}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="view-section">
+      <h4>🏢 Radno mjesto</h4>
+      <div class="view-grid">
+        <div class="view-item">
+          <span class="view-label">Pozicija</span>
+          <span class="view-value">${d.position || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Tim / Postava</span>
+          <span class="view-value">${d.team_name || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Linija</span>
+          <span class="view-value">${d.linija ? `<span class="badge-linija badge-${(d.linija || '').toLowerCase()}">${d.linija}</span>` : '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Stroj</span>
+          <span class="view-value">${d.stroj_tip ? `<span class="badge-stroj">${d.stroj_tip}</span>` : '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Datum zaposlenja</span>
+          <span class="view-value">${d.hire_date || '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Tjedni sati</span>
+          <span class="view-value">${d.weekly_hours || 40}h</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="view-section">
+      <h4>💰 Plaća</h4>
+      <div class="view-grid">
+        <div class="view-item">
+          <span class="view-label">Osnovna plaća</span>
+          <span class="view-value">${d.base_salary ? d.base_salary.toFixed(2) + ' €' : '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Koeficijent</span>
+          <span class="view-value">${d.coefficient || 1.00}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Prosječna neto</span>
+          <span class="view-value">${d.average_net_salary ? d.average_net_salary.toFixed(2) + ' €' : '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Osobni odbitak</span>
+          <span class="view-value">${d.personal_deduction ? d.personal_deduction.toFixed(2) + ' €' : '-'}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Zona prijevoza</span>
+          <span class="view-value">Zona ${d.transport_zone || 1}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Dodatak za prijevoz</span>
+          <span class="view-value">${d.transport_allowance ? d.transport_allowance.toFixed(2) + ' €' : '-'}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  openModal('djelatnikViewModal');
+}
+
+function editFromView() {
+  closeModal('djelatnikViewModal');
+  if (currentViewDjelatnikId) {
+    editDjelatnik(currentViewDjelatnikId);
+  }
+}
+</script>

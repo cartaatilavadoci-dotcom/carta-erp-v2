@@ -1,0 +1,882 @@
+<!-- ============================================
+     CARTA ERP - Ovjera radnih naloga
+     Four-eyes principle: RN mora biti ovjeren 
+     od drugog admin/superadmin korisnika
+     ============================================ -->
+
+<style>
+/* ============================================
+   OVJERA RN - Stilovi
+   ============================================ */
+
+.ovjera-container {
+  display: flex;
+  gap: 16px;
+  min-height: calc(100vh - 130px);
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* ---------- LIJEVI PANEL ---------- */
+.ovjera-lista-panel {
+  width: 360px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px);
+}
+
+.ovjera-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #1565c0, #0d47a1);
+  color: #fff;
+}
+
+.ovjera-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ovjera-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ovjera-header-actions button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ovjera-header-actions button:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* Filteri */
+.ovjera-filters {
+  display: flex;
+  gap: 0;
+  padding: 8px 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ovjera-filter-btn {
+  flex: 1;
+  padding: 7px 4px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ovjera-filter-btn:hover {
+  background: #e0e0e0;
+}
+
+.ovjera-filter-btn.active {
+  background: #1565c0;
+  color: #fff;
+}
+
+.ovjera-filter-count {
+  display: inline-block;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 3px;
+}
+
+.ovjera-filter-btn.active .ovjera-filter-count {
+  background: rgba(255,255,255,0.3);
+  color: #fff;
+}
+
+.ovjera-filter-btn:not(.active) .ovjera-filter-count {
+  background: #e0e0e0;
+  color: #666;
+}
+
+/* Lista RN-ova */
+.ovjera-lista {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 6px;
+  scrollbar-width: thin;
+}
+
+.ovjera-lista::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ovjera-lista::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.ovjera-lista::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 4px;
+}
+
+.ovjera-lista::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.ovjera-rn-card {
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+.ovjera-rn-card:hover {
+  background: #e3f2fd;
+  border-color: #90caf9;
+}
+
+.ovjera-rn-card.selected {
+  background: #e3f2fd;
+  border-color: #1565c0;
+}
+
+.ovjera-rn-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ovjera-rn-number {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.ovjera-rn-card-body {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.ovjera-rn-card-body .rn-artikl {
+  font-weight: 600;
+  color: #333;
+}
+
+.ovjera-rn-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #888;
+}
+
+.ovjera-rn-linija {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ovjera-rn-linija.wh { background: #2e7d32; }
+.ovjera-rn-linija.nli { background: #e65100; }
+
+/* Badgevi statusa */
+.badge-ceka {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.badge-odobreno {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-odbijeno {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Lista prazna */
+.ovjera-lista-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* ---------- DESNI PANEL ---------- */
+.ovjera-detalji-panel {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 8px;
+  height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px);
+  scrollbar-width: thin;
+}
+
+.ovjera-detalji-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ovjera-detalji-panel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.ovjera-detalji-panel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.ovjera-detalji-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.ovjera-detalji-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #bbb;
+  font-size: 16px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Kartice */
+.ovjera-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.ovjera-card-title {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: #455a64;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ovjera-card-title.info { background: #1565c0; }
+.ovjera-card-title.spec { background: linear-gradient(135deg, #00897b, #00695c); }
+.ovjera-card-title.pdf { background: #00695c; }
+.ovjera-card-title.approval { background: #e65100; }
+.ovjera-card-title.history { background: #455a64; }
+
+.ovjera-card-body {
+  padding: 14px;
+  overflow: visible;
+}
+
+/* Info grid */
+.ovjera-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ovjera-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.ovjera-info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.ovjera-info-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.ovjera-info-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Specifikacija */
+.ovjera-spec-layout {
+  display: flex;
+  gap: 12px;
+}
+
+.ovjera-spec-svg {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+
+.ovjera-spec-details {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  overflow: visible;
+}
+
+.ovjera-spec-section {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.ovjera-spec-section.full-width {
+  grid-column: 1 / -1;
+}
+
+.ovjera-spec-section-title {
+  background: linear-gradient(135deg, #00897b, #00695c);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ovjera-spec-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.ovjera-spec-row:last-child {
+  border-bottom: none;
+}
+
+.ovjera-spec-row .label {
+  width: 45%;
+  flex-shrink: 0;
+  padding: 7px 12px;
+  color: #444;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.ovjera-spec-row .value {
+  flex: 1;
+  padding: 7px 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+}
+
+.ovjera-spec-row.highlight {
+  background: #fff8e1;
+}
+
+.ovjera-spec-row.highlight .label {
+  color: #e65100;
+  font-weight: 600;
+}
+
+.ovjera-spec-row.highlight .value {
+  color: #0d47a1;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Slojevi papira tablica */
+.ovjera-layers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ovjera-layers-table th {
+  background: #e0f2f1;
+  padding: 7px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: #00695c;
+  font-size: 12px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #80cbc4;
+}
+
+.ovjera-layers-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #1a1a1a;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.ovjera-layers-table td:first-child {
+  white-space: nowrap;
+  font-weight: 700;
+  color: #00695c;
+}
+
+.ovjera-layers-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ovjera-layers-table tr:hover {
+  background: #e0f7fa;
+}
+
+/* Boje tiska */
+.ovjera-color-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 12px;
+}
+
+.ovjera-color-chip {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+/* PDF */
+.ovjera-pdf-frame {
+  width: 100%;
+  height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.ovjera-pdf-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 15px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ovjera-pdf-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #1565c0;
+  text-decoration: none;
+}
+
+.ovjera-pdf-link:hover {
+  text-decoration: underline;
+}
+
+.ovjera-pdf-open-btn {
+  display: inline-block;
+  padding: 14px 28px;
+  background: #1565c0;
+  color: #fff !important;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.ovjera-pdf-open-btn:hover {
+  background: #0d47a1;
+  text-decoration: none;
+}
+
+/* Ovjera akcije */
+.ovjera-approval-info {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.ovjera-approval-info .creator {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.ovjera-approval-warning {
+  padding: 10px 14px;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 8px;
+  color: #e65100;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.ovjera-approval-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ovjera-btn-odobri {
+  flex: 1;
+  padding: 16px 24px;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-height: 50px;
+}
+
+.ovjera-btn-odobri:hover { background: #1b5e20; }
+.ovjera-btn-odobri:disabled { background: #a5d6a7; cursor: not-allowed; }
+
+.ovjera-btn-odbij {
+  flex: 1;
+  padding: 16px 24px;
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-height: 50px;
+}
+
+.ovjera-btn-odbij:hover { background: #b71c1c; }
+
+.ovjera-btn-resubmit {
+  padding: 10px 20px;
+  background: #e65100;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ovjera-btn-resubmit:hover { background: #bf360c; }
+
+.ovjera-reject-area {
+  margin-bottom: 14px;
+}
+
+.ovjera-reject-area textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.ovjera-reject-area textarea:focus {
+  outline: none;
+  border-color: #c62828;
+}
+
+.ovjera-reject-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c62828;
+  margin-bottom: 4px;
+}
+
+/* Odobreno/Odbijeno prikaz */
+.ovjera-result-box {
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ovjera-result-box.odobreno {
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #1b5e20;
+}
+
+.ovjera-result-box.odbijeno {
+  background: #ffebee;
+  border: 1px solid #ef9a9a;
+  color: #b71c1c;
+}
+
+.ovjera-result-box strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Povijest */
+.ovjera-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ovjera-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ovjera-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.ovjera-timeline-dot.created { background: #1565c0; }
+.ovjera-timeline-dot.approved { background: #2e7d32; }
+.ovjera-timeline-dot.rejected { background: #c62828; }
+
+.ovjera-timeline-text {
+  color: #555;
+}
+
+.ovjera-timeline-text strong {
+  color: #1a1a1a;
+}
+
+.ovjera-timeline-text .time {
+  color: #999;
+  font-size: 11px;
+}
+
+/* Footer statistika */
+.ovjera-footer {
+  padding: 10px 16px;
+  background: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  font-size: 11px;
+  color: #777;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.ovjera-footer-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ovjera-footer-stat .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ovjera-footer-stat .dot.ceka { background: #e65100; }
+.ovjera-footer-stat .dot.odobreno { background: #2e7d32; }
+.ovjera-footer-stat .dot.odbijeno { background: #c62828; }
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .ovjera-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .ovjera-lista-panel {
+    width: 100%;
+    min-width: unset;
+    max-height: 300px;
+  }
+
+  .ovjera-detalji-panel {
+    padding-right: 0;
+  }
+
+  .ovjera-spec-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ovjera-spec-details {
+    grid-template-columns: 1fr;
+  }
+
+  .ovjera-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ovjera-approval-actions {
+    flex-direction: column;
+  }
+
+  .ovjera-pdf-frame {
+    height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ovjera-container {
+    padding: 6px;
+    gap: 10px;
+  }
+
+  .ovjera-header h2 {
+    font-size: 14px;
+  }
+
+  .ovjera-filter-btn {
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+
+  .ovjera-rn-card {
+    padding: 10px;
+  }
+
+  .ovjera-card-body {
+    padding: 12px;
+  }
+
+  .ovjera-pdf-frame {
+    height: 280px;
+  }
+}
+</style>
+
+<!-- ============================================
+     HTML STRUKTURA
+     ============================================ -->
+
+<div class="ovjera-container">
+
+  <!-- LIJEVI PANEL - Lista RN-ova -->
+  <div class="ovjera-lista-panel">
+    <div class="ovjera-header">
+      <h2>Ovjera radnih naloga</h2>
+      <div class="ovjera-header-actions">
+        <button onclick="ovjeraUcitaj()" title="Osvježi">&#x1F504;</button>
+      </div>
+    </div>
+
+    <div class="ovjera-filters">
+      <button class="ovjera-filter-btn active" data-filter="ceka" onclick="ovjeraFilter(this)">
+        Čeka <span class="ovjera-filter-count" id="countCeka">0</span>
+      </button>
+      <button class="ovjera-filter-btn" data-filter="odobreno" onclick="ovjeraFilter(this)">
+        Odobreno <span class="ovjera-filter-count" id="countOdobreno">0</span>
+      </button>
+      <button class="ovjera-filter-btn" data-filter="odbijeno" onclick="ovjeraFilter(this)">
+        Odbijeno <span class="ovjera-filter-count" id="countOdbijeno">0</span>
+      </button>
+      <button class="ovjera-filter-btn" data-filter="sve" onclick="ovjeraFilter(this)">
+        Sve <span class="ovjera-filter-count" id="countSve">0</span>
+      </button>
+    </div>
+
+    <div class="ovjera-lista" id="ovjeraLista">
+      <div class="ovjera-lista-empty">Učitavanje...</div>
+    </div>
+
+    <div class="ovjera-footer">
+      <span class="ovjera-footer-stat"><span class="dot ceka"></span> Čeka: <strong id="footerCeka">0</strong></span>
+      <span class="ovjera-footer-stat"><span class="dot odobreno"></span> Odobreno: <strong id="footerOdobreno">0</strong></span>
+      <span class="ovjera-footer-stat"><span class="dot odbijeno"></span> Odbijeno: <strong id="footerOdbijeno">0</strong></span>
+    </div>
+  </div>
+
+  <!-- DESNI PANEL - Detalji -->
+  <div class="ovjera-detalji-panel" id="ovjeraDetalji">
+    <div class="ovjera-detalji-placeholder">
+      Odaberite radni nalog za pregled
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script src="views/upravljanje/ovjera-rn.js"></script>

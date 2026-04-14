@@ -1,0 +1,2136 @@
+<!-- ============================================ -->
+<!-- POSTAVKE - Superadmin Only -->
+<!-- ============================================ -->
+
+<style>
+  .settings-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    flex-wrap: wrap;
+  }
+  
+  .settings-tab {
+    padding: 12px 20px;
+    background: #f5f5f5;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+  }
+  
+  .settings-tab:hover { background: #e0e0e0; }
+  .settings-tab.active { background: #2c3e50; color: white; }
+  
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; }
+  
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+  }
+  
+  .setting-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+  }
+  
+  .setting-item label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+  }
+  
+  .setting-item input, .setting-item select, .setting-item textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  .setting-item .hint {
+    font-size: 11px;
+    color: #888;
+    margin-top: 5px;
+  }
+
+  .roles-table, .email-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  
+  .roles-table th, .email-table th {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+  }
+  
+  .roles-table td, .email-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  
+  .roles-table tr:hover, .email-table tr:hover { background: #f8f9fa; }
+  
+  .permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .perm-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+  }
+  
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    margin-right: 3px;
+  }
+  
+  .btn-edit { background: #e3f2fd; color: #1565c0; }
+  .btn-delete { background: #ffebee; color: #c62828; }
+  .btn-test { background: #e8f5e9; color: #2e7d32; }
+
+  #roleModal .modal-content, #emailPrimateljModal .modal-content { max-width: 600px; }
+  
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+  }
+  
+  .checkbox-item input { width: auto; }
+
+  /* Email specific styles */
+  .email-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .email-status-badge.active { background: #c8e6c9; color: #2e7d32; }
+  .email-status-badge.inactive { background: #ffcdd2; color: #c62828; }
+  
+  .category-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .email-info-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .email-info-box h4 {
+    margin: 0 0 10px 0;
+    color: #856404;
+  }
+  
+  .email-info-box p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #856404;
+  }
+
+  .test-result {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+  }
+  
+  .test-result.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+  .test-result.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+</style>
+
+<div class="card">
+  <div class="card-header">⚙️ Postavke Sustava</div>
+  
+  <!-- TABS -->
+  <div class="settings-tabs">
+    <button class="settings-tab active" onclick="switchSettingsTab('settings')">📋 Postavke</button>
+    <button class="settings-tab" onclick="switchSettingsTab('roles')">👥 Uloge</button>
+    <button class="settings-tab" onclick="switchSettingsTab('korisnici')">🔐 Korisnici</button>
+    <button class="settings-tab" onclick="switchSettingsTab('email')">📧 Email Postavke</button>
+    <button class="settings-tab" onclick="switchSettingsTab('primatelji')">📬 Email Primatelji</button>
+    <button class="settings-tab" onclick="switchSettingsTab('oee')">📊 OEE</button>
+    <button class="settings-tab" onclick="switchSettingsTab('produktivnost')">📈 Plan produktivnosti</button>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Opće Postavke -->
+  <!-- ============================================ -->
+  <div id="panelSettings" class="settings-panel active">
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="spremiPostavke()">💾 Spremi postavke</button>
+      <button class="btn btn-secondary" onclick="ucitajPostavke()">🔄 Osvježi</button>
+    </div>
+    
+    <div class="settings-grid" id="settingsGrid">
+      <p style="color:#999;">Učitavam postavke...</p>
+    </div>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Uloge -->
+  <!-- ============================================ -->
+  <div id="panelRoles" class="settings-panel">
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="otvoriDodajUlogu()">+ Nova uloga</button>
+    </div>
+    
+    <table class="roles-table">
+      <thead>
+        <tr>
+          <th>Naziv</th>
+          <th>Opis</th>
+          <th>Dozvole</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="rolesTableBody">
+        <tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">Učitavam...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Korisnici -->
+  <!-- ============================================ -->
+  <div id="panelKorisnici" class="settings-panel">
+    <div style="margin-bottom: 20px;">
+      <h3 style="margin: 0 0 10px; color: #333;">🔐 Upravljanje korisnicima</h3>
+      <p style="color: #666; font-size: 0.9em;">
+        Upravljanje korisničkim računima, PIN-ovima i lozinkama.
+      </p>
+    </div>
+    
+    <!-- Gumb za promjenu vlastite lozinke -->
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+      <button class="btn btn-primary" onclick="otvoriDodajKorisnika()">+ Novi korisnik</button>
+      <button class="btn btn-secondary" onclick="ucitajKorisnike()">🔄 Osvježi</button>
+      <button class="btn" style="background:#fff3e0; color:#e65100; margin-left:auto;" onclick="otvoriPromjenuLozinke()">
+        🔑 Promijeni moju lozinku
+      </button>
+    </div>
+    
+    <!-- Pretraga -->
+    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+      <input type="text" id="searchKorisnici" class="form-control" style="max-width: 250px;" placeholder="Pretraži korisnike..." oninput="filterKorisnici()">
+      <select id="filterUlogaKorisnici" class="form-control" style="max-width: 180px;" onchange="filterKorisnici()">
+        <option value="">Sve uloge</option>
+      </select>
+    </div>
+    
+    <table class="roles-table">
+      <thead>
+        <tr>
+          <th>Ime</th>
+          <th>Email</th>
+          <th>PIN</th>
+          <th>Lozinka</th>
+          <th>Uloga</th>
+          <th>Status</th>
+          <th>Zadnja prijava</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="korisniciTableBody">
+        <tr><td colspan="8" style="text-align:center; padding:20px; color:#999;">Kliknite na tab za učitavanje...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Email Postavke -->
+  <!-- ============================================ -->
+  <div id="panelEmail" class="settings-panel">
+    <div class="email-info-box">
+      <h4>ℹ️ Upute za email integraciju</h4>
+      <p>1. Registriraj se na <a href="https://resend.com" target="_blank">resend.com</a> (besplatno 3000 emailova/mj)</p>
+      <p>2. Verificiraj svoju domenu ili koristi njihovu test domenu</p>
+      <p>3. Generiraj API ključ i unesi ga ovdje</p>
+      <p>4. Deploy-aj Edge Function u Supabase (upute u dokumentaciji)</p>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="spremiEmailPostavke()">💾 Spremi</button>
+      <button class="btn btn-secondary" onclick="ucitajEmailPostavke()">🔄 Osvježi</button>
+      <button class="btn" style="background:#e8f5e9; color:#2e7d32;" onclick="testEmailConnection()">🧪 Test Email</button>
+    </div>
+    
+    <div class="settings-grid" id="emailSettingsGrid">
+      <div class="setting-item">
+        <label>📧 Email pošiljatelja</label>
+        <input type="email" id="emailFrom" placeholder="narudzbe@vasa-firma.hr">
+        <div class="hint">Email adresa s koje se šalju poruke</div>
+      </div>
+      
+      <div class="setting-item">
+        <label>🏢 Naziv pošiljatelja</label>
+        <input type="text" id="emailFromName" placeholder="CARTA ERP">
+        <div class="hint">Ime koje će se prikazati primateljima</div>
+      </div>
+      
+      <div class="setting-item">
+        <label>🔑 Resend API ključ</label>
+        <input type="password" id="emailApiKey" placeholder="re_xxxxxxxxxx">
+        <div class="hint">API ključ s resend.com dashboarda</div>
+      </div>
+      
+      <div class="setting-item">
+        <label>📋 CC Email (opcionalno)</label>
+        <input type="email" id="emailCC" placeholder="kopija@firma.hr">
+        <div class="hint">Prima kopiju svih emailova</div>
+      </div>
+      
+      <div class="setting-item">
+        <label>📝 Prefiks predmeta</label>
+        <input type="text" id="emailSubjectPrefix" placeholder="[CARTA]">
+        <div class="hint">Dodaje se ispred svakog predmeta</div>
+      </div>
+      
+      <div class="setting-item">
+        <label>📄 Footer tekst</label>
+        <textarea id="emailFooter" rows="3" placeholder="Automatska poruka iz CARTA ERP sustava."></textarea>
+        <div class="hint">Tekst na dnu svakog emaila</div>
+      </div>
+    </div>
+    
+    <div id="testEmailResult" class="test-result"></div>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Email Primatelji -->
+  <!-- ============================================ -->
+  <div id="panelPrimatelji" class="settings-panel">
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="otvoriDodajPrimatelja()">+ Novi primatelj</button>
+      <button class="btn btn-secondary" onclick="ucitajEmailPrimatelje()">🔄 Osvježi</button>
+    </div>
+    
+    <table class="email-table">
+      <thead>
+        <tr>
+          <th>Naziv</th>
+          <th>Email</th>
+          <th>Kategorija</th>
+          <th>Status</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="primateljiTableBody">
+        <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Učitavam...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: OEE Postavke -->
+  <!-- ============================================ -->
+  <div id="panelOee" class="settings-panel">
+    <div style="margin-bottom: 20px;">
+      <h3 style="margin: 0 0 10px; color: #333;">📊 OEE Postavke</h3>
+      <p style="color: #666; font-size: 0.9em;">
+        Konfiguriraj ciljne brzine strojeva za izračun OEE. Brzine za Bottomer i Tuber su u kom/min, za Tisak u m/min.
+      </p>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+      <button class="btn btn-primary" onclick="spremiOEEPostavke()">💾 Spremi OEE postavke</button>
+      <button class="btn btn-secondary" onclick="ucitajOEEPostavke()">🔄 Osvježi</button>
+    </div>
+    
+    <!-- BOTTOMER -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #fff3e0;">🔶 Bottomer - ciljne brzine (kom/min)</div>
+      <div class="card-body">
+        <div class="settings-grid">
+          <div class="setting-item" style="border-left: 4px solid #ff9800;">
+            <label>◆ NLI Bottomer</label>
+            <input type="number" id="oee_bottomer_nli" min="1" max="500" value="150">
+            <div class="hint">Brža linija - trenutno aktivna</div>
+          </div>
+          
+          <div class="setting-item" style="border-left: 4px solid #4caf50;">
+            <label>● W&H Bottomer</label>
+            <input type="number" id="oee_bottomer_wh" min="1" max="500" value="100">
+            <div class="hint">Sporija linija - zamjena sredinom 2025.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TUBER -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #e8f5e9;">🟢 Tuber - ciljne brzine (kom/min)</div>
+      <div class="card-body">
+        <div class="settings-grid">
+          <div class="setting-item" style="border-left: 4px solid #ff9800;">
+            <label>◆ NLI Tuber</label>
+            <input type="number" id="oee_tuber_nli" min="1" max="500" value="200">
+            <div class="hint">Brža linija</div>
+          </div>
+          
+          <div class="setting-item" style="border-left: 4px solid #4caf50;">
+            <label>● W&H Tuber</label>
+            <input type="number" id="oee_tuber_wh" min="1" max="500" value="120">
+            <div class="hint">Sporija linija</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TISAK -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #e3f2fd;">🖨️ Tisak - ciljne brzine (m/min)</div>
+      <div class="card-body">
+        <div class="settings-grid">
+          <div class="setting-item" style="border-left: 4px solid #2196f3;">
+            <label>Sciavi Padane</label>
+            <input type="number" id="oee_tisak_sciavi" min="1" max="500" value="150">
+            <div class="hint">Tisak linija 1</div>
+          </div>
+          
+          <div class="setting-item" style="border-left: 4px solid #9c27b0;">
+            <label>Flexotecnica</label>
+            <input type="number" id="oee_tisak_flexotecnica" min="1" max="500" value="120">
+            <div class="hint">Tisak linija 2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- REZAČ - Bonus sustav -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #fce4ec;">✂️ Rezač - postavke</div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Postavke za rezač - granica širine i bonus sustav.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Granica širine traka/rola (cm)</label>
+            <input type="number" id="rezac_sirina_granica" min="10" max="200" value="50" step="1">
+            <div class="hint">Šire od ovog = Rola (R-šifra), uže = Traka (FIFO)</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>Prag za bonus (kom/mjesec)</label>
+            <input type="number" id="oee_rezac_threshold" min="1000" max="500000" value="50000" step="1000">
+            <div class="hint">Minimalna količina za ostvarenje bonusa</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>Iznos bonusa (EUR)</label>
+            <input type="number" id="oee_rezac_bonus" min="0" max="5000" value="500" step="50">
+            <div class="hint">Bonus za dostizanje praga</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Ciljni OEE -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #f8f9fa;">🎯 Opće postavke</div>
+      <div class="card-body">
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Ciljni OEE (%)</label>
+            <input type="number" id="oee_target_pct" min="1" max="100" value="70">
+            <div class="hint">Ciljni OEE postotak za dashboard i izvještaje</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>Standardna smjena (sati)</label>
+            <input type="number" id="oee_shift_hours" min="1" max="12" value="8" step="0.5">
+            <div class="hint">Trajanje standardne smjene</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- OEE Formula objašnjenje -->
+    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #f8f9fa;">📖 OEE Formula</div>
+      <div class="card-body">
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-family: monospace;">
+          <div style="margin-bottom: 10px;"><b>OEE = Availability × Performance × Quality</b></div>
+          <div style="color: #666; font-size: 0.9em;">
+            <div style="margin: 5px 0;">• <b>Availability</b> = Rad / (Rad + Kvar + Čekanje + Preštavanje)</div>
+            <div style="margin: 5px 0;">• <b>Performance</b> = Proizvedeno / (Rad × 60 × Ciljna brzina)</div>
+            <div style="margin: 5px 0;">• <b>Quality</b> = (Proizvedeno - Škart) / Proizvedeno</div>
+          </div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+          <h4 style="margin: 0 0 10px; font-size: 0.95em;">OEE Razine:</h4>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: #4caf50; color: white; padding: 5px 12px; border-radius: 4px;">≥85% Svjetska klasa</span>
+            <span style="background: #8bc34a; color: white; padding: 5px 12px; border-radius: 4px;">70-84% Dobro</span>
+            <span style="background: #ff9800; color: white; padding: 5px 12px; border-radius: 4px;">60-69% Tipično</span>
+            <span style="background: #f44336; color: white; padding: 5px 12px; border-radius: 4px;">&lt;60% Potrebno poboljšanje</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ============================================ -->
+  <!-- PANEL: Plan Produktivnosti -->
+  <!-- ============================================ -->
+  <div id="panelProduktivnost" class="settings-panel">
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="spremiPlanProduktivnosti()">💾 Spremi plan</button>
+      <button class="btn btn-secondary" onclick="ucitajPlanProduktivnosti()">🔄 Osvježi</button>
+    </div>
+    
+    <p style="color: #666; margin-bottom: 20px;">
+      Ovdje postavljate mjesečni plan proizvodnje u komadima. Grupna produktivnost se koristi za ukupne izvještaje, 
+      a osobna produktivnost po timu za izračun bonusa.
+    </p>
+    
+    <!-- GRUPNA PRODUKTIVNOST -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: linear-gradient(135deg, #1565c0, #1976d2); color: white;">
+        🏭 Grupna produktivnost (sve smjene zajedno)
+      </div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Plan proizvodnje za cijelu liniju (sve smjene i timovi zajedno) - u komadima po satu.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>🔵 W&H Linija (kom/h)</label>
+            <input type="number" id="plan_grupna_wh" min="100" max="9999" value="3000" step="100">
+            <div class="hint">Plan za W&H liniju u komadima po satu</div>
+          </div>
+          <div class="setting-item">
+            <label>🔵 W&H Škart (%)</label>
+            <input type="number" id="skart_grupna_wh" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za W&H liniju</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>🟢 NLI Linija (kom/h)</label>
+            <input type="number" id="plan_grupna_nli" min="100" max="9999" value="4000" step="100">
+            <div class="hint">Plan za NLI liniju u komadima po satu</div>
+          </div>
+          <div class="setting-item">
+            <label>🟢 NLI Škart (%)</label>
+            <input type="number" id="skart_grupna_nli" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za NLI liniju</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>🟣 Tisak Linija (kom/h)</label>
+            <input type="number" id="plan_grupna_tisak" min="100" max="9999" value="3500" step="100">
+            <div class="hint">Plan za Tisak liniju u komadima po satu</div>
+          </div>
+          <div class="setting-item">
+            <label>🟣 Tisak Škart (%)</label>
+            <input type="number" id="skart_grupna_tisak" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Tisak liniju</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- OSOBNA PRODUKTIVNOST - W&H -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #5d4037;">
+      <div class="card-header" style="background: linear-gradient(135deg, #5d4037, #795548); color: white;">
+        🔵 W&H - Osobna produktivnost po timu/postavi
+      </div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Plan po stroju za izračun bonusa timova na W&H liniji - u komadima po satu.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>W&H Tuber (kom/h)</label>
+            <input type="number" id="plan_osobna_wh_tuber" min="100" max="9999" value="1500" step="100">
+            <div class="hint">Plan za Tuber tim na W&H</div>
+          </div>
+          <div class="setting-item">
+            <label>W&H Tuber Škart (%)</label>
+            <input type="number" id="skart_osobna_wh_tuber" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Tuber W&H</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>W&H Bottomer (kom/h)</label>
+            <input type="number" id="plan_osobna_wh_bottomer" min="100" max="9999" value="1500" step="100">
+            <div class="hint">Plan za Bottomer tim na W&H</div>
+          </div>
+          <div class="setting-item">
+            <label>W&H Bottomer Škart (%)</label>
+            <input type="number" id="skart_osobna_wh_bottomer" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Bottomer W&H</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- OSOBNA PRODUKTIVNOST - NLI -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #1565c0;">
+      <div class="card-header" style="background: linear-gradient(135deg, #1565c0, #1976d2); color: white;">
+        🟢 NLI - Osobna produktivnost po timu/postavi
+      </div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Plan po stroju za izračun bonusa timova na NLI liniji - u komadima po satu.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>NLI Tuber (kom/h)</label>
+            <input type="number" id="plan_osobna_nli_tuber" min="100" max="9999" value="2000" step="100">
+            <div class="hint">Plan za Tuber tim na NLI</div>
+          </div>
+          <div class="setting-item">
+            <label>NLI Tuber Škart (%)</label>
+            <input type="number" id="skart_osobna_nli_tuber" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Tuber NLI</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>NLI Bottomer (kom/h)</label>
+            <input type="number" id="plan_osobna_nli_bottomer" min="100" max="9999" value="2000" step="100">
+            <div class="hint">Plan za Bottomer tim na NLI</div>
+          </div>
+          <div class="setting-item">
+            <label>NLI Bottomer Škart (%)</label>
+            <input type="number" id="skart_osobna_nli_bottomer" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Bottomer NLI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- OSOBNA PRODUKTIVNOST - TISAK -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #7b1fa2;">
+      <div class="card-header" style="background: linear-gradient(135deg, #7b1fa2, #9c27b0); color: white;">
+        🟣 Tisak - Osobna produktivnost po timu/postavi
+      </div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Plan po stroju za izračun bonusa timova na Tisak liniji - u komadima po satu.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Tisak Aries (kom/h)</label>
+            <input type="number" id="plan_osobna_tisak_aries" min="100" max="9999" value="1800" step="100">
+            <div class="hint">Plan za Aries stroj</div>
+          </div>
+          <div class="setting-item">
+            <label>Tisak Aries Škart (%)</label>
+            <input type="number" id="skart_osobna_tisak_aries" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Aries</div>
+          </div>
+          
+          <div class="setting-item">
+            <label>Tisak Flexotecnica (kom/h)</label>
+            <input type="number" id="plan_osobna_tisak_flexotecnica" min="100" max="9999" value="1800" step="100">
+            <div class="hint">Plan za Flexotecnica stroj</div>
+          </div>
+          <div class="setting-item">
+            <label>Tisak Flexotecnica Škart (%)</label>
+            <input type="number" id="skart_osobna_tisak_flexotecnica" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za Flexotecnica</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- SKLADIŠTE PRODUKTIVNOST -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #ff9800;">
+      <div class="card-header" style="background: linear-gradient(135deg, #f57c00, #ff9800); color: white;">
+        📦 Skladište - Produktivnost po ukupnoj proizvodnji
+      </div>
+      <div class="card-body">
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+          Mjesečni plan ukupne proizvodnje za skladište.
+        </p>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Skladište (kom/mjesec)</label>
+            <input type="number" id="plan_skladiste_mjesecno" min="100000" max="99999999" value="4000000" step="100000">
+            <div class="hint">Mjesečni plan ukupne proizvodnje za skladište</div>
+          </div>
+          <div class="setting-item">
+            <label>Skladište Škart (%)</label>
+            <input type="number" id="skart_skladiste" min="0" max="10" value="1" step="0.1">
+            <div class="hint">Dozvoljeni škart za skladište</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Info box -->
+    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0;">
+      <div class="card-header" style="background: #f8f9fa;">📖 Kako se koriste ovi planovi?</div>
+      <div class="card-body">
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+          <div style="margin-bottom: 10px;"><b>Grupna produktivnost:</b></div>
+          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+            • Koristi se za ukupne izvještaje i dashboarde<br>
+            • Prikazuje očekivanu produktivnost cijele linije (kom/h)
+          </div>
+          <div style="margin: 15px 0 10px;"><b>Osobna produktivnost:</b></div>
+          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+            • Koristi se za izračun bonusa po timovima/postavama<br>
+            • Svaki tim ima svoj plan u kom/h koji mora ostvariti<br>
+            • Npr. 4000 kom/h × 8h smjena = 32.000 kom po smjeni
+          </div>
+          <div style="margin: 15px 0 10px;"><b>Skladište:</b></div>
+          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+            • Mjeri se po ukupnoj mjesečnoj proizvodnji<br>
+            • Default: 4.000.000 kom/mjesec
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ============================================ -->
+<div id="roleModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="roleModalTitle">Nova uloga</h3>
+      <button class="modal-close" onclick="closeModal('roleModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="roleId">
+      
+      <div class="form-group">
+        <label>Naziv uloge *</label>
+        <input type="text" id="roleNaziv" class="form-control" placeholder="npr. skladistar">
+        <small style="color:#888;">Bez razmaka, mala slova, crtice umjesto razmaka</small>
+      </div>
+      
+      <div class="form-group">
+        <label>Opis</label>
+        <input type="text" id="roleOpis" class="form-control" placeholder="Kratak opis uloge">
+      </div>
+      
+      <div class="form-group">
+        <label>Dozvole (stranice)</label>
+        <div class="checkbox-grid" id="permissionsGrid"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('roleModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiUlogu()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL: Email Primatelj -->
+<!-- ============================================ -->
+<div id="emailPrimateljModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="emailPrimateljModalTitle">Novi primatelj</h3>
+      <button class="modal-close" onclick="closeModal('emailPrimateljModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="primateljId">
+      
+      <div class="form-group">
+        <label>Naziv / Ime *</label>
+        <input type="text" id="primateljNaziv" class="form-control" placeholder="npr. Dobavljač traka XY">
+      </div>
+      
+      <div class="form-group">
+        <label>Email adresa *</label>
+        <input type="email" id="primateljEmail" class="form-control" placeholder="kontakt@dobavljac.hr">
+      </div>
+      
+      <div class="form-group">
+        <label>Kategorija</label>
+        <select id="primateljKategorija" class="form-control">
+          <option value="maintenance">Održavanje</option>
+          <option value="supplier">Dobavljač</option>
+          <option value="customer">Kupac</option>
+          <option value="internal">Interno</option>
+          <option value="other">Ostalo</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Telefon (opcionalno)</label>
+        <input type="text" id="primateljTelefon" class="form-control" placeholder="+385 xx xxx xxxx">
+      </div>
+      
+      <div class="form-group">
+        <label>Napomena (opcionalno)</label>
+        <textarea id="primateljNapomena" class="form-control" rows="2" placeholder="Dodatne informacije..."></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label style="display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="primateljAktivan" checked style="width:auto;">
+          Aktivan
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('emailPrimateljModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiPrimatelja()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+console.log('📋 Postavke view učitan');
+
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var svePostavke = [];
+var sveUloge = [];
+var sviPrimatelji = [];
+var emailPostavke = {};
+
+// Dostupne stranice za dozvole
+var DOSTUPNE_STRANICE = [
+  'dashboard', 'djelatnici', 'obracun', 'place', 'produktivnost',
+  'planiranje', 'artikli', 'skladiste', 'rezac', 'tisak',
+  'tuber-wh', 'tuber-nli', 'bottomer-slagac', 'bottomer-voditelj', 'pvnd',
+  'raspored-nli', 'raspored-wh', 'raspored-tisak', 'maintenance', 'videonadzor',
+  'otpreme', 'kuhinja'
+];
+
+// Kategorije primatelja - za prikaz
+var KATEGORIJE_LABELS = {
+  'maintenance': 'Održavanje',
+  'supplier': 'Dobavljač',
+  'customer': 'Kupac',
+  'internal': 'Interno',
+  'other': 'Ostalo'
+};
+
+// ============================================
+// INIT
+// ============================================
+(function() {
+  ucitajPostavke();
+  ucitajUloge();
+  ucitajEmailPostavke();
+  ucitajEmailPrimatelje();
+  renderPermissionsGrid();
+})();
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchSettingsTab(tab) {
+  // Deaktiviraj sve tabove
+  document.querySelectorAll('.settings-tab').forEach(function(t) {
+    t.classList.remove('active');
+  });
+  document.querySelectorAll('.settings-panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  
+  // Aktiviraj kliknuti tab
+  event.target.classList.add('active');
+  
+  // Mapiranje tab -> panel
+  var panelMap = {
+    'settings': 'panelSettings',
+    'roles': 'panelRoles',
+    'korisnici': 'panelKorisnici',
+    'email': 'panelEmail',
+    'primatelji': 'panelPrimatelji',
+    'oee': 'panelOee',
+    'produktivnost': 'panelProduktivnost'
+  };
+  
+  document.getElementById(panelMap[tab]).classList.add('active');
+  
+  // Učitaj OEE postavke kad se otvori tab
+  if (tab === 'oee') {
+    ucitajOEEPostavke();
+  }
+  
+  // Učitaj Plan produktivnosti kad se otvori tab
+  if (tab === 'produktivnost') {
+    ucitajPlanProduktivnosti();
+  }
+  
+  // Učitaj korisnike kad se otvori tab
+  if (tab === 'korisnici') {
+    ucitajKorisnike();
+  }
+}
+
+// ============================================
+// OPĆE POSTAVKE
+// ============================================
+async function ucitajPostavke() {
+  try {
+    var result = await initSupabase()
+      .from('settings')
+      .select('*')
+      .order('category')
+      .order('key');
+    
+    if (result.error) throw result.error;
+    
+    svePostavke = result.data || [];
+    renderPostavke();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška pri učitavanju postavki', 'error');
+  }
+}
+
+function renderPostavke() {
+  var grid = document.getElementById('settingsGrid');
+  
+  if (svePostavke.length === 0) {
+    grid.innerHTML = '<p style="color:#999;">Nema postavki u bazi</p>';
+    return;
+  }
+  
+  var html = '';
+  svePostavke.forEach(function(s) {
+    html += '<div class="setting-item">';
+    html += '<label>' + s.key + '</label>';
+    html += '<input type="text" id="setting_' + s.id + '" value="' + (s.value || '') + '">';
+    if (s.description) {
+      html += '<div class="hint">' + s.description + '</div>';
+    }
+    html += '</div>';
+  });
+  
+  grid.innerHTML = html;
+}
+
+async function spremiPostavke() {
+  showLoading();
+  
+  try {
+    for (var i = 0; i < svePostavke.length; i++) {
+      var s = svePostavke[i];
+      var input = document.getElementById('setting_' + s.id);
+      if (input && input.value !== s.value) {
+        await initSupabase()
+          .from('settings')
+          .update({ value: input.value })
+          .eq('id', s.id);
+      }
+    }
+    
+    showMessage('Postavke spremljene', 'success');
+    ucitajPostavke();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// ULOGE
+// ============================================
+async function ucitajUloge() {
+  try {
+    var result = await initSupabase()
+      .from('prod_roles')
+      .select('*')
+      .order('naziv');
+    
+    if (result.error) throw result.error;
+    
+    sveUloge = result.data || [];
+    renderUloge();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+  }
+}
+
+function renderUloge() {
+  var tbody = document.getElementById('rolesTableBody');
+  
+  if (sveUloge.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">Nema uloga</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  sveUloge.forEach(function(role) {
+    var dozvole = [];
+    try {
+      dozvole = typeof role.dozvole === 'string' ? JSON.parse(role.dozvole) : (role.dozvole || []);
+    } catch (e) {
+      dozvole = [];
+    }
+    
+    html += '<tr>';
+    html += '<td><strong>' + role.naziv + '</strong></td>';
+    html += '<td>' + (role.opis || '-') + '</td>';
+    html += '<td><div class="permissions-list">';
+    
+    if (dozvole.includes('*')) {
+      html += '<span class="perm-badge" style="background:#f3e5f5;color:#7b1fa2;">SVE</span>';
+    } else {
+      dozvole.slice(0, 6).forEach(function(p) {
+        html += '<span class="perm-badge">' + p + '</span>';
+      });
+      if (dozvole.length > 6) {
+        html += '<span class="perm-badge">+' + (dozvole.length - 6) + '</span>';
+      }
+    }
+    
+    html += '</div></td>';
+    html += '<td>';
+    
+    if (role.naziv !== 'superadmin') {
+      html += '<button class="btn-sm btn-edit" onclick="urediUlogu(' + role.id + ')">Uredi</button> ';
+      html += '<button class="btn-sm btn-delete" onclick="obrisiUlogu(' + role.id + ', \'' + role.naziv + '\')">Obriši</button>';
+    } else {
+      html += '<span style="color:#999; font-size:11px;">Zaštićeno</span>';
+    }
+    
+    html += '</td></tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function renderPermissionsGrid() {
+  var grid = document.getElementById('permissionsGrid');
+  var html = '';
+  
+  DOSTUPNE_STRANICE.forEach(function(page) {
+    html += '<label class="checkbox-item">';
+    html += '<input type="checkbox" id="perm_' + page + '" value="' + page + '">';
+    html += page;
+    html += '</label>';
+  });
+  
+  grid.innerHTML = html;
+}
+
+function otvoriDodajUlogu() {
+  document.getElementById('roleModalTitle').textContent = 'Nova uloga';
+  document.getElementById('roleId').value = '';
+  document.getElementById('roleNaziv').value = '';
+  document.getElementById('roleOpis').value = '';
+  
+  DOSTUPNE_STRANICE.forEach(function(page) {
+    var cb = document.getElementById('perm_' + page);
+    if (cb) cb.checked = false;
+  });
+  
+  openModal('roleModal');
+}
+
+function urediUlogu(id) {
+  var role = sveUloge.find(function(r) { return r.id === id; });
+  if (!role) return;
+  
+  document.getElementById('roleModalTitle').textContent = 'Uredi ulogu';
+  document.getElementById('roleId').value = role.id;
+  document.getElementById('roleNaziv').value = role.naziv;
+  document.getElementById('roleOpis').value = role.opis || '';
+  
+  var dozvole = [];
+  try {
+    dozvole = typeof role.dozvole === 'string' ? JSON.parse(role.dozvole) : (role.dozvole || []);
+  } catch (e) {
+    dozvole = [];
+  }
+  
+  DOSTUPNE_STRANICE.forEach(function(page) {
+    var cb = document.getElementById('perm_' + page);
+    if (cb) cb.checked = dozvole.includes(page) || dozvole.includes('*');
+  });
+  
+  openModal('roleModal');
+}
+
+async function spremiUlogu() {
+  var id = document.getElementById('roleId').value;
+  var naziv = document.getElementById('roleNaziv').value.trim().toLowerCase().replace(/\s+/g, '-');
+  var opis = document.getElementById('roleOpis').value.trim();
+  
+  if (!naziv) {
+    showMessage('Unesite naziv uloge', 'warning');
+    return;
+  }
+  
+  var dozvole = [];
+  DOSTUPNE_STRANICE.forEach(function(page) {
+    var cb = document.getElementById('perm_' + page);
+    if (cb && cb.checked) dozvole.push(page);
+  });
+  
+  showLoading();
+  
+  try {
+    var data = {
+      naziv: naziv,
+      opis: opis,
+      dozvole: JSON.stringify(dozvole),
+      aktivan: true
+    };
+    
+    var result;
+    if (id) {
+      result = await initSupabase()
+        .from('prod_roles')
+        .update(data)
+        .eq('id', parseInt(id));
+    } else {
+      result = await initSupabase()
+        .from('prod_roles')
+        .insert(data);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Uloga spremljena', 'success');
+    closeModal('roleModal');
+    ucitajUloge();
+    
+    if (typeof Auth !== 'undefined' && Auth.loadRoles) {
+      Auth.loadRoles();
+    }
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function obrisiUlogu(id, naziv) {
+  if (!confirm('Obrisati ulogu "' + naziv + '"?\n\nKorisnici s ovom ulogom će izgubiti pristup!')) return;
+  
+  showLoading();
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_roles')
+      .delete()
+      .eq('id', id);
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Uloga obrisana', 'success');
+    ucitajUloge();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// EMAIL POSTAVKE
+// ============================================
+async function ucitajEmailPostavke() {
+  try {
+    var result = await initSupabase()
+      .from('prod_email_settings')
+      .select('*');
+    
+    if (result.error) throw result.error;
+    
+    // Pretvori u objekt key:value
+    emailPostavke = {};
+    (result.data || []).forEach(function(s) {
+      emailPostavke[s.key] = s.value;
+    });
+    
+    // Popuni forme
+    document.getElementById('emailFrom').value = emailPostavke['FROM_EMAIL'] || '';
+    document.getElementById('emailFromName').value = emailPostavke['FROM_NAME'] || 'CARTA ERP';
+    document.getElementById('emailApiKey').value = emailPostavke['RESEND_API_KEY'] || '';
+    document.getElementById('emailCC').value = emailPostavke['CC_EMAIL'] || '';
+    document.getElementById('emailSubjectPrefix').value = emailPostavke['SUBJECT_PREFIX'] || '[CARTA]';
+    document.getElementById('emailFooter').value = emailPostavke['FOOTER_TEXT'] || 'Automatska poruka iz CARTA ERP sustava.';
+    
+  } catch (e) {
+    console.error('Greška email postavke:', e);
+  }
+}
+
+async function spremiEmailPostavke() {
+  showLoading();
+  
+  try {
+    var postavke = [
+      { key: 'FROM_EMAIL', value: document.getElementById('emailFrom').value.trim() },
+      { key: 'FROM_NAME', value: document.getElementById('emailFromName').value.trim() },
+      { key: 'RESEND_API_KEY', value: document.getElementById('emailApiKey').value.trim() },
+      { key: 'CC_EMAIL', value: document.getElementById('emailCC').value.trim() },
+      { key: 'SUBJECT_PREFIX', value: document.getElementById('emailSubjectPrefix').value.trim() },
+      { key: 'FOOTER_TEXT', value: document.getElementById('emailFooter').value.trim() }
+    ];
+    
+    for (var i = 0; i < postavke.length; i++) {
+      var p = postavke[i];
+      
+      // Provjeri postoji li već
+      var existing = await initSupabase()
+        .from('prod_email_settings')
+        .select('id')
+        .eq('key', p.key)
+        .maybeSingle();
+      
+      if (existing.data) {
+        // Update
+        await initSupabase()
+          .from('prod_email_settings')
+          .update({ value: p.value })
+          .eq('key', p.key);
+      } else {
+        // Insert
+        await initSupabase()
+          .from('prod_email_settings')
+          .insert(p);
+      }
+    }
+    
+    showMessage('Email postavke spremljene', 'success');
+    ucitajEmailPostavke();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function testEmailConnection() {
+  var resultDiv = document.getElementById('testEmailResult');
+  resultDiv.style.display = 'none';
+  
+  var fromName = document.getElementById('emailFromName').value.trim() || 'CARTA ERP';
+  
+  // Traži email za test - prvo CC, pa FROM, pa prompt
+  var testEmail = document.getElementById('emailCC').value.trim() 
+                || document.getElementById('emailFrom').value.trim();
+  
+  if (!testEmail || testEmail.includes('vasa-firma') || testEmail.includes('example')) {
+    testEmail = prompt('Unesite email adresu za test:', '');
+    if (!testEmail) {
+      resultDiv.className = 'test-result error';
+      resultDiv.innerHTML = '❌ Test otkazan - nije unesena email adresa.';
+      resultDiv.style.display = 'block';
+      return;
+    }
+  }
+  
+  showLoading();
+  
+  try {
+    // Pozovi Edge Function - STVARNO slanje (bez test_mode)
+    var response = await initSupabase().functions.invoke('send-email', {
+      body: {
+        to: testEmail,
+        subject: '[TEST] CARTA ERP Email Test',
+        html: '<h2>✅ Email test uspješan!</h2><p>Ako vidite ovu poruku, email integracija radi ispravno.</p><p>Vrijeme testa: ' + new Date().toLocaleString('hr-HR') + '</p>',
+        from_name: fromName
+      }
+    });
+    
+    console.log('Test email response:', response);
+    
+    if (response.error) throw new Error(response.error.message || 'Greška pri pozivu funkcije');
+    if (response.data && !response.data.success) throw new Error(response.data.error || 'Email nije poslan');
+    
+    resultDiv.className = 'test-result success';
+    resultDiv.innerHTML = '✅ <strong>Test email poslan!</strong><br>Provjerite inbox na adresi: <strong>' + testEmail + '</strong>' + 
+                          (response.data && response.data.id ? '<br><small>ID: ' + response.data.id + '</small>' : '');
+    
+  } catch (e) {
+    console.error('Test email error:', e);
+    resultDiv.className = 'test-result error';
+    resultDiv.innerHTML = '❌ <strong>Greška:</strong> ' + (e.message || 'Edge Function nije dostupna.');
+  } finally {
+    hideLoading();
+    resultDiv.style.display = 'block';
+  }
+}
+
+// ============================================
+// EMAIL PRIMATELJI
+// ============================================
+async function ucitajEmailPrimatelje() {
+  try {
+    var result = await initSupabase()
+      .from('prod_email_recipients')
+      .select('*')
+      .order('name');
+    
+    if (result.error) throw result.error;
+    
+    sviPrimatelji = result.data || [];
+    renderPrimatelje();
+    
+  } catch (e) {
+    console.error('Greška primatelji:', e);
+  }
+}
+
+function renderPrimatelje() {
+  var tbody = document.getElementById('primateljiTableBody');
+  
+  if (sviPrimatelji.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Nema primatelja. Dodajte prvog!</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  sviPrimatelji.forEach(function(p) {
+    var kategorijaLabel = KATEGORIJE_LABELS[p.category] || p.category || 'Ostalo';
+    var statusClass = p.active ? 'active' : 'inactive';
+    var statusLabel = p.active ? 'Aktivan' : 'Neaktivan';
+    
+    html += '<tr>';
+    html += '<td><strong>' + (p.name || '-') + '</strong></td>';
+    html += '<td>' + (p.email || '-') + '</td>';
+    html += '<td><span class="category-badge">' + kategorijaLabel + '</span></td>';
+    html += '<td><span class="email-status-badge ' + statusClass + '">' + statusLabel + '</span></td>';
+    html += '<td>';
+    html += '<button class="btn-sm btn-edit" onclick="urediPrimatelja(\'' + p.id + '\')">Uredi</button> ';
+    html += '<button class="btn-sm btn-delete" onclick="obrisiPrimatelja(\'' + p.id + '\', \'' + p.name + '\')">Obriši</button>';
+    html += '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function otvoriDodajPrimatelja() {
+  document.getElementById('emailPrimateljModalTitle').textContent = 'Novi primatelj';
+  document.getElementById('primateljId').value = '';
+  document.getElementById('primateljNaziv').value = '';
+  document.getElementById('primateljEmail').value = '';
+  document.getElementById('primateljKategorija').value = 'maintenance';
+  document.getElementById('primateljTelefon').value = '';
+  document.getElementById('primateljNapomena').value = '';
+  document.getElementById('primateljAktivan').checked = true;
+  
+  openModal('emailPrimateljModal');
+}
+
+function urediPrimatelja(id) {
+  var p = sviPrimatelji.find(function(x) { return x.id === id; });
+  if (!p) return;
+  
+  document.getElementById('emailPrimateljModalTitle').textContent = 'Uredi primatelja';
+  document.getElementById('primateljId').value = p.id;
+  document.getElementById('primateljNaziv').value = p.name || '';
+  document.getElementById('primateljEmail').value = p.email || '';
+  document.getElementById('primateljKategorija').value = p.category || 'other';
+  document.getElementById('primateljTelefon').value = p.phone || '';
+  document.getElementById('primateljNapomena').value = p.notes || '';
+  document.getElementById('primateljAktivan').checked = p.active !== false;
+  
+  openModal('emailPrimateljModal');
+}
+
+async function spremiPrimatelja() {
+  var id = document.getElementById('primateljId').value;
+  var naziv = document.getElementById('primateljNaziv').value.trim();
+  var email = document.getElementById('primateljEmail').value.trim();
+  var kategorija = document.getElementById('primateljKategorija').value;
+  var telefon = document.getElementById('primateljTelefon').value.trim();
+  var napomena = document.getElementById('primateljNapomena').value.trim();
+  var aktivan = document.getElementById('primateljAktivan').checked;
+  
+  if (!naziv || !email) {
+    showMessage('Unesite naziv i email!', 'warning');
+    return;
+  }
+  
+  // Jednostavna email validacija
+  if (!email.includes('@')) {
+    showMessage('Unesite ispravnu email adresu!', 'warning');
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    var data = {
+      name: naziv,
+      email: email,
+      category: kategorija,
+      phone: telefon,
+      notes: napomena,
+      active: aktivan
+    };
+    
+    var result;
+    if (id) {
+      result = await initSupabase()
+        .from('prod_email_recipients')
+        .update(data)
+        .eq('id', id);
+    } else {
+      result = await initSupabase()
+        .from('prod_email_recipients')
+        .insert(data);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Primatelj spremljen', 'success');
+    closeModal('emailPrimateljModal');
+    ucitajEmailPrimatelje();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function obrisiPrimatelja(id, naziv) {
+  if (!confirm('Obrisati primatelja "' + naziv + '"?')) return;
+  
+  showLoading();
+  
+  try {
+    var result = await initSupabase()
+      .from('prod_email_recipients')
+      .delete()
+      .eq('id', id);
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Primatelj obrisan', 'success');
+    ucitajEmailPrimatelje();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// HELPER: Dohvati email postavke (za druge module)
+// ============================================
+window.getEmailConfig = async function() {
+  var result = await initSupabase()
+    .from('prod_email_settings')
+    .select('*');
+  
+  if (result.error) return {};
+  
+  var config = {};
+  (result.data || []).forEach(function(s) {
+    config[s.key] = s.value;
+  });
+  return config;
+};
+
+window.getActiveEmailRecipients = async function(category) {
+  var query = initSupabase()
+    .from('prod_email_recipients')
+    .select('*')
+    .eq('active', true);
+  
+  if (category) {
+    query = query.eq('category', category);
+  }
+  
+  var result = await query.order('name');
+  return result.data || [];
+};
+
+// ============================================
+// OEE POSTAVKE
+// ============================================
+var oeePostavke = {};
+
+// Mapiranje input ID -> settings key
+var oeeFieldMap = {
+  'oee_bottomer_nli': 'oee_target_speed_bottomer_nli',
+  'oee_bottomer_wh': 'oee_target_speed_bottomer_wh',
+  'oee_tuber_nli': 'oee_target_speed_tuber_nli',
+  'oee_tuber_wh': 'oee_target_speed_tuber_wh',
+  'oee_tisak_sciavi': 'oee_target_speed_tisak_sciavi',
+  'oee_tisak_flexotecnica': 'oee_target_speed_tisak_flexotecnica',
+  'rezac_sirina_granica': 'rezac_strip_width_threshold',
+  'oee_rezac_threshold': 'rezac_bonus_threshold',
+  'oee_rezac_bonus': 'rezac_bonus_amount',
+  'oee_target_pct': 'oee_target_percentage',
+  'oee_shift_hours': 'oee_scheduled_hours_default'
+};
+
+// Default vrijednosti
+var oeeDefaults = {
+  'oee_target_speed_bottomer_nli': 150,
+  'oee_target_speed_bottomer_wh': 100,
+  'oee_target_speed_tuber_nli': 200,
+  'oee_target_speed_tuber_wh': 120,
+  'oee_target_speed_tisak_sciavi': 150,
+  'oee_target_speed_tisak_flexotecnica': 120,
+  'rezac_strip_width_threshold': 50,
+  'rezac_bonus_threshold': 50000,
+  'rezac_bonus_amount': 500,
+  'oee_target_percentage': 70,
+  'oee_scheduled_hours_default': 8
+};
+
+// Opisi za nove postavke
+var oeeDescriptions = {
+  'oee_target_speed_bottomer_nli': 'Bottomer NLI - ciljna brzina (kom/min)',
+  'oee_target_speed_bottomer_wh': 'Bottomer W&H - ciljna brzina (kom/min)',
+  'oee_target_speed_tuber_nli': 'Tuber NLI - ciljna brzina (kom/min)',
+  'oee_target_speed_tuber_wh': 'Tuber W&H - ciljna brzina (kom/min)',
+  'oee_target_speed_tisak_sciavi': 'Tisak Sciavi Padane - ciljna brzina (m/min)',
+  'oee_target_speed_tisak_flexotecnica': 'Tisak Flexotecnica - ciljna brzina (m/min)',
+  'rezac_strip_width_threshold': 'Granica širine - traka vs rola (cm)',
+  'rezac_bonus_threshold': 'Rezač - prag za bonus (kom/mjesec)',
+  'rezac_bonus_amount': 'Rezač - iznos bonusa (EUR)',
+  'oee_target_percentage': 'Ciljni OEE postotak (%)',
+  'oee_scheduled_hours_default': 'Standardna smjena (sati)'
+};
+
+async function ucitajOEEPostavke() {
+  try {
+    var result = await initSupabase()
+      .from('settings')
+      .select('*')
+      .eq('category', 'OEE');
+    
+    if (result.error) throw result.error;
+    
+    oeePostavke = {};
+    (result.data || []).forEach(function(s) {
+      oeePostavke[s.key] = s;
+    });
+    
+    // Popuni forme iz mapiranja
+    Object.keys(oeeFieldMap).forEach(function(inputId) {
+      var settingsKey = oeeFieldMap[inputId];
+      var input = document.getElementById(inputId);
+      if (input) {
+        var value = oeePostavke[settingsKey] ? oeePostavke[settingsKey].value : oeeDefaults[settingsKey];
+        input.value = value || oeeDefaults[settingsKey];
+      }
+    });
+    
+    console.log('OEE postavke učitane:', oeePostavke);
+    
+  } catch (e) {
+    console.error('Greška učitavanja OEE postavki:', e);
+    showMessage('Greška pri učitavanju OEE postavki', 'error');
+  }
+}
+
+async function spremiOEEPostavke() {
+  showLoading();
+  
+  try {
+    // Prikupi sve vrijednosti iz formi
+    var updates = [];
+    Object.keys(oeeFieldMap).forEach(function(inputId) {
+      var settingsKey = oeeFieldMap[inputId];
+      var input = document.getElementById(inputId);
+      if (input) {
+        updates.push({
+          key: settingsKey,
+          value: parseFloat(input.value) || oeeDefaults[settingsKey],
+          desc: oeeDescriptions[settingsKey]
+        });
+      }
+    });
+    
+    for (var i = 0; i < updates.length; i++) {
+      var u = updates[i];
+      
+      if (oeePostavke[u.key]) {
+        // Update postojeće
+        await initSupabase()
+          .from('settings')
+          .update({ value: u.value, updated_at: new Date().toISOString() })
+          .eq('id', oeePostavke[u.key].id);
+      } else {
+        // Insert nove
+        await initSupabase()
+          .from('settings')
+          .insert({
+            key: u.key,
+            value: u.value,
+            category: 'OEE',
+            description: u.desc
+          });
+      }
+    }
+    
+    showMessage('OEE postavke spremljene!', 'success');
+    ucitajOEEPostavke();
+    
+  } catch (e) {
+    console.error('Greška spremanja OEE postavki:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// PLAN PRODUKTIVNOSTI
+// ============================================
+var planProduktivnosti = {};
+
+// Mapiranje input ID -> settings key
+var planFieldMap = {
+  // Grupna produktivnost
+  'plan_grupna_wh': 'plan_grupna_wh',
+  'plan_grupna_nli': 'plan_grupna_nli',
+  'plan_grupna_tisak': 'plan_grupna_tisak',
+  'skart_grupna_wh': 'skart_grupna_wh',
+  'skart_grupna_nli': 'skart_grupna_nli',
+  'skart_grupna_tisak': 'skart_grupna_tisak',
+  // Osobna - W&H
+  'plan_osobna_wh_tuber': 'plan_osobna_wh_tuber',
+  'plan_osobna_wh_bottomer': 'plan_osobna_wh_bottomer',
+  'skart_osobna_wh_tuber': 'skart_osobna_wh_tuber',
+  'skart_osobna_wh_bottomer': 'skart_osobna_wh_bottomer',
+  // Osobna - NLI
+  'plan_osobna_nli_tuber': 'plan_osobna_nli_tuber',
+  'plan_osobna_nli_bottomer': 'plan_osobna_nli_bottomer',
+  'skart_osobna_nli_tuber': 'skart_osobna_nli_tuber',
+  'skart_osobna_nli_bottomer': 'skart_osobna_nli_bottomer',
+  // Osobna - Tisak
+  'plan_osobna_tisak_aries': 'plan_osobna_tisak_aries',
+  'plan_osobna_tisak_flexotecnica': 'plan_osobna_tisak_flexotecnica',
+  'skart_osobna_tisak_aries': 'skart_osobna_tisak_aries',
+  'skart_osobna_tisak_flexotecnica': 'skart_osobna_tisak_flexotecnica',
+  // Skladište
+  'plan_skladiste_mjesecno': 'plan_skladiste_mjesecno',
+  'skart_skladiste': 'skart_skladiste'
+};
+
+// Default vrijednosti (kom/h, osim skladište koje je kom/mjesec)
+var planDefaults = {
+  'plan_grupna_wh': 3000,
+  'plan_grupna_nli': 4000,
+  'plan_grupna_tisak': 3500,
+  'skart_grupna_wh': 1,
+  'skart_grupna_nli': 1,
+  'skart_grupna_tisak': 1,
+  'plan_osobna_wh_tuber': 1500,
+  'plan_osobna_wh_bottomer': 1500,
+  'skart_osobna_wh_tuber': 1,
+  'skart_osobna_wh_bottomer': 1,
+  'plan_osobna_nli_tuber': 2000,
+  'plan_osobna_nli_bottomer': 2000,
+  'skart_osobna_nli_tuber': 1,
+  'skart_osobna_nli_bottomer': 1,
+  'plan_osobna_tisak_aries': 1800,
+  'plan_osobna_tisak_flexotecnica': 1800,
+  'skart_osobna_tisak_aries': 1,
+  'skart_osobna_tisak_flexotecnica': 1,
+  'plan_skladiste_mjesecno': 4000000,
+  'skart_skladiste': 1
+};
+
+// Opisi za postavke
+var planDescriptions = {
+  'plan_grupna_wh': 'Grupni plan - W&H linija (kom/h)',
+  'plan_grupna_nli': 'Grupni plan - NLI linija (kom/h)',
+  'plan_grupna_tisak': 'Grupni plan - Tisak linija (kom/h)',
+  'skart_grupna_wh': 'Dozvoljeni škart - W&H linija (%)',
+  'skart_grupna_nli': 'Dozvoljeni škart - NLI linija (%)',
+  'skart_grupna_tisak': 'Dozvoljeni škart - Tisak linija (%)',
+  'plan_osobna_wh_tuber': 'Osobni plan - W&H Tuber (kom/h)',
+  'plan_osobna_wh_bottomer': 'Osobni plan - W&H Bottomer (kom/h)',
+  'skart_osobna_wh_tuber': 'Dozvoljeni škart - W&H Tuber (%)',
+  'skart_osobna_wh_bottomer': 'Dozvoljeni škart - W&H Bottomer (%)',
+  'plan_osobna_nli_tuber': 'Osobni plan - NLI Tuber (kom/h)',
+  'plan_osobna_nli_bottomer': 'Osobni plan - NLI Bottomer (kom/h)',
+  'skart_osobna_nli_tuber': 'Dozvoljeni škart - NLI Tuber (%)',
+  'skart_osobna_nli_bottomer': 'Dozvoljeni škart - NLI Bottomer (%)',
+  'plan_osobna_tisak_aries': 'Osobni plan - Tisak Aries (kom/h)',
+  'plan_osobna_tisak_flexotecnica': 'Osobni plan - Tisak Flexotecnica (kom/h)',
+  'skart_osobna_tisak_aries': 'Dozvoljeni škart - Tisak Aries (%)',
+  'skart_osobna_tisak_flexotecnica': 'Dozvoljeni škart - Tisak Flexotecnica (%)',
+  'plan_skladiste_mjesecno': 'Skladište - ukupna proizvodnja (kom/mjesec)',
+  'skart_skladiste': 'Dozvoljeni škart - Skladište (%)'
+};
+
+async function ucitajPlanProduktivnosti() {
+  try {
+    var result = await initSupabase()
+      .from('settings')
+      .select('*')
+      .eq('category', 'PRODUKTIVNOST');
+    
+    if (result.error) throw result.error;
+    
+    planProduktivnosti = {};
+    (result.data || []).forEach(function(s) {
+      planProduktivnosti[s.key] = s;
+    });
+    
+    // Popuni forme iz mapiranja
+    Object.keys(planFieldMap).forEach(function(inputId) {
+      var settingsKey = planFieldMap[inputId];
+      var input = document.getElementById(inputId);
+      if (input) {
+        var value = planProduktivnosti[settingsKey] ? planProduktivnosti[settingsKey].value : planDefaults[settingsKey];
+        input.value = value || planDefaults[settingsKey];
+      }
+    });
+    
+    console.log('Plan produktivnosti učitan:', planProduktivnosti);
+    
+  } catch (e) {
+    console.error('Greška učitavanja plana produktivnosti:', e);
+    showMessage('Greška pri učitavanju plana produktivnosti', 'error');
+  }
+}
+
+async function spremiPlanProduktivnosti() {
+  showLoading();
+  
+  try {
+    // Prikupi sve vrijednosti iz formi
+    var updates = [];
+    Object.keys(planFieldMap).forEach(function(inputId) {
+      var settingsKey = planFieldMap[inputId];
+      var input = document.getElementById(inputId);
+      if (input) {
+        updates.push({
+          key: settingsKey,
+          value: parseInt(input.value) || planDefaults[settingsKey],
+          desc: planDescriptions[settingsKey]
+        });
+      }
+    });
+    
+    for (var i = 0; i < updates.length; i++) {
+      var u = updates[i];
+      
+      if (planProduktivnosti[u.key]) {
+        // Update postojeće
+        await initSupabase()
+          .from('settings')
+          .update({ value: u.value, updated_at: new Date().toISOString() })
+          .eq('id', planProduktivnosti[u.key].id);
+      } else {
+        // Insert nove
+        await initSupabase()
+          .from('settings')
+          .insert({
+            key: u.key,
+            value: u.value,
+            category: 'PRODUKTIVNOST',
+            description: u.desc
+          });
+      }
+    }
+    
+    showMessage('Plan produktivnosti spremljen!', 'success');
+    ucitajPlanProduktivnosti();
+    
+  } catch (e) {
+    console.error('Greška spremanja plana produktivnosti:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// KORISNICI - UPRAVLJANJE
+// ============================================
+var sviKorisnici = [];
+
+async function ucitajKorisnike() {
+  try {
+    var result = await initSupabase()
+      .from('prod_users')
+      .select('*')
+      .order('ime');
+    
+    if (result.error) throw result.error;
+    
+    sviKorisnici = result.data || [];
+    
+    // Popuni filter dropdown s ulogama
+    var filterSelect = document.getElementById('filterUlogaKorisnici');
+    if (filterSelect.options.length <= 1) {
+      sveUloge.forEach(function(role) {
+        filterSelect.innerHTML += '<option value="' + role.naziv + '">' + role.naziv + '</option>';
+      });
+    }
+    
+    renderKorisnici(sviKorisnici);
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška pri učitavanju korisnika', 'error');
+  }
+}
+
+function renderKorisnici(korisnici) {
+  var tbody = document.getElementById('korisniciTableBody');
+  
+  if (korisnici.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#999;">Nema korisnika</td></tr>';
+    return;
+  }
+  
+  var html = '';
+  korisnici.forEach(function(user) {
+    var roleClass = '';
+    if (user.uloga === 'superadmin') roleClass = 'background:#f3e5f5; color:#7b1fa2;';
+    else if (user.uloga === 'admin') roleClass = 'background:#fff3e0; color:#e65100;';
+    else roleClass = 'background:#e3f2fd; color:#1565c0;';
+    
+    var lastLogin = user.last_login ? formatDatumVrijeme(user.last_login) : 'Nikad';
+    var isAdminRole = user.uloga === 'admin' || user.uloga === 'superadmin';
+    
+    html += '<tr>';
+    html += '<td><strong>' + escapeHtml(user.ime) + '</strong></td>';
+    html += '<td>' + escapeHtml(user.email) + '</td>';
+    html += '<td>' + (isAdminRole ? '<span style="color:#888;">-</span>' : (user.pin_code || '-')) + '</td>';
+    html += '<td>' + (isAdminRole && user.password ? '<span class="password-cell" style="font-family:monospace; background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:11px;">' + escapeHtml(user.password) + '</span>' : '<span style="color:#888;">-</span>') + '</td>';
+    html += '<td><span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; ' + roleClass + '">' + user.uloga + '</span></td>';
+    html += '<td><span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; ' + (user.aktivan ? 'background:#e8f5e9; color:#2e7d32;' : 'background:#ffebee; color:#c62828;') + '">' + (user.aktivan ? 'Aktivan' : 'Neaktivan') + '</span></td>';
+    html += '<td>' + lastLogin + '</td>';
+    html += '<td style="display:flex; gap:5px;">';
+    html += '<button class="btn btn-sm" style="background:#e3f2fd; color:#1565c0;" onclick="urediKorisnika(\'' + user.id + '\')">Uredi</button>';
+    
+    if (user.uloga !== 'superadmin') {
+      html += '<button class="btn btn-sm" style="background:#ffebee; color:#c62828;" onclick="obrisiKorisnika(\'' + user.id + '\', \'' + escapeHtml(user.ime) + '\')">Obriši</button>';
+    }
+    
+    html += '</td>';
+    html += '</tr>';
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function filterKorisnici() {
+  var search = document.getElementById('searchKorisnici').value.toLowerCase();
+  var roleFilter = document.getElementById('filterUlogaKorisnici').value;
+  
+  var filtered = sviKorisnici.filter(function(user) {
+    var matchSearch = !search || 
+      user.ime.toLowerCase().indexOf(search) !== -1 || 
+      user.email.toLowerCase().indexOf(search) !== -1;
+    var matchRole = !roleFilter || user.uloga === roleFilter;
+    return matchSearch && matchRole;
+  });
+  
+  renderKorisnici(filtered);
+}
+
+function otvoriDodajKorisnika() {
+  document.getElementById('korisnikModalTitle').textContent = 'Novi korisnik';
+  document.getElementById('korisnikId').value = '';
+  document.getElementById('korisnikIme').value = '';
+  document.getElementById('korisnikEmail').value = '';
+  document.getElementById('korisnikPin').value = '';
+  document.getElementById('korisnikPassword').value = '';
+  document.getElementById('korisnikUloga').value = sveUloge.length > 0 ? sveUloge[0].naziv : '';
+  document.getElementById('korisnikAktivan').value = 'true';
+  
+  // Popuni dropdown s ulogama
+  var ulogaSelect = document.getElementById('korisnikUloga');
+  if (ulogaSelect.options.length === 0) {
+    sveUloge.forEach(function(role) {
+      ulogaSelect.innerHTML += '<option value="' + role.naziv + '">' + role.naziv + '</option>';
+    });
+  }
+  
+  onKorisnikUlogaChange();
+  openModal('korisnikModal');
+}
+
+function urediKorisnika(id) {
+  var user = sviKorisnici.find(function(u) { return u.id === id; });
+  if (!user) return;
+  
+  document.getElementById('korisnikModalTitle').textContent = 'Uredi korisnika';
+  document.getElementById('korisnikId').value = user.id;
+  document.getElementById('korisnikIme').value = user.ime;
+  document.getElementById('korisnikEmail').value = user.email;
+  document.getElementById('korisnikPin').value = user.pin_code || '';
+  document.getElementById('korisnikPassword').value = user.password || '';
+  document.getElementById('korisnikAktivan').value = user.aktivan ? 'true' : 'false';
+  
+  // Popuni dropdown s ulogama
+  var ulogaSelect = document.getElementById('korisnikUloga');
+  if (ulogaSelect.options.length === 0) {
+    sveUloge.forEach(function(role) {
+      ulogaSelect.innerHTML += '<option value="' + role.naziv + '">' + role.naziv + '</option>';
+    });
+  }
+  document.getElementById('korisnikUloga').value = user.uloga;
+  
+  onKorisnikUlogaChange();
+  openModal('korisnikModal');
+}
+
+function onKorisnikUlogaChange() {
+  var uloga = document.getElementById('korisnikUloga').value;
+  var passwordGroup = document.getElementById('korisnikPasswordGroup');
+  var isAdmin = uloga === 'admin' || uloga === 'superadmin';
+  
+  passwordGroup.style.display = isAdmin ? 'block' : 'none';
+}
+
+async function spremiKorisnika() {
+  var id = document.getElementById('korisnikId').value;
+  var ime = document.getElementById('korisnikIme').value.trim();
+  var email = document.getElementById('korisnikEmail').value.trim();
+  var pin = document.getElementById('korisnikPin').value.trim();
+  var password = document.getElementById('korisnikPassword').value.trim();
+  var uloga = document.getElementById('korisnikUloga').value;
+  var aktivan = document.getElementById('korisnikAktivan').value === 'true';
+  
+  if (!ime || !email || !uloga) {
+    showMessage('Popunite sva obavezna polja', 'warning');
+    return;
+  }
+  
+  var isAdmin = uloga === 'admin' || uloga === 'superadmin';
+  if (isAdmin && !password) {
+    showMessage('Lozinka je obavezna za admin uloge', 'warning');
+    return;
+  }
+  
+  if (!isAdmin && !pin) {
+    showMessage('PIN je obavezan', 'warning');
+    return;
+  }
+  
+  showLoading('Spremanje...');
+  
+  try {
+    var data = {
+      ime: ime,
+      email: email,
+      pin_code: isAdmin ? null : pin,
+      password: isAdmin ? password : null,
+      uloga: uloga,
+      aktivan: aktivan
+    };
+    
+    var result;
+    if (id) {
+      result = await initSupabase().from('prod_users').update(data).eq('id', id);
+    } else {
+      result = await initSupabase().from('prod_users').insert(data);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage('Korisnik spremljen', 'success');
+    closeModal('korisnikModal');
+    ucitajKorisnike();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function obrisiKorisnika(id, ime) {
+  if (!confirm('Obrisati korisnika "' + ime + '"?')) return;
+  
+  showLoading('Brisanje...');
+  
+  try {
+    var result = await initSupabase().from('prod_users').delete().eq('id', id);
+    if (result.error) throw result.error;
+    
+    showMessage('Korisnik obrisan', 'success');
+    ucitajKorisnike();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// PROMJENA VLASTITE LOZINKE
+// ============================================
+function otvoriPromjenuLozinke() {
+  document.getElementById('trenutnaLozinka').value = '';
+  document.getElementById('novaLozinka').value = '';
+  document.getElementById('potvrdaLozinke').value = '';
+  openModal('lozinkaModal');
+}
+
+async function spremiNovuLozinku() {
+  var current = document.getElementById('trenutnaLozinka').value;
+  var newPass = document.getElementById('novaLozinka').value;
+  var confirm = document.getElementById('potvrdaLozinke').value;
+  
+  if (!current || !newPass || !confirm) {
+    showMessage('Popunite sva polja', 'warning');
+    return;
+  }
+  
+  if (newPass !== confirm) {
+    showMessage('Nove lozinke se ne podudaraju', 'warning');
+    return;
+  }
+  
+  if (newPass.length < 4) {
+    showMessage('Lozinka mora imati najmanje 4 znaka', 'warning');
+    return;
+  }
+  
+  showLoading('Spremanje...');
+  
+  try {
+    await Auth.changePassword(current, newPass);
+    showMessage('Lozinka uspješno promijenjena!', 'success');
+    closeModal('lozinkaModal');
+  } catch (e) {
+    showMessage(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+</script>
+
+<!-- MODAL: Korisnik -->
+<div id="korisnikModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 id="korisnikModalTitle">Novi korisnik</h3>
+      <button class="modal-close" onclick="closeModal('korisnikModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="korisnikId">
+      
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Ime *</label>
+          <input type="text" id="korisnikIme" class="form-control" placeholder="Ime korisnika">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>PIN</label>
+          <input type="text" id="korisnikPin" class="form-control" placeholder="4 znamenke" maxlength="6">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="korisnikEmail" class="form-control" placeholder="email@domena.hr">
+      </div>
+      
+      <div class="form-group" id="korisnikPasswordGroup" style="display: none;">
+        <label>Lozinka (za admin prijavu)</label>
+        <input type="text" id="korisnikPassword" class="form-control" placeholder="Lozinka za admin pristup">
+        <small style="color: #888;">Obavezno za admin i superadmin uloge</small>
+      </div>
+      
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Uloga *</label>
+          <select id="korisnikUloga" class="form-control" onchange="onKorisnikUlogaChange()"></select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Status</label>
+          <select id="korisnikAktivan" class="form-control">
+            <option value="true">Aktivan</option>
+            <option value="false">Neaktivan</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('korisnikModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiKorisnika()">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Promjena lozinke -->
+<div id="lozinkaModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3>🔑 Promjena lozinke</h3>
+      <button class="modal-close" onclick="closeModal('lozinkaModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Trenutna lozinka *</label>
+        <input type="password" id="trenutnaLozinka" class="form-control" placeholder="Unesite trenutnu lozinku">
+      </div>
+      <div class="form-group">
+        <label>Nova lozinka *</label>
+        <input type="password" id="novaLozinka" class="form-control" placeholder="Unesite novu lozinku">
+      </div>
+      <div class="form-group">
+        <label>Potvrdite novu lozinku *</label>
+        <input type="password" id="potvrdaLozinke" class="form-control" placeholder="Ponovite novu lozinku">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('lozinkaModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="spremiNovuLozinku()">Spremi</button>
+    </div>
+  </div>
+</div>

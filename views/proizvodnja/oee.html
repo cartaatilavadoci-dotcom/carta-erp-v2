@@ -1,0 +1,948 @@
+<!-- ============================================
+     CARTA ERP - OEE (Overall Equipment Effectiveness)
+     ============================================ -->
+
+<style>
+/* ============================================
+   OEE STYLES
+   ============================================ */
+.oee-container {
+  padding: 15px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.oee-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.oee-header h2 {
+  margin: 0;
+  font-size: 1.4em;
+  color: #1565c0;
+  flex: 1;
+}
+
+.oee-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.oee-filters select,
+.oee-filters input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.oee-filters button {
+  padding: 8px 16px;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.oee-filters button:hover {
+  background: #0d47a1;
+}
+
+/* Gauge cards */
+.oee-gauges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.gauge-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.gauge-card.oee-main {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+}
+
+.gauge-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.gauge-value {
+  font-size: 3em;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.gauge-card.oee-main .gauge-value {
+  font-size: 3.5em;
+}
+
+.gauge-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.gauge-card.oee-main .gauge-bar {
+  background: rgba(255,255,255,0.3);
+}
+
+.gauge-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.gauge-fill.green { background: #4caf50; }
+.gauge-fill.yellow { background: #ff9800; }
+.gauge-fill.red { background: #f44336; }
+.gauge-fill.blue { background: #2196f3; }
+.gauge-fill.white { background: rgba(255,255,255,0.9); }
+
+.gauge-subtitle {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-top: 10px;
+}
+
+/* Charts section */
+.oee-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1000px) {
+  .oee-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.chart-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.chart-container {
+  height: 250px;
+  position: relative;
+}
+
+/* Speed chart (simple CSS version) */
+.speed-chart {
+  display: flex;
+  align-items: flex-end;
+  height: 200px;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.speed-bar {
+  flex: 1;
+  background: linear-gradient(to top, #1565c0, #42a5f5);
+  border-radius: 2px 2px 0 0;
+  min-width: 4px;
+  max-width: 20px;
+  transition: height 0.3s ease;
+  position: relative;
+}
+
+.speed-bar:hover {
+  background: linear-gradient(to top, #0d47a1, #1976d2);
+}
+
+.speed-bar:hover::after {
+  content: attr(data-value) ' kom/min';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Downtime breakdown */
+.downtime-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.downtime-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 10px;
+}
+
+.downtime-item:last-child {
+  border-bottom: none;
+}
+
+.downtime-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.downtime-info {
+  flex: 1;
+}
+
+.downtime-name {
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+.downtime-count {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.downtime-duration {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.downtime-percent {
+  font-size: 0.85em;
+  color: #666;
+  width: 50px;
+  text-align: right;
+}
+
+/* Events table */
+.events-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.events-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.events-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.events-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.events-table th {
+  background: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.events-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.events-table tr:hover {
+  background: #f8f9fa;
+}
+
+.event-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.event-badge.stop { background: #ffebee; color: #c62828; }
+.event-badge.start { background: #e8f5e9; color: #2e7d32; }
+.event-badge.mikro { background: #eceff1; color: #546e7a; }
+
+/* Summary stats */
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.stat-card .stat-value {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #1565c0;
+}
+
+.stat-card .stat-label {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Loading state */
+.oee-loading {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .oee-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .oee-filters {
+    flex-direction: column;
+  }
+  
+  .oee-filters select,
+  .oee-filters input,
+  .oee-filters button {
+    width: 100%;
+  }
+  
+  .gauge-value {
+    font-size: 2.5em;
+  }
+  
+  .gauge-card.oee-main .gauge-value {
+    font-size: 2.8em;
+  }
+}
+</style>
+
+<div class="oee-container">
+  <!-- Header s filterima -->
+  <div class="oee-header">
+    <h2>📊 OEE - Učinkovitost strojeva</h2>
+    <div class="oee-filters">
+      <select id="oeeStroj">
+        <option value="NLI-1">NLI-1 (Tuber)</option>
+        <option value="NLI-2">NLI-2 (Bottomer)</option>
+        <option value="WH-T1">WH-T1 (Tuber)</option>
+        <option value="WH-B1">WH-B1 (Bottomer)</option>
+      </select>
+      <input type="date" id="oeeDatum" />
+      <select id="oeeSmjena">
+        <option value="">Sve smjene</option>
+        <option value="1">1. smjena (06-14)</option>
+        <option value="2">2. smjena (14-22)</option>
+        <option value="3">3. smjena (22-06)</option>
+      </select>
+      <button onclick="oeeUcitajPodatke()">🔄 Učitaj</button>
+    </div>
+  </div>
+
+  <!-- OEE Gauges -->
+  <div class="oee-gauges">
+    <div class="gauge-card oee-main">
+      <h3>OEE</h3>
+      <div class="gauge-value" id="oeeValue">--%</div>
+      <div class="gauge-bar">
+        <div class="gauge-fill white" id="oeeFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-subtitle">Overall Equipment Effectiveness</div>
+    </div>
+    <div class="gauge-card">
+      <h3>Dostupnost</h3>
+      <div class="gauge-value" id="availValue">--%</div>
+      <div class="gauge-bar">
+        <div class="gauge-fill green" id="availFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-subtitle">Runtime / Planirano</div>
+    </div>
+    <div class="gauge-card">
+      <h3>Performanse</h3>
+      <div class="gauge-value" id="perfValue">--%</div>
+      <div class="gauge-bar">
+        <div class="gauge-fill blue" id="perfFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-subtitle">Stvarna / Idealna brzina</div>
+    </div>
+    <div class="gauge-card">
+      <h3>Kvaliteta</h3>
+      <div class="gauge-value" id="qualValue">--%</div>
+      <div class="gauge-bar">
+        <div class="gauge-fill yellow" id="qualFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-subtitle">Dobri / Ukupno</div>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="summary-stats">
+    <div class="stat-card">
+      <div class="stat-value" id="statProizvedeno">--</div>
+      <div class="stat-label">Proizvedeno (kom)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statRuntime">--</div>
+      <div class="stat-label">Runtime</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statDowntime">--</div>
+      <div class="stat-label">Zastoji</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statBrzina">--</div>
+      <div class="stat-label">Prosj. brzina (kom/min)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statZastoja">--</div>
+      <div class="stat-label">Broj zastoja</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="oee-charts">
+    <!-- Speed chart -->
+    <div class="chart-card">
+      <h3>📈 Brzina kroz vrijeme</h3>
+      <div class="chart-container">
+        <div class="speed-chart" id="speedChart">
+          <div class="oee-loading">Učitavanje...</div>
+        </div>
+        <div class="chart-legend">
+          <span id="chartTimeStart">--:--</span>
+          <span>Vrijeme</span>
+          <span id="chartTimeEnd">--:--</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Downtime breakdown -->
+    <div class="chart-card">
+      <h3>⏱️ Zastoji po kategoriji</h3>
+      <div class="downtime-list" id="downtimeList">
+        <div class="oee-loading">Učitavanje...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events table -->
+  <div class="events-section">
+    <h3>📋 Popis događaja (STOP/START)</h3>
+    <div class="events-table-container">
+      <table class="events-table">
+        <thead>
+          <tr>
+            <th>Vrijeme</th>
+            <th>Tip</th>
+            <th>Trajanje</th>
+            <th>Kategorija</th>
+            <th>Radni nalog</th>
+            <th>Brojač</th>
+          </tr>
+        </thead>
+        <tbody id="eventsTableBody">
+          <tr><td colspan="6" class="oee-loading">Učitavanje...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// OEE MODULE
+// ============================================
+
+var OEE = {
+  data: {
+    syncs: [],
+    events: [],
+    categories: [],
+    machineCode: 'NLI-1',
+    datum: null,
+    smjena: null
+  },
+
+  // Idealne brzine po stroju (kom/min) - TODO: dohvati iz baze
+  idealSpeed: {
+    'NLI-1': 120,
+    'NLI-2': 80,
+    'WH-T1': 150,
+    'WH-B1': 100
+  },
+
+  // Trajanje smjene u sekundama
+  shiftDuration: 8 * 60 * 60, // 8 sati
+
+  init: async function() {
+    console.log('OEE init');
+    
+    // Postavi današnji datum
+    var today = this.getProductionDate();
+    document.getElementById('oeeDatum').value = today;
+    
+    // Učitaj kategorije
+    await this.loadCategories();
+    
+    // Učitaj podatke
+    await this.loadData();
+  },
+
+  getProductionDate: function() {
+    var now = new Date();
+    if (now.getHours() < 6) {
+      now.setDate(now.getDate() - 1);
+    }
+    return now.toISOString().split('T')[0];
+  },
+
+  loadCategories: async function() {
+    try {
+      var result = await initSupabase()
+        .from('prod_downtime_categories')
+        .select('*')
+        .eq('aktivan', true)
+        .order('sort_order');
+      
+      if (result.data) {
+        this.data.categories = result.data;
+        console.log('Kategorije učitane:', result.data.length);
+      }
+    } catch (e) {
+      console.error('Greška učitavanja kategorija:', e);
+    }
+  },
+
+  loadData: async function() {
+    var machineCode = document.getElementById('oeeStroj').value;
+    var datum = document.getElementById('oeeDatum').value;
+    var smjena = document.getElementById('oeeSmjena').value;
+    
+    this.data.machineCode = machineCode;
+    this.data.datum = datum;
+    this.data.smjena = smjena;
+    
+    console.log('Učitavam OEE:', machineCode, datum, smjena || 'sve');
+    
+    showLoading('Učitavanje OEE podataka...');
+    
+    try {
+      // Učitaj sync podatke (za brzinu)
+      var syncQuery = initSupabase()
+        .from('prod_machine_counter_sync')
+        .select('*')
+        .eq('machine_code', machineCode)
+        .eq('production_date', datum)
+        .order('sync_timestamp', { ascending: true });
+      
+      if (smjena) {
+        syncQuery = syncQuery.eq('shift_number', parseInt(smjena));
+      }
+      
+      var syncResult = await syncQuery.limit(1000);
+      this.data.syncs = syncResult.data || [];
+      console.log('Sync podataka:', this.data.syncs.length);
+      
+      // Učitaj evente (STOP/START)
+      var eventQuery = initSupabase()
+        .from('prod_machine_events')
+        .select('*')
+        .eq('machine_code', machineCode)
+        .eq('production_date', datum)
+        .order('event_timestamp', { ascending: true });
+      
+      if (smjena) {
+        eventQuery = eventQuery.eq('shift_number', parseInt(smjena));
+      }
+      
+      var eventResult = await eventQuery.limit(1000);
+      this.data.events = eventResult.data || [];
+      console.log('Event podataka:', this.data.events.length);
+      
+      // Izračunaj i prikaži
+      this.calculate();
+      this.render();
+      
+    } catch (e) {
+      console.error('Greška učitavanja OEE:', e);
+      showMessage('Greška učitavanja podataka', 'error');
+    } finally {
+      hideLoading();
+    }
+  },
+
+  calculate: function() {
+    var syncs = this.data.syncs;
+    var events = this.data.events;
+    
+    // Ako nema podataka
+    if (syncs.length === 0 && events.length === 0) {
+      this.data.calculated = {
+        oee: 0,
+        availability: 0,
+        performance: 0,
+        quality: 100,
+        totalPieces: 0,
+        runtimeSec: 0,
+        downtimeSec: 0,
+        avgSpeed: 0,
+        stopCount: 0,
+        downtimeByCategory: {}
+      };
+      return;
+    }
+    
+    // Izračunaj proizvedeno (razlika prvog i zadnjeg sync-a)
+    var totalPieces = 0;
+    if (syncs.length >= 2) {
+      totalPieces = syncs[syncs.length - 1].count_at_sync - syncs[0].count_at_sync;
+    } else if (syncs.length === 1) {
+      totalPieces = 0; // Samo jedan sync, ne možemo izračunati
+    }
+    
+    // Izračunaj ukupni downtime iz START eventa (duration_seconds)
+    var totalDowntimeSec = 0;
+    var stopCount = 0;
+    var downtimeByCategory = {};
+    
+    events.forEach(function(e) {
+      if (e.event_type === 'START' && e.duration_seconds) {
+        totalDowntimeSec += e.duration_seconds;
+        stopCount++;
+        
+        // Kategoriziraj (< 60s = MIKRO)
+        var cat = e.duration_seconds < 60 ? 'MIKRO' : 'NEOP';
+        if (!downtimeByCategory[cat]) {
+          downtimeByCategory[cat] = { count: 0, duration: 0 };
+        }
+        downtimeByCategory[cat].count++;
+        downtimeByCategory[cat].duration += e.duration_seconds;
+      }
+    });
+    
+    // Trajanje promatranog perioda
+    var periodSec = this.shiftDuration;
+    if (this.data.smjena === '') {
+      // Sve smjene = 24h
+      periodSec = 24 * 60 * 60;
+    }
+    
+    // Planirani downtime (preštelavanje, čišćenje, mikro)
+    var plannedDowntime = downtimeByCategory['MIKRO'] ? downtimeByCategory['MIKRO'].duration : 0;
+    
+    // Planirano vrijeme = period - planirani zastoji
+    var plannedTime = periodSec - plannedDowntime;
+    
+    // Runtime = planirano - neplanirani zastoji
+    var unplannedDowntime = totalDowntimeSec - plannedDowntime;
+    var runtimeSec = Math.max(0, plannedTime - unplannedDowntime);
+    
+    // Availability
+    var availability = plannedTime > 0 ? (runtimeSec / plannedTime) * 100 : 0;
+    
+    // Performance (stvarna brzina vs idealna)
+    var idealSpeed = this.idealSpeed[this.data.machineCode] || 100;
+    var actualSpeed = runtimeSec > 0 ? (totalPieces / (runtimeSec / 60)) : 0;
+    var performance = idealSpeed > 0 ? (actualSpeed / idealSpeed) * 100 : 0;
+    performance = Math.min(performance, 100); // Cap at 100%
+    
+    // Quality (za sada 100%, trebamo podatke o škartu)
+    var quality = 100;
+    
+    // OEE
+    var oee = (availability * performance * quality) / 10000;
+    
+    this.data.calculated = {
+      oee: oee,
+      availability: availability,
+      performance: performance,
+      quality: quality,
+      totalPieces: totalPieces,
+      runtimeSec: runtimeSec,
+      downtimeSec: totalDowntimeSec,
+      avgSpeed: actualSpeed,
+      stopCount: stopCount,
+      downtimeByCategory: downtimeByCategory,
+      idealSpeed: idealSpeed
+    };
+    
+    console.log('OEE izračunat:', this.data.calculated);
+  },
+
+  render: function() {
+    var calc = this.data.calculated;
+    
+    // Gauges
+    this.setGauge('oee', calc.oee);
+    this.setGauge('avail', calc.availability);
+    this.setGauge('perf', calc.performance);
+    this.setGauge('qual', calc.quality);
+    
+    // Stats
+    document.getElementById('statProizvedeno').textContent = calc.totalPieces.toLocaleString('hr-HR');
+    document.getElementById('statRuntime').textContent = this.formatDuration(calc.runtimeSec);
+    document.getElementById('statDowntime').textContent = this.formatDuration(calc.downtimeSec);
+    document.getElementById('statBrzina').textContent = calc.avgSpeed.toFixed(1);
+    document.getElementById('statZastoja').textContent = calc.stopCount;
+    
+    // Speed chart
+    this.renderSpeedChart();
+    
+    // Downtime breakdown
+    this.renderDowntimeList();
+    
+    // Events table
+    this.renderEventsTable();
+  },
+
+  setGauge: function(id, value) {
+    var valueEl = document.getElementById(id + 'Value');
+    var fillEl = document.getElementById(id + 'Fill');
+    
+    if (valueEl) {
+      valueEl.textContent = value.toFixed(1) + '%';
+    }
+    
+    if (fillEl) {
+      fillEl.style.width = Math.min(value, 100) + '%';
+      
+      // Boja prema vrijednosti
+      if (id !== 'oee') {
+        fillEl.className = 'gauge-fill';
+        if (value >= 85) fillEl.classList.add('green');
+        else if (value >= 60) fillEl.classList.add('yellow');
+        else fillEl.classList.add('red');
+      }
+    }
+  },
+
+  renderSpeedChart: function() {
+    var container = document.getElementById('speedChart');
+    var syncs = this.data.syncs;
+    
+    if (syncs.length < 2) {
+      container.innerHTML = '<div class="oee-loading">Nedovoljno podataka za dijagram</div>';
+      return;
+    }
+    
+    // Izračunaj brzine između sync-ova
+    var speeds = [];
+    var maxSpeed = 0;
+    
+    for (var i = 1; i < syncs.length; i++) {
+      var prev = syncs[i - 1];
+      var curr = syncs[i];
+      
+      var pieces = curr.count_at_sync - prev.count_at_sync;
+      var timeDiff = (new Date(curr.sync_timestamp) - new Date(prev.sync_timestamp)) / 1000 / 60; // minute
+      
+      if (timeDiff > 0 && pieces >= 0) {
+        var speed = pieces / timeDiff;
+        speeds.push({
+          speed: speed,
+          time: new Date(curr.sync_timestamp)
+        });
+        if (speed > maxSpeed) maxSpeed = speed;
+      }
+    }
+    
+    if (speeds.length === 0) {
+      container.innerHTML = '<div class="oee-loading">Nema podataka o brzini</div>';
+      return;
+    }
+    
+    // Generiraj barove
+    var html = '';
+    var idealSpeed = this.data.calculated.idealSpeed || 100;
+    
+    speeds.forEach(function(s) {
+      var heightPercent = maxSpeed > 0 ? (s.speed / maxSpeed) * 100 : 0;
+      var color = s.speed >= idealSpeed ? '#4caf50' : (s.speed >= idealSpeed * 0.7 ? '#ff9800' : '#f44336');
+      
+      html += '<div class="speed-bar" style="height: ' + heightPercent + '%; background: linear-gradient(to top, ' + color + ', ' + color + 'aa);" data-value="' + s.speed.toFixed(0) + '"></div>';
+    });
+    
+    container.innerHTML = html;
+    
+    // Time labels
+    if (speeds.length > 0) {
+      document.getElementById('chartTimeStart').textContent = speeds[0].time.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('chartTimeEnd').textContent = speeds[speeds.length - 1].time.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+    }
+  },
+
+  renderDowntimeList: function() {
+    var container = document.getElementById('downtimeList');
+    var byCategory = this.data.calculated.downtimeByCategory;
+    var categories = this.data.categories;
+    var totalDowntime = this.data.calculated.downtimeSec;
+    
+    if (Object.keys(byCategory).length === 0) {
+      container.innerHTML = '<div class="oee-loading">Nema zabilježenih zastoja</div>';
+      return;
+    }
+    
+    var html = '';
+    var self = this;
+    
+    // Sortiraj po trajanju
+    var sorted = Object.entries(byCategory).sort(function(a, b) {
+      return b[1].duration - a[1].duration;
+    });
+    
+    sorted.forEach(function(entry) {
+      var code = entry[0];
+      var data = entry[1];
+      
+      // Nađi kategoriju
+      var cat = categories.find(function(c) { return c.code === code; }) || { naziv: code, boja: '#999' };
+      var percent = totalDowntime > 0 ? (data.duration / totalDowntime * 100) : 0;
+      
+      html += '<div class="downtime-item">';
+      html += '<div class="downtime-color" style="background: ' + cat.boja + '"></div>';
+      html += '<div class="downtime-info">';
+      html += '<div class="downtime-name">' + cat.naziv + '</div>';
+      html += '<div class="downtime-count">' + data.count + ' zastoja</div>';
+      html += '</div>';
+      html += '<div class="downtime-duration">' + self.formatDuration(data.duration) + '</div>';
+      html += '<div class="downtime-percent">' + percent.toFixed(1) + '%</div>';
+      html += '</div>';
+    });
+    
+    container.innerHTML = html;
+  },
+
+  renderEventsTable: function() {
+    var tbody = document.getElementById('eventsTableBody');
+    var events = this.data.events;
+    
+    if (events.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="oee-loading">Nema događaja</td></tr>';
+      return;
+    }
+    
+    var html = '';
+    var self = this;
+    
+    // Reverse - najnoviji prvi
+    events.slice().reverse().forEach(function(e) {
+      var time = new Date(e.event_timestamp).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var typeBadge = e.event_type === 'STOP' ? 'stop' : 'start';
+      var duration = e.duration_seconds ? self.formatDuration(e.duration_seconds) : '-';
+      
+      // Kategorija
+      var category = '-';
+      if (e.event_type === 'START' && e.duration_seconds) {
+        if (e.duration_seconds < 60) {
+          category = '<span class="event-badge mikro">MIKRO</span>';
+        } else {
+          category = '<span class="event-badge" style="background:#fff3e0;color:#e65100;">Nekat.</span>';
+        }
+      }
+      
+      html += '<tr>';
+      html += '<td>' + time + '</td>';
+      html += '<td><span class="event-badge ' + typeBadge + '">' + e.event_type + '</span></td>';
+      html += '<td>' + duration + '</td>';
+      html += '<td>' + category + '</td>';
+      html += '<td>' + (e.work_order_number || '-') + '</td>';
+      html += '<td>' + (e.count_at_event || '-') + '</td>';
+      html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+  },
+
+  formatDuration: function(seconds) {
+    if (!seconds || seconds < 0) return '0s';
+    
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    
+    if (h > 0) {
+      return h + 'h ' + m + 'm';
+    } else if (m > 0) {
+      return m + 'm ' + s + 's';
+    } else {
+      return s + 's';
+    }
+  }
+};
+
+// Global funkcija za gumb
+function oeeUcitajPodatke() {
+  OEE.loadData();
+}
+
+// Init on load
+if (typeof initSupabase === 'function') {
+  OEE.init();
+} else {
+  document.addEventListener('DOMContentLoaded', function() {
+    OEE.init();
+  });
+}
+</script>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Carta ERP - Sustav za upravljanje proizvodnjom i HR">
+  <title>Carta ERP</title>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏭</text></svg>">
+  
+  <!-- PWA -->
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">🏭</div>
+        <h2>Carta ERP</h2>
+        <span>v2.0</span>
+      </div>
+      
+      <nav class="sidebar-menu" id="sidebarMenu">
+        <!-- Populated by JS -->
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="user-name" id="userName">-</span>
+          <span class="user-role" id="userRole">-</span>
+        </div>
+        <!-- Gumb za promjenu lozinke - samo admin/superadmin -->
+        <button class="btn-password" id="btnChangePassword" onclick="otvoriPromjenuLozinkeGlobal()" title="Promijeni lozinku" style="display:none;">🔑</button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Odjava">🚪</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <!-- Mobile Header (hidden on desktop) -->
+      <div class="mobile-header" id="mobileHeader" style="display:none;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <span>Carta ERP</span>
+        <button class="btn-password" id="btnChangePasswordMobile" onclick="otvoriPromjenuLozinkeGlobal()" title="Promijeni lozinku" style="display:none;">🔑</button>
+        <button class="btn-logout" onclick="Auth.logout()">🚪</button>
+      </div>
+      
+      <!-- App Content Container -->
+      <div id="app-content">
+        <!-- Views loaded here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Promjena lozinke (globalni) -->
+  <div id="globalPasswordModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>🔑 Promjena lozinke</h3>
+        <button class="modal-close" onclick="closeModal('globalPasswordModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Trenutna lozinka *</label>
+          <input type="password" id="globalCurrentPassword" class="form-control" placeholder="Unesite trenutnu lozinku">
+        </div>
+        <div class="form-group">
+          <label>Nova lozinka *</label>
+          <input type="password" id="globalNewPassword" class="form-control" placeholder="Unesite novu lozinku">
+        </div>
+        <div class="form-group">
+          <label>Potvrdite novu lozinku *</label>
+          <input type="password" id="globalConfirmPassword" class="form-control" placeholder="Ponovite novu lozinku">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('globalPasswordModal')">Odustani</button>
+        <button class="btn btn-primary" onclick="spremiGlobalnuLozinku()">Spremi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- jsPDF + autoTable za PDF generiranje -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  
+  <!-- App Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/mobile.js"></script>
+  <script src="js/scanner.js"></script>
+  
+  <!-- CARTA AI Widget -->
+  <script src="js/carta-ai-widget.js"></script>
+  
+  <script>
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Check if mobile
+    function checkMobile() {
+      const isMobile = window.innerWidth <= 768;
+      document.getElementById('mobileHeader').style.display = isMobile ? 'flex' : 'none';
+      if (!isMobile) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    }
+
+    window.addEventListener('resize', checkMobile);
+    
+    // ============================================
+    // GLOBALNA PROMJENA LOZINKE
+    // ============================================
+    function otvoriPromjenuLozinkeGlobal() {
+      document.getElementById('globalCurrentPassword').value = '';
+      document.getElementById('globalNewPassword').value = '';
+      document.getElementById('globalConfirmPassword').value = '';
+      openModal('globalPasswordModal');
+    }
+    
+    async function spremiGlobalnuLozinku() {
+      var current = document.getElementById('globalCurrentPassword').value;
+      var newPass = document.getElementById('globalNewPassword').value;
+      var confirm = document.getElementById('globalConfirmPassword').value;
+      
+      if (!current || !newPass || !confirm) {
+        showMessage('Popunite sva polja', 'warning');
+        return;
+      }
+      
+      if (newPass !== confirm) {
+        showMessage('Nove lozinke se ne podudaraju', 'warning');
+        return;
+      }
+      
+      if (newPass.length < 4) {
+        showMessage('Lozinka mora imati najmanje 4 znaka', 'warning');
+        return;
+      }
+      
+      showLoading('Spremanje...');
+      
+      try {
+        await Auth.changePassword(current, newPass);
+        showMessage('Lozinka uspješno promijenjena!', 'success');
+        closeModal('globalPasswordModal');
+      } catch (e) {
+        showMessage(e.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+    
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+      checkMobile();
+      initApp();
+    });
+  </script>
+  
+  <style>
+    /* Gumb za promjenu lozinke u sidebaru */
+    .btn-password {
+      background: #fff3e0;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .btn-password:hover {
+      background: #ffe0b2;
+    }
+    
+    /* Sidebar footer layout */
+    .sidebar-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-footer .user-info {
+      flex: 1;
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!-- Videonadzor - Live prikaz kamera -->
+<style>
+  .video-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .video-title { font-size: 1.5em; font-weight: 700; color: var(--primary); }
+  
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+  }
+  .status-indicator.online { background: #e8f5e9; color: #2e7d32; }
+  .status-indicator.offline { background: #ffebee; color: #c62828; }
+  .status-indicator.partial { background: #fff3e0; color: #e65100; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* Network Warning Banner */
+  .network-warning {
+    background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+  }
+  .network-warning.show { display: flex; }
+  .network-warning .warn-icon { font-size: 1.5em; }
+  .network-warning .warn-text { flex: 1; }
+  .network-warning .warn-text strong { display: block; margin-bottom: 2px; }
+
+  .proxy-banner {
+    background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.9em;
+  }
+  .proxy-banner.ok { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
+  .proxy-banner.error { background: linear-gradient(135deg, #c62828 0%, #e53935 100%); }
+
+  .settings-bar {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .setting-group { display: flex; align-items: center; gap: 8px; }
+  .setting-group label { font-weight: 600; color: #555; font-size: 0.85em; }
+  .setting-group select { 
+    padding: 8px 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 6px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  .camera-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .camera-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  .camera-card.fullscreen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+  }
+  .camera-card.fullscreen .camera-header { flex-shrink: 0; }
+  .camera-card.fullscreen .camera-feed { flex: 1; height: auto !important; }
+  .camera-card.fullscreen .camera-feed img { object-fit: contain; }
+  .camera-card.fullscreen .camera-footer { flex-shrink: 0; }
+
+  .camera-header {
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: white;
+    font-size: 0.9em;
+  }
+  .camera-header.wh { background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%); }
+  .camera-header.nli { background: linear-gradient(135deg, #e65100 0%, #ff9800 100%); }
+  .camera-header.ulaz { background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%); }
+  
+  .cam-name { display: flex; align-items: center; gap: 6px; }
+  .cam-actions { display: flex; gap: 5px; }
+  .cam-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cam-btn:hover, .cam-btn:active { background: rgba(255,255,255,0.35); }
+
+  .camera-feed {
+    height: 180px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .camera-feed img { width: 100%; height: 100%; object-fit: cover; }
+  .camera-feed .loading { color: #888; text-align: center; }
+  .loading-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid #333;
+    border-top-color: #4caf50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .camera-feed .error { color: #f44336; text-align: center; padding: 15px; font-size: 0.85em; }
+
+  .camera-footer {
+    padding: 6px 12px;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #666;
+  }
+
+  .fullscreen-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 1.3em;
+    cursor: pointer;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ============================================
+     MOBILE STYLES
+     ============================================ */
+  @media (max-width: 768px) {
+    .video-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .video-title { font-size: 1.3em; }
+    
+    .header-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .header-actions .btn {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    
+    .proxy-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 0.85em;
+      padding: 10px 12px;
+    }
+    
+    .settings-bar {
+      padding: 10px 12px;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    .setting-group {
+      flex: 1;
+      min-width: 45%;
+    }
+    .setting-group select {
+      flex: 1;
+      width: 100%;
+    }
+    
+    /* Mobile: 1 kolona za kamere */
+    .camera-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .camera-feed {
+      /* Aspect ratio 16:9 */
+      height: 0;
+      padding-bottom: 56.25%;
+      position: relative;
+    }
+    .camera-feed > * {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+    }
+    .camera-feed img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .camera-feed .loading,
+    .camera-feed .error {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+    }
+    
+    .camera-header {
+      padding: 8px 10px;
+    }
+    .cam-btn {
+      width: 40px; height: 40px;
+    }
+    
+    .camera-footer {
+      padding: 6px 10px;
+    }
+  }
+
+  /* Landscape na mobilnom */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .video-header { margin-bottom: 8px; }
+    .proxy-banner { display: none; }
+    .network-warning { margin-bottom: 8px; padding: 8px 12px; }
+    .settings-bar { 
+      margin-bottom: 8px; 
+      padding: 8px 12px;
+    }
+    
+    .camera-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    
+    .camera-feed {
+      height: 25vh;
+      padding-bottom: 0;
+    }
+    .camera-feed > * {
+      position: relative;
+    }
+    
+    .camera-header { padding: 6px 10px; font-size: 0.8em; }
+    .camera-footer { padding: 4px 10px; font-size: 0.7em; }
+    .cam-btn { width: 32px; height: 32px; font-size: 14px; }
+  }
+
+  /* Tablet */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .camera-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .camera-feed { height: 220px; }
+  }
+
+  /* Desktop */
+  @media (min-width: 1025px) {
+    .camera-feed { height: 260px; }
+    .camera-grid { gap: 20px; }
+  }
+
+  /* Veći desktop - 3 kolone */
+  @media (min-width: 1400px) {
+    .camera-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Touch-friendly improvements */
+  @media (hover: none) and (pointer: coarse) {
+    .cam-btn {
+      min-width: 44px;
+      min-height: 44px;
+    }
+    .setting-group select {
+      min-height: 44px;
+      font-size: 16px; /* Prevents iOS zoom */
+    }
+    .btn {
+      min-height: 44px;
+    }
+  }
+</style>
+
+<!-- Network Warning -->
+<div class="network-warning" id="networkWarning">
+  <span class="warn-icon">⚠️</span>
+  <div class="warn-text">
+    <strong>Niste na lokalnoj mreži</strong>
+    <span>Spojite se na WiFi tvrtke za pristup kamerama</span>
+  </div>
+</div>
+
+<div class="video-header">
+  <div class="video-title">📹 Videonadzor</div>
+  <div class="header-actions">
+    <div class="status-indicator online" id="statusIndicator">
+      <span class="status-dot"></span>
+      <span id="statusText">Povezivanje...</span>
+    </div>
+    <button class="btn btn-primary" onclick="refreshAll()">🔄</button>
+    <button class="btn btn-secondary" onclick="toggleAuto()" id="btnAuto">⏸</button>
+  </div>
+</div>
+
+<div class="proxy-banner" id="proxyBanner">
+  <div>
+    <strong>📡 Proxy</strong>
+    <span id="proxyStatus" style="margin-left: 8px; opacity: 0.9;">Provjera...</span>
+  </div>
+  <div style="display: flex; gap: 8px; align-items: center;">
+    <span id="proxyUrl" style="font-size: 0.8em; opacity: 0.7;"></span>
+    <a href="http://192.168.1.19:8080" target="_blank" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white; padding: 6px 10px;">
+      NVR
+    </a>
+  </div>
+</div>
+
+<div class="settings-bar">
+  <div class="setting-group">
+    <label>Interval:</label>
+    <select id="selRate" onchange="changeRate()">
+      <option value="1000">1s</option>
+      <option value="2000" selected>2s</option>
+      <option value="3000">3s</option>
+      <option value="5000">5s</option>
+    </select>
+  </div>
+  <div class="setting-group">
+    <label>Kvaliteta:</label>
+    <select id="selQuality" onchange="changeQuality()">
+      <option value="01">Visoka</option>
+      <option value="02" selected>Srednja</option>
+    </select>
+  </div>
+</div>
+
+<div class="camera-grid" id="cameraGrid"></div>
+
+<script>
+// Koristi URL iz CONFIG-a
+var PROXY = CONFIG.CAMERA_PROXY_URL || 'http://localhost:3001';
+
+var CAMS = [
+  { id: 'tuber-wh', name: 'Tuber W&H', ch: 13, line: 'wh' },
+  { id: 'bottomer-wh', name: 'Bottomer W&H', ch: 12, line: 'wh' },
+  { id: 'tuber-nli', name: 'Tuber NLI', ch: 7, line: 'nli' },
+  { id: 'bottomer-nli', name: 'Bottomer NLI', ch: 2, line: 'nli' },
+  { id: 'ulaz', name: 'Ulaz', ch: 5, line: 'ulaz' }
+];
+var autoOn = true, rate = 2000, quality = '02', timers = {}, status = {};
+
+function initVideonadzorView() {
+  document.getElementById('proxyUrl').textContent = PROXY;
+  checkNetwork();
+  renderCams();
+  checkProxy();
+  startAll();
+}
+
+// Provjera je li korisnik na lokalnoj mreži
+function checkNetwork() {
+  var warning = document.getElementById('networkWarning');
+  if (!warning) return;
+  
+  // Provjeri IP adresu proxy-a
+  var isLocalProxy = PROXY.includes('192.168.') || PROXY.includes('localhost') || PROXY.includes('127.0.0.1');
+  
+  if (isLocalProxy) {
+    // Pokušaj dohvatiti proxy - ako ne uspije, vjerojatno nismo na lokalnoj mreži
+    fetch(PROXY + '/health', { mode: 'cors', cache: 'no-cache' })
+      .then(function(r) {
+        if (!r.ok) throw new Error();
+        warning.classList.remove('show');
+      })
+      .catch(function() {
+        warning.classList.add('show');
+      });
+  }
+}
+
+async function checkProxy() {
+  var banner = document.getElementById('proxyBanner');
+  var stat = document.getElementById('proxyStatus');
+  
+  if (!banner || !stat) return;
+  
+  try {
+    var r = await fetch(PROXY + '/health', { cache: 'no-cache' });
+    if (r.ok) {
+      banner.className = 'proxy-banner ok';
+      stat.textContent = '✓ Aktivan';
+      document.getElementById('networkWarning').classList.remove('show');
+    } else throw new Error();
+  } catch (e) {
+    banner.className = 'proxy-banner error';
+    stat.textContent = '✗ Nedostupan';
+    document.getElementById('networkWarning').classList.add('show');
+  }
+}
+
+function renderCams() {
+  var html = '';
+  CAMS.forEach(function(c) {
+    html += '<div class="camera-card" id="card-' + c.id + '">' +
+      '<div class="camera-header ' + c.line + '">' +
+        '<div class="cam-name">' + c.name + '</div>' +
+        '<div class="cam-actions">' +
+          '<button class="cam-btn" onclick="refresh(\'' + c.id + '\')" title="Osvježi">🔄</button>' +
+          '<button class="cam-btn" onclick="fullscreen(\'' + c.id + '\')" title="Puni ekran">⛶</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="camera-feed" id="feed-' + c.id + '">' +
+        '<div class="loading"><div class="loading-spinner"></div>Učitavanje...</div>' +
+      '</div>' +
+      '<div class="camera-footer"><span>CH ' + c.ch + '</span><span id="time-' + c.id + '">--:--</span></div>' +
+    '</div>';
+  });
+  document.getElementById('cameraGrid').innerHTML = html;
+}
+
+function loadCam(c) {
+  var feed = document.getElementById('feed-' + c.id);
+  var time = document.getElementById('time-' + c.id);
+  
+  if (!feed) return;
+  
+  var img = new Image();
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+  img.onload = function() {
+    var f = document.getElementById('feed-' + c.id);
+    var t = document.getElementById('time-' + c.id);
+    if (!f) return;
+    
+    f.innerHTML = '';
+    f.appendChild(img);
+    status[c.id] = true;
+    if (t) t.textContent = new Date().toLocaleTimeString('hr-HR', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    updateStatus();
+  };
+  img.onerror = function() {
+    var f = document.getElementById('feed-' + c.id);
+    if (!f) return;
+    
+    status[c.id] = false;
+    updateStatus();
+    f.innerHTML = '<div class="error">' +
+      '<div style="font-size:2em;margin-bottom:8px">📵</div>' +
+      'Kamera nedostupna<br>' +
+      '<small style="color:#999">CH ' + c.ch + '</small><br>' +
+      '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="refresh(\'' + c.id + '\')">Ponovi</button>' +
+      '</div>';
+  };
+  img.src = PROXY + '/api/snapshot/' + c.id + '?quality=' + quality + '&t=' + Date.now();
+}
+
+function startAll() {
+  CAMS.forEach(function(c) {
+    loadCam(c);
+    if (timers[c.id]) clearInterval(timers[c.id]);
+    timers[c.id] = setInterval(function() { if (autoOn) loadCam(c); }, rate);
+  });
+}
+
+function refresh(id) {
+  var c = CAMS.find(function(x) { return x.id === id; });
+  if (c) {
+    var feed = document.getElementById('feed-' + id);
+    if (feed) {
+      feed.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+      loadCam(c);
+    }
+  }
+}
+
+function refreshAll() { 
+  checkProxy(); 
+  checkNetwork();
+  CAMS.forEach(function(c) { refresh(c.id); }); 
+}
+
+function toggleAuto() {
+  autoOn = !autoOn;
+  var btn = document.getElementById('btnAuto');
+  if (btn) btn.textContent = autoOn ? '⏸' : '▶';
+}
+
+function changeRate() { 
+  var sel = document.getElementById('selRate');
+  if (sel) { rate = parseInt(sel.value); startAll(); }
+}
+
+function changeQuality() { 
+  var sel = document.getElementById('selQuality');
+  if (sel) { quality = sel.value; refreshAll(); }
+}
+
+function fullscreen(id) {
+  var card = document.getElementById('card-' + id);
+  if (!card) return;
+  
+  if (card.classList.contains('fullscreen')) {
+    card.classList.remove('fullscreen');
+    var btn = card.querySelector('.fullscreen-close');
+    if (btn) btn.remove();
+    // Unlock orientation on mobile
+    if (screen.orientation && screen.orientation.unlock) {
+      try { screen.orientation.unlock(); } catch(e) {}
+    }
+  } else {
+    card.classList.add('fullscreen');
+    var close = document.createElement('button');
+    close.className = 'fullscreen-close';
+    close.innerHTML = '✕';
+    close.onclick = function() { fullscreen(id); };
+    card.appendChild(close);
+    // Try landscape on mobile
+    if (screen.orientation && screen.orientation.lock) {
+      try { screen.orientation.lock('landscape'); } catch(e) {}
+    }
+  }
+}
+
+function updateStatus() {
+  var el = document.getElementById('statusText');
+  var ind = document.getElementById('statusIndicator');
+  
+  if (!el || !ind) return;
+  
+  var on = Object.values(status).filter(function(s) { return s; }).length;
+  if (on === CAMS.length) {
+    el.textContent = on + '/' + CAMS.length;
+    ind.className = 'status-indicator online';
+  } else if (on > 0) {
+    el.textContent = on + '/' + CAMS.length;
+    ind.className = 'status-indicator partial';
+  } else {
+    el.textContent = 'Offline';
+    ind.className = 'status-indicator offline';
+  }
+}
+
+function stopAll() {
+  CAMS.forEach(function(c) {
+    if (timers[c.id]) {
+      clearInterval(timers[c.id]);
+      timers[c.id] = null;
+    }
+  });
+}
+
+// Cleanup funkcija za Router
+window.cleanupCurrentView = function() {
+  stopAll();
+  console.log('🧹 Videonadzor cleanup - intervali zaustavljeni');
+};
+
+// ESC za izlaz iz fullscreen
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.camera-card.fullscreen').forEach(function(c) {
+      c.classList.remove('fullscreen');
+      var btn = c.querySelector('.fullscreen-close');
+      if (btn) btn.remove();
+    });
+  }
+});
+
+// Visibility API - pauziraj kad tab nije aktivan
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    stopAll();
+    console.log('📺 Videonadzor pauziran (tab neaktivan)');
+  } else {
+    startAll();
+    console.log('📺 Videonadzor nastavljen');
+  }
+});
+
+initVideonadzorView();
+</script>

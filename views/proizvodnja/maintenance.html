@@ -1,0 +1,1510 @@
+<h1 style="margin-bottom: 20px; color: var(--primary);">🔧 Održavanje</h1>
+
+<!-- KPI KARTICE -->
+<div class="status-grid">
+  <div class="status-card">
+    <div class="status-card-icon">🏭</div>
+    <div class="status-card-value" id="kpiMachines">-</div>
+    <div class="status-card-label">Strojevi</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon">⚠️</div>
+    <div class="status-card-value" id="kpiOpenReports">-</div>
+    <div class="status-card-label">Otvorene prijave</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon">🔧</div>
+    <div class="status-card-value" id="kpiInProgress">-</div>
+    <div class="status-card-label">U tijeku</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon">✅</div>
+    <div class="status-card-value" id="kpiResolved">-</div>
+    <div class="status-card-label">Riješeno (30d)</div>
+  </div>
+</div>
+
+<!-- TAB NAVIGACIJA -->
+<div class="maint-tabs">
+  <button class="maint-tab active" onclick="switchMaintTab('planer')" id="tabBtnPlaner">📅 Planer</button>
+  <button class="maint-tab" onclick="switchMaintTab('prijave')" id="tabBtnPrijave">⚠️ Prijave</button>
+  <button class="maint-tab" onclick="switchMaintTab('intervencije')" id="tabBtnIntervencije">🔧 Intervencije</button>
+  <button class="maint-tab" onclick="switchMaintTab('dijelovi')" id="tabBtnDijelovi">⚙️ Dijelovi</button>
+  <button class="maint-tab" onclick="switchMaintTab('trake')" id="tabBtnTrake">🔗 Trake</button>
+  <button class="maint-tab" onclick="switchMaintTab('narudzbe')" id="tabBtnNarudzbe">📦 Narudžbe</button>
+  <button class="maint-tab" onclick="switchMaintTab('strojevi')" id="tabBtnStrojevi">🏭 Strojevi</button>
+</div>
+
+<!-- jsPDF biblioteka za PDF generiranje -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+.maint-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+.maint-tab { padding: 12px 20px; border: none; background: #f5f5f5; color: #666; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px 8px 0 0; transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.maint-tab:hover { background: #e8f5e9; color: #2e7d32; }
+.maint-tab.active { background: white; color: #2e7d32; border-bottom: 3px solid #2e7d32; }
+.maint-content { display: none; }
+.maint-content.active { display: block; }
+
+.calendar-container { background: white; border-radius: 10px; padding: 20px; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.calendar-title { font-size: 1.3em; font-weight: 600; color: #2e7d32; }
+.calendar-nav { display: flex; gap: 10px; }
+.calendar-nav button { padding: 8px 15px; border: 1px solid #2e7d32; background: white; color: #2e7d32; border-radius: 5px; cursor: pointer; font-weight: 600; }
+.calendar-nav button:hover { background: #2e7d32; color: white; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.calendar-day-header { text-align: center; font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 5px; font-size: 12px; }
+.calendar-day { min-height: 90px; border: 1px solid #e0e0e0; border-radius: 5px; padding: 5px; background: white; }
+.calendar-day.other-month { background: #f9f9f9; color: #999; }
+.calendar-day.today { border: 2px solid #2e7d32; background: #e8f5e9; }
+.calendar-date { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+.calendar-event { font-size: 10px; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calendar-event.preventivno { background: #d4edda; color: #155724; }
+.calendar-event.korektivno { background: #f8d7da; color: #721c24; }
+.calendar-event.remont { background: #cce5ff; color: #004085; }
+.calendar-event.inspekcija { background: #fff3cd; color: #856404; }
+
+.failure-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #ff9800; transition: all 0.2s; }
+.failure-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.failure-card.kritican { border-left-color: #f44336; background: #fff5f5; }
+.failure-card.visok { border-left-color: #ff9800; }
+.failure-card.normalan { border-left-color: #2196f3; }
+.failure-card.nizak { border-left-color: #4caf50; }
+.failure-card.resolved { border-left-color: #9e9e9e; opacity: 0.7; }
+.failure-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.failure-number { font-weight: 700; font-size: 16px; }
+.failure-priority { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.failure-priority.kritican { background: #f44336; color: white; }
+.failure-priority.visok { background: #ff9800; color: white; }
+.failure-priority.normalan { background: #2196f3; color: white; }
+.failure-priority.nizak { background: #4caf50; color: white; }
+.failure-machine { font-size: 14px; color: #2e7d32; font-weight: 600; margin-bottom: 8px; }
+.failure-description { font-size: 13px; color: #666; margin-bottom: 10px; }
+.failure-meta { display: flex; gap: 15px; font-size: 12px; color: #999; flex-wrap: wrap; }
+.failure-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; }
+
+.intervention-item { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #2196f3; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.intervention-item.preventivno { border-left-color: #4caf50; }
+.intervention-item.korektivno { border-left-color: #f44336; }
+.intervention-item.remont { border-left-color: #9c27b0; }
+.intervention-item.inspekcija { border-left-color: #ff9800; }
+
+.stock-warning { background: #fff3e0 !important; }
+.stock-critical { background: #ffebee !important; }
+
+.maint-floating-bar { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #1565C0, #0D47A1); color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 20px; z-index: 1000; transition: bottom 0.3s; }
+.maint-floating-bar.visible { bottom: 30px; }
+
+/* Order cards */
+.order-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #1565C0; }
+.order-card.status-kreirano { border-left-color: #9e9e9e; }
+.order-card.status-poslano { border-left-color: #ff9800; }
+.order-card.status-potvrdeno { border-left-color: #2196f3; }
+.order-card.status-isporuceno { border-left-color: #4caf50; }
+.order-card.status-otkazano { border-left-color: #f44336; opacity: 0.7; }
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.order-number { font-size: 18px; font-weight: 700; color: #1565C0; }
+.order-status { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.order-status.kreirano { background: #e0e0e0; color: #666; }
+.order-status.poslano { background: #fff3e0; color: #e65100; }
+.order-status.potvrdeno { background: #e3f2fd; color: #1565c0; }
+.order-status.isporuceno { background: #e8f5e9; color: #2e7d32; }
+.order-status.otkazano { background: #ffebee; color: #c62828; }
+.order-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+.order-info-item { font-size: 13px; }
+.order-info-item strong { display: block; color: #666; font-size: 11px; margin-bottom: 3px; }
+.order-actions { display: flex; gap: 10px; padding-top: 15px; border-top: 1px solid #eee; flex-wrap: wrap; }
+.order-timeline { display: flex; gap: 5px; margin-top: 15px; }
+.timeline-step { flex: 1; text-align: center; padding: 8px; background: #f5f5f5; border-radius: 5px; font-size: 11px; color: #999; }
+.timeline-step.active { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
+.timeline-step.completed { background: #2e7d32; color: white; }
+</style>
+
+<!-- TAB: PLANER -->
+<div class="maint-content active" id="contentPlaner">
+<div class="card">
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <div class="calendar-nav">
+        <button onclick="calendarPrev()">◀</button>
+        <button onclick="calendarToday()">Danas</button>
+        <button onclick="calendarNext()">▶</button>
+      </div>
+      <div class="calendar-title" id="calendarTitle">Prosinac 2025</div>
+      <button class="btn btn-success" onclick="openNewInterventionModal()">+ Nova intervencija</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</div>
+</div>
+
+<!-- TAB: PRIJAVE KVARA -->
+<div class="maint-content" id="contentPrijave">
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Status</label>
+      <select class="form-control" id="filterReportStatus" onchange="loadFailureReports()">
+        <option value="">Svi</option>
+        <option value="Prijavljen" selected>Prijavljen</option>
+        <option value="U obradi">U obradi</option>
+        <option value="Riješen">Riješen</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Stroj</label>
+      <select class="form-control" id="filterReportMachine" onchange="loadFailureReports()"><option value="">Svi</option></select>
+    </div>
+    <div class="form-group">
+      <label>Prioritet</label>
+      <select class="form-control" id="filterReportPriority" onchange="loadFailureReports()">
+        <option value="">Svi</option>
+        <option value="Kritičan">Kritičan</option>
+        <option value="Visok">Visok</option>
+        <option value="Normalan">Normalan</option>
+        <option value="Nizak">Nizak</option>
+      </select>
+    </div>
+    <div class="form-group"><label>&nbsp;</label><button class="btn btn-success" onclick="openNewReportModal()">+ Nova prijava</button></div>
+  </div>
+</div>
+<div id="failureReportsContainer"><div style="text-align: center; padding: 40px; color: #999;">Učitavanje...</div></div>
+</div>
+
+<!-- TAB: INTERVENCIJE -->
+<div class="maint-content" id="contentIntervencije">
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Status</label>
+      <select class="form-control" id="filterIntStatus" onchange="loadInterventions()">
+        <option value="">Svi</option>
+        <option value="Planirano">Planirano</option>
+        <option value="U tijeku" selected>U tijeku</option>
+        <option value="Završeno">Završeno</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tip</label>
+      <select class="form-control" id="filterIntType" onchange="loadInterventions()">
+        <option value="">Svi</option>
+        <option value="Preventivno">Preventivno</option>
+        <option value="Korektivno">Korektivno</option>
+        <option value="Remont">Remont</option>
+        <option value="Inspekcija">Inspekcija</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Stroj</label>
+      <select class="form-control" id="filterIntMachine" onchange="loadInterventions()"><option value="">Svi</option></select>
+    </div>
+    <div class="form-group"><label>&nbsp;</label><button class="btn btn-success" onclick="openNewInterventionModal()">+ Nova</button></div>
+  </div>
+</div>
+<div id="interventionsContainer"><div style="text-align: center; padding: 40px; color: #999;">Učitavanje...</div></div>
+</div>
+
+<!-- TAB: DIJELOVI -->
+<div class="maint-content" id="contentDijelovi">
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group" style="flex: 2;"><label>Pretraži</label><input type="text" class="form-control" id="searchParts" oninput="filterParts()"></div>
+    <div class="form-group">
+      <label>Kategorija</label>
+      <select class="form-control" id="filterPartCategory" onchange="filterParts()">
+        <option value="">Sve</option>
+        <option value="Ležajevi">Ležajevi</option>
+        <option value="Remeni">Remeni</option>
+        <option value="Senzori">Senzori</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Stanje</label>
+      <select class="form-control" id="filterPartStock" onchange="filterParts()">
+        <option value="">Sve</option>
+        <option value="low">Nisko</option>
+        <option value="ok">OK</option>
+      </select>
+    </div>
+    <div class="form-group"><label>&nbsp;</label><button class="btn btn-success" onclick="openNewPartModal()">+ Novi</button></div>
+  </div>
+</div>
+<div class="card"><div class="table-container">
+  <table><thead><tr><th>Šifra</th><th>Naziv</th><th>Kategorija</th><th>Dobavljač</th><th>Stanje</th><th>Min</th><th>Cijena</th><th></th></tr></thead>
+  <tbody id="partsTableBody"><tr><td colspan="8" style="text-align: center;">Učitavanje...</td></tr></tbody></table>
+</div></div>
+</div>
+
+<!-- TAB: TRAKE -->
+<div class="maint-content" id="contentTrake">
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group" style="flex: 2;"><label>Pretraži</label><input type="text" class="form-control" id="searchTrake" oninput="filterTrake()"></div>
+    <div class="form-group">
+      <label>Kategorija</label>
+      <select class="form-control" id="filterTrakeCategory" onchange="filterTrake()">
+        <option value="">Sve</option>
+        <option value="Plosnato remenje">Plosnato remenje</option>
+        <option value="Zupčasto remenje">Zupčasto remenje</option>
+        <option value="Remenje vuče">Remenje vuče</option>
+        <option value="Remenje">Remenje</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Stanje</label>
+      <select class="form-control" id="filterTrakeStock" onchange="filterTrake()">
+        <option value="">Sve</option>
+        <option value="low">Niska zaliha</option>
+        <option value="none">Nema</option>
+        <option value="ok">OK</option>
+      </select>
+    </div>
+    <div class="form-group"><label>&nbsp;</label><button class="btn btn-success" onclick="openNewTrakaModal()">+ Nova</button></div>
+  </div>
+</div>
+<div class="status-grid" style="margin-bottom: 20px;">
+  <div class="status-card"><div class="status-card-value" id="trakeTotal">0</div><div class="status-card-label">🔗 Ukupno</div></div>
+  <div class="status-card warning"><div class="status-card-value" id="trakeLowStock">0</div><div class="status-card-label">⚠️ Niska</div></div>
+  <div class="status-card danger"><div class="status-card-value" id="trakeNoStock">0</div><div class="status-card-label">❌ Nema</div></div>
+  <div class="status-card info"><div class="status-card-value" id="trakeSelected">0</div><div class="status-card-label">☑️ Odabrano</div></div>
+</div>
+<div class="card"><div class="table-container">
+  <table><thead><tr><th style="width:40px;"><input type="checkbox" id="selectAllTrake" onchange="toggleAllTrake(this)"></th><th>Šifra</th><th>Kategorija</th><th>Pozicija</th><th>Dimenzije</th><th>Min</th><th>Stanje</th><th></th></tr></thead>
+  <tbody id="trakeTableBody"><tr><td colspan="8" style="text-align: center;">Učitavanje...</td></tr></tbody></table>
+</div></div>
+<div class="maint-floating-bar" id="trakeFloatingBar">
+  <span><span id="trakeSelectedCount">0</span> odabrano</span>
+  <button class="btn btn-success" onclick="openTrakeOrderModal()">📧 Naruči</button>
+  <button class="btn btn-secondary" onclick="clearTrakeSelection()">✕</button>
+</div>
+</div>
+
+<!-- TAB: NARUDŽBE -->
+<div class="maint-content" id="contentNarudzbe">
+<div class="card" style="margin-bottom: 20px;">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Status</label>
+      <select class="form-control" id="filterOrderStatus" onchange="loadOrders()">
+        <option value="">Svi</option>
+        <option value="Kreirano">Kreirano</option>
+        <option value="Poslano">Poslano</option>
+        <option value="Potvrđeno">Potvrđeno</option>
+        <option value="Isporučeno">Isporučeno</option>
+        <option value="Otkazano">Otkazano</option>
+      </select>
+    </div>
+    <div class="form-group" style="flex: 2;">
+      <label>Pretraži</label>
+      <input type="text" class="form-control" id="searchOrders" placeholder="Broj narudžbe..." oninput="loadOrders()">
+    </div>
+    <div class="form-group">
+      <label>&nbsp;</label>
+      <button class="btn btn-info" onclick="loadOrders()">🔄 Osvježi</button>
+    </div>
+  </div>
+</div>
+<div class="status-grid" style="margin-bottom: 20px;">
+  <div class="status-card"><div class="status-card-value" id="ordersTotal">0</div><div class="status-card-label">📦 Ukupno</div></div>
+  <div class="status-card warning"><div class="status-card-value" id="ordersPending">0</div><div class="status-card-label">⏳ Na čekanju</div></div>
+  <div class="status-card info"><div class="status-card-value" id="ordersInTransit">0</div><div class="status-card-label">🚚 U dostavi</div></div>
+  <div class="status-card success"><div class="status-card-value" id="ordersDelivered">0</div><div class="status-card-label">✅ Isporučeno</div></div>
+</div>
+<div id="ordersContainer"><div style="text-align: center; padding: 40px; color: #999;">Učitavanje...</div></div>
+</div>
+
+<!-- TAB: STROJEVI -->
+<div class="maint-content" id="contentStrojevi">
+<div class="card">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <span>🏭 Strojevi</span>
+    <button class="btn btn-success" onclick="openMachineModal()">➕ Novi stroj</button>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Šifra</th>
+          <th>Naziv</th>
+          <th>Tip</th>
+          <th>Linija</th>
+          <th>Proizvođač</th>
+          <th>Model</th>
+          <th>Lokacija</th>
+          <th>Status</th>
+          <th style="width: 100px;">Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="machinesTableBody">
+        <tr><td colspan="9" style="text-align: center;">Učitavanje...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- MODALI -->
+
+<!-- Modal: Nova prijava -->
+<div class="modal" id="newReportModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header"><h2>⚠️ Nova prijava</h2><span class="modal-close" onclick="closeModal('newReportModal')">&times;</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Stroj *</label><select class="form-control" id="reportMachine"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Tip</label><select class="form-control" id="reportType"><option>Mehanički</option><option>Električni</option><option>Pneumatski</option><option>Hidraulički</option><option>Softverski</option><option>Ostalo</option></select></div>
+        <div class="form-group"><label>Prioritet</label><select class="form-control" id="reportPriority"><option>Nizak</option><option selected>Normalan</option><option>Visok</option><option>Kritičan</option></select></div>
+      </div>
+      <div class="form-group"><label>Opis *</label><textarea class="form-control" id="reportDescription" rows="4"></textarea></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('newReportModal')">Odustani</button><button class="btn btn-success" onclick="saveFailureReport()">💾 Prijavi</button></div>
+  </div>
+</div>
+
+<!-- Modal: Detalji prijave -->
+<div class="modal" id="reportDetailModal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header"><h2>🔧 <span id="reportDetailNumber"></span></h2><span class="modal-close" onclick="closeModal('reportDetailModal')">&times;</span></div>
+    <div class="modal-body">
+      <div id="reportDetailContent"></div>
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #2e7d32;">
+        <h4 style="color: #2e7d32;">✅ Rješavanje</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Status</label><select class="form-control" id="reportNewStatus"><option>Prijavljen</option><option>U obradi</option><option>Riješen</option><option>Odbijen</option></select></div>
+          <div class="form-group"><label>Zastoj (min)</label><input type="number" class="form-control" id="reportDowntime" min="0"></div>
+        </div>
+        <div class="form-group"><label>Rješenje</label><textarea class="form-control" id="reportResolution" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-info" onclick="createInterventionFromReport()" style="margin-right:auto;">🔧 Intervencija</button>
+      <button class="btn btn-secondary" onclick="closeModal('reportDetailModal')">Zatvori</button>
+      <button class="btn btn-success" onclick="updateReportStatus()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nova intervencija -->
+<div class="modal" id="newInterventionModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header"><h2>🔧 Nova intervencija</h2><span class="modal-close" onclick="closeModal('newInterventionModal')">&times;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group" style="flex:2;"><label>Stroj *</label><select class="form-control" id="intMachine"></select></div>
+        <div class="form-group"><label>Tip</label><select class="form-control" id="intType"><option>Korektivno</option><option>Preventivno</option><option>Remont</option><option>Inspekcija</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Datum</label><input type="date" class="form-control" id="intPlannedDate"></div>
+        <div class="form-group"><label>Prioritet</label><select class="form-control" id="intPriority"><option>Nizak</option><option selected>Normalan</option><option>Visok</option></select></div>
+      </div>
+      <div class="form-group"><label>Opis</label><textarea class="form-control" id="intDescription" rows="3"></textarea></div>
+      <input type="hidden" id="intFailureReportId">
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('newInterventionModal')">Odustani</button><button class="btn btn-success" onclick="saveIntervention()">💾 Spremi</button></div>
+  </div>
+</div>
+
+<!-- Modal: Narudžba traka -->
+<div class="modal" id="trakeOrderModal">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1565C0, #0D47A1); color: white;">
+      <h2>📦 Nova narudžba traka</h2>
+      <span class="modal-close" onclick="closeModal('trakeOrderModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group" style="flex: 2;">
+          <label>Dobavljač / Primatelj *</label>
+          <input type="text" class="form-control" id="orderSupplier" placeholder="Naziv dobavljača">
+        </div>
+        <div class="form-group" style="flex: 2;">
+          <label>Email *</label>
+          <input type="email" class="form-control" id="orderEmail" placeholder="email@dobavljac.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Stavke narudžbe</label>
+        <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+          <table>
+            <thead><tr><th>Šifra</th><th>Kategorija</th><th>Dimenzije (mm)</th><th>Stanje</th><th style="width: 80px;">Količina</th></tr></thead>
+            <tbody id="orderItemsTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Željeni rok isporuke</label>
+          <input type="date" class="form-control" id="orderDeliveryDate">
+        </div>
+        <div class="form-group">
+          <label>Prioritet</label>
+          <select class="form-control" id="orderPriority">
+            <option value="Normalan">Normalan</option>
+            <option value="Hitan">Hitan</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Napomena</label>
+        <textarea class="form-control" id="orderNotes" rows="2" placeholder="Dodatne informacije za dobavljača..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('trakeOrderModal')">Odustani</button>
+      <button class="btn btn-info" onclick="generateOrderPDF()">📄 Generiraj PDF</button>
+      <button class="btn btn-success" onclick="submitOrder()">📧 Spremi i pošalji</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Detalji narudžbe -->
+<div class="modal" id="orderDetailModal">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1565C0, #0D47A1); color: white;">
+      <h2>📦 <span id="orderDetailNumber"></span></h2>
+      <span class="modal-close" onclick="closeModal('orderDetailModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="orderDetailContent"></div>
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #1565C0;">
+        <h4 style="color: #1565C0;">📋 Ažuriraj status</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Novi status</label>
+            <select class="form-control" id="orderNewStatus">
+              <option value="Kreirano">Kreirano</option>
+              <option value="Poslano">Poslano</option>
+              <option value="Potvrđeno">Potvrđeno</option>
+              <option value="Isporučeno">Isporučeno</option>
+              <option value="Otkazano">Otkazano</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Datum isporuke</label>
+            <input type="date" class="form-control" id="orderActualDelivery">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Komentar</label>
+          <textarea class="form-control" id="orderComment" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-info" onclick="downloadOrderPDF()" style="margin-right: auto;">📄 Preuzmi PDF</button>
+      <button class="btn btn-secondary" onclick="closeModal('orderDetailModal')">Zatvori</button>
+      <button class="btn btn-success" onclick="updateOrderStatus()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Stroj (dodaj/uredi) -->
+<div class="modal" id="machineModal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">
+      <h2>🏭 <span id="machineModalTitle">Novi stroj</span></h2>
+      <span class="modal-close" onclick="closeModal('machineModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="machineId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Šifra stroja *</label>
+          <input type="text" class="form-control" id="machineCode" placeholder="npr. NLI-3">
+        </div>
+        <div class="form-group">
+          <label>Naziv *</label>
+          <input type="text" class="form-control" id="machineName" placeholder="npr. Tuber 3">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Proizvodna linija *</label>
+          <select class="form-control" id="machineProductionLine">
+            <option value="">-- Odaberi --</option>
+            <option value="NLI">NLI</option>
+            <option value="WH">WH</option>
+            <option value="Preprint">Preprint</option>
+            <option value="Rezač">Rezač</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tip stroja *</label>
+          <select class="form-control" id="machineType">
+            <option value="">-- Odaberi --</option>
+            <option value="Tuber">Tuber</option>
+            <option value="Bottomer">Bottomer</option>
+            <option value="Tisak">Tisak</option>
+            <option value="Rezač">Rezač</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Proizvođač</label>
+          <input type="text" class="form-control" id="machineManufacturer" placeholder="npr. Windmöller & Hölscher">
+        </div>
+        <div class="form-group">
+          <label>Model</label>
+          <input type="text" class="form-control" id="machineModel" placeholder="npr. AM 2140">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Serijski broj</label>
+          <input type="text" class="form-control" id="machineSerialNumber" placeholder="npr. SN-12345">
+        </div>
+        <div class="form-group">
+          <label>Godina nabave</label>
+          <input type="number" class="form-control" id="machinePurchaseYear" placeholder="npr. 2020" min="1900" max="2100">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Lokacija</label>
+          <input type="text" class="form-control" id="machineLocation" placeholder="npr. Hala 2">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="machineStatus">
+            <option value="Aktivan">Aktivan</option>
+            <option value="Neaktivan">Neaktivan</option>
+            <option value="U servisu">U servisu</option>
+            <option value="Rashodovan">Rashodovan</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Radni sati</label>
+          <input type="number" class="form-control" id="machineOperatingHours" placeholder="0" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Interval servisa (sati)</label>
+          <input type="number" class="form-control" id="machineServiceInterval" placeholder="2000" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Napomene</label>
+        <textarea class="form-control" id="machineNotes" rows="2" placeholder="Dodatne informacije..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('machineModal')">Odustani</button>
+      <button class="btn btn-success" onclick="saveMachine()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// GLOBALNE VARIJABLE
+// ============================================
+var machines = [], failureReports = [], interventions = [], parts = [], trake = [], orders = [];
+var selectedTrake = [], currentReportId = null, currentOrderId = null, calendarDate = new Date();
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchMaintTab(tabId) {
+  document.querySelectorAll('.maint-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.maint-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tabBtn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+  document.getElementById('content' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+  
+  if (tabId === 'planer') renderCalendar();
+  else if (tabId === 'prijave') loadFailureReports();
+  else if (tabId === 'intervencije') loadInterventions();
+  else if (tabId === 'dijelovi') loadParts();
+  else if (tabId === 'trake') loadTrake();
+  else if (tabId === 'narudzbe') loadOrders();
+  else if (tabId === 'strojevi') loadMachines();
+}
+
+// ============================================
+// INICIJALIZACIJA
+// ============================================
+async function initMaintenance() {
+  showLoading('Učitavanje...');
+  try {
+    const { data } = await initSupabase().from('prod_machines').select('*').order('name');
+    machines = data || [];
+    populateMachineDropdowns();
+    await updateMaintenanceKPI();
+    renderCalendar();
+  } catch (e) { console.error(e); showMessage('Greška: ' + e.message, 'error'); }
+  finally { hideLoading(); }
+}
+
+function populateMachineDropdowns() {
+  ['filterReportMachine', 'filterIntMachine', 'reportMachine', 'intMachine'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s) s.innerHTML = '<option value="">-- Odaberi --</option>' + machines.map(m => `<option value="${m.machine_code}" data-name="${m.name}">${m.machine_code} - ${m.name}</option>`).join('');
+  });
+}
+
+async function updateMaintenanceKPI() {
+  try {
+    document.getElementById('kpiMachines').textContent = machines.length;
+    const { count: open } = await initSupabase().from('prod_failure_reports').select('*', { count: 'exact', head: true }).in('status', ['Prijavljen', 'U obradi']);
+    document.getElementById('kpiOpenReports').textContent = open || 0;
+    const { count: prog } = await initSupabase().from('prod_maintenance').select('*', { count: 'exact', head: true }).eq('status', 'U tijeku');
+    document.getElementById('kpiInProgress').textContent = prog || 0;
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    const { count: res } = await initSupabase().from('prod_failure_reports').select('*', { count: 'exact', head: true }).eq('status', 'Riješen').gte('resolved_at', d.toISOString());
+    document.getElementById('kpiResolved').textContent = res || 0;
+  } catch (e) { console.error(e); }
+}
+
+// ============================================
+// KALENDAR
+// ============================================
+function renderCalendar() {
+  // Null check - elementi možda ne postoje ako je korisnik promijenio stranicu
+  var calTitle = document.getElementById('calendarTitle');
+  var calGrid = document.getElementById('calendarGrid');
+  if (!calTitle || !calGrid) return;
+  
+  const y = calendarDate.getFullYear(), m = calendarDate.getMonth();
+  const mn = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+  calTitle.textContent = `${mn[m]} ${y}`;
+  const fd = new Date(y, m, 1), ld = new Date(y, m + 1, 0), sd = (fd.getDay() + 6) % 7;
+  let h = ['Pon','Uto','Sri','Čet','Pet','Sub','Ned'].map(d => `<div class="calendar-day-header">${d}</div>`).join('');
+  const pld = new Date(y, m, 0).getDate();
+  for (let i = sd - 1; i >= 0; i--) h += `<div class="calendar-day other-month"><div class="calendar-date">${pld - i}</div></div>`;
+  const td = new Date();
+  for (let d = 1; d <= ld.getDate(); d++) {
+    const isT = d === td.getDate() && m === td.getMonth() && y === td.getFullYear();
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const di = interventions.filter(i => i.planned_date === ds);
+    const ev = di.slice(0,3).map(i => `<div class="calendar-event ${(i.maintenance_type||'').toLowerCase()}">${i.machine_code}</div>`).join('');
+    const mr = di.length > 3 ? `<div style="font-size:9px;color:#666;">+${di.length-3}</div>` : '';
+    h += `<div class="calendar-day ${isT?'today':''}"><div class="calendar-date">${d}</div>${ev}${mr}</div>`;
+  }
+  const rem = 42 - (sd + ld.getDate());
+  for (let i = 1; i <= rem; i++) h += `<div class="calendar-day other-month"><div class="calendar-date">${i}</div></div>`;
+  calGrid.innerHTML = h;
+  loadInterventionsForCalendar();
+}
+
+async function loadInterventionsForCalendar() {
+  const y = calendarDate.getFullYear(), m = calendarDate.getMonth();
+  const s = `${y}-${String(m+1).padStart(2,'0')}-01`, e = `${y}-${String(m+1).padStart(2,'0')}-${new Date(y,m+1,0).getDate()}`;
+  const { data } = await initSupabase().from('prod_maintenance').select('*').gte('planned_date', s).lte('planned_date', e);
+  interventions = data || [];
+  renderCalendar();
+}
+
+function calendarPrev() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderCalendar(); }
+function calendarNext() { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); }
+function calendarToday() { calendarDate = new Date(); renderCalendar(); }
+
+// ============================================
+// PRIJAVE KVARA
+// ============================================
+async function loadFailureReports() {
+  const st = document.getElementById('filterReportStatus').value, mc = document.getElementById('filterReportMachine').value, pr = document.getElementById('filterReportPriority').value;
+  try {
+    let q = initSupabase().from('prod_failure_reports').select('*').order('reported_at', { ascending: false });
+    if (st) q = q.eq('status', st); if (mc) q = q.eq('machine_code', mc); if (pr) q = q.eq('priority', pr);
+    const { data } = await q.limit(100);
+    failureReports = data || [];
+    renderFailureReports();
+  } catch (e) { document.getElementById('failureReportsContainer').innerHTML = '<div style="text-align:center;padding:40px;color:#e74c3c;">Greška</div>'; }
+}
+
+function renderFailureReports() {
+  const c = document.getElementById('failureReportsContainer');
+  if (!failureReports.length) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Nema prijava</div>'; return; }
+  c.innerHTML = failureReports.map(r => {
+    const p = (r.priority||'').toLowerCase().replace('č','c'), res = r.status === 'Riješen' || r.status === 'Odbijen';
+    return `<div class="failure-card ${p} ${res?'resolved':''}">
+      <div class="failure-header"><span class="failure-number">${escapeHtml(r.report_number)}</span><span class="failure-priority ${p}">${r.priority}</span></div>
+      <div class="failure-machine">🏭 ${escapeHtml(r.machine_name||r.machine_code)}</div>
+      <div class="failure-description">${escapeHtml(r.description||'-')}</div>
+      <div class="failure-meta"><span>📅 ${formatDatum(r.reported_at)}</span><span>👤 ${escapeHtml(r.reported_by||'-')}</span><span>📍 ${r.source_module||'Ručno'}</span><span class="badge badge-${r.status==='Riješen'?'success':'info'}">${r.status}</span></div>
+      <div class="failure-actions"><button class="btn btn-sm btn-primary" onclick="openReportDetail('${r.id}')">📋 Detalji</button>${!res?`<button class="btn btn-sm btn-success" onclick="quickResolve('${r.id}')">✅</button>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+function openNewReportModal() { document.getElementById('reportMachine').value = ''; document.getElementById('reportDescription').value = ''; openModal('newReportModal'); }
+
+async function saveFailureReport() {
+  const mc = document.getElementById('reportMachine').value, desc = document.getElementById('reportDescription').value.trim();
+  if (!mc || !desc) { showMessage('Ispunite polja', 'warning'); return; }
+  showLoading('Spremanje...');
+  try {
+    const y = new Date().getFullYear();
+    const { data: cnt } = await initSupabase().from('prod_counters').select('current_value').eq('counter_type', 'Kvar').single();
+    const n = (cnt?.current_value || 0) + 1, rn = `KV-${y}-${String(n).padStart(4,'0')}`;
+    await initSupabase().from('prod_counters').upsert({ counter_type: 'Kvar', prefix: 'KV', current_value: n, year: y }, { onConflict: 'counter_type' });
+    const opt = document.getElementById('reportMachine').selectedOptions[0];
+    await initSupabase().from('prod_failure_reports').insert({ report_number: rn, machine_code: mc, machine_name: opt?.dataset?.name || mc, reported_by: Auth.getUser()?.name || 'Nepoznato', source_module: 'manual', failure_type: document.getElementById('reportType').value, priority: document.getElementById('reportPriority').value, description: desc, status: 'Prijavljen' });
+    closeModal('newReportModal'); showMessage('✅ ' + rn, 'success'); await loadFailureReports(); await updateMaintenanceKPI();
+  } catch (e) { showMessage('Greška: ' + e.message, 'error'); } finally { hideLoading(); }
+}
+
+function openReportDetail(id) {
+  const r = failureReports.find(x => x.id === id); if (!r) return;
+  currentReportId = id;
+  document.getElementById('reportDetailNumber').textContent = r.report_number;
+  document.getElementById('reportDetailContent').innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;"><div><strong>Stroj:</strong> ${escapeHtml(r.machine_name||'-')}</div><div><strong>Tip:</strong> ${r.failure_type||'-'}</div><div><strong>Prioritet:</strong> ${r.priority}</div><div><strong>Status:</strong> ${r.status}</div><div><strong>Prijavio:</strong> ${escapeHtml(r.reported_by||'-')}</div><div><strong>Datum:</strong> ${formatDatum(r.reported_at)}</div></div><div style="margin-top:15px;padding:15px;background:#f5f5f5;border-radius:8px;"><strong>Opis:</strong><br>${escapeHtml(r.description||'-')}</div>`;
+  document.getElementById('reportNewStatus').value = r.status;
+  document.getElementById('reportDowntime').value = r.downtime_minutes || '';
+  document.getElementById('reportResolution').value = r.resolution || '';
+  openModal('reportDetailModal');
+}
+
+async function updateReportStatus() {
+  if (!currentReportId) return; showLoading('Spremanje...');
+  try {
+    const st = document.getElementById('reportNewStatus').value;
+    const ud = { status: st, downtime_minutes: parseInt(document.getElementById('reportDowntime').value) || 0, resolution: document.getElementById('reportResolution').value };
+    if (st === 'Riješen') ud.resolved_at = new Date().toISOString();
+    await initSupabase().from('prod_failure_reports').update(ud).eq('id', currentReportId);
+    closeModal('reportDetailModal'); showMessage('✅', 'success'); await loadFailureReports(); await updateMaintenanceKPI();
+  } catch (e) { showMessage('Greška: ' + e.message, 'error'); } finally { hideLoading(); }
+}
+
+async function quickResolve(id) {
+  if (!confirm('Riješiti?')) return;
+  await initSupabase().from('prod_failure_reports').update({ status: 'Riješen', resolved_at: new Date().toISOString() }).eq('id', id);
+  showMessage('✅', 'success'); await loadFailureReports(); await updateMaintenanceKPI();
+}
+
+function createInterventionFromReport() {
+  const r = failureReports.find(x => x.id === currentReportId); if (!r) return;
+  closeModal('reportDetailModal');
+  document.getElementById('intMachine').value = r.machine_code;
+  document.getElementById('intType').value = 'Korektivno';
+  document.getElementById('intDescription').value = `Prijava: ${r.report_number}\n${r.description||''}`;
+  document.getElementById('intPlannedDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('intFailureReportId').value = r.report_number;
+  openModal('newInterventionModal');
+}
+
+// ============================================
+// INTERVENCIJE
+// ============================================
+async function loadInterventions() {
+  const st = document.getElementById('filterIntStatus').value, tp = document.getElementById('filterIntType').value, mc = document.getElementById('filterIntMachine').value;
+  let q = initSupabase().from('prod_maintenance').select('*').order('planned_date', { ascending: false });
+  if (st) q = q.eq('status', st); if (tp) q = q.eq('maintenance_type', tp); if (mc) q = q.eq('machine_code', mc);
+  const { data } = await q.limit(100);
+  interventions = data || [];
+  renderInterventions();
+}
+
+function renderInterventions() {
+  const c = document.getElementById('interventionsContainer');
+  if (!interventions.length) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Nema</div>'; return; }
+  c.innerHTML = interventions.map(i => `<div class="intervention-item ${(i.maintenance_type||'').toLowerCase()}">
+    <div style="display:flex;justify-content:space-between;align-items:center;"><div><strong>${escapeHtml(i.maintenance_id)}</strong> <span class="badge badge-info">${i.maintenance_type||'-'}</span> <span class="badge badge-${i.status==='Završeno'?'success':i.status==='U tijeku'?'warning':'secondary'}">${i.status}</span></div><span style="color:#666;">${formatDatum(i.planned_date)}</span></div>
+    <div style="margin-top:10px;"><strong>🏭 ${escapeHtml(i.machine_name||i.machine_code||'-')}</strong></div>
+    <div style="margin-top:5px;color:#666;font-size:13px;">${escapeHtml(i.problem_description||'-')}</div>
+    <div style="margin-top:10px;display:flex;gap:10px;">${i.status==='Planirano'?`<button class="btn btn-sm btn-success" onclick="startIntervention('${i.maintenance_id}')">▶️</button>`:''} ${i.status==='U tijeku'?`<button class="btn btn-sm btn-success" onclick="completeIntervention('${i.maintenance_id}')">✅</button>`:''}</div>
+  </div>`).join('');
+}
+
+function openNewInterventionModal() {
+  document.getElementById('intMachine').value = '';
+  document.getElementById('intPlannedDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('intDescription').value = '';
+  document.getElementById('intFailureReportId').value = '';
+  openModal('newInterventionModal');
+}
+
+async function saveIntervention() {
+  const mc = document.getElementById('intMachine').value;
+  if (!mc) { showMessage('Odaberite stroj', 'warning'); return; }
+  showLoading('Spremanje...');
+  try {
+    const y = new Date().getFullYear();
+    const { data: cnt } = await initSupabase().from('prod_counters').select('current_value').eq('counter_type', 'Maintenance').single();
+    const n = (cnt?.current_value || 0) + 1, mid = `ODR-${y}-${String(n).padStart(4,'0')}`;
+    await initSupabase().from('prod_counters').upsert({ counter_type: 'Maintenance', prefix: 'ODR', current_value: n, year: y }, { onConflict: 'counter_type' });
+    const opt = document.getElementById('intMachine').selectedOptions[0];
+    await initSupabase().from('prod_maintenance').insert({ maintenance_id: mid, machine_code: mc, machine_name: opt?.dataset?.name || mc, maintenance_type: document.getElementById('intType').value, priority: document.getElementById('intPriority').value, problem_description: document.getElementById('intDescription').value, planned_date: document.getElementById('intPlannedDate').value || null, status: 'Planirano', created_by: Auth.getUser()?.name || 'System' });
+    const fid = document.getElementById('intFailureReportId').value;
+    if (fid) await initSupabase().from('prod_failure_reports').update({ status: 'U obradi', maintenance_id: mid }).eq('report_number', fid);
+    closeModal('newInterventionModal'); showMessage('✅ ' + mid, 'success'); await loadInterventions(); renderCalendar();
+  } catch (e) { showMessage('Greška: ' + e.message, 'error'); } finally { hideLoading(); }
+}
+
+async function startIntervention(id) {
+  await initSupabase().from('prod_maintenance').update({ status: 'U tijeku', start_date: new Date().toISOString().split('T')[0] }).eq('maintenance_id', id);
+  showMessage('✅', 'success'); await loadInterventions();
+}
+
+async function completeIntervention(id) {
+  await initSupabase().from('prod_maintenance').update({ status: 'Završeno', end_date: new Date().toISOString().split('T')[0] }).eq('maintenance_id', id);
+  await initSupabase().from('prod_failure_reports').update({ status: 'Riješen', resolved_at: new Date().toISOString() }).eq('maintenance_id', id);
+  showMessage('✅', 'success'); await loadInterventions(); await updateMaintenanceKPI();
+}
+
+// ============================================
+// DIJELOVI
+// ============================================
+async function loadParts() {
+  const { data } = await initSupabase().from('prod_spare_parts').select('*').order('name');
+  parts = data || [];
+  renderParts();
+}
+
+function renderParts() {
+  const tb = document.getElementById('partsTableBody'), sr = (document.getElementById('searchParts').value||'').toLowerCase(), ct = document.getElementById('filterPartCategory').value, sf = document.getElementById('filterPartStock').value;
+  let f = parts;
+  if (sr) f = f.filter(p => (p.part_code||'').toLowerCase().includes(sr) || (p.name||'').toLowerCase().includes(sr));
+  if (ct) f = f.filter(p => p.category === ct);
+  if (sf === 'low') f = f.filter(p => p.quantity_in_stock <= p.min_stock);
+  else if (sf === 'ok') f = f.filter(p => p.quantity_in_stock > p.min_stock);
+  if (!f.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nema</td></tr>'; return; }
+  tb.innerHTML = f.map(p => {
+    const sc = p.quantity_in_stock <= 0 ? 'stock-critical' : p.quantity_in_stock <= p.min_stock ? 'stock-warning' : '';
+    return `<tr class="${sc}"><td><strong>${escapeHtml(p.part_code)}</strong></td><td>${escapeHtml(p.name)}</td><td><span class="badge badge-secondary">${p.category||'-'}</span></td><td>${escapeHtml(p.supplier||'-')}</td><td style="text-align:center;font-weight:bold;">${p.quantity_in_stock}</td><td style="text-align:center;">${p.min_stock}</td><td style="text-align:right;">${p.price_eur?formatBroj(p.price_eur,2)+' €':'-'}</td><td><button class="action-btn">✏️</button></td></tr>`;
+  }).join('');
+}
+
+function filterParts() { renderParts(); }
+function openNewPartModal() { showMessage('U izradi', 'info'); }
+
+// ============================================
+// TRAKE
+// ============================================
+async function loadTrake() {
+  try {
+    const { data } = await initSupabase().from('prod_maintenance_belts').select('*').order('belt_code');
+    trake = data || [];
+    renderTrake(); updateTrakeStats();
+  } catch (e) { document.getElementById('trakeTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;">Tablica ne postoji</td></tr>'; }
+}
+
+function renderTrake() {
+  const tb = document.getElementById('trakeTableBody'), sr = (document.getElementById('searchTrake').value||'').toLowerCase(), ct = document.getElementById('filterTrakeCategory').value, sf = document.getElementById('filterTrakeStock').value;
+  let f = trake;
+  if (sr) f = f.filter(t => (t.belt_code||'').toLowerCase().includes(sr) || (t.type||'').toLowerCase().includes(sr) || (t.description||'').toLowerCase().includes(sr));
+  if (ct) f = f.filter(t => t.category === ct);
+  if (sf === 'low') f = f.filter(t => t.quantity_in_stock > 0 && t.quantity_in_stock <= t.min_stock);
+  else if (sf === 'none') f = f.filter(t => !t.quantity_in_stock || t.quantity_in_stock === 0);
+  else if (sf === 'ok') f = f.filter(t => t.quantity_in_stock > t.min_stock);
+  if (!f.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nema</td></tr>'; return; }
+  tb.innerHTML = f.map(t => {
+    const sel = selectedTrake.includes(t.id), sc = !t.quantity_in_stock || t.quantity_in_stock === 0 ? 'stock-critical' : t.quantity_in_stock <= t.min_stock ? 'stock-warning' : '';
+    const dm = [t.width_mm, t.length_mm, t.thickness_mm].filter(x=>x).join(' × ');
+    return `<tr class="${sc}"><td><input type="checkbox" ${sel?'checked':''} onchange="toggleTrakaSelection('${t.id}')"></td><td><strong>${escapeHtml(t.belt_code||'-')}</strong></td><td>${escapeHtml(t.category||'-')}</td><td>${escapeHtml(t.position||'-')}</td><td>${dm||'-'}</td><td style="text-align:center;">${t.min_stock||0}</td><td style="text-align:center;font-weight:bold;">${t.quantity_in_stock||0}</td><td><button class="action-btn">✏️</button></td></tr>`;
+  }).join('');
+}
+
+function updateTrakeStats() {
+  document.getElementById('trakeTotal').textContent = trake.length;
+  document.getElementById('trakeLowStock').textContent = trake.filter(t => t.quantity_in_stock > 0 && t.quantity_in_stock <= t.min_stock).length;
+  document.getElementById('trakeNoStock').textContent = trake.filter(t => !t.quantity_in_stock || t.quantity_in_stock === 0).length;
+  document.getElementById('trakeSelected').textContent = selectedTrake.length;
+}
+
+function filterTrake() { renderTrake(); }
+
+function toggleTrakaSelection(id) {
+  const i = selectedTrake.indexOf(id);
+  if (i === -1) selectedTrake.push(id); else selectedTrake.splice(i, 1);
+  updateTrakeStats();
+  document.getElementById('trakeSelectedCount').textContent = selectedTrake.length;
+  document.getElementById('trakeFloatingBar').classList.toggle('visible', selectedTrake.length > 0);
+}
+
+function toggleAllTrake(cb) {
+  selectedTrake = cb.checked ? trake.map(t => t.id) : [];
+  renderTrake(); updateTrakeStats();
+  document.getElementById('trakeSelectedCount').textContent = selectedTrake.length;
+  document.getElementById('trakeFloatingBar').classList.toggle('visible', selectedTrake.length > 0);
+}
+
+function clearTrakeSelection() {
+  selectedTrake = [];
+  document.getElementById('selectAllTrake').checked = false;
+  renderTrake(); updateTrakeStats();
+  document.getElementById('trakeFloatingBar').classList.remove('visible');
+}
+
+function openNewTrakaModal() { showMessage('U izradi', 'info'); }
+
+// ============================================
+// NARUDŽBE - KREIRANJE
+// ============================================
+function openTrakeOrderModal() {
+  if (!selectedTrake.length) { showMessage('Odaberite trake', 'warning'); return; }
+  
+  const items = selectedTrake.map(id => {
+    const t = trake.find(x => x.id === id);
+    if (!t) return '';
+    const dm = [t.width_mm, t.length_mm, t.thickness_mm].filter(x=>x).join(' × ');
+    const needed = Math.max(1, (t.min_stock || 1) - (t.quantity_in_stock || 0));
+    return `<tr>
+      <td><strong>${escapeHtml(t.belt_code||'-')}</strong></td>
+      <td>${escapeHtml(t.category||'-')}</td>
+      <td>${dm||'-'}</td>
+      <td style="text-align:center;">${t.quantity_in_stock||0}</td>
+      <td><input type="number" class="form-control" value="${needed}" min="1" style="width:70px;text-align:center;" data-id="${t.id}"></td>
+    </tr>`;
+  }).join('');
+  
+  document.getElementById('orderItemsTable').innerHTML = items;
+  document.getElementById('orderSupplier').value = '';
+  document.getElementById('orderEmail').value = '';
+  document.getElementById('orderDeliveryDate').value = '';
+  document.getElementById('orderNotes').value = '';
+  openModal('trakeOrderModal');
+}
+
+function getOrderItems() {
+  const items = [];
+  document.querySelectorAll('#orderItemsTable input[type="number"]').forEach(inp => {
+    const t = trake.find(x => x.id === inp.dataset.id);
+    if (t) {
+      items.push({
+        belt_code: t.belt_code,
+        category: t.category,
+        position: t.position,
+        type: t.type,
+        description: t.description,
+        width_mm: t.width_mm,
+        length_mm: t.length_mm,
+        thickness_mm: t.thickness_mm,
+        quantity: parseInt(inp.value) || 1,
+        current_stock: t.quantity_in_stock || 0
+      });
+    }
+  });
+  return items;
+}
+
+// ============================================
+// PDF GENERIRANJE
+// ============================================
+function generateOrderPDF(orderData = null) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const supplier = orderData?.supplier || document.getElementById('orderSupplier').value || 'N/A';
+  const email = orderData?.recipients?.[0] || document.getElementById('orderEmail')?.value || '';
+  const deliveryDate = orderData?.requested_delivery || document.getElementById('orderDeliveryDate')?.value || '';
+  const notes = orderData?.notes || document.getElementById('orderNotes')?.value || '';
+  const orderId = orderData?.order_id || 'NOVA';
+  const items = orderData?.items_json || getOrderItems();
+  const createdAt = orderData?.created_at ? new Date(orderData.created_at).toLocaleDateString('hr-HR') : new Date().toLocaleDateString('hr-HR');
+  
+  // Header
+  doc.setFillColor(30, 136, 229);
+  doc.rect(0, 0, 210, 40, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('NARUDŽBENICA', 105, 20, { align: 'center' });
+  doc.setFontSize(14);
+  doc.text(orderId, 105, 32, { align: 'center' });
+  
+  // Company info
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CARTA d.o.o.', 15, 55);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Adresa: Proizvodna ulica 1, 31000 Osijek', 15, 62);
+  doc.text('OIB: 12345678901', 15, 69);
+  
+  // Order info box
+  doc.setFillColor(245, 245, 245);
+  doc.rect(120, 50, 75, 35, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.text('Datum:', 125, 58);
+  doc.text('Dobavljač:', 125, 66);
+  doc.text('Email:', 125, 74);
+  doc.text('Rok:', 125, 82);
+  doc.setFont('helvetica', 'normal');
+  doc.text(createdAt, 155, 58);
+  doc.text(supplier.substring(0, 20), 155, 66);
+  doc.text(email.substring(0, 25), 155, 74);
+  doc.text(deliveryDate || '-', 155, 82);
+  
+  // Table
+  const tableData = items.map((item, i) => [
+    i + 1,
+    item.belt_code,
+    item.category || '-',
+    [item.width_mm, item.length_mm, item.thickness_mm].filter(x=>x).join(' × ') || '-',
+    item.quantity
+  ]);
+  
+  doc.autoTable({
+    startY: 95,
+    head: [['#', 'Šifra', 'Kategorija', 'Dimenzije (mm)', 'Količina']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
+    styles: { fontSize: 10, cellPadding: 5 },
+    columnStyles: {
+      0: { cellWidth: 15, halign: 'center' },
+      4: { cellWidth: 25, halign: 'center', fontStyle: 'bold' }
+    }
+  });
+  
+  // Notes
+  if (notes) {
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Napomena:', 15, finalY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(notes, 15, finalY + 7, { maxWidth: 180 });
+  }
+  
+  // Footer
+  doc.setFillColor(30, 136, 229);
+  doc.rect(0, 280, 210, 17, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text('CARTA ERP - Automatski generirano', 105, 290, { align: 'center' });
+  
+  return doc;
+}
+
+async function submitOrder() {
+  const supplier = document.getElementById('orderSupplier').value.trim();
+  const email = document.getElementById('orderEmail').value.trim();
+  
+  if (!supplier) { showMessage('Unesite dobavljača', 'warning'); return; }
+  if (!email) { showMessage('Unesite email', 'warning'); return; }
+  
+  const items = getOrderItems();
+  if (!items.length) { showMessage('Nema stavki', 'warning'); return; }
+  
+  showLoading('Kreiranje narudžbe...');
+  
+  try {
+    // Generiraj broj narudžbe
+    const y = new Date().getFullYear();
+    const { data: cnt } = await initSupabase().from('prod_counters').select('current_value').eq('counter_type', 'MaintOrder').single();
+    const n = (cnt?.current_value || 0) + 1;
+    const orderId = `MO-${y}-${String(n).padStart(4,'0')}`;
+    
+    await initSupabase().from('prod_counters').upsert({ counter_type: 'MaintOrder', prefix: 'MO', current_value: n, year: y }, { onConflict: 'counter_type' });
+    
+    // Spremi narudžbu
+    const orderData = {
+      order_id: orderId,
+      supplier: supplier,
+      recipients: [email],
+      items_count: items.length,
+      items_description: items.map(i => `${i.belt_code} ×${i.quantity}`).join(', '),
+      items_json: items,
+      notes: document.getElementById('orderNotes').value,
+      priority: document.getElementById('orderPriority').value,
+      requested_delivery: document.getElementById('orderDeliveryDate').value || null,
+      status: 'Kreirano',
+      created_by: Auth.getUser()?.name || 'System',
+      status_history: [{
+        status: 'Kreirano',
+        timestamp: new Date().toISOString(),
+        user: Auth.getUser()?.name || 'System'
+      }]
+    };
+    
+    const { error } = await initSupabase().from('prod_maintenance_orders').insert(orderData);
+    if (error) throw error;
+    
+    // Generiraj i preuzmi PDF
+    const doc = generateOrderPDF({ ...orderData, order_id: orderId });
+    doc.save(`Narudzba_${orderId}.pdf`);
+    
+    closeModal('trakeOrderModal');
+    clearTrakeSelection();
+    showMessage(`✅ Narudžba ${orderId} kreirana! PDF preuzet.`, 'success');
+    
+    // Otvori tab narudžbi
+    switchMaintTab('narudzbe');
+    
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// NARUDŽBE - PREGLED I UPRAVLJANJE
+// ============================================
+async function loadOrders() {
+  try {
+    const status = document.getElementById('filterOrderStatus').value;
+    const search = document.getElementById('searchOrders').value.toLowerCase();
+    
+    let q = initSupabase().from('prod_maintenance_orders').select('*').order('created_at', { ascending: false });
+    if (status) q = q.eq('status', status);
+    
+    const { data } = await q.limit(100);
+    orders = data || [];
+    
+    if (search) {
+      orders = orders.filter(o => (o.order_id || '').toLowerCase().includes(search) || (o.supplier || '').toLowerCase().includes(search));
+    }
+    
+    updateOrderStats();
+    renderOrders();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('ordersContainer').innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Tablica ne postoji ili greška</div>';
+  }
+}
+
+function updateOrderStats() {
+  document.getElementById('ordersTotal').textContent = orders.length;
+  document.getElementById('ordersPending').textContent = orders.filter(o => o.status === 'Kreirano' || o.status === 'Poslano').length;
+  document.getElementById('ordersInTransit').textContent = orders.filter(o => o.status === 'Potvrđeno').length;
+  document.getElementById('ordersDelivered').textContent = orders.filter(o => o.status === 'Isporučeno').length;
+}
+
+function renderOrders() {
+  const c = document.getElementById('ordersContainer');
+  if (!orders.length) {
+    c.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Nema narudžbi</div>';
+    return;
+  }
+  
+  c.innerHTML = orders.map(o => {
+    const statusClass = (o.status || '').toLowerCase().replace('đ', 'd');
+    const steps = ['Kreirano', 'Poslano', 'Potvrđeno', 'Isporučeno'];
+    const currentStep = steps.indexOf(o.status);
+    
+    const timeline = steps.map((step, i) => {
+      let cls = '';
+      if (o.status === 'Otkazano') cls = '';
+      else if (i < currentStep) cls = 'completed';
+      else if (i === currentStep) cls = 'active';
+      return `<div class="timeline-step ${cls}">${step}</div>`;
+    }).join('');
+    
+    return `
+      <div class="order-card status-${statusClass}">
+        <div class="order-header">
+          <span class="order-number">${escapeHtml(o.order_id)}</span>
+          <span class="order-status ${statusClass}">${o.status}</span>
+        </div>
+        <div class="order-info">
+          <div class="order-info-item"><strong>Dobavljač</strong>${escapeHtml(o.supplier || '-')}</div>
+          <div class="order-info-item"><strong>Email</strong>${escapeHtml(o.recipients?.[0] || '-')}</div>
+          <div class="order-info-item"><strong>Stavki</strong>${o.items_count || 0}</div>
+          <div class="order-info-item"><strong>Kreirano</strong>${formatDatum(o.created_at)}</div>
+          <div class="order-info-item"><strong>Željeni rok</strong>${o.requested_delivery || '-'}</div>
+          <div class="order-info-item"><strong>Prioritet</strong><span class="badge badge-${o.priority === 'Hitan' ? 'danger' : 'secondary'}">${o.priority || 'Normalan'}</span></div>
+        </div>
+        <div class="order-timeline">${timeline}</div>
+        <div class="order-actions">
+          <button class="btn btn-sm btn-primary" onclick="openOrderDetail('${o.id}')">📋 Detalji</button>
+          <button class="btn btn-sm btn-info" onclick="downloadOrderPDFById('${o.id}')">📄 PDF</button>
+          ${o.status === 'Kreirano' ? `<button class="btn btn-sm btn-success" onclick="markOrderSent('${o.id}')">📧 Označi poslano</button>` : ''}
+          ${o.status === 'Poslano' ? `<button class="btn btn-sm btn-success" onclick="markOrderConfirmed('${o.id}')">✅ Potvrđeno</button>` : ''}
+          ${o.status === 'Potvrđeno' ? `<button class="btn btn-sm btn-success" onclick="markOrderDelivered('${o.id}')">📦 Isporučeno</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openOrderDetail(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  currentOrderId = id;
+  
+  document.getElementById('orderDetailNumber').textContent = o.order_id;
+  
+  const items = o.items_json || [];
+  const itemsHtml = items.map(i => `<tr>
+    <td><strong>${escapeHtml(i.belt_code)}</strong></td>
+    <td>${escapeHtml(i.category || '-')}</td>
+    <td>${[i.width_mm, i.length_mm, i.thickness_mm].filter(x=>x).join(' × ') || '-'}</td>
+    <td style="text-align:center;">${i.quantity}</td>
+  </tr>`).join('');
+  
+  const historyHtml = (o.status_history || []).map(h => `
+    <div style="padding: 8px; border-left: 3px solid #2e7d32; margin-bottom: 5px; background: #f9f9f9;">
+      <strong>${h.status}</strong> - ${new Date(h.timestamp).toLocaleString('hr-HR')}
+      ${h.user ? `<br><small>👤 ${h.user}</small>` : ''}
+      ${h.comment ? `<br><small>💬 ${h.comment}</small>` : ''}
+    </div>
+  `).join('');
+  
+  document.getElementById('orderDetailContent').innerHTML = `
+    <div class="order-info" style="margin-bottom: 20px;">
+      <div class="order-info-item"><strong>Dobavljač</strong>${escapeHtml(o.supplier || '-')}</div>
+      <div class="order-info-item"><strong>Email</strong>${escapeHtml(o.recipients?.[0] || '-')}</div>
+      <div class="order-info-item"><strong>Status</strong><span class="order-status ${(o.status||'').toLowerCase().replace('đ','d')}">${o.status}</span></div>
+      <div class="order-info-item"><strong>Kreirano</strong>${formatDatum(o.created_at)}</div>
+    </div>
+    <h4 style="margin-bottom: 10px;">📦 Stavke (${items.length})</h4>
+    <div class="table-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+      <table><thead><tr><th>Šifra</th><th>Kategorija</th><th>Dimenzije</th><th>Kol.</th></tr></thead>
+      <tbody>${itemsHtml}</tbody></table>
+    </div>
+    ${o.notes ? `<div style="padding: 10px; background: #fff3cd; border-radius: 5px; margin-bottom: 15px;"><strong>📝 Napomena:</strong> ${escapeHtml(o.notes)}</div>` : ''}
+    <h4 style="margin-bottom: 10px;">📜 Povijest statusa</h4>
+    <div style="max-height: 150px; overflow-y: auto;">${historyHtml || '<div style="color: #999;">Nema povijesti</div>'}</div>
+  `;
+  
+  document.getElementById('orderNewStatus').value = o.status;
+  document.getElementById('orderActualDelivery').value = o.actual_delivery || '';
+  document.getElementById('orderComment').value = '';
+  
+  openModal('orderDetailModal');
+}
+
+async function updateOrderStatus() {
+  if (!currentOrderId) return;
+  showLoading('Ažuriranje...');
+  
+  try {
+    const o = orders.find(x => x.id === currentOrderId);
+    const newStatus = document.getElementById('orderNewStatus').value;
+    const comment = document.getElementById('orderComment').value;
+    
+    const history = o.status_history || [];
+    history.push({
+      status: newStatus,
+      timestamp: new Date().toISOString(),
+      user: Auth.getUser()?.name || 'System',
+      comment: comment || null
+    });
+    
+    const updateData = {
+      status: newStatus,
+      status_history: history,
+      updated_at: new Date().toISOString()
+    };
+    
+    if (newStatus === 'Poslano') updateData.sent_at = new Date().toISOString();
+    if (newStatus === 'Isporučeno') {
+      updateData.actual_delivery = document.getElementById('orderActualDelivery').value || new Date().toISOString().split('T')[0];
+      updateData.delivered_at = new Date().toISOString();
+    }
+    
+    await initSupabase().from('prod_maintenance_orders').update(updateData).eq('id', currentOrderId);
+    
+    closeModal('orderDetailModal');
+    showMessage('✅ Status ažuriran', 'success');
+    await loadOrders();
+    
+  } catch (e) {
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function markOrderSent(id) { await quickUpdateOrderStatus(id, 'Poslano'); }
+async function markOrderConfirmed(id) { await quickUpdateOrderStatus(id, 'Potvrđeno'); }
+async function markOrderDelivered(id) { await quickUpdateOrderStatus(id, 'Isporučeno'); }
+
+async function quickUpdateOrderStatus(id, newStatus) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  
+  const history = o.status_history || [];
+  history.push({ status: newStatus, timestamp: new Date().toISOString(), user: Auth.getUser()?.name || 'System' });
+  
+  const updateData = { status: newStatus, status_history: history, updated_at: new Date().toISOString() };
+  if (newStatus === 'Poslano') updateData.sent_at = new Date().toISOString();
+  if (newStatus === 'Isporučeno') {
+    updateData.actual_delivery = new Date().toISOString().split('T')[0];
+    updateData.delivered_at = new Date().toISOString();
+  }
+  
+  await initSupabase().from('prod_maintenance_orders').update(updateData).eq('id', id);
+  showMessage('✅ ' + newStatus, 'success');
+  await loadOrders();
+}
+
+function downloadOrderPDFById(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const doc = generateOrderPDF(o);
+  doc.save(`Narudzba_${o.order_id}.pdf`);
+}
+
+function downloadOrderPDF() {
+  const o = orders.find(x => x.id === currentOrderId);
+  if (!o) return;
+  const doc = generateOrderPDF(o);
+  doc.save(`Narudzba_${o.order_id}.pdf`);
+}
+
+// ============================================
+// STROJEVI
+// ============================================
+async function loadMachines() {
+  const { data } = await initSupabase().from('prod_machines').select('*').order('machine_code');
+  machines = data || [];
+  renderMachines();
+}
+
+function renderMachines() {
+  const tb = document.getElementById('machinesTableBody');
+  if (!machines.length) { 
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 30px; color: #999;">Nema strojeva. Kliknite "Novi stroj" za dodavanje.</td></tr>'; 
+    return; 
+  }
+  tb.innerHTML = machines.map(m => `
+    <tr>
+      <td><strong>${escapeHtml(m.machine_code)}</strong></td>
+      <td>${escapeHtml(m.name || '-')}</td>
+      <td><span class="badge badge-info">${m.machine_type || '-'}</span></td>
+      <td>${escapeHtml(m.production_line || '-')}</td>
+      <td>${escapeHtml(m.manufacturer || '-')}</td>
+      <td>${escapeHtml(m.model || '-')}</td>
+      <td>${escapeHtml(m.location || '-')}</td>
+      <td><span class="badge badge-${m.status === 'Aktivan' ? 'success' : m.status === 'U servisu' ? 'warning' : 'secondary'}">${m.status}</span></td>
+      <td>
+        <button class="action-btn" onclick="openMachineModal('${m.id}')" title="Uredi">✏️</button>
+        <button class="action-btn" onclick="deleteMachine('${m.id}', '${escapeHtml(m.machine_code)}')" title="Obriši">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openMachineModal(machineId = null) {
+  // Reset forme
+  document.getElementById('machineId').value = '';
+  document.getElementById('machineCode').value = '';
+  document.getElementById('machineName').value = '';
+  document.getElementById('machineProductionLine').value = '';
+  document.getElementById('machineType').value = '';
+  document.getElementById('machineManufacturer').value = '';
+  document.getElementById('machineModel').value = '';
+  document.getElementById('machineSerialNumber').value = '';
+  document.getElementById('machinePurchaseYear').value = '';
+  document.getElementById('machineLocation').value = '';
+  document.getElementById('machineStatus').value = 'Aktivan';
+  document.getElementById('machineOperatingHours').value = '';
+  document.getElementById('machineServiceInterval').value = '2000';
+  document.getElementById('machineNotes').value = '';
+  
+  if (machineId) {
+    // Edit mode
+    const m = machines.find(x => x.id === machineId);
+    if (m) {
+      document.getElementById('machineModalTitle').textContent = 'Uredi stroj';
+      document.getElementById('machineId').value = m.id;
+      document.getElementById('machineCode').value = m.machine_code || '';
+      document.getElementById('machineName').value = m.name || '';
+      document.getElementById('machineProductionLine').value = m.production_line || '';
+      document.getElementById('machineType').value = m.machine_type || '';
+      document.getElementById('machineManufacturer').value = m.manufacturer || '';
+      document.getElementById('machineModel').value = m.model || '';
+      document.getElementById('machineSerialNumber').value = m.serial_number || '';
+      document.getElementById('machinePurchaseYear').value = m.purchase_year || '';
+      document.getElementById('machineLocation').value = m.location || '';
+      document.getElementById('machineStatus').value = m.status || 'Aktivan';
+      document.getElementById('machineOperatingHours').value = m.operating_hours || '';
+      document.getElementById('machineServiceInterval').value = m.service_interval_hours || '2000';
+      document.getElementById('machineNotes').value = m.notes || '';
+    }
+  } else {
+    document.getElementById('machineModalTitle').textContent = 'Novi stroj';
+  }
+  
+  openModal('machineModal');
+}
+
+async function saveMachine() {
+  const id = document.getElementById('machineId').value;
+  const machineCode = document.getElementById('machineCode').value.trim();
+  const name = document.getElementById('machineName').value.trim();
+  const productionLine = document.getElementById('machineProductionLine').value;
+  const machineType = document.getElementById('machineType').value;
+  
+  if (!machineCode || !name || !productionLine || !machineType) {
+    showMessage('Popunite sva obavezna polja (Šifra, Naziv, Linija, Tip)', 'warning');
+    return;
+  }
+  
+  const data = {
+    machine_code: machineCode,
+    name: name,
+    production_line: productionLine,
+    machine_type: machineType,
+    manufacturer: document.getElementById('machineManufacturer').value.trim() || null,
+    model: document.getElementById('machineModel').value.trim() || null,
+    serial_number: document.getElementById('machineSerialNumber').value.trim() || null,
+    purchase_year: document.getElementById('machinePurchaseYear').value ? parseInt(document.getElementById('machinePurchaseYear').value) : null,
+    location: document.getElementById('machineLocation').value.trim() || null,
+    status: document.getElementById('machineStatus').value,
+    operating_hours: document.getElementById('machineOperatingHours').value ? parseFloat(document.getElementById('machineOperatingHours').value) : 0,
+    service_interval_hours: document.getElementById('machineServiceInterval').value ? parseInt(document.getElementById('machineServiceInterval').value) : 2000,
+    notes: document.getElementById('machineNotes').value.trim() || null,
+    updated_at: new Date().toISOString()
+  };
+  
+  showLoading('Spremanje...');
+  
+  try {
+    let result;
+    if (id) {
+      // Update
+      result = await initSupabase()
+        .from('prod_machines')
+        .update(data)
+        .eq('id', id);
+    } else {
+      // Insert
+      result = await initSupabase()
+        .from('prod_machines')
+        .insert(data);
+    }
+    
+    if (result.error) throw result.error;
+    
+    showMessage(id ? 'Stroj ažuriran!' : 'Stroj dodan!', 'success');
+    closeModal('machineModal');
+    loadMachines();
+    populateMachineDropdowns();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteMachine(id, code) {
+  if (!confirm(`Jeste li sigurni da želite obrisati stroj "${code}"?\n\nOvo može utjecati na prijave kvarova i intervencije povezane s ovim strojem.`)) {
+    return;
+  }
+  
+  showLoading('Brisanje...');
+  
+  try {
+    const { error } = await initSupabase()
+      .from('prod_machines')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    showMessage('Stroj obrisan!', 'success');
+    loadMachines();
+    populateMachineDropdowns();
+    
+  } catch (e) {
+    console.error('Greška:', e);
+    showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ============================================
+// INIT
+// ============================================
+initMaintenance();
+</script>

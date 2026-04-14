@@ -1,0 +1,3422 @@
+<h1 style="margin-bottom: 20px; color: var(--primary);">📦 Artikli i Kupci</h1>
+
+<!-- TAB NAVIGACIJA -->
+<div class="tab-nav" style="margin-bottom: 20px;">
+  <button class="tab-btn" id="tabBtnKupci" onclick="switchMainTab('kupci')">🏢 Kupci</button>
+  <button class="tab-btn active" id="tabBtnArtikli" onclick="switchMainTab('artikli')">📦 Artikli</button>
+</div>
+
+<style>
+  .tab-nav { display: flex; gap: 5px; border-bottom: 2px solid #dee2e6; padding-bottom: 0; }
+  .tab-btn { padding: 12px 30px; border: none; background: #f0f0f0; cursor: pointer; font-weight: 600; border-radius: 8px 8px 0 0; transition: all 0.2s; color: #666; font-size: 1em; }
+  .tab-btn:hover { background: #e0e0e0; }
+  .tab-btn.active { background: var(--primary); color: white; }
+  .main-tab-content { display: none; }
+  .main-tab-content.active { display: block; }
+  .country-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; display: inline-block; }
+  .country-hr { background: #e3f2fd; color: #1565c0; }
+  .country-other { background: #fff3e0; color: #e65100; }
+  .customer-row:hover { background: #f5f5f5; cursor: pointer; }
+  .customer-row td { vertical-align: middle; }
+
+  /* Smart Wizard */
+  .wizard-parse-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 28px; }
+  .wizard-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .wizard-badge-valve { background: #e3f2fd; color: #1565c0; }
+  .wizard-badge-dim { background: #e8f5e9; color: #2e7d32; }
+  .wizard-badge-layers { background: #fff3e0; color: #e65100; }
+  .wizard-badge-error { background: #ffebee; color: #c62828; font-weight: 500; }
+  .wizard-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; max-height: 400px; overflow-y: auto; padding: 2px; }
+  @media (max-width: 768px) { .wizard-results-grid { grid-template-columns: 1fr; } }
+  .wizard-card { border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; background: #fff; }
+  .wizard-card:hover { border-color: #90caf9; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .wizard-card.selected { border-color: #4caf50; background: #f1f8e9; }
+  .wizard-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; color: #4caf50; font-size: 18px; font-weight: bold; }
+  .wizard-card.top-match { background: #fffde7; }
+  .wizard-card.top-match.selected { background: #f1f8e9; }
+  .wizard-card-score { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+  .wizard-card-score.high { background: #c8e6c9; color: #2e7d32; }
+  .wizard-card-score.medium { background: #fff9c4; color: #f57f17; }
+  .wizard-card-score.low { background: #ffecb3; color: #e65100; }
+  .wizard-card-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wizard-card-details { font-size: 11px; color: #666; line-height: 1.5; }
+  .wizard-card-dims { font-size: 12px; font-weight: 600; color: #333; margin: 4px 0; }
+  .wizard-card-diffs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .wizard-diff { padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; }
+  .wizard-diff-exact { background: #c8e6c9; color: #2e7d32; }
+  .wizard-diff-close { background: #fff9c4; color: #f57f17; }
+  .wizard-diff-far { background: #ffcdd2; color: #c62828; }
+  .wizard-card-blank { border: 2px dashed #bdbdbd; text-align: center; color: #888; padding: 20px 12px; }
+  .wizard-card-blank:hover { border-color: #90caf9; color: #555; }
+</style>
+
+<!-- ============================================ -->
+<!-- TAB: KUPCI -->
+<!-- ============================================ -->
+<div class="main-tab-content" id="tabKupci">
+  
+  <!-- Stats Kupci -->
+  <div class="status-grid" style="margin-bottom: 20px;">
+    <div class="status-card" style="background: #e8f5e9;">
+      <div class="status-card-value" id="totalCustomersTab">0</div>
+      <div class="status-card-label">Ukupno kupaca</div>
+    </div>
+    <div class="status-card" style="background: #e3f2fd;">
+      <div class="status-card-value" id="customersHR">0</div>
+      <div class="status-card-label">🇭🇷 HR/BIH/SRB</div>
+    </div>
+    <div class="status-card" style="background: #fff3e0;">
+      <div class="status-card-value" id="customersOther">0</div>
+      <div class="status-card-label">🌍 Ostale zemlje</div>
+    </div>
+  </div>
+
+  <!-- Pretraživanje kupaca -->
+  <div class="card" style="margin-bottom: 15px;">
+    <div class="form-row" style="padding: 15px; align-items: flex-end;">
+      <div class="form-group" style="flex: 2; margin: 0;">
+        <label>Pretraži</label>
+        <input type="text" class="form-control" id="searchCustomers" placeholder="Naziv, šifra, grad, država..." oninput="filterCustomers()">
+      </div>
+      <div class="form-group" style="margin: 0; min-width: 200px;">
+        <label>Jezik etikete</label>
+        <select class="form-control" id="filterLabelLang" onchange="filterCustomers()">
+          <option value="">Svi</option>
+          <option value="HR">🇭🇷 Hrvatski (HR/BIH/SRB)</option>
+          <option value="EN">🌍 Engleski (ostalo)</option>
+        </select>
+      </div>
+      <button class="btn btn-success" onclick="openCustomerModal(null)" style="margin: 0;">+ Novi kupac</button>
+    </div>
+  </div>
+
+  <!-- Tablica kupaca -->
+  <div class="card">
+    <div class="card-header">
+      🏢 Popis kupaca
+      <span id="filteredCustomersCount" style="font-weight: normal; margin-left: 10px; color: #666;"></span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-container" style="max-height: 550px; overflow-y: auto;">
+        <table>
+          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+            <tr>
+              <th style="width: 80px;">Šifra</th>
+              <th>Naziv</th>
+              <th>Grad</th>
+              <th>Država</th>
+              <th style="width: 120px;">Jezik etikete</th>
+              <th>Kontakt</th>
+              <th style="width: 80px;">Artikala</th>
+              <th style="width: 100px;">Akcije</th>
+            </tr>
+          </thead>
+          <tbody id="customersTableBody">
+            <tr><td colspan="8" class="empty-state">Učitavanje...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TAB: ARTIKLI -->
+<!-- ============================================ -->
+<div class="main-tab-content active" id="tabArtikli">
+
+<!-- Search & Filters -->
+<div class="card">
+  <div class="form-row">
+    <div class="form-group" style="flex: 2;">
+      <label>Pretraži artikle</label>
+      <input type="text" class="form-control" id="searchArticles" placeholder="Naziv, šifra ili kupac..." oninput="filterArticles()">
+    </div>
+    <div class="form-group">
+      <label>Kupac *</label>
+      <select class="form-control" id="filterCustomer" onchange="onCustomerFilterChange()">
+        <option value="">Svi kupci</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Linija</label>
+      <select class="form-control" id="filterLine" onchange="filterArticles()">
+        <option value="">Sve linije</option>
+        <option value="NLI">NLI</option>
+        <option value="WH">W&H</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="status-grid" style="margin-bottom: 20px;">
+  <div class="status-card">
+    <div class="status-card-value" id="totalArticles">0</div>
+    <div class="status-card-label">Ukupno artikala</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-value" id="filteredArticles">0</div>
+    <div class="status-card-label">Prikazano</div>
+  </div>
+  <div class="status-card" style="background: #e8f5e9;">
+    <div class="status-card-value" id="totalCustomers">0</div>
+    <div class="status-card-label">Kupaca</div>
+  </div>
+</div>
+
+<!-- Articles Table -->
+<div class="card">
+  <div class="card-header">
+    Popis artikala
+    <div>
+      <button class="btn btn-sm btn-info" onclick="openCustomerModal(null)">+ Novi kupac</button>
+      <button class="btn btn-sm btn-success" onclick="openNewArticleWizard()">+ Novi artikl</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+          <tr>
+            <th>ID Artikla</th>
+            <th>Naziv</th>
+            <th>Šifra</th>
+            <th>Kupac</th>
+            <th>Dimenzije (ŠxDxB)</th>
+            <th>Ventil</th>
+            <th>Slojevi</th>
+            <th style="text-align: center;">⚠️</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="articlesTableBody">
+          <tr>
+            <td colspan="9" class="empty-state">Učitavanje...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div> <!-- END tabArtikli -->
+
+<!-- ============================================ -->
+<!-- MODAL: KUPAC (NOVI/UREDI) -->
+<!-- ============================================ -->
+<div class="modal" id="customerModal">
+  <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-header">
+      <h2 id="customerModalTitle">🏢 Novi kupac</h2>
+      <span class="modal-close" onclick="closeModal('customerModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editCustomerId">
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Šifra kupca</label>
+            <input type="text" class="form-control" id="customerCode" readonly style="background: #f5f5f5; font-weight: bold;">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" id="customerActive">
+              <option value="true">✅ Aktivan</option>
+              <option value="false">❌ Neaktivan</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Naziv kupca *</label>
+            <input type="text" class="form-control" id="customerName" placeholder="Naziv tvrtke">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Adresa</label>
+            <input type="text" class="form-control" id="customerAddress" placeholder="Ulica i broj">
+          </div>
+          <div class="form-group">
+            <label>Grad</label>
+            <input type="text" class="form-control" id="customerCity" placeholder="Grad">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Država *</label>
+            <select class="form-control" id="customerCountry" onchange="updateLabelLanguagePreview()">
+              <option value="Hrvatska">🇭🇷 Hrvatska</option>
+              <option value="BIH">🇧🇦 Bosna i Hercegovina</option>
+              <option value="Srbija">🇷🇸 Srbija</option>
+              <option value="Slovenija">🇸🇮 Slovenija</option>
+              <option value="Austrija">🇦🇹 Austrija</option>
+              <option value="Njemačka">🇩🇪 Njemačka</option>
+              <option value="Italija">🇮🇹 Italija</option>
+              <option value="Mađarska">🇭🇺 Mađarska</option>
+              <option value="Češka">🇨🇿 Češka</option>
+              <option value="Slovačka">🇸🇰 Slovačka</option>
+              <option value="Poljska">🇵🇱 Poljska</option>
+              <option value="Ostalo">🌍 Ostalo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>OIB / VAT</label>
+            <input type="text" class="form-control" id="customerOIB" placeholder="OIB ili VAT broj">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kontakt osoba</label>
+            <input type="text" class="form-control" id="customerContact" placeholder="Ime i prezime">
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="text" class="form-control" id="customerPhone" placeholder="+385...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Email</label>
+            <input type="email" class="form-control" id="customerEmail" placeholder="email@tvrtka.hr">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Napomena</label>
+            <textarea class="form-control" id="customerNotes" rows="2"></textarea>
+          </div>
+        </div>
+        
+        <!-- Info o jeziku etikete -->
+        <div id="labelLanguageBox" style="margin-top: 15px; padding: 12px; border-radius: 8px; border-left: 4px solid #1976d2; background: #e3f2fd;">
+          <strong>🏷️ Jezik etikete:</strong>
+          <span id="labelLanguagePreview">Hrvatski</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('customerModal')">Odustani</button>
+      <button class="btn btn-success" onclick="saveCustomer()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- MODAL: WIZARD ZA NOVI ARTIKL -->
+<!-- ============================================ -->
+<div class="modal" id="articleWizardModal">
+  <div class="modal-content" style="max-width: 750px;">
+    <div class="modal-header">
+      <h2>📦 Novi artikl</h2>
+      <span class="modal-close" onclick="closeModal('articleWizardModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <h4>1️⃣ Šifra artikla</h4>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Unesite šifru za pretragu sličnih artikala</label>
+            <input type="text" class="form-control" id="wizardArticleCode" placeholder="npr. VL2n 35x51x12/2" oninput="onWizardCodeInput()" autocomplete="off" style="font-size: 1.1em; font-weight: 600;">
+            <div class="wizard-parse-badges" id="wizardParseResult"></div>
+          </div>
+        </div>
+
+        <h4 style="margin-top: 16px;">2️⃣ Kupac</h4>
+        <div class="form-row" style="align-items: flex-end; gap: 10px;">
+          <div class="form-group" style="flex: 2;">
+            <label>Kupac *</label>
+            <select class="form-control" id="wizardCustomer" onchange="onWizardCustomerChange()">
+              <option value="">-- Odaberi kupca --</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Novi ID artikla</label>
+            <input type="text" class="form-control" id="wizardNewArticleId" readonly style="background: #e8f5e9; font-weight: bold; font-size: 1.1em;">
+          </div>
+        </div>
+
+        <div id="wizardSimilarResults" style="display: none; margin-top: 16px;">
+          <h4>3️⃣ Slični artikli <span id="wizardResultsCount" style="font-weight: normal; color: #888; font-size: 0.85em;"></span></h4>
+          <div class="wizard-results-grid" id="wizardResultsContainer"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('articleWizardModal')">Odustani</button>
+      <button class="btn btn-success" id="btnProceedWizard" onclick="proceedToArticleForm()" disabled>Nastavi ➡️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- GLAVNI MODAL ZA ARTIKL (NOVI/UREDI) -->
+<!-- ============================================ -->
+<div class="modal" id="articleModal">
+  <div class="modal-content" style="max-width: 1200px; max-height: 95vh;">
+    <div class="modal-header">
+      <h2 id="articleModalTitle">📦 Novi artikl</h2>
+      <span class="modal-close" onclick="closeModal('articleModal')">&times;</span>
+    </div>
+    
+    <!-- Tabovi -->
+    <div style="display: flex; border-bottom: 2px solid #e0e0e0; background: #f8f9fa;">
+      <button class="tab-btn active" data-tab="tabOsnovni" onclick="switchTab(this, 'tabOsnovni')">📋 Osnovni podaci</button>
+      <button class="tab-btn" data-tab="tabTuber" onclick="switchTab(this, 'tabTuber')">🏭 Tuber</button>
+      <button class="tab-btn" data-tab="tabBottomer" onclick="switchTab(this, 'tabBottomer')">⚙️ Bottomer</button>
+      <button class="tab-btn" data-tab="tabTisak" onclick="switchTab(this, 'tabTisak')">🎨 Tisak</button>
+    </div>
+    
+    <div class="modal-body" style="overflow-y: auto; max-height: calc(95vh - 200px); padding: 20px;">
+      <input type="hidden" id="artId">
+      
+      <!-- ==================== TAB: OSNOVNI PODACI ==================== -->
+      <div id="tabOsnovni" class="tab-content active">
+        <div class="form-section">
+          <h4>🔑 Identifikacija</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>ID Artikla *</label>
+              <input type="text" class="form-control" id="artArticleId" placeholder="npr. ID13/5">
+            </div>
+            <div class="form-group" style="flex: 2;">
+              <label>Naziv artikla *</label>
+              <input type="text" class="form-control" id="artName" placeholder="Naziv artikla">
+            </div>
+            <div class="form-group">
+              <label>Šifra</label>
+              <input type="text" class="form-control" id="artCode" placeholder="Šifra">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label>Kupac *</label>
+              <select class="form-control" id="artCustomer">
+                <option value="">-- Odaberi kupca --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Linija proizvodnje</label>
+              <select class="form-control" id="artProductionLine">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📐 Dimenzije vreće</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artBagWidth" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Dužina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artBagLength" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Dno (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artBagBottom" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Ventil (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artBagValve" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🏷️ Karakteristike</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Vrsta ventila *</label>
+              <select class="form-control" id="artValveType">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Pozicija ventila *</label>
+              <select class="form-control" id="artValvePosition">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Boja vreće *</label>
+              <select class="form-control" id="artBagColor">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ima foliju?</label>
+              <select class="form-control" id="artHasFoil">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tip Bottomera *</label>
+              <select class="form-control" id="artBottomerType">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Pakiranje</label>
+              <select class="form-control" id="artPackagingType">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Vrsta palete *</label>
+              <select class="form-control" id="artPalletType">
+                <option value="">--</option>
+                <option value="80x120">80x120</option>
+                <option value="90x120">90x120</option>
+                <option value="95x120">95x120</option>
+                <option value="100x120">100x120</option>
+                <option value="105x120">105x120</option>
+                <option value="110x120">110x120</option>
+                <option value="115x120">115x120</option>
+                <option value="115x115">115x115</option>
+                <option value="120x120">120x120</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Kom/paleta *</label>
+              <input type="text" class="form-control" id="artPcsPerPallet" placeholder="npr. 800">
+            </div>
+            <div class="form-group">
+              <label>Kom/paket *</label>
+              <input type="number" class="form-control" id="artPcsPerPackage" placeholder="npr. 50">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🔧 Maziljke (Bottomer)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Maziljke dno</label>
+              <input type="text" class="form-control" id="artGlueSpotsBottom" placeholder="npr. 21 (9x27)">
+            </div>
+            <div class="form-group">
+              <label>Maziljke ventil dno</label>
+              <input type="text" class="form-control" id="artGlueSpotsValveBottom" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Maziljke gornje dno</label>
+              <input type="text" class="form-control" id="artGlueSpotsTopBottom" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Maziljke donje dno</label>
+              <input type="text" class="form-control" id="artGlueSpotsLowerBottom" placeholder="">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📝 Napomena</h4>
+          <textarea class="form-control" id="artNotes" rows="2" placeholder="Napomene..."></textarea>
+        </div>
+      </div>
+      
+      <!-- ==================== TAB: TUBER ==================== -->
+      <div id="tabTuber" class="tab-content" style="display: none;">
+        <div class="form-section">
+          <h4>📏 Osnovne mjere tuljka</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina tuljka (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artTubeLength" placeholder="npr. 63">
+              <small id="artTubeLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label>Vrsta reza</label>
+              <select class="form-control" id="artCutType">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Prstohvat *</label>
+              <select class="form-control" id="artFingerHole">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Broj boja</label>
+              <input type="text" class="form-control" id="artColorsCount" placeholder="">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📄 Papir S1 (Prvi sloj)</h4>
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label>Šifra papira S1</label>
+              <input type="text" class="form-control paper-code-input" id="artPaperS1Code" 
+                     list="paperCodesList" placeholder="npr. B70-72-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artPaperS1Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artPaperS1Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Perforacija S1</label>
+              <select class="form-control" id="artPerforationS1">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📄 Papir S2 (Drugi sloj)</h4>
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label>Šifra papira S2</label>
+              <input type="text" class="form-control paper-code-input" id="artPaperS2Code" 
+                     list="paperCodesList" placeholder="npr. B70-72-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artPaperS2Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artPaperS2Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Perforacija S2</label>
+              <select class="form-control" id="artPerforationS2">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📄 Papir S3 (Treći sloj)</h4>
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label>Šifra papira S3</label>
+              <input type="text" class="form-control paper-code-input" id="artPaperS3Code" 
+                     list="paperCodesList" placeholder="npr. B70-72-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artPaperS3Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artPaperS3Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Perforacija S3</label>
+              <select class="form-control" id="artPerforationS3">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📄 Papir S4 (Četvrti sloj)</h4>
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label>Šifra papira S4</label>
+              <input type="text" class="form-control paper-code-input" id="artPaperS4Code" 
+                     list="paperCodesList" placeholder="npr. B70-72-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artPaperS4Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artPaperS4Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Perforacija S4</label>
+              <select class="form-control" id="artPerforationS4">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🎨 Boje Tuber</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>1. boja</label>
+              <input type="text" class="form-control" id="artTuberColor1" placeholder="Npr. Pantone 123">
+            </div>
+            <div class="form-group">
+              <label>2. boja</label>
+              <input type="text" class="form-control" id="artTuberColor2" placeholder="Npr. Pantone 456">
+            </div>
+            <div class="form-group">
+              <label>3. boja</label>
+              <input type="text" class="form-control" id="artTuberColor3" placeholder="Npr. CMYK">
+            </div>
+            <div class="form-group">
+              <label>4. boja</label>
+              <input type="text" class="form-control" id="artTuberColor4" placeholder="Npr. Spot color">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==================== TAB: BOTTOMER ==================== -->
+      <div id="tabBottomer" class="tab-content" style="display: none;">
+        <div class="form-section">
+          <h4>🔄 Perforacija ventila</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Perforacija ventila</label>
+              <select class="form-control" id="artPerforationValve">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Vrsta perforacije</label>
+              <select class="form-control" id="artPerforationValveType">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🔵 Ventil S1</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Šifra papira</label>
+              <input type="text" class="form-control paper-code-input" id="artValveS1PaperCode" 
+                     list="paperCodesList" placeholder="npr. S70-21-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Boja papira</label>
+              <select class="form-control" id="artValveS1PaperColor">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS1Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artValveS1Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina ventila (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS1Length" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Preklop (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS1Overlap" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🔵 Ventil S2</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Šifra papira</label>
+              <input type="text" class="form-control paper-code-input" id="artValveS2PaperCode" 
+                     list="paperCodesList" placeholder="npr. S80-24-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Boja papira</label>
+              <select class="form-control" id="artValveS2PaperColor">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS2Width" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artValveS2Grammage">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina ventila (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS2Length" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Preklop (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artValveS2Overlap" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🎞️ Folija</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Šifra folije</label>
+              <input type="text" class="form-control paper-code-input" id="artFoilCode" 
+                     placeholder="npr. F07-70-HDP" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Vrsta folije</label>
+              <select class="form-control" id="artFoilType">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artFoilWidth" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Mikrona</label>
+              <input type="number" class="form-control" id="artFoilMicrons" placeholder="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina folije (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artFoilLength" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Preklop (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artFoilOverlap" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🟢 Gornje dno</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Šifra papira</label>
+              <input type="text" class="form-control paper-code-input" id="artTopPaperCode" 
+                     list="paperCodesList" placeholder="npr. S70-19-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artTopWidth" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artTopGrammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Dvojni preklop</label>
+              <select class="form-control" id="artTopDoubleOverlap">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artTopLength" placeholder="0.00">
+              <small id="artTopLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label>Preklop (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artTopOverlap" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Boja 1</label>
+              <input type="text" class="form-control" id="artTopColor1" placeholder="npr. Crna">
+            </div>
+            <div class="form-group">
+              <label>Boja 2</label>
+              <input type="text" class="form-control" id="artTopColor2" placeholder="">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🟡 Donje dno</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Šifra papira</label>
+              <input type="text" class="form-control paper-code-input" id="artBottomPaperCode" 
+                     list="paperCodesList" placeholder="npr. S70-19-SE" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Širina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artBottomWidth" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Gramatura (g/m²)</label>
+              <select class="form-control" id="artBottomGrammage">
+                <option value="">--</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Dvojni preklop</label>
+              <select class="form-control" id="artBottomDoubleOverlap">
+                <option value="">--</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dužina (cm) *</label>
+              <input type="number" step="0.01" class="form-control" id="artBottomLength" placeholder="0.00">
+              <small id="artBottomLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label>Preklop (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artBottomOverlap" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Boja 1</label>
+              <input type="text" class="form-control" id="artBottomColor1" placeholder="npr. Crna">
+            </div>
+            <div class="form-group">
+              <label>Boja 2</label>
+              <input type="text" class="form-control" id="artBottomColor2" placeholder="">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==================== TAB: TISAK ==================== -->
+      <div id="tabTisak" class="tab-content" style="display: none;">
+        <!-- GRAFIČKA PRIPREMA -->
+        <div class="form-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196F3; border-radius: 8px;">
+          <h4>📄 Grafička priprema (PDF)</h4>
+          <div class="form-row" style="align-items: flex-end;">
+            <div class="form-group" style="flex: 3;">
+              <label>URL grafičke pripreme (Google Drive)</label>
+              <input type="text" class="form-control" id="artPrintPreparationUrl" placeholder="Zalijepi link na PDF...">
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+              <button type="button" class="btn btn-secondary" onclick="openGoogleDriveFolder()" title="Otvori folder s pripremama">📁 Otvori Drive</button>
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+              <button type="button" class="btn btn-info" onclick="previewPrintPreparation()" title="Pregledaj PDF">👁️ Pregledaj</button>
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+              <button type="button" class="btn btn-danger btn-sm" onclick="clearPrintPreparationUrl()" title="Obriši URL">🗑️</button>
+            </div>
+          </div>
+          <div id="printPreparationStatus" style="margin-top: 5px; font-size: 0.85em;"></div>
+        </div>
+        
+<div class="form-section">
+          <h4>🖨️ Osnovni podaci tiska</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Broj boja</label>
+              <input type="number" class="form-control" id="artPrintColorsCount" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Broj formi</label>
+              <input type="number" class="form-control" id="artFormsCount" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Debljina klišeja</label>
+              <input type="number" step="0.01" class="form-control" id="artClicheThickness" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Debljina duplofana</label>
+              <input type="number" step="0.01" class="form-control" id="artDuplofanThickness" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>📍 Pozicije</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pozicija klišea</label>
+              <input type="text" class="form-control" id="artClichePosition" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Pozicija noževa</label>
+              <input type="text" class="form-control" id="artKnifePosition" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Dužina reza (cm)</label>
+              <input type="number" step="0.01" class="form-control" id="artCutLength" placeholder="0.00">
+              <small id="artCutLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label>Sliv</label>
+              <input type="number" step="0.01" class="form-control" id="artSliv" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🔄 Odmatanje / Namatanje</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fotočelija odmatanje</label>
+              <input type="text" class="form-control" id="artPhotocellUnwinding" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Materijal odmatanje</label>
+              <input type="text" class="form-control" id="artMaterialUnwinding" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Fotočelija namatanje</label>
+              <input type="text" class="form-control" id="artPhotocellWinding" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Materijal namatanje</label>
+              <input type="text" class="form-control" id="artMaterialWinding" placeholder="">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Adapter</label>
+              <input type="text" class="form-control" id="artAdapter" placeholder="">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🎨 Anilox valjci</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Anilox 1</label>
+              <input type="number" class="form-control" id="artAnilox1" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Anilox 2</label>
+              <input type="number" class="form-control" id="artAnilox2" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Anilox 3</label>
+              <input type="number" class="form-control" id="artAnilox3" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Anilox 4</label>
+              <input type="number" class="form-control" id="artAnilox4" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Anilox 5</label>
+              <input type="number" class="form-control" id="artAnilox5" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Anilox 6</label>
+              <input type="number" class="form-control" id="artAnilox6" placeholder="0">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h4>🎨 Boje tiska</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Boja 1</label>
+              <input type="text" class="form-control" id="artPrintColor1" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Boja 2</label>
+              <input type="text" class="form-control" id="artPrintColor2" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Boja 3</label>
+              <input type="text" class="form-control" id="artPrintColor3" placeholder="">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Boja 4</label>
+              <input type="text" class="form-control" id="artPrintColor4" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Boja 5</label>
+              <input type="text" class="form-control" id="artPrintColor5" placeholder="">
+            </div>
+            <div class="form-group">
+              <label>Boja 6</label>
+              <input type="text" class="form-control" id="artPrintColor6" placeholder="">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('articleModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveArticleAsCopy()" id="btnSaveAsCopy" style="display: none;">📋 Spremi kao kopiju</button>
+      <button class="btn btn-success" onclick="saveArticle()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.tab-btn:hover {
+  background: #f0f0f0;
+  color: var(--primary);
+}
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: white;
+}
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.form-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+.form-section h4 {
+  margin: 0 0 15px 0;
+  color: var(--primary);
+  font-size: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+/* Custom autocomplete za šifre papira */
+.paper-code-wrapper {
+  position: relative;
+}
+.paper-code-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  display: none;
+}
+.paper-code-dropdown.show {
+  display: block;
+}
+.paper-code-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+.paper-code-option:hover,
+.paper-code-option.selected {
+  background: #e3f2fd;
+}
+.paper-code-option .code {
+  font-weight: 600;
+  color: #1976d2;
+}
+.paper-code-option .details {
+  font-size: 11px;
+  color: #666;
+  margin-left: 8px;
+}
+.paper-code-option mark {
+  background: #fff59d;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.paper-code-no-results {
+  padding: 12px;
+  color: #999;
+  text-align: center;
+  font-style: italic;
+}
+</style>
+
+<script>
+var allArticles = [];
+var allCustomers = [];
+var allCustomersFull = []; // Puni podaci kupaca za tab Kupci
+var filteredCustomersList = [];
+var articlesPerCustomer = {}; // Broj artikala po kupcu
+var dropdownValues = {};
+var paperCodes = [];
+var isEditMode = false;
+var wizardSelectedCustomer = null;
+var wizardParsedCode = null;
+var wizardSelectedTemplateId = null;
+var wizardDebounceTimer = null;
+var articleNotesData = []; // Aktivne napomene o artiklima
+var currentMainTab = 'artikli'; // Pamti aktivni tab
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchMainTab(tab) {
+  currentMainTab = tab; // Zapamti
+  document.getElementById("tabKupci").classList.remove("active");
+  document.getElementById("tabArtikli").classList.remove("active");
+  document.getElementById("tabBtnKupci").classList.remove("active");
+  document.getElementById("tabBtnArtikli").classList.remove("active");
+  
+  if (tab === "kupci") {
+    document.getElementById("tabKupci").classList.add("active");
+    document.getElementById("tabBtnKupci").classList.add("active");
+  } else {
+    document.getElementById("tabArtikli").classList.add("active");
+    document.getElementById("tabBtnArtikli").classList.add("active");
+  }
+}
+
+// ============================================
+// JEZIK ETIKETE HELPER
+// ============================================
+function getLabelLanguage(country) {
+  if (!country) return "EN";
+  var hrCountries = ["Hrvatska", "BIH", "Bosna i Hercegovina", "Srbija"];
+  return hrCountries.includes(country) ? "HR" : "EN";
+}
+
+function updateLabelLanguagePreview() {
+  var country = document.getElementById("customerCountry").value;
+  var lang = getLabelLanguage(country);
+  var previewEl = document.getElementById("labelLanguagePreview");
+  var boxEl = document.getElementById("labelLanguageBox");
+  
+  if (lang === "HR") {
+    previewEl.textContent = "🇭🇷 Hrvatski";
+    boxEl.style.background = "#e3f2fd";
+    boxEl.style.borderLeftColor = "#1976d2";
+  } else {
+    previewEl.textContent = "🌍 Engleski (English)";
+    boxEl.style.background = "#fff3e0";
+    boxEl.style.borderLeftColor = "#e65100";
+  }
+}
+
+// ============================================
+// KUPCI - UČITAVANJE I FILTRIRANJE
+// ============================================
+async function loadCustomersFull() {
+  try {
+    var result = await initSupabase()
+      .from("prod_customers")
+      .select("*")
+      .order("name");
+    
+    allCustomersFull = result.data || [];
+    
+    // Izračunaj broj artikala po kupcu
+    articlesPerCustomer = {};
+    allArticles.forEach(function(a) {
+      var code = a.customer_code;
+      if (code) {
+        articlesPerCustomer[code] = (articlesPerCustomer[code] || 0) + 1;
+      }
+    });
+    
+    updateCustomerStats();
+    filterCustomers();
+  } catch (e) {
+    console.error("Greška učitavanja kupaca:", e);
+  }
+}
+
+function updateCustomerStats() {
+  var total = allCustomersFull.length;
+  var hrCount = 0;
+  var otherCount = 0;
+  
+  allCustomersFull.forEach(function(c) {
+    if (getLabelLanguage(c.country) === "HR") {
+      hrCount++;
+    } else {
+      otherCount++;
+    }
+  });
+  
+  document.getElementById("totalCustomersTab").textContent = total;
+  document.getElementById("customersHR").textContent = hrCount;
+  document.getElementById("customersOther").textContent = otherCount;
+}
+
+function filterCustomers() {
+  var search = (document.getElementById("searchCustomers").value || "").toLowerCase();
+  var langFilter = document.getElementById("filterLabelLang").value;
+  
+  filteredCustomersList = allCustomersFull.filter(function(c) {
+    // Search filter
+    var matchSearch = !search || 
+      (c.name || "").toLowerCase().includes(search) ||
+      (c.customer_code || "").toLowerCase().includes(search) ||
+      (c.city || "").toLowerCase().includes(search) ||
+      (c.country || "").toLowerCase().includes(search);
+    
+    // Language filter
+    var lang = getLabelLanguage(c.country);
+    var matchLang = !langFilter || langFilter === lang;
+    
+    return matchSearch && matchLang;
+  });
+  
+  renderCustomersTable();
+}
+
+function renderCustomersTable() {
+  var tbody = document.getElementById("customersTableBody");
+  var countEl = document.getElementById("filteredCustomersCount");
+  
+  if (filteredCustomersList.length === 0) {
+    tbody.innerHTML = "<tr><td colspan=\"8\" class=\"empty-state\">Nema kupaca za prikaz</td></tr>";
+    countEl.textContent = "(0)";
+    return;
+  }
+  
+  countEl.textContent = "(" + filteredCustomersList.length + " prikazano)";
+  
+  var html = "";
+  filteredCustomersList.forEach(function(c) {
+    var lang = getLabelLanguage(c.country);
+    var langBadge = lang === "HR" 
+      ? "<span class=\"country-badge country-hr\">🇭🇷 HR</span>"
+      : "<span class=\"country-badge country-other\">🌍 EN</span>";
+    
+    var artikala = articlesPerCustomer[c.customer_code] || 0;
+    var artikalaStyle = artikala > 0 ? "color: #2e7d32; font-weight: 600;" : "color: #999;";
+    
+    html += "<tr class=\"customer-row\" ondblclick=\"openCustomerModal('" + c.id + "')\">";
+    html += "<td><strong>" + (c.customer_code || "-") + "</strong></td>";
+    html += "<td>" + (c.name || "-") + "</td>";
+    html += "<td>" + (c.city || "-") + "</td>";
+    html += "<td>" + (c.country || "-") + "</td>";
+    html += "<td>" + langBadge + "</td>";
+    html += "<td>" + (c.contact_person || "-") + "</td>";
+    html += "<td style=\"" + artikalaStyle + "\">" + artikala + "</td>";
+    html += "<td>";
+    html += "<button class=\"btn btn-sm btn-info\" onclick=\"openCustomerModal('" + c.id + "')\">✏️</button> ";
+    html += "</td>";
+    html += "</tr>";
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// ============================================
+// KUPCI - MODAL (NOVI/UREDI)
+// ============================================
+function openCustomerModal(customerId) {
+  var isEdit = !!customerId;
+  document.getElementById("customerModalTitle").textContent = isEdit ? "🏢 Uredi kupca" : "🏢 Novi kupac";
+  document.getElementById("editCustomerId").value = customerId || "";
+  
+  if (isEdit) {
+    // Pronađi kupca
+    var customer = allCustomersFull.find(function(c) { return c.id === customerId; });
+    if (!customer) {
+      showMessage("Kupac nije pronađen!", "error");
+      return;
+    }
+    
+    document.getElementById("customerCode").value = customer.customer_code || "";
+    document.getElementById("customerName").value = customer.name || "";
+    document.getElementById("customerAddress").value = customer.address || "";
+    document.getElementById("customerCity").value = customer.city || "";
+    document.getElementById("customerCountry").value = customer.country || "Hrvatska";
+    document.getElementById("customerOIB").value = customer.oib || "";
+    document.getElementById("customerContact").value = customer.contact_person || "";
+    document.getElementById("customerPhone").value = customer.phone || "";
+    document.getElementById("customerEmail").value = customer.email || "";
+    document.getElementById("customerNotes").value = customer.notes || "";
+    document.getElementById("customerActive").value = customer.active !== false ? "true" : "false";
+  } else {
+    // Novi kupac
+    document.getElementById("customerCode").value = generateNextCustomerCode();
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerAddress").value = "";
+    document.getElementById("customerCity").value = "";
+    document.getElementById("customerCountry").value = "Hrvatska";
+    document.getElementById("customerOIB").value = "";
+    document.getElementById("customerContact").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("customerEmail").value = "";
+    document.getElementById("customerNotes").value = "";
+    document.getElementById("customerActive").value = "true";
+  }
+  
+  updateLabelLanguagePreview();
+  openModal("customerModal");
+}
+
+async function saveCustomer() {
+  var name = document.getElementById("customerName").value.trim();
+  if (!name) {
+    showMessage("Unesite naziv kupca!", "error");
+    return;
+  }
+  
+  var customerId = document.getElementById("editCustomerId").value;
+  var isEdit = !!customerId;
+  
+  showLoading(isEdit ? "Spremanje izmjena..." : "Kreiranje kupca...");
+  
+  try {
+    var customerData = {
+      customer_code: document.getElementById("customerCode").value,
+      name: name,
+      address: document.getElementById("customerAddress").value.trim() || null,
+      city: document.getElementById("customerCity").value.trim() || null,
+      country: document.getElementById("customerCountry").value || "Hrvatska",
+      oib: document.getElementById("customerOIB").value.trim() || null,
+      contact_person: document.getElementById("customerContact").value.trim() || null,
+      phone: document.getElementById("customerPhone").value.trim() || null,
+      email: document.getElementById("customerEmail").value.trim() || null,
+      notes: document.getElementById("customerNotes").value.trim() || null,
+      active: document.getElementById("customerActive").value === "true"
+    };
+    
+    var result;
+    if (isEdit) {
+      result = await initSupabase()
+        .from("prod_customers")
+        .update(customerData)
+        .eq("id", customerId)
+        .select()
+        .single();
+    } else {
+      result = await initSupabase()
+        .from("prod_customers")
+        .insert(customerData)
+        .select()
+        .single();
+    }
+    
+    if (result.error) throw result.error;
+    
+    // Osvježi podatke
+    await loadCustomersFull();
+    
+    // Osvježi i dropdown-ove za artikle
+    allCustomers = allCustomersFull.map(function(c) {
+      return { id: c.id, customer_code: c.customer_code, name: c.name };
+    });
+    refreshCustomerDropdowns();
+    
+    closeModal("customerModal");
+    showMessage(isEdit ? "✅ Kupac uspješno ažuriran!" : "✅ Kupac uspješno kreiran!", "success");
+    
+    document.getElementById("totalCustomers").textContent = allCustomers.length;
+    
+  } catch (error) {
+    console.error("Save customer error:", error);
+    showMessage("Greška: " + error.message, "error");
+  } finally {
+    hideLoading();
+  }
+}
+
+// Stara funkcija za kompatibilnost
+function openNewCustomerModal() {
+  openCustomerModal(null);
+}
+
+// Stara funkcija - preusmjeri na novu
+async function saveNewCustomer() {
+  await saveCustomer();
+}
+
+async function initArtikliView() {
+  try {
+    showLoading('Učitavanje artikala...');
+    
+    // Učitaj kupce
+    const { data: customers } = await initSupabase()
+      .from('prod_customers')
+      .select('id, customer_code, name')
+      .order('name');
+    allCustomers = customers || [];
+    
+    // Popuni dropdown kupaca (filter, artikl forma, wizard)
+    const customerSelect = document.getElementById('filterCustomer');
+    const artCustomerSelect = document.getElementById('artCustomer');
+    const wizardCustomerSelect = document.getElementById('wizardCustomer');
+    
+    customerSelect.innerHTML = '<option value="">Svi kupci</option>';
+    artCustomerSelect.innerHTML = '<option value="">-- Odaberi kupca --</option>';
+    wizardCustomerSelect.innerHTML = '<option value="">-- Odaberi kupca --</option>';
+    
+    allCustomers.forEach(c => {
+      // Filter koristi customer_code, modal koristi customer_code
+      const filterOpt = `<option value="${c.customer_code}">${c.name} - ${c.customer_code}</option>`;
+      const formOpt = `<option value="${c.customer_code}" data-id="${c.id}">${c.name} - ${c.customer_code}</option>`;
+      customerSelect.innerHTML += filterOpt;
+      artCustomerSelect.innerHTML += formOpt;
+      wizardCustomerSelect.innerHTML += formOpt;
+    });
+    
+    document.getElementById('totalCustomers').textContent = allCustomers.length;
+    
+    // Učitaj dropdown vrijednosti
+    const { data: ddValues } = await initSupabase()
+      .from('prod_dropdown_values')
+      .select('*')
+      .eq('active', true)
+      .order('sort_order');
+    
+    // Grupiraj po kategoriji
+    dropdownValues = {};
+    (ddValues || []).forEach(v => {
+      if (!dropdownValues[v.category]) {
+        dropdownValues[v.category] = [];
+      }
+      dropdownValues[v.category].push(v.value);
+    });
+    console.log('Dropdown kategorije:', Object.keys(dropdownValues));
+    
+    // Učitaj šifre papira - paginacija jer Supabase vraća max 1000 po pozivu
+    let allPaperCodes = [];
+    let from = 0;
+    const pageSize = 1000;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const { data: papers, error } = await initSupabase()
+        .from('prod_paper_codes')
+        .select('*')
+        .order('code')
+        .range(from, from + pageSize - 1);
+      
+      if (error) {
+        console.error('Greška pri dohvatu šifri papira:', error);
+        break;
+      }
+      
+      if (papers && papers.length > 0) {
+        allPaperCodes = allPaperCodes.concat(papers);
+        from += pageSize;
+        hasMore = papers.length === pageSize;
+        console.log(`Dohvaćeno ${allPaperCodes.length} šifri papira...`);
+      } else {
+        hasMore = false;
+      }
+    }
+    
+    paperCodes = allPaperCodes;
+    console.log('=== ARTIKLI.HTML VERZIJA 2.5 (VLOOKUP FIX) ===');
+    console.log('Šifre papira učitano:', paperCodes.length, '(treba biti 1585)');
+    
+    // Popuni sve dropdown-ove
+    populateAllDropdowns();
+    
+    // Postavi auto-fill za šifre papira
+    setupPaperCodeAutoFill();
+    
+    // Učitaj artikle
+    const { data: articles, error } = await initSupabase()
+      .from('prod_articles')
+      .select('*')
+      .order('article_id');
+    
+    if (error) throw error;
+    allArticles = articles || [];
+    
+    document.getElementById('totalArticles').textContent = allArticles.length;
+    filterArticles();
+    
+    // Učitaj pune podatke kupaca za Kupci tab
+    await loadCustomersFull();
+    
+    // Učitaj aktivne napomene o artiklima
+    await loadArticleNotesData();
+    
+  } catch (error) {
+    console.error('Init error:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Popuni sve dropdown-ove s vrijednostima iz baze
+function populateAllDropdowns() {
+  // Valve type
+  populateSelect('artValveType', dropdownValues['valve_type'] || []);
+  
+  // Valve position
+  populateSelect('artValvePosition', dropdownValues['valve_position'] || []);
+  
+  // Paper color / Bag color
+  populateSelect('artBagColor', dropdownValues['paper_color'] || []);
+  
+  // Production line
+  populateSelect('artProductionLine', dropdownValues['production_line'] || []);
+  populateSelect('filterLine', dropdownValues['production_line'] || [], true);
+  
+  // Pallet type/dim - fiksne opcije definirane u HTML-u
+  // populateSelect('artPalletType', dropdownValues['pallet_dim'] || []);
+  
+  // Bottomer type
+  populateSelect('artBottomerType', dropdownValues['bottomer_type'] || []);
+  
+  // Paper types
+  populateSelect('artPaperType', dropdownValues['paper_type'] || []);
+  
+  // Grammages - ako nema u bazi, koristi standardne vrijednosti
+  const grammages = (dropdownValues['grammage'] || []).length > 0 
+    ? dropdownValues['grammage'] 
+    : ['60', '70', '80', '90', '100', '110', '120', '130', '140', '150'];
+  populateSelect('artPaperS1Grammage', grammages);
+  populateSelect('artPaperS2Grammage', grammages);
+  populateSelect('artPaperS3Grammage', grammages);
+  populateSelect('artPaperS4Grammage', grammages);
+  populateSelect('artValveS1Grammage', grammages);
+  populateSelect('artValveS2Grammage', grammages);
+  populateSelect('artTopGrammage', grammages);
+  populateSelect('artBottomGrammage', grammages);
+  
+  // Paper codes (šifre papira) - puni iz prod_paper_codes
+  populatePaperCodeSelects();
+  
+  // Valve paper colors
+  populateSelect('artValveS1PaperColor', dropdownValues['paper_color'] || ['S', 'B']);
+  populateSelect('artValveS2PaperColor', dropdownValues['paper_color'] || ['S', 'B']);
+  
+  // Print colors
+  const printColors = dropdownValues['print_color'] || dropdownValues['paper_color'] || [];
+  // Tuber boje su sada text input, ne trebaju populateSelect
+  // Boje gornjeg i donjeg dna su sada text input polja
+  // populateSelect('artTopColor1', printColors);
+  // populateSelect('artTopColor2', printColors);
+  // populateSelect('artBottomColor1', printColors);
+  // populateSelect('artBottomColor2', printColors);
+  populateSelect('artPrintColor1', printColors);
+  populateSelect('artPrintColor2', printColors);
+  populateSelect('artPrintColor3', printColors);
+  populateSelect('artPrintColor4', printColors);
+  populateSelect('artPrintColor5', printColors);
+  populateSelect('artPrintColor6', printColors);
+  
+  // Foil type
+  populateSelect('artFoilType', dropdownValues['foil_type'] || ['PE', 'PP', 'HDPE', 'LDPE']);
+  
+  // Has foil
+  populateSelect('artHasFoil', dropdownValues['has_foil'] || ['DA', 'NE']);
+  
+  // Packaging type
+  populateSelect('artPackagingType', dropdownValues['packaging_type'] || []);
+  
+  // Cut type
+  populateSelect('artCutType', dropdownValues['cut_type'] || []);
+  
+  // Finger hole
+  populateSelect('artFingerHole', dropdownValues['finger_hole'] || []);
+  
+  // Perforation options za S1-S4 - fiksne vrijednosti
+  const perfOptions = ['mikroperforacija', 'slits', 'bez'];
+  populateSelect('artPerforationS1', perfOptions);
+  populateSelect('artPerforationS2', perfOptions);
+  populateSelect('artPerforationS3', perfOptions);
+  populateSelect('artPerforationS4', perfOptions);
+  
+  // Valve perforation
+  const valvePerfOptions = dropdownValues['valve_perforation'] || ['Jaka', 'Srednja', 'Slaba', 'Bez'];
+  populateSelect('artPerforationValve', valvePerfOptions);
+  // Vrsta perforacije ventila - koristi perforation_type iz baze ili default
+  const valvePerfTypeOptions = (dropdownValues['perforation_type'] || []).length > 0
+    ? dropdownValues['perforation_type']
+    : ['4x12', '4x16', '4x20', '4x24', '4x28', '4x32', '4x36'];
+  populateSelect('artPerforationValveType', valvePerfTypeOptions);
+  
+  // Double overlap
+  const overlapOptions = dropdownValues['double_fold'] || ['Da', 'Ne'];
+  populateSelect('artTopDoubleOverlap', overlapOptions);
+  populateSelect('artBottomDoubleOverlap', overlapOptions);
+}
+
+// Popuni sve šifre papira selecte
+function populatePaperCodeSelects() {
+  console.log('=== INICIJALIZACIJA AUTOCOMPLETE ===');
+  console.log('Broj šifri papira:', paperCodes.length);
+  
+  // Pronađi sva input polja za šifre papira
+  const paperCodeInputs = document.querySelectorAll('.paper-code-input');
+  console.log('Pronađeno input polja:', paperCodeInputs.length);
+  
+  // Ispiši ID-ove svih pronađenih polja
+  const foundIds = Array.from(paperCodeInputs).map(el => el.id);
+  console.log('ID-ovi polja:', foundIds.join(', '));
+  
+  paperCodeInputs.forEach((input, index) => {
+    console.log(`Inicijaliziram polje ${index + 1}:`, input.id);
+    
+    // Ukloni list atribut (više ne koristimo datalist)
+    input.removeAttribute('list');
+    
+    // Wrap input u container ako već nije
+    let wrapper = input.closest('.paper-code-wrapper');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'paper-code-wrapper';
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+      console.log(`  - Kreiran wrapper za ${input.id}`);
+    } else {
+      console.log(`  - Wrapper već postoji za ${input.id}`);
+    }
+    
+    // Ukloni stari dropdown ako postoji
+    const oldDropdown = wrapper.querySelector('.paper-code-dropdown');
+    if (oldDropdown) oldDropdown.remove();
+    
+    // Kreiraj novi dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'paper-code-dropdown';
+    wrapper.appendChild(dropdown);
+    
+    // Event listeneri
+    input.addEventListener('input', (e) => showPaperCodeSuggestions(e.target, dropdown));
+    input.addEventListener('focus', (e) => showPaperCodeSuggestions(e.target, dropdown));
+    input.addEventListener('blur', (e) => {
+      // Delay da se klik na opciju registrira
+      setTimeout(() => {
+        dropdown.classList.remove('show');
+        autoFillPaperData(input.id, input.value.trim());
+      }, 200);
+    });
+    
+    // Keyboard navigation
+    input.addEventListener('keydown', (e) => handlePaperCodeKeyboard(e, input, dropdown));
+  });
+  
+  console.log('=== AUTOCOMPLETE ZAVRŠENO ===');
+}
+
+// Prikaži prijedloge za šifre papira
+function showPaperCodeSuggestions(input, dropdown) {
+  const query = input.value.trim();
+  
+  if (query.length < 1) {
+    dropdown.classList.remove('show');
+    return;
+  }
+  
+  const queryUpper = query.toUpperCase().replace(/\s+/g, '');
+  
+  console.log('Pretraga šifri papira:', queryUpper, '| Ukupno šifri:', paperCodes.length);
+  
+  // Pametno filtriranje
+  let matches = paperCodes.filter(p => {
+    if (!p || !p.code) return false;
+    
+    const code = p.code.toUpperCase().replace(/\s+/g, '');
+    
+    // 1. Točno podudaranje
+    if (code === queryUpper) return true;
+    
+    // 2. Kod počinje s query (npr. "S80-23" pronalazi "S80-23-SE")
+    if (code.startsWith(queryUpper)) return true;
+    
+    // 3. Query počinje s kodom (obrnuto)
+    if (queryUpper.startsWith(code)) return true;
+    
+    // 4. Kod sadrži query bilo gdje
+    if (code.includes(queryUpper)) return true;
+    
+    // 5. Pretraga bez crtica (npr. "S8023" pronalazi "S80-23-SE")
+    const codeNoDash = code.replace(/-/g, '');
+    const queryNoDash = queryUpper.replace(/-/g, '');
+    if (codeNoDash.includes(queryNoDash)) return true;
+    
+    // 6. Djelomično podudaranje po segmentima
+    // "80-23" treba pronaći "S80-23-SE", "B80-23-KR" itd.
+    const queryParts = queryUpper.split('-').filter(p => p.length > 0);
+    if (queryParts.length >= 1) {
+      const allPartsMatch = queryParts.every(qp => code.includes(qp));
+      if (allPartsMatch) return true;
+    }
+    
+    return false;
+  });
+  
+  console.log('Pronađeno rezultata:', matches.length);
+  
+  // Pametno sortiranje
+  matches.sort((a, b) => {
+    const aCode = (a.code || '').toUpperCase();
+    const bCode = (b.code || '').toUpperCase();
+    
+    // Prioritet 1: Točno podudaranje
+    if (aCode === queryUpper) return -1;
+    if (bCode === queryUpper) return 1;
+    
+    // Prioritet 2: Počinje s query
+    const aStarts = aCode.startsWith(queryUpper);
+    const bStarts = bCode.startsWith(queryUpper);
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+    
+    // Prioritet 3: Kraći kod ima prednost (relevantniji)
+    if (aCode.length !== bCode.length) {
+      return aCode.length - bCode.length;
+    }
+    
+    // Prioritet 4: Abecedno
+    return aCode.localeCompare(bCode);
+  });
+  
+  // Ograniči na 30 rezultata
+  matches = matches.slice(0, 30);
+  
+  // Generiraj HTML
+  if (matches.length === 0) {
+    dropdown.innerHTML = `<div class="paper-code-no-results">
+      Nema rezultata za "${query}"<br>
+      <small style="color:#999">Ukupno šifri u bazi: ${paperCodes.length}</small>
+    </div>`;
+  } else {
+    dropdown.innerHTML = matches.map((p, idx) => {
+      const code = p.code || '';
+      const width = p.width_cm || p.width || '?';
+      const grammage = p.grammage || '?';
+      const name = p.name || '';
+      
+      // Highlight matching text
+      const highlightedCode = highlightMatch(code, query);
+      
+      return `<div class="paper-code-option" data-index="${idx}" data-code="${code}">
+        <span class="code">${highlightedCode}</span>
+        <span class="details">${width}cm, ${grammage}g/m² ${name ? '- ' + name : ''}</span>
+      </div>`;
+    }).join('');
+  }
+  
+  dropdown.classList.add('show');
+  
+  // Click handler za opcije
+  dropdown.querySelectorAll('.paper-code-option').forEach(option => {
+    option.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const code = option.dataset.code;
+      input.value = code;
+      dropdown.classList.remove('show');
+      autoFillPaperData(input.id, code);
+    });
+  });
+}
+
+// Highlight matching text - pametniji highlight
+function highlightMatch(text, query) {
+  if (!query) return text;
+  
+  // Escape special regex characters
+  const escaped = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  
+  // Probaj highlight cijelog query-ja
+  const regex = new RegExp('(' + escaped + ')', 'gi');
+  let result = text.replace(regex, '<mark>$1</mark>');
+  
+  // Ako nema podudaranja, probaj po dijelovima
+  if (result === text && query.includes('-')) {
+    const parts = query.split('-').filter(p => p);
+    parts.forEach(part => {
+      const partEscaped = part.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const partRegex = new RegExp('(' + partEscaped + ')', 'gi');
+      result = result.replace(partRegex, '<mark>$1</mark>');
+    });
+  }
+  
+  return result;
+}
+
+// Keyboard navigation za autocomplete
+function handlePaperCodeKeyboard(e, input, dropdown) {
+  const options = dropdown.querySelectorAll('.paper-code-option');
+  const selected = dropdown.querySelector('.paper-code-option.selected');
+  let selectedIdx = selected ? parseInt(selected.dataset.index) : -1;
+  
+  switch (e.key) {
+    case 'ArrowDown':
+      e.preventDefault();
+      if (selectedIdx < options.length - 1) {
+        if (selected) selected.classList.remove('selected');
+        options[selectedIdx + 1].classList.add('selected');
+        options[selectedIdx + 1].scrollIntoView({ block: 'nearest' });
+      }
+      break;
+      
+    case 'ArrowUp':
+      e.preventDefault();
+      if (selectedIdx > 0) {
+        if (selected) selected.classList.remove('selected');
+        options[selectedIdx - 1].classList.add('selected');
+        options[selectedIdx - 1].scrollIntoView({ block: 'nearest' });
+      }
+      break;
+      
+    case 'Enter':
+      e.preventDefault();
+      if (selected) {
+        const code = selected.dataset.code;
+        input.value = code;
+        dropdown.classList.remove('show');
+        autoFillPaperData(input.id, code);
+      }
+      break;
+      
+    case 'Escape':
+      dropdown.classList.remove('show');
+      break;
+  }
+}
+
+// Handler za promjenu šifre papira (legacy)
+function handlePaperCodeChange(e) {
+  const input = e.target;
+  const code = input.value.trim();
+  if (code) {
+    autoFillPaperData(input.id, code);
+  }
+}
+
+// Auto-fill širina, gramatura i boja prema šifri papira
+function autoFillPaperData(inputId, code) {
+  // Mapiranje input ID-a na povezana polja
+  const mappings = {
+    'artPaperS1Code': { width: 'artPaperS1Width', grammage: 'artPaperS1Grammage', color: null },
+    'artPaperS2Code': { width: 'artPaperS2Width', grammage: 'artPaperS2Grammage', color: null },
+    'artPaperS3Code': { width: 'artPaperS3Width', grammage: 'artPaperS3Grammage', color: null },
+    'artPaperS4Code': { width: 'artPaperS4Width', grammage: 'artPaperS4Grammage', color: null },
+    'artValveS1PaperCode': { width: 'artValveS1Width', grammage: 'artValveS1Grammage', color: 'artValveS1PaperColor' },
+    'artValveS2PaperCode': { width: 'artValveS2Width', grammage: 'artValveS2Grammage', color: 'artValveS2PaperColor' },
+    'artTopPaperCode': { width: 'artTopWidth', grammage: 'artTopGrammage', color: null },
+    'artBottomPaperCode': { width: 'artBottomWidth', grammage: 'artBottomGrammage', color: null },
+    'artFoilCode': { width: 'artFoilWidth', grammage: null, color: null }
+  };
+  
+  const mapping = mappings[inputId];
+  if (!mapping) return;
+  
+  // PRVO: Probaj naći u prod_paper_codes tablici
+  const paper = paperCodes.find(p => p.code === code);
+  if (paper) {
+    const widthEl = document.getElementById(mapping.width);
+    const grammageEl = document.getElementById(mapping.grammage);
+    const colorEl = mapping.color ? document.getElementById(mapping.color) : null;
+    
+    if (widthEl && (paper.width_cm || paper.width)) {
+      widthEl.value = paper.width_cm || paper.width;
+    }
+    if (grammageEl && paper.grammage) {
+      setSelectValue(mapping.grammage, paper.grammage);
+    }
+    if (colorEl && paper.color) {
+      colorEl.value = paper.color;
+    }
+    console.log('Auto-fill iz baze:', code, paper);
+    return;
+  }
+  
+  // DRUGO: Parsiraj šifru direktno
+  const parsed = parsePaperCode(code);
+  if (parsed) {
+    const widthEl = document.getElementById(mapping.width);
+    const grammageEl = document.getElementById(mapping.grammage);
+    const colorEl = mapping.color ? document.getElementById(mapping.color) : null;
+    
+    if (widthEl && parsed.width) {
+      widthEl.value = parsed.width;
+    }
+    if (grammageEl && parsed.grammage) {
+      setSelectValue(mapping.grammage, parsed.grammage);
+    }
+    if (colorEl && parsed.color) {
+      colorEl.value = parsed.color;
+    }
+    console.log('Auto-fill iz parsiranja:', code, parsed);
+  }
+}
+
+function populateSelect(selectId, options, keepFirst = false) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  
+  const firstOption = keepFirst ? select.innerHTML : '<option value="">--</option>';
+  select.innerHTML = firstOption;
+  
+  options.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt;
+    option.textContent = opt;
+    select.appendChild(option);
+  });
+  
+  // Ako je searchable-select, inicijaliziraj pretragu
+  if (select.classList.contains('searchable-select')) {
+    initSearchableSelect(select);
+  }
+}
+
+// Searchable select - pretvara select u pretraživački dropdown
+function initSearchableSelect(select) {
+  // Ako je već inicijaliziran, preskoči
+  if (select.dataset.searchable === 'true') return;
+  select.dataset.searchable = 'true';
+  
+  const wrapper = document.createElement('div');
+  wrapper.className = 'searchable-wrapper';
+  wrapper.style.position = 'relative';
+  
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-control searchable-input';
+  input.placeholder = 'Pretraži...';
+  input.autocomplete = 'off';
+  
+  const dropdown = document.createElement('div');
+  dropdown.className = 'searchable-dropdown';
+  dropdown.style.cssText = 'display:none; position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:white; border:1px solid #ddd; border-radius:4px; z-index:1000; box-shadow:0 4px 6px rgba(0,0,0,0.1);';
+  
+  // Sakrij originalni select
+  select.style.display = 'none';
+  
+  // Umetni wrapper
+  select.parentNode.insertBefore(wrapper, select);
+  wrapper.appendChild(input);
+  wrapper.appendChild(dropdown);
+  wrapper.appendChild(select);
+  
+  // Postavi početnu vrijednost
+  if (select.value) {
+    input.value = select.value;
+  }
+  
+  // Filtriranje opcija
+  function filterOptions(query) {
+    const options = Array.from(select.options);
+    dropdown.innerHTML = '';
+    
+    const filtered = options.filter(opt => 
+      opt.value && opt.textContent.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 50); // Max 50 rezultata
+    
+    if (filtered.length === 0) {
+      dropdown.innerHTML = '<div style="padding:8px; color:#999;">Nema rezultata</div>';
+    } else {
+      filtered.forEach(opt => {
+        const item = document.createElement('div');
+        item.style.cssText = 'padding:8px 12px; cursor:pointer; border-bottom:1px solid #eee;';
+        item.textContent = opt.textContent;
+        item.dataset.value = opt.value;
+        
+        item.onmouseenter = () => item.style.background = '#f0f0f0';
+        item.onmouseleave = () => item.style.background = 'white';
+        item.onclick = () => {
+          select.value = opt.value;
+          input.value = opt.textContent;
+          dropdown.style.display = 'none';
+          select.dispatchEvent(new Event('change'));
+        };
+        
+        dropdown.appendChild(item);
+      });
+    }
+    
+    dropdown.style.display = 'block';
+  }
+  
+  // Event listeners
+  input.onfocus = () => filterOptions(input.value);
+  input.oninput = () => filterOptions(input.value);
+  
+  // Zatvori dropdown kad klikneš vani
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+  
+  // Dozvoli brisanje
+  input.onkeydown = (e) => {
+    if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+    }
+    if (e.key === 'Backspace' && input.value === '') {
+      select.value = '';
+    }
+  };
+}
+
+// Ažuriraj searchable select vrijednost izvana
+function setSearchableSelectValue(selectId, value) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  
+  select.value = value || '';
+  
+  const wrapper = select.closest('.searchable-wrapper');
+  if (wrapper) {
+    const input = wrapper.querySelector('.searchable-input');
+    if (input) {
+      const option = Array.from(select.options).find(o => o.value === value);
+      input.value = option ? option.textContent : value || '';
+    }
+  }
+}
+
+// Postavi vrijednost selecta - dodaj opciju ako ne postoji
+function setSelectValue(selectId, value) {
+  if (!value) return;
+  
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  
+  // Provjeri postoji li opcija
+  const exists = Array.from(select.options).some(o => o.value === String(value));
+  
+  if (!exists) {
+    // Dodaj novu opciju
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  }
+  
+  select.value = value;
+}
+
+// Parsiraj šifru papira i izvuci širinu/gramaturu
+// Format: {boja}{gramatura}-{širina}-{tip}
+// Primjeri: B70-72-SE, S80-102-SE, F07-70-HDP, B70-81,5-SE
+function parsePaperCode(code) {
+  if (!code) return null;
+  
+  // Format: X{gramatura}-{širina}-{tip} gdje X je slovo (B, S, F, R)
+  // B70-72-SE = Bijeli, 70g/m², 72cm, SE tip
+  const match = code.match(/^([BSFR])(\d+)-(\d+(?:,\d+)?)-(\w+)$/);
+  if (match) {
+    return {
+      color: match[1],
+      grammage: parseInt(match[2]),
+      width: parseFloat(match[3].replace(',', '.')),
+      type: match[4]
+    };
+  }
+  
+  // Format s + znakom: S70+15-102-PE
+  const match2 = code.match(/^([BSFR])(\d+)\+\d+-(\d+(?:,\d+)?)-(\w+)$/);
+  if (match2) {
+    return {
+      color: match2[1],
+      grammage: parseInt(match2[2]),
+      width: parseFloat(match2[3].replace(',', '.')),
+      type: match2[4]
+    };
+  }
+  
+  return null;
+}
+
+// Auto-fill širina i gramatura kad se odabere ili unese šifra papira
+// Stara funkcija - više nije potrebna, logika je u populatePaperCodeSelects
+function setupPaperCodeAutoFill() {
+  // Sada se auto-fill radi kroz populatePaperCodeSelects()
+  console.log('setupPaperCodeAutoFill: logika prebačena u populatePaperCodeSelects');
+}
+
+// Ova funkcija je sada integrirana u autoFillPaperData
+function fillPaperDataFromCode(mapping, codeValue) {
+  // Legacy - koristi se autoFillPaperData
+}
+
+// ============================================
+// FILTRIRANJE I PRIKAZ
+// ============================================
+function filterArticles() {
+  const search = document.getElementById('searchArticles').value.toLowerCase();
+  const selectedCustomerCode = document.getElementById('filterCustomer').value;
+  const line = document.getElementById('filterLine').value;
+  
+  let filtered = allArticles;
+  
+  if (search) {
+    filtered = filtered.filter(a => 
+      (a.name && a.name.toLowerCase().includes(search)) ||
+      (a.code && a.code.toLowerCase().includes(search)) ||
+      (a.article_id && a.article_id.toLowerCase().includes(search)) ||
+      (a.customer_name && a.customer_name.toLowerCase().includes(search))
+    );
+  }
+  
+  if (selectedCustomerCode) {
+    // Pronađi kupca po customer_code da dobijemo ime
+    const customer = allCustomers.find(c => c.customer_code === selectedCustomerCode);
+    if (customer) {
+      // Filtriraj po customer_code ILI customer_name (za stare artikle koji nemaju customer_code)
+      filtered = filtered.filter(a => 
+        a.customer_code === selectedCustomerCode || 
+        (a.customer_name && a.customer_name === customer.name)
+      );
+    }
+  }
+  
+  if (line) {
+    filtered = filtered.filter(a => a.production_line === line);
+  }
+  
+  document.getElementById('filteredArticles').textContent = filtered.length;
+  renderArticles(filtered);
+}
+
+function onCustomerFilterChange() {
+  filterArticles();
+}
+
+function renderArticles(articles) {
+  const tbody = document.getElementById('articlesTableBody');
+  
+  if (!articles || articles.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Nema artikala</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = articles.slice(0, 100).map(a => {
+    const dims = `${a.bag_width || '-'} × ${a.bag_length || '-'} × ${a.bag_bottom || '-'}`;
+    const layers = [a.paper_s1_code, a.paper_s2_code, a.paper_s3_code, a.paper_s4_code].filter(Boolean).length;
+    
+    // Provjera napomena
+    const articleNotes = articleNotesData.filter(n => n.article_id === a.id);
+    const hasNotes = articleNotes.length > 0;
+    const noteIcon = hasNotes 
+      ? `<span style="cursor: pointer; font-size: 1.2em;" onclick="showArticleNotesDetail('${a.id}')" title="${articleNotes.length} aktivna napomena">⚠️</span>`
+      : '<span style="color: #ccc;">-</span>';
+    
+    return `
+      <tr style="${hasNotes ? 'border-left: 3px solid #ff9800;' : ''}">
+        <td><strong>${a.article_id || '-'}</strong></td>
+        <td>${escapeHtml(a.name) || '-'}</td>
+        <td><span class="badge badge-info">${a.code || '-'}</span></td>
+        <td>${a.customer_name || '-'}</td>
+        <td>${dims}</td>
+        <td>${a.valve_type || '-'}</td>
+        <td><span class="badge">${layers} sloj${layers !== 1 ? 'a' : ''}</span></td>
+        <td style="text-align: center;">${noteIcon}</td>
+        <td>
+          <button class="action-btn" onclick="editArticle('${a.id}')" title="Uredi">✏️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  if (articles.length > 100) {
+    tbody.innerHTML += `<tr><td colspan="9" style="text-align: center; color: var(--text-secondary);">... i još ${articles.length - 100} artikala</td></tr>`;
+  }
+}
+
+// ============================================
+// TABOVI
+// ============================================
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  
+  btn.classList.add('active');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+// ============================================
+// NOVI KUPAC
+// ============================================
+async function openNewCustomerModal() {
+  // Generiraj sljedeći customer_code
+  const nextCode = generateNextCustomerCode();
+  document.getElementById('newCustomerCode').value = nextCode;
+  
+  // Očisti ostala polja
+  document.getElementById('newCustomerName').value = '';
+  document.getElementById('newCustomerAddress').value = '';
+  document.getElementById('newCustomerCity').value = '';
+  document.getElementById('newCustomerCountry').value = 'Hrvatska';
+  document.getElementById('newCustomerOIB').value = '';
+  document.getElementById('newCustomerContact').value = '';
+  document.getElementById('newCustomerPhone').value = '';
+  document.getElementById('newCustomerEmail').value = '';
+  document.getElementById('newCustomerNotes').value = '';
+  
+  openModal('customerModal');
+}
+
+function generateNextCustomerCode() {
+  // Pronađi najveći ID broj među kupcima
+  // Format: ID13, ID57, ID149 itd.
+  let maxNum = 0;
+  allCustomers.forEach(c => {
+    if (c.customer_code) {
+      const match = c.customer_code.match(/^ID(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1]);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+  });
+  return 'ID' + (maxNum + 1);
+}
+
+async function saveNewCustomer() {
+  const name = document.getElementById('newCustomerName').value.trim();
+  if (!name) {
+    showMessage('Unesite naziv kupca!', 'error');
+    return;
+  }
+  
+  showLoading('Spremanje kupca...');
+  
+  try {
+    const customerData = {
+      customer_code: document.getElementById('newCustomerCode').value,
+      name: name,
+      address: document.getElementById('newCustomerAddress').value.trim() || null,
+      city: document.getElementById('newCustomerCity').value.trim() || null,
+      country: document.getElementById('newCustomerCountry').value.trim() || 'Hrvatska',
+      oib: document.getElementById('newCustomerOIB').value.trim() || null,
+      contact_person: document.getElementById('newCustomerContact').value.trim() || null,
+      phone: document.getElementById('newCustomerPhone').value.trim() || null,
+      email: document.getElementById('newCustomerEmail').value.trim() || null,
+      notes: document.getElementById('newCustomerNotes').value.trim() || null,
+      active: true
+    };
+    
+    const { data, error } = await initSupabase()
+      .from('prod_customers')
+      .insert(customerData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Dodaj u lokalnu listu i osvježi dropdown-ove
+    allCustomers.push(data);
+    allCustomers.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Osvježi sve dropdown-ove kupaca
+    refreshCustomerDropdowns();
+    
+    closeModal('customerModal');
+    showMessage(`✅ Kupac "${name}" uspješno kreiran s kodom ${data.customer_code}!`, 'success');
+    
+    document.getElementById('totalCustomers').textContent = allCustomers.length;
+    
+  } catch (error) {
+    console.error('Save customer error:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function refreshCustomerDropdowns() {
+  const selects = ['filterCustomer', 'artCustomer', 'wizardCustomer'];
+  
+  selects.forEach(selectId => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    
+    const currentValue = select.value;
+    
+    if (selectId === 'filterCustomer') {
+      select.innerHTML = '<option value="">Svi kupci</option>';
+    } else {
+      select.innerHTML = '<option value="">-- Odaberi kupca --</option>';
+    }
+    
+    allCustomers.forEach(c => {
+      select.innerHTML += `<option value="${c.customer_code}" data-id="${c.id}">${c.name} - ${c.customer_code}</option>`;
+    });
+    
+    select.value = currentValue;
+  });
+}
+
+// ============================================
+// WIZARD ZA NOVI ARTIKL
+// ============================================
+function openNewArticleWizard() {
+  wizardSelectedCustomer = null;
+  wizardParsedCode = null;
+  wizardSelectedTemplateId = null;
+  document.getElementById('wizardArticleCode').value = '';
+  document.getElementById('wizardParseResult').innerHTML = '';
+  document.getElementById('wizardCustomer').value = '';
+  document.getElementById('wizardNewArticleId').value = '';
+  document.getElementById('wizardSimilarResults').style.display = 'none';
+  document.getElementById('wizardResultsContainer').innerHTML = '';
+  document.getElementById('btnProceedWizard').disabled = true;
+
+  openModal('articleWizardModal');
+  // Focus na šifru
+  setTimeout(function() { document.getElementById('wizardArticleCode').focus(); }, 200);
+}
+
+// ---- PARSIRANJE ŠIFRE ARTIKLA ----
+function parseArticleCode(codeStr) {
+  if (!codeStr || !codeStr.trim()) return { valid: false };
+  var input = codeStr.trim();
+
+  // Razdvoji ventil od dimenzija
+  // Pokušaj: "VL2n 35x51x12/2" ili "VL2n35x51x12/2"
+  var mainMatch = input.match(/^([A-Za-z][A-Za-z0-9]*)\s*(\d.*)$/);
+  var valveRaw = null;
+  var dimStr = null;
+
+  if (mainMatch) {
+    valveRaw = mainMatch[1];
+    dimStr = mainMatch[2];
+  } else {
+    // Možda nema ventila, samo dimenzije: "35x51x12/2"
+    if (/^\d/.test(input)) {
+      dimStr = input;
+    } else {
+      return { valid: false, raw: input };
+    }
+  }
+
+  // Parsiraj dimenzije: 35x51x12/2 ili 35.5x51.2x12.8/2
+  var dimMatch = dimStr.match(/^(\d+(?:[.,]\d+)?)\s*[xX×]\s*(\d+(?:[.,]\d+)?)(?:\s*[xX×]\s*(\d+(?:[.,]\d+)?))?(?:\s*\/\s*(\d+))?$/);
+  if (!dimMatch) return { valid: false, raw: input };
+
+  var width = parseFloat(dimMatch[1].replace(',', '.'));
+  var length = parseFloat(dimMatch[2].replace(',', '.'));
+  var bottom = dimMatch[3] ? parseFloat(dimMatch[3].replace(',', '.')) : null;
+  var layers = dimMatch[4] ? parseInt(dimMatch[4]) : null;
+
+  // Normaliziraj valve_type prema dropdown vrijednostima
+  var valveType = null;
+  if (valveRaw && dropdownValues['valve_type']) {
+    var found = dropdownValues['valve_type'].find(function(v) {
+      return v.toLowerCase() === valveRaw.toLowerCase();
+    });
+    valveType = found || valveRaw; // Ako nema u dropdownu, koristi raw
+  } else if (valveRaw) {
+    valveType = valveRaw;
+  }
+
+  return {
+    valid: true,
+    valve_type: valveType,
+    bag_width: width,
+    bag_length: length,
+    bag_bottom: bottom,
+    layers: layers,
+    raw: input
+  };
+}
+
+// ---- SIMILARITY SCORING ----
+function calculateSimilarity(parsed, article, customerCode) {
+  var score = 0;
+  var details = {};
+
+  // Ventil (30 bodova)
+  if (parsed.valve_type && article.valve_type) {
+    if (article.valve_type.toLowerCase() === parsed.valve_type.toLowerCase()) {
+      score += 30;
+      details.valve = 'exact';
+    }
+  }
+
+  // Širina (20 bodova)
+  var artWidth = parseFloat(article.bag_width) || 0;
+  if (parsed.bag_width && artWidth) {
+    var wDiff = Math.abs(artWidth - parsed.bag_width);
+    details.widthDiff = wDiff;
+    if (wDiff < 20) score += Math.round(20 - wDiff);
+  }
+
+  // Dužina (20 bodova)
+  var artLength = parseFloat(article.bag_length) || 0;
+  if (parsed.bag_length && artLength) {
+    var lDiff = Math.abs(artLength - parsed.bag_length);
+    details.lengthDiff = lDiff;
+    if (lDiff < 20) score += Math.round(20 - lDiff);
+  }
+
+  // Dno (15 bodova)
+  var artBottom = parseFloat(article.bag_bottom) || 0;
+  if (parsed.bag_bottom !== null && parsed.bag_bottom !== undefined && artBottom) {
+    var bDiff = Math.abs(artBottom - parsed.bag_bottom);
+    details.bottomDiff = bDiff;
+    if (bDiff < 15) score += Math.round(15 - bDiff);
+  }
+
+  // Slojevi (10 bodova)
+  if (parsed.layers) {
+    var artLayers = [article.paper_s1_code, article.paper_s2_code, article.paper_s3_code, article.paper_s4_code].filter(Boolean).length;
+    details.artLayers = artLayers;
+    if (artLayers === parsed.layers) {
+      score += 10;
+      details.layers = 'exact';
+    }
+  }
+
+  // Isti kupac (5 bodova)
+  if (customerCode && article.customer_code === customerCode) {
+    score += 5;
+    details.sameCustomer = true;
+  }
+
+  return { score: score, details: details };
+}
+
+function findSimilarArticles(parsed, customerCode, limit) {
+  limit = limit || 10;
+  if (!parsed || !parsed.valid) return [];
+
+  var results = [];
+  for (var i = 0; i < allArticles.length; i++) {
+    var a = allArticles[i];
+    if (!a.bag_width && !a.bag_length) continue; // Preskoči artikle bez dimenzija
+    var sim = calculateSimilarity(parsed, a, customerCode);
+    if (sim.score > 15) {
+      results.push({ article: a, score: sim.score, details: sim.details });
+    }
+  }
+
+  results.sort(function(a, b) { return b.score - a.score; });
+  return results.slice(0, limit);
+}
+
+// ---- WIZARD EVENT HANDLERS ----
+function onWizardCodeInput() {
+  var code = document.getElementById('wizardArticleCode').value;
+  var parseDiv = document.getElementById('wizardParseResult');
+
+  // Parsiraj odmah
+  wizardParsedCode = parseArticleCode(code);
+
+  if (!code.trim()) {
+    parseDiv.innerHTML = '';
+    wizardSelectedTemplateId = null;
+    document.getElementById('wizardSimilarResults').style.display = 'none';
+    return;
+  }
+
+  if (wizardParsedCode.valid) {
+    var badges = '';
+    if (wizardParsedCode.valve_type) badges += '<span class="wizard-badge wizard-badge-valve">Ventil: ' + wizardParsedCode.valve_type + '</span>';
+    badges += '<span class="wizard-badge wizard-badge-dim">Š: ' + wizardParsedCode.bag_width + '</span>';
+    badges += '<span class="wizard-badge wizard-badge-dim">D: ' + wizardParsedCode.bag_length + '</span>';
+    if (wizardParsedCode.bag_bottom !== null) badges += '<span class="wizard-badge wizard-badge-dim">Dno: ' + wizardParsedCode.bag_bottom + '</span>';
+    if (wizardParsedCode.layers !== null) badges += '<span class="wizard-badge wizard-badge-layers">Slojevi: ' + wizardParsedCode.layers + '</span>';
+    parseDiv.innerHTML = badges;
+  } else {
+    parseDiv.innerHTML = '<span class="wizard-badge wizard-badge-error">Format: VL2n 35x51x12/2</span>';
+  }
+
+  // Debounced pretraga sličnih
+  wizardSelectedTemplateId = null;
+  if (wizardDebounceTimer) clearTimeout(wizardDebounceTimer);
+  wizardDebounceTimer = setTimeout(function() {
+    wizardSearchSimilar();
+  }, 300);
+}
+
+function onWizardCustomerChange() {
+  var customerCode = document.getElementById('wizardCustomer').value;
+
+  if (!customerCode) {
+    document.getElementById('wizardNewArticleId').value = '';
+    document.getElementById('btnProceedWizard').disabled = true;
+    wizardSelectedCustomer = null;
+    document.getElementById('wizardSimilarResults').style.display = 'none';
+    return;
+  }
+
+  wizardSelectedCustomer = allCustomers.find(function(c) { return c.customer_code === customerCode; });
+
+  // Generiraj sljedeći article_id
+  var nextArticleId = generateNextArticleId(customerCode);
+  document.getElementById('wizardNewArticleId').value = nextArticleId;
+  document.getElementById('btnProceedWizard').disabled = false;
+
+  // Pokreni pretragu sličnih ako je šifra parsirana
+  wizardSelectedTemplateId = null;
+  wizardSearchSimilar();
+}
+
+function wizardSearchSimilar() {
+  var container = document.getElementById('wizardResultsContainer');
+  var wrapper = document.getElementById('wizardSimilarResults');
+  var countSpan = document.getElementById('wizardResultsCount');
+
+  if (!wizardParsedCode || !wizardParsedCode.valid) {
+    wrapper.style.display = 'none';
+    return;
+  }
+
+  var customerCode = document.getElementById('wizardCustomer').value || '';
+  var results = findSimilarArticles(wizardParsedCode, customerCode, 10);
+
+  wrapper.style.display = 'block';
+  countSpan.textContent = '(' + results.length + ' pronađeno)';
+
+  renderWizardResults(results, container);
+}
+
+function renderWizardResults(results, container) {
+  var html = '';
+
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i];
+    var a = r.article;
+    var scoreClass = r.score >= 70 ? 'high' : (r.score >= 45 ? 'medium' : 'low');
+    var topClass = i === 0 && r.score >= 50 ? ' top-match' : '';
+    var layers = [a.paper_s1_code, a.paper_s2_code, a.paper_s3_code, a.paper_s4_code].filter(Boolean).length;
+
+    // Razlike
+    var diffs = '';
+    if (r.details.widthDiff !== undefined) {
+      var wc = r.details.widthDiff === 0 ? 'exact' : (r.details.widthDiff <= 3 ? 'close' : 'far');
+      diffs += '<span class="wizard-diff wizard-diff-' + wc + '">Š ' + (r.details.widthDiff === 0 ? '✓' : (r.details.widthDiff > 0 ? '±' + r.details.widthDiff : '')) + '</span>';
+    }
+    if (r.details.lengthDiff !== undefined) {
+      var lc = r.details.lengthDiff === 0 ? 'exact' : (r.details.lengthDiff <= 3 ? 'close' : 'far');
+      diffs += '<span class="wizard-diff wizard-diff-' + lc + '">D ' + (r.details.lengthDiff === 0 ? '✓' : '±' + r.details.lengthDiff) + '</span>';
+    }
+    if (r.details.bottomDiff !== undefined) {
+      var bc = r.details.bottomDiff === 0 ? 'exact' : (r.details.bottomDiff <= 2 ? 'close' : 'far');
+      diffs += '<span class="wizard-diff wizard-diff-' + bc + '">Dno ' + (r.details.bottomDiff === 0 ? '✓' : '±' + r.details.bottomDiff) + '</span>';
+    }
+    if (r.details.layers === 'exact') {
+      diffs += '<span class="wizard-diff wizard-diff-exact">Slojevi ✓</span>';
+    }
+    if (r.details.valve === 'exact') {
+      diffs += '<span class="wizard-diff wizard-diff-exact">Ventil ✓</span>';
+    }
+    if (r.details.sameCustomer) {
+      diffs += '<span class="wizard-diff wizard-diff-exact">Kupac ✓</span>';
+    }
+
+    html += '<div class="wizard-card' + topClass + '" onclick="selectWizardTemplate(\'' + a.id + '\')" data-template-id="' + a.id + '">';
+    html += '<span class="wizard-card-score ' + scoreClass + '">' + r.score + '%</span>';
+    html += '<div class="wizard-card-name" title="' + (a.name || '') + '">' + (a.code ? '[' + a.code + '] ' : '') + (a.name || 'Bez naziva') + '</div>';
+    html += '<div class="wizard-card-details">' + (a.customer_name || '-') + ' &middot; ' + (a.valve_type || '-') + ' &middot; ' + layers + ' sloj' + (layers !== 1 ? 'a' : '') + '</div>';
+    html += '<div class="wizard-card-dims">' + (a.bag_width || '?') + ' × ' + (a.bag_length || '?') + ' × ' + (a.bag_bottom || '?') + ' cm</div>';
+    html += '<div class="wizard-card-diffs">' + diffs + '</div>';
+    html += '</div>';
+  }
+
+  // Kartica za prazan artikl
+  html += '<div class="wizard-card wizard-card-blank" onclick="selectWizardTemplate(null)" data-template-id="">';
+  html += '<div style="font-size: 20px; margin-bottom: 6px;">➕</div>';
+  html += '<div>Prazan artikl (bez predloška)</div>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function selectWizardTemplate(articleId) {
+  wizardSelectedTemplateId = articleId;
+
+  // Označi odabranu karticu
+  var cards = document.querySelectorAll('#wizardResultsContainer .wizard-card');
+  for (var i = 0; i < cards.length; i++) {
+    var card = cards[i];
+    var cardId = card.getAttribute('data-template-id');
+    if ((articleId === null && cardId === '') || cardId === articleId) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  }
+}
+
+function generateNextArticleId(customerCode) {
+  var maxNum = 0;
+  allArticles.forEach(function(a) {
+    if (a.article_id && a.article_id.startsWith(customerCode + '/')) {
+      var parts = a.article_id.split('/');
+      if (parts.length >= 2) {
+        var num = parseInt(parts[1]);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    }
+  });
+  return customerCode + '/' + (maxNum + 1);
+}
+
+async function proceedToArticleForm() {
+  var customerCode = document.getElementById('wizardCustomer').value;
+  var newArticleId = document.getElementById('wizardNewArticleId').value;
+  var wizardCode = (document.getElementById('wizardArticleCode').value || '').trim();
+  var templateId = wizardSelectedTemplateId;
+
+  if (!customerCode || !newArticleId) {
+    showMessage('Odaberite kupca!', 'error');
+    return;
+  }
+
+  closeModal('articleWizardModal');
+
+  isEditMode = false;
+  document.getElementById('articleModalTitle').textContent = '📦 Novi artikl';
+  document.getElementById('btnSaveAsCopy').style.display = 'none';
+
+  if (templateId) {
+    // Učitaj predložak
+    showLoading('Učitavanje predloška...');
+    try {
+      var result = await initSupabase()
+        .from('prod_articles')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+      if (result.error) throw result.error;
+
+      fillArticleForm(result.data);
+
+      // Postavi nove vrijednosti
+      document.getElementById('artId').value = '';
+      document.getElementById('artArticleId').value = newArticleId;
+      document.getElementById('artCustomer').value = customerCode;
+
+    } catch (error) {
+      console.error('Template load error:', error);
+      showMessage('Greška pri učitavanju predloška: ' + error.message, 'error');
+    } finally {
+      hideLoading();
+    }
+  } else {
+    // Prazan artikl
+    clearArticleForm();
+    document.getElementById('artArticleId').value = newArticleId;
+    document.getElementById('artCustomer').value = customerCode;
+  }
+
+  // Prepiši šifru i parsirane dimenzije iz wizarda
+  if (wizardCode) {
+    document.getElementById('artCode').value = wizardCode;
+  }
+  if (wizardParsedCode && wizardParsedCode.valid) {
+    if (wizardParsedCode.bag_width) document.getElementById('artBagWidth').value = wizardParsedCode.bag_width;
+    if (wizardParsedCode.bag_length) document.getElementById('artBagLength').value = wizardParsedCode.bag_length;
+    if (wizardParsedCode.bag_bottom) document.getElementById('artBagBottom').value = wizardParsedCode.bag_bottom;
+    if (wizardParsedCode.valve_type) {
+      setSelectValue('artValveType', wizardParsedCode.valve_type);
+    }
+  }
+
+  document.querySelector('#articleModal .tab-btn').click();
+  openModal('articleModal');
+}
+
+// ============================================
+// STARA FUNKCIJA (za kompatibilnost)
+// ============================================
+function openNewArticleModal() {
+  // Preusmjeri na wizard
+  openNewArticleWizard();
+}
+
+function clearArticleForm() {
+  const inputs = document.querySelectorAll('#articleModal input, #articleModal select, #articleModal textarea');
+  inputs.forEach(el => {
+    if (el.type === 'checkbox') el.checked = false;
+    else el.value = '';
+  });
+  
+  // Očisti searchable select inpute
+  document.querySelectorAll('#articleModal .searchable-input').forEach(input => {
+    input.value = '';
+  });
+}
+
+// ============================================
+// UREDI ARTIKL
+// ============================================
+async function editArticle(id) {
+  showLoading('Učitavanje artikla...');
+  
+  try {
+    const { data: art, error } = await initSupabase()
+      .from('prod_articles')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    
+    isEditMode = true;
+    document.getElementById('articleModalTitle').textContent = `✏️ Uredi: ${art.name || art.article_id}`;
+    document.getElementById('btnSaveAsCopy').style.display = 'inline-block';
+    
+    fillArticleForm(art);
+    // Klikni na prvi tab UNUTAR modala (Osnovni podaci), ne na glavni tab
+    document.querySelector('#articleModal .tab-btn').click();
+    openModal('articleModal');
+    
+  } catch (error) {
+    console.error('Edit error:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function fillArticleForm(art) {
+  document.getElementById('artId').value = art.id || '';
+  document.getElementById('artArticleId').value = art.article_id || '';
+  document.getElementById('artName').value = art.name || '';
+  document.getElementById('artCode').value = art.code || '';
+  // FIX: Osiguraj da kupac postoji u selectu prije postavljanja
+  const artCustomerSelect = document.getElementById('artCustomer');
+  let customerCodeToSet = art.customer_code;
+  
+  // Ako customer_code izgleda kao UUID, pronađi pravi customer_code
+  if (art.customer_code && art.customer_code.includes('-') && art.customer_code.length > 30) {
+    // Ovo je UUID - pronađi kupca po ID-u
+    const customerById = allCustomers.find(c => c.id === art.customer_code);
+    if (customerById) {
+      customerCodeToSet = customerById.customer_code;
+    }
+  }
+  
+  // Ako još uvijek nemamo customer_code, probaj preko customer_name
+  if (!customerCodeToSet && art.customer_name) {
+    const customerByName = allCustomers.find(c => c.name === art.customer_name);
+    if (customerByName) {
+      customerCodeToSet = customerByName.customer_code;
+    }
+  }
+  
+  if (customerCodeToSet) {
+    const exists = Array.from(artCustomerSelect.options).some(o => o.value === customerCodeToSet);
+    if (!exists) {
+      const customer = allCustomers.find(c => c.customer_code === customerCodeToSet);
+      const displayName = customer ? `${customer.name} - ${customerCodeToSet}` : customerCodeToSet;
+      const opt = document.createElement('option');
+      opt.value = customerCodeToSet;
+      opt.textContent = displayName;
+      artCustomerSelect.appendChild(opt);
+    }
+    artCustomerSelect.value = customerCodeToSet;
+  }
+  document.getElementById('artProductionLine').value = art.production_line || '';
+  document.getElementById('artBagWidth').value = art.bag_width || '';
+  document.getElementById('artBagLength').value = art.bag_length || '';
+  document.getElementById('artBagBottom').value = art.bag_bottom || '';
+  document.getElementById('artBagValve').value = art.bag_valve || '';
+  setSelectValue('artValveType', art.valve_type);
+  setSelectValue('artValvePosition', art.valve_position);
+  setSelectValue('artBagColor', art.bag_color);
+  setSelectValue('artHasFoil', art.has_foil);
+  setSelectValue('artBottomerType', art.bottomer_type);
+  setSelectValue('artPackagingType', art.packaging_type);
+  setSelectValue('artPalletType', art.pallet_type);
+  document.getElementById('artPcsPerPallet').value = art.pcs_per_pallet || '';
+  document.getElementById('artPcsPerPackage').value = art.pcs_per_package || '';
+  document.getElementById('artGlueSpotsBottom').value = art.glue_spots_bottom || '';
+  document.getElementById('artGlueSpotsValveBottom').value = art.glue_spots_valve_bottom || '';
+  document.getElementById('artGlueSpotsTopBottom').value = art.glue_spots_top_bottom || '';
+  document.getElementById('artGlueSpotsLowerBottom').value = art.glue_spots_lower_bottom || '';
+  document.getElementById('artNotes').value = art.notes || '';
+  
+  // Tuber
+  document.getElementById('artTubeLength').value = art.tube_length || '';
+  setSelectValue('artCutType', art.cut_type);
+  setSelectValue('artFingerHole', art.finger_hole);
+  document.getElementById('artColorsCount').value = art.colors_count || '';
+  document.getElementById('artPaperS1Code').value = art.paper_s1_code || '';
+  document.getElementById('artPaperS1Width').value = art.paper_s1_width || '';
+  setSelectValue('artPaperS1Grammage', art.paper_s1_grammage);
+  setSelectValue('artPerforationS1', art.perforation_s1);
+  document.getElementById('artPaperS2Code').value = art.paper_s2_code || '';
+  document.getElementById('artPaperS2Width').value = art.paper_s2_width || '';
+  setSelectValue('artPaperS2Grammage', art.paper_s2_grammage);
+  setSelectValue('artPerforationS2', art.perforation_s2);
+  document.getElementById('artPaperS3Code').value = art.paper_s3_code || '';
+  document.getElementById('artPaperS3Width').value = art.paper_s3_width || '';
+  setSelectValue('artPaperS3Grammage', art.paper_s3_grammage);
+  setSelectValue('artPerforationS3', art.perforation_s3);
+  document.getElementById('artPaperS4Code').value = art.paper_s4_code || '';
+  document.getElementById('artPaperS4Width').value = art.paper_s4_width || '';
+  setSelectValue('artPaperS4Grammage', art.paper_s4_grammage);
+  setSelectValue('artPerforationS4', art.perforation_s4);
+  // Tuber boje - text input
+  document.getElementById('artTuberColor1').value = art.tuber_color_1 || '';
+  document.getElementById('artTuberColor2').value = art.tuber_color_2 || '';
+  document.getElementById('artTuberColor3').value = art.tuber_color_3 || '';
+  document.getElementById('artTuberColor4').value = art.tuber_color_4 || '';
+  
+  // Bottomer
+  // SWAP: perforation_valve_type ide u artPerforationValve, perforation_valve ide u artPerforationValveType
+  setSelectValue('artPerforationValve', art.perforation_valve_type);
+  setSelectValue('artPerforationValveType', art.perforation_valve);
+  document.getElementById('artValveS1PaperCode').value = art.valve_s1_paper_code || '';
+  setSelectValue('artValveS1PaperColor', art.valve_s1_paper_color);
+  document.getElementById('artValveS1Width').value = art.valve_s1_width || '';
+  setSelectValue('artValveS1Grammage', art.valve_s1_grammage);
+  document.getElementById('artValveS1Length').value = art.valve_s1_length || '';
+  document.getElementById('artValveS1Overlap').value = art.valve_s1_overlap || '';
+  document.getElementById('artValveS2PaperCode').value = art.valve_s2_paper_code || '';
+  setSelectValue('artValveS2PaperColor', art.valve_s2_paper_color);
+  document.getElementById('artValveS2Width').value = art.valve_s2_width || '';
+  setSelectValue('artValveS2Grammage', art.valve_s2_grammage);
+  document.getElementById('artValveS2Length').value = art.valve_s2_length || '';
+  document.getElementById('artValveS2Overlap').value = art.valve_s2_overlap || '';
+  document.getElementById('artFoilCode').value = art.foil_code || '';
+  setSelectValue('artFoilType', art.foil_type);
+  document.getElementById('artFoilWidth').value = art.foil_width || '';
+  document.getElementById('artFoilMicrons').value = art.foil_microns || '';
+  document.getElementById('artFoilLength').value = art.foil_length || '';
+  document.getElementById('artFoilOverlap').value = art.foil_overlap || '';
+  document.getElementById('artTopPaperCode').value = art.top_paper_code || '';
+  document.getElementById('artTopWidth').value = art.top_width || '';
+  setSelectValue('artTopGrammage', art.top_grammage);
+  setSelectValue('artTopDoubleOverlap', art.top_double_overlap);
+  document.getElementById('artTopLength').value = art.top_length || '';
+  document.getElementById('artTopOverlap').value = art.top_overlap || '';
+  document.getElementById('artTopColor1').value = art.top_color_1 || '';
+  document.getElementById('artTopColor2').value = art.top_color_2 || '';
+  document.getElementById('artBottomPaperCode').value = art.bottom_paper_code || '';
+  document.getElementById('artBottomWidth').value = art.bottom_width || '';
+  setSelectValue('artBottomGrammage', art.bottom_grammage);
+  setSelectValue('artBottomDoubleOverlap', art.bottom_double_overlap);
+  document.getElementById('artBottomLength').value = art.bottom_length || '';
+  document.getElementById('artBottomOverlap').value = art.bottom_overlap || '';
+  document.getElementById('artBottomColor1').value = art.bottom_color_1 || '';
+  document.getElementById('artBottomColor2').value = art.bottom_color_2 || '';
+  
+  // Tisak
+  document.getElementById('artPrintPreparationUrl').value = art.print_preparation_url || '';
+  updatePrintPreparationStatus(art.print_preparation_url);
+  document.getElementById('artPrintColorsCount').value = art.print_colors_count || '';
+  document.getElementById('artFormsCount').value = art.forms_count || '';
+  document.getElementById('artClicheThickness').value = art.cliche_thickness || '';
+  document.getElementById('artDuplofanThickness').value = art.duplofan_thickness || '';
+  document.getElementById('artClichePosition').value = art.cliche_position || '';
+  document.getElementById('artKnifePosition').value = art.knife_position || '';
+  document.getElementById('artCutLength').value = art.cut_length || '';
+  document.getElementById('artSliv').value = art.sliv || '';
+  document.getElementById('artPhotocellUnwinding').value = art.photocell_unwinding || '';
+  document.getElementById('artMaterialUnwinding').value = art.material_unwinding || '';
+  document.getElementById('artPhotocellWinding').value = art.photocell_winding || '';
+  document.getElementById('artMaterialWinding').value = art.material_winding || '';
+  document.getElementById('artAdapter').value = art.adapter || '';
+  document.getElementById('artAnilox1').value = art.anilox_1 || '';
+  document.getElementById('artAnilox2').value = art.anilox_2 || '';
+  document.getElementById('artAnilox3').value = art.anilox_3 || '';
+  document.getElementById('artAnilox4').value = art.anilox_4 || '';
+  document.getElementById('artAnilox5').value = art.anilox_5 || '';
+  document.getElementById('artAnilox6').value = art.anilox_6 || '';
+  document.getElementById('artPrintColor1').value = art.print_color_1 || '';
+  document.getElementById('artPrintColor2').value = art.print_color_2 || '';
+  document.getElementById('artPrintColor3').value = art.print_color_3 || '';
+  document.getElementById('artPrintColor4').value = art.print_color_4 || '';
+  document.getElementById('artPrintColor5').value = art.print_color_5 || '';
+  document.getElementById('artPrintColor6').value = art.print_color_6 || '';
+
+  // Automatski izračunaj formule
+  updateTubeLengthSuggestion();
+  updateDnoLengthSuggestion();
+}
+
+// ============================================
+// SPREMI ARTIKL
+// ============================================
+async function saveArticle() {
+  // Zapamti trenutni filter kupca ODMAH na početku
+  const savedCustomerFilter = document.getElementById('filterCustomer')?.value || '';
+  
+  // VALIDACIJA OBVEZNIH POLJA
+  const requiredFields = [
+    { id: 'artCustomer', name: 'Kupac' },
+    { id: 'artArticleId', name: 'ID Artikla' },
+    { id: 'artName', name: 'Naziv artikla' },
+    { id: 'artBagWidth', name: 'Širina vreće' },
+    { id: 'artBagLength', name: 'Dužina vreće' },
+    { id: 'artBagBottom', name: 'Dno vreće' },
+    { id: 'artValveType', name: 'Vrsta ventila' },
+    { id: 'artBagColor', name: 'Boja vreće' },
+    { id: 'artHasFoil', name: 'Ima foliju' },
+    { id: 'artBottomerType', name: 'Tip Bottomera' },
+    { id: 'artPalletType', name: 'Vrsta palete' },
+    { id: 'artPcsPerPallet', name: 'Kom/paleta' },
+    { id: 'artPcsPerPackage', name: 'Kom/paket' },
+    { id: 'artTubeLength', name: 'Dužina tuljka' },
+    { id: 'artFingerHole', name: 'Prstohvat' }
+  ];
+  
+  const missingFields = [];
+  requiredFields.forEach(field => {
+    const el = document.getElementById(field.id);
+    const value = el ? el.value.trim() : '';
+    if (!value || value === '--' || value === '') {
+      missingFields.push(field.name);
+      if (el) el.style.borderColor = '#c62828';
+    } else {
+      if (el) el.style.borderColor = '';
+    }
+  });
+  
+  // Uvjetna obvezna polja - samo ako NIJE OL ventil
+  const valveType = document.getElementById('artValveType').value;
+  if (valveType && valveType !== 'OL') {
+    const conditionalFields = [
+      { id: 'artValvePosition', name: 'Pozicija ventila' },
+      { id: 'artPerforationValve', name: 'Perforacija ventila' },
+      { id: 'artPerforationValveType', name: 'Vrsta perforacije' },
+      { id: 'artTopDoubleOverlap', name: 'Dvojni preklop' }
+    ];
+    
+    conditionalFields.forEach(field => {
+      const el = document.getElementById(field.id);
+      const value = el ? el.value.trim() : '';
+      if (!value || value === '--' || value === '') {
+        missingFields.push(field.name);
+        if (el) el.style.borderColor = '#c62828';
+      } else {
+        if (el) el.style.borderColor = '';
+      }
+    });
+  }
+  
+  if (missingFields.length > 0) {
+    showMessage('Popunite obvezna polja: ' + missingFields.join(', '), 'warning');
+    document.querySelector('#articleModal .tab-btn').click();
+    return;
+  }
+  
+  const data = collectFormData();
+  showLoading('Spremanje...');
+  
+  try {
+    const id = document.getElementById('artId').value;
+    
+    if (id && isEditMode) {
+      const { error } = await initSupabase().from('prod_articles').update(data).eq('id', id);
+      if (error) throw error;
+      showMessage('✅ Artikl ažuriran!', 'success');
+    } else {
+      const { error } = await initSupabase().from('prod_articles').insert(data);
+      if (error) throw error;
+      showMessage('✅ Artikl kreiran!', 'success');
+    }
+    
+    closeModal('articleModal');
+    
+    await initArtikliView();
+    
+    // Vrati filter kupca nakon reinicijalizacije
+    if (savedCustomerFilter) {
+      const filterSelect = document.getElementById('filterCustomer');
+      if (filterSelect) {
+        filterSelect.value = savedCustomerFilter;
+        filterArticles();
+      }
+    }
+    
+    switchMainTab('artikli'); // Ostani na tab Artikli
+    
+  } catch (error) {
+    console.error('Save error:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function saveArticleAsCopy() {
+  const originalId = document.getElementById('artArticleId').value;
+  document.getElementById('artArticleId').value = originalId + '_KOPIJA';
+  document.getElementById('artId').value = '';
+  isEditMode = false;
+  await saveArticle();
+}
+
+function collectFormData() {
+  const customerCode = document.getElementById('artCustomer').value;
+  const customer = allCustomers.find(c => c.customer_code === customerCode);
+  
+  return {
+    article_id: document.getElementById('artArticleId').value.trim(),
+    name: document.getElementById('artName').value.trim(),
+    code: document.getElementById('artCode').value.trim() || null,
+    customer_code: customerCode || null,
+    customer_name: customer?.name || null,
+    production_line: document.getElementById('artProductionLine').value || null,
+    bag_width: parseFloat(document.getElementById('artBagWidth').value) || null,
+    bag_length: parseFloat(document.getElementById('artBagLength').value) || null,
+    bag_bottom: parseFloat(document.getElementById('artBagBottom').value) || null,
+    bag_valve: parseFloat(document.getElementById('artBagValve').value) || null,
+    valve_type: document.getElementById('artValveType').value || null,
+    valve_position: document.getElementById('artValvePosition').value || null,
+    bag_color: document.getElementById('artBagColor').value || null,
+    has_foil: document.getElementById('artHasFoil').value || null,
+    bottomer_type: document.getElementById('artBottomerType').value || null,
+    packaging_type: document.getElementById('artPackagingType').value || null,
+    pallet_type: document.getElementById('artPalletType').value || null,
+    pcs_per_pallet: document.getElementById('artPcsPerPallet').value || null,
+    pcs_per_package: parseInt(document.getElementById('artPcsPerPackage').value) || null,
+    glue_spots_bottom: document.getElementById('artGlueSpotsBottom').value || null,
+    glue_spots_valve_bottom: document.getElementById('artGlueSpotsValveBottom').value || null,
+    glue_spots_top_bottom: document.getElementById('artGlueSpotsTopBottom').value || null,
+    glue_spots_lower_bottom: document.getElementById('artGlueSpotsLowerBottom').value || null,
+    notes: document.getElementById('artNotes').value || null,
+    tube_length: parseFloat(document.getElementById('artTubeLength').value) || null,
+    cut_type: document.getElementById('artCutType').value || null,
+    finger_hole: document.getElementById('artFingerHole').value || null,
+    colors_count: document.getElementById('artColorsCount').value || null,
+    paper_s1_code: document.getElementById('artPaperS1Code').value || null,
+    paper_s1_width: parseFloat(document.getElementById('artPaperS1Width').value) || null,
+    paper_s1_grammage: parseInt(document.getElementById('artPaperS1Grammage').value) || null,
+    perforation_s1: document.getElementById('artPerforationS1').value || null,
+    paper_s2_code: document.getElementById('artPaperS2Code').value || null,
+    paper_s2_width: parseFloat(document.getElementById('artPaperS2Width').value) || null,
+    paper_s2_grammage: parseInt(document.getElementById('artPaperS2Grammage').value) || null,
+    perforation_s2: document.getElementById('artPerforationS2').value || null,
+    paper_s3_code: document.getElementById('artPaperS3Code').value || null,
+    paper_s3_width: parseFloat(document.getElementById('artPaperS3Width').value) || null,
+    paper_s3_grammage: parseInt(document.getElementById('artPaperS3Grammage').value) || null,
+    perforation_s3: document.getElementById('artPerforationS3').value || null,
+    paper_s4_code: document.getElementById('artPaperS4Code').value || null,
+    paper_s4_width: parseFloat(document.getElementById('artPaperS4Width').value) || null,
+    paper_s4_grammage: parseInt(document.getElementById('artPaperS4Grammage').value) || null,
+    perforation_s4: document.getElementById('artPerforationS4').value || null,
+    tuber_color_1: document.getElementById('artTuberColor1').value || null,
+    tuber_color_2: document.getElementById('artTuberColor2').value || null,
+    tuber_color_3: document.getElementById('artTuberColor3').value || null,
+    tuber_color_4: document.getElementById('artTuberColor4').value || null,
+    // SWAP: artPerforationValve -> perforation_valve_type, artPerforationValveType -> perforation_valve
+    perforation_valve: document.getElementById('artPerforationValveType').value || null,
+    perforation_valve_type: document.getElementById('artPerforationValve').value || null,
+    valve_s1_paper_code: document.getElementById('artValveS1PaperCode').value || null,
+    valve_s1_paper_color: document.getElementById('artValveS1PaperColor').value || null,
+    valve_s1_width: parseFloat(document.getElementById('artValveS1Width').value) || null,
+    valve_s1_grammage: parseInt(document.getElementById('artValveS1Grammage').value) || null,
+    valve_s1_length: parseFloat(document.getElementById('artValveS1Length').value) || null,
+    valve_s1_overlap: parseFloat(document.getElementById('artValveS1Overlap').value) || null,
+    valve_s2_paper_code: document.getElementById('artValveS2PaperCode').value || null,
+    valve_s2_paper_color: document.getElementById('artValveS2PaperColor').value || null,
+    valve_s2_width: parseFloat(document.getElementById('artValveS2Width').value) || null,
+    valve_s2_grammage: parseInt(document.getElementById('artValveS2Grammage').value) || null,
+    valve_s2_length: parseFloat(document.getElementById('artValveS2Length').value) || null,
+    valve_s2_overlap: parseFloat(document.getElementById('artValveS2Overlap').value) || null,
+    foil_code: document.getElementById('artFoilCode').value || null,
+    foil_type: document.getElementById('artFoilType').value || null,
+    foil_width: parseFloat(document.getElementById('artFoilWidth').value) || null,
+    foil_microns: parseInt(document.getElementById('artFoilMicrons').value) || null,
+    foil_length: parseFloat(document.getElementById('artFoilLength').value) || null,
+    foil_overlap: parseFloat(document.getElementById('artFoilOverlap').value) || null,
+    top_paper_code: document.getElementById('artTopPaperCode').value || null,
+    top_width: parseFloat(document.getElementById('artTopWidth').value) || null,
+    top_grammage: parseInt(document.getElementById('artTopGrammage').value) || null,
+    top_double_overlap: document.getElementById('artTopDoubleOverlap').value || null,
+    top_length: parseFloat(document.getElementById('artTopLength').value) || null,
+    top_overlap: parseFloat(document.getElementById('artTopOverlap').value) || null,
+    top_color_1: document.getElementById('artTopColor1').value || null,
+    top_color_2: document.getElementById('artTopColor2').value || null,
+    bottom_paper_code: document.getElementById('artBottomPaperCode').value || null,
+    bottom_width: parseFloat(document.getElementById('artBottomWidth').value) || null,
+    bottom_grammage: parseInt(document.getElementById('artBottomGrammage').value) || null,
+    bottom_double_overlap: document.getElementById('artBottomDoubleOverlap').value || null,
+    bottom_length: parseFloat(document.getElementById('artBottomLength').value) || null,
+    bottom_overlap: parseFloat(document.getElementById('artBottomOverlap').value) || null,
+    bottom_color_1: document.getElementById('artBottomColor1').value || null,
+    bottom_color_2: document.getElementById('artBottomColor2').value || null,
+    print_colors_count: parseInt(document.getElementById('artPrintColorsCount').value) || null,
+    forms_count: parseInt(document.getElementById('artFormsCount').value) || null,
+    cliche_thickness: parseFloat(document.getElementById('artClicheThickness').value) || null,
+    duplofan_thickness: parseFloat(document.getElementById('artDuplofanThickness').value) || null,
+    cliche_position: document.getElementById('artClichePosition').value || null,
+    knife_position: document.getElementById('artKnifePosition').value || null,
+    cut_length: parseFloat(document.getElementById('artCutLength').value) || null,
+    sliv: parseFloat(document.getElementById('artSliv').value) || null,
+    photocell_unwinding: document.getElementById('artPhotocellUnwinding').value || null,
+    material_unwinding: document.getElementById('artMaterialUnwinding').value || null,
+    photocell_winding: document.getElementById('artPhotocellWinding').value || null,
+    material_winding: document.getElementById('artMaterialWinding').value || null,
+    adapter: document.getElementById('artAdapter').value || null,
+    anilox_1: parseInt(document.getElementById('artAnilox1').value) || null,
+    anilox_2: parseInt(document.getElementById('artAnilox2').value) || null,
+    anilox_3: parseInt(document.getElementById('artAnilox3').value) || null,
+    anilox_4: parseInt(document.getElementById('artAnilox4').value) || null,
+    anilox_5: parseInt(document.getElementById('artAnilox5').value) || null,
+    anilox_6: parseInt(document.getElementById('artAnilox6').value) || null,
+    print_color_1: document.getElementById('artPrintColor1').value || null,
+    print_color_2: document.getElementById('artPrintColor2').value || null,
+    print_color_3: document.getElementById('artPrintColor3').value || null,
+    print_color_4: document.getElementById('artPrintColor4').value || null,
+    print_color_5: document.getElementById('artPrintColor5').value || null,
+    print_color_6: document.getElementById('artPrintColor6').value || null,
+    print_preparation_url: document.getElementById('artPrintPreparationUrl').value || null
+  };
+}
+
+// ============================================
+// GRAFIČKA PRIPREMA FUNKCIJE
+// ============================================
+
+// Koristi var umjesto const da izbjegne grešku pri ponovnom učitavanju
+var GOOGLE_DRIVE_PREPARATIONS_FOLDER = GOOGLE_DRIVE_PREPARATIONS_FOLDER || 'https://drive.google.com/drive/folders/1-Bi9ERfpk-6P2M-VylC_Gcjcgcton1El';
+
+function openGoogleDriveFolder() {
+  window.open(GOOGLE_DRIVE_PREPARATIONS_FOLDER, '_blank');
+  showMessage('Pronađi pripremu, desni klik → "Get link" → zalijepi ovdje', 'info');
+}
+
+function previewPrintPreparation() {
+  const url = document.getElementById('artPrintPreparationUrl').value.trim();
+  if (!url) {
+    showMessage('Nema URL-a grafičke pripreme', 'warning');
+    return;
+  }
+  let previewUrl = url;
+  const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileIdMatch) {
+    previewUrl = 'https://drive.google.com/file/d/' + fileIdMatch[1] + '/preview';
+  }
+  window.open(previewUrl, '_blank');
+}
+
+function clearPrintPreparationUrl() {
+  if (confirm('Obrisati URL grafičke pripreme?')) {
+    document.getElementById('artPrintPreparationUrl').value = '';
+    updatePrintPreparationStatus(null);
+  }
+}
+
+function updatePrintPreparationStatus(url) {
+  const statusEl = document.getElementById('printPreparationStatus');
+  if (!statusEl) return;
+  if (url && url.trim()) {
+    statusEl.innerHTML = '<span style="color: #2e7d32;">✅ Grafička priprema povezana</span>';
+  } else {
+    statusEl.innerHTML = '<span style="color: #f57c00;">⚠️ Nema povezane grafičke pripreme</span>';
+  }
+}
+
+// ============================================
+// NAPOMENE O ARTIKLIMA
+// ============================================
+async function loadArticleNotesData() {
+  try {
+    const { data: notes, error } = await initSupabase()
+      .from('prod_article_notes')
+      .select('*, prod_articles(name, code)')
+      .eq('status', 'Aktivna');
+    
+    if (!error && notes) {
+      articleNotesData = notes;
+      // Osvježi prikaz ako je već renderirana tablica
+      if (allArticles.length > 0) {
+        filterArticles();
+      }
+    }
+  } catch (e) {
+    console.error('Error loading article notes:', e);
+  }
+}
+
+function showArticleNotesDetail(articleId) {
+  const notes = articleNotesData.filter(n => n.article_id === articleId);
+  if (notes.length === 0) {
+    showMessage('Nema napomena za ovaj artikl', 'info');
+    return;
+  }
+  
+  const article = allArticles.find(a => a.id === articleId);
+  const articleName = article?.name || notes[0]?.prod_articles?.name || 'Artikl';
+  
+  let message = `⚠️ AKTIVNE NAPOMENE ZA: ${articleName}\n\n`;
+  
+  notes.forEach((note, idx) => {
+    const date = new Date(note.created_at).toLocaleDateString('hr-HR');
+    message += `--- Napomena ${idx + 1} ---\n`;
+    message += `Tip: ${note.note_type}\n`;
+    message += `Opis: ${note.description}\n`;
+    message += `Kreirao: ${note.created_by} (${date})\n`;
+    message += `Modul: ${note.source_module || '-'}\n\n`;
+  });
+  
+  message += `\nZa rješavanje napomena idite na Planiranje → Napomene`;
+  
+  alert(message);
+}
+
+// ============================================
+// IZRAČUN DUŽINE TULJKA
+// ============================================
+function calculateTubeLength() {
+  const bagLength = parseFloat(document.getElementById('artBagLength').value) || 0;
+  const bagBottom = parseFloat(document.getElementById('artBagBottom').value) || 0;
+  const valveType = document.getElementById('artValveType').value;
+  
+  if (bagLength === 0 || bagBottom === 0) {
+    return null;
+  }
+  
+  let tubeLength;
+  if (valveType === 'OL') {
+    // OL: dužina + pola dna + 2 (preklop)
+    tubeLength = bagLength + (bagBottom / 2) + 2;
+  } else {
+    // Ostalo: dužina + dno + 4 (preklop)
+    tubeLength = bagLength + bagBottom + 4;
+  }
+  
+  return Math.round(tubeLength * 100) / 100;
+}
+
+function updateTubeLengthSuggestion() {
+  var calculated = calculateTubeLength();
+  var tubeSugg = document.getElementById('artTubeLengthSuggestion');
+  var cutSugg = document.getElementById('artCutLengthSuggestion');
+  var tubeInput = document.getElementById('artTubeLength');
+  var cutInput = document.getElementById('artCutLength');
+  var valveType = (document.getElementById('artValveType').value || '');
+  var formula = valveType === 'OL' ? 'dužina + (dno/2) + 2' : 'dužina + dno + 4';
+
+  if (calculated) {
+    // Uvijek ažuriraj oba polja prema formuli
+    tubeInput.value = calculated;
+    cutInput.value = calculated;
+    // Prikaži formulu kao info
+    var infoText = 'Formula: ' + formula + ' = ' + calculated + ' cm';
+    if (tubeSugg) { tubeSugg.textContent = infoText; tubeSugg.style.display = 'block'; }
+    if (cutSugg) { cutSugg.textContent = infoText; cutSugg.style.display = 'block'; }
+  } else {
+    if (tubeSugg) tubeSugg.style.display = 'none';
+    if (cutSugg) cutSugg.style.display = 'none';
+  }
+}
+
+function updateConditionalFields() {
+  const valveType = document.getElementById('artValveType').value;
+  const isOL = valveType === 'OL';
+  
+  const conditionalIds = ['artPerforationValve', 'artPerforationValveType', 'artTopDoubleOverlap'];
+  
+  conditionalIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const wrapper = el.closest('.form-group');
+      if (wrapper) {
+        if (isOL) {
+          wrapper.style.opacity = '0.5';
+          wrapper.title = 'Nije potrebno za OL ventil';
+        } else {
+          wrapper.style.opacity = '1';
+          wrapper.title = '';
+        }
+      }
+    }
+  });
+}
+
+// Automatski izračun dužine gornjeg/donjeg dna: širina vreće - dno
+function updateDnoLengthSuggestion() {
+  var bagWidth = parseFloat(document.getElementById('artBagWidth').value) || 0;
+  var bagBottom = parseFloat(document.getElementById('artBagBottom').value) || 0;
+  var calculated = (bagWidth && bagBottom) ? Math.round((bagWidth - bagBottom) * 100) / 100 : null;
+  var infoText = calculated ? 'Formula: širina - dno = ' + calculated + ' cm' : null;
+
+  // Gornje dno
+  var topCode = (document.getElementById('artTopPaperCode').value || '').trim();
+  var topInput = document.getElementById('artTopLength');
+  var topSugg = document.getElementById('artTopLengthSuggestion');
+  if (topCode && calculated) {
+    topInput.value = calculated;
+    if (topSugg) { topSugg.textContent = infoText; topSugg.style.display = 'block'; }
+  } else {
+    if (topSugg) topSugg.style.display = 'none';
+  }
+
+  // Donje dno
+  var bottomCode = (document.getElementById('artBottomPaperCode').value || '').trim();
+  var bottomInput = document.getElementById('artBottomLength');
+  var bottomSugg = document.getElementById('artBottomLengthSuggestion');
+  if (bottomCode && calculated) {
+    bottomInput.value = calculated;
+    if (bottomSugg) { bottomSugg.textContent = infoText; bottomSugg.style.display = 'block'; }
+  } else {
+    if (bottomSugg) bottomSugg.style.display = 'none';
+  }
+}
+
+// Event listeneri za automatski izračun dužine tuljka, dužine reza i dužine dna
+(function() {
+  var valveTypeEl = document.getElementById('artValveType');
+  if (valveTypeEl) {
+    valveTypeEl.addEventListener('change', function() {
+      updateConditionalFields();
+      updateTubeLengthSuggestion();
+    });
+  }
+
+  ['artBagLength', 'artBagBottom'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', function() {
+        updateTubeLengthSuggestion();
+        updateDnoLengthSuggestion();
+      });
+    }
+  });
+
+  // Širina vreće utječe na dužinu dna
+  var bagWidthEl = document.getElementById('artBagWidth');
+  if (bagWidthEl) {
+    bagWidthEl.addEventListener('input', updateDnoLengthSuggestion);
+  }
+
+  // Šifra papira gornjeg/donjeg dna - kad se upiše/obriše, ažuriraj
+  ['artTopPaperCode', 'artBottomPaperCode'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateDnoLengthSuggestion);
+      el.addEventListener('change', updateDnoLengthSuggestion);
+    }
+  });
+})();
+
+// Inicijalizacija
+initArtikliView();
+</script>

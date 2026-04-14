@@ -1,0 +1,2892 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../../css/styles.css">
+<!-- ============================================ -->
+<!-- REZAČ VIEW - Carta ERP -->
+<!-- views/proizvodnja/rezac.html -->
+<!-- ============================================ -->
+
+<style>
+  .filter-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+  }
+  
+  .filter-group input,
+  .filter-group select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  .toggle-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .toggle-section:hover { background: #dee2e6; }
+  
+  .toggle-icon {
+    font-size: 20px;
+    transition: transform 0.3s;
+  }
+  
+  .toggle-icon.collapsed { transform: rotate(-90deg); }
+  
+  .collapsible-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  .collapsible-content.hidden { max-height: 0; }
+
+  .role-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box { text-align: center; color: white; }
+  .stat-value { font-size: 32px; font-weight: 700; margin-bottom: 5px; }
+  .stat-label { font-size: 14px; opacity: 0.9; font-weight: 500; }
+
+  .artikl-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .artikl-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+
+  .papir-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .papir-box {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .papir-title {
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 5px;
+  }
+
+  .papir-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 13px;
+  }
+
+  .papir-detail-label { color: #6c757d; }
+  .papir-detail-value { font-weight: 600; color: #212529; }
+
+  .suma-table {
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .suma-table table { width: 100%; }
+
+  .suma-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .suma-total {
+    background: #28a745 !important;
+    color: white !important;
+    font-weight: 700;
+  }
+  
+  .suma-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  .workflow-section {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    color: white;
+    display: none;
+  }
+  
+  .workflow-section.show { display: block; }
+  
+  .workflow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .workflow-header h3 { margin: 0; }
+  
+  .kalkulator-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    color: #333;
+  }
+  
+  .kalkulator-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .kalkulator-info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+  }
+  
+  .kalkulator-info-box.success { border-color: #28a745; background: #d4edda; }
+  .kalkulator-info-box.warning { border-color: #ffc107; background: #fff3cd; }
+  .kalkulator-info-box.danger { border-color: #dc3545; background: #f8d7da; }
+  
+  .kalkulator-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #212529;
+  }
+  
+  .kalkulator-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+  
+  .trake-vizualni {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 60px;
+    align-items: center;
+  }
+  
+  .traka-chip {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .traka-chip .remove-btn {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .traka-chip .remove-btn:hover { background: rgba(255,255,255,0.5); }
+  
+  .traka-chip.ostatak {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .traka-chip.custom {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+  
+  .dostupne-trake {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+  }
+  
+  .dostupna-traka-btn {
+    background: white;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .dostupna-traka-btn:hover {
+    background: #667eea;
+    color: white;
+  }
+  
+  .prolaz-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    border-left: 4px solid #667eea;
+  }
+  
+  .prolaz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .prolaz-title { font-weight: 700; color: #495057; }
+  
+  .prolaz-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .prolaz-status.aktivan { background: #28a745; color: white; }
+  .prolaz-status.ceka { background: #ffc107; color: #212529; }
+  .prolaz-status.zavrsen { background: #6c757d; color: white; }
+  
+  .stanje-rola-info {
+    background: #e3f2fd;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .izracun-box {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  /* Scroll tablica za skladište rola */
+  .skladiste-scroll-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+  }
+  
+  .skladiste-scroll-container table {
+    margin-bottom: 0;
+  }
+  
+  .skladiste-scroll-container thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .skladiste-scroll-container thead th {
+    background: transparent;
+  }
+  
+  .skladiste-scroll-container tbody tr:hover {
+    background: #f1f3f5;
+  }
+</style>
+
+<!-- HEADER S AKCIJAMA -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <h1 style="margin: 0; color: var(--primary);">✂️ Rezač - Rezanje papira</h1>
+  <div style="display: flex; gap: 10px;">
+    <button class="btn btn-success" onclick="openModal('novaRolaRezacModal')" style="font-size: 14px; padding: 10px 20px;">
+      📦 Nova rola
+    </button>
+    <button class="btn btn-danger" onclick="openLocalFailureModal()" style="font-size: 14px; padding: 10px 20px;">
+      🚨 Prijavi kvar
+    </button>
+  </div>
+</div>
+
+<!-- RADNI NALOZI ZA REZANJE -->
+<div class="card">
+  <div class="card-header">📋 Radni Nalozi za Rezanje</div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>RN Rezanja</th>
+          <th>Narudžba</th>
+          <th>Artikl</th>
+          <th>Šifra</th>
+          <th>Količina</th>
+          <th>Status</th>
+          <th>Akcija</th>
+        </tr>
+      </thead>
+      <tbody id="rezacRadniNaloziTableBody">
+        <tr><td colspan="7" style="text-align:center;">Učitavanje...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DETALJI ODABRANOG RN -->
+<div class="card" id="rezacDetaljiCard" style="display:none;">
+  <div class="card-header">
+    📊 Detalji RN: <span id="rezacDetaljiRNBroj"></span>
+    <div style="float:right; display: flex; gap: 8px;">
+      <button class="btn btn-sm btn-success" onclick="rezacZavrsiNalogIzDetalja()" title="Završi nalog bez obzira na količinu">✓ Završi nalog</button>
+      <button class="btn btn-sm btn-secondary" onclick="rezacZatvoriDetalje()">✖ Zatvori</button>
+    </div>
+  </div>
+  
+  <div id="rezacDetaljiContent"></div>
+  
+  <!-- SUMA PO ŠIFRAMA PAPIRA -->
+  <div class="suma-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px;"><input type="checkbox" id="rezacSelectAllTrake" onclick="rezacToggleSelectAll(this)"></th>
+          <th>Šifra Papira</th>
+          <th>Širina (cm)</th>
+          <th>Gramatura (g)</th>
+          <th>Potrebno (kg)</th>
+          <th>Na stanju (kg)</th>
+          <th>Za rezanje (kg)</th>
+        </tr>
+      </thead>
+      <tbody id="rezacSumaPapiraBody"></tbody>
+    </table>
+    <div style="padding: 15px; text-align: right;">
+      <button class="btn btn-success" onclick="rezacPokreniSlaganjeTraka()" id="btnPokreniSlaganje" disabled>
+        🚀 Pokreni slaganje traka (<span id="rezacBrojOdabranih">0</span>)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- WORKFLOW SLAGANJA TRAKA -->
+<div class="workflow-section" id="rezacWorkflowSection">
+  <div class="workflow-header">
+    <h3>🎯 Slaganje Traka za Rezanje</h3>
+    <button class="btn btn-light" onclick="rezacZatvoriWorkflow()">✖ Zatvori</button>
+  </div>
+  
+  <div class="kalkulator-container">
+    <!-- INFO O MATIČNOJ ROLI -->
+    <div style="margin-bottom: 20px;">
+      <label style="font-weight: 600;">Matična Rola:</label>
+      <div style="display: flex; gap: 10px; margin-top: 8px;">
+        <input type="text" id="rezacWorkflowMaticnaRola" placeholder="Šifra role..." class="form-control" style="flex: 1;">
+        <button class="btn btn-primary" onclick="rezacDohvatiRolu()">📋 Dohvati</button>
+      </div>
+    </div>
+    
+    <div class="stanje-rola-info" id="rezacRolaInfo" style="display: none;">
+      <strong>📦 Matična Rola:</strong> <span id="rezacRolaSifra"></span><br>
+      <strong>📏 Širina:</strong> <span id="rezacRolaSirina"></span> cm<br>
+      <strong>⚖️ Težina:</strong> <span id="rezacRolaTezina"></span> kg
+      <button id="rezacOverrideBtnWorkflow" class="btn btn-sm" onclick="openOverrideTezineWorkflow()" title="Korekcija težine" style="display:none; margin-left:10px; background:#ff9800; color:white; padding:4px 10px; vertical-align:middle;">⚖️ Korekcija</button>
+    </div>
+    
+    <!-- KALKULATOR -->
+    <div class="kalkulator-info">
+      <div class="kalkulator-info-box">
+        <div class="kalkulator-value" id="kalkulatorSirinaRole">0</div>
+        <div class="kalkulator-label">Širina Role (cm)</div>
+      </div>
+      <div class="kalkulator-info-box success" id="kalkulatorZbrojBox">
+        <div class="kalkulator-value" id="kalkulatorZbroj">0</div>
+        <div class="kalkulator-label">Zbroj Traka (cm)</div>
+      </div>
+      <div class="kalkulator-info-box warning" id="kalkulatorOstatakBox">
+        <div class="kalkulator-value" id="kalkulatorOstatak">0</div>
+        <div class="kalkulator-label">Preostalo (cm)</div>
+      </div>
+    </div>
+    
+    <!-- DOSTUPNE TRAKE ZA DODAVANJE -->
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight: 600;">Dodaj trake (klik za dodavanje):</label>
+      <div class="dostupne-trake" id="rezacDostupneTrake"></div>
+      <div style="margin-top: 10px;">
+        <input type="number" id="rezacCustomSirina" placeholder="Širina (cm)" class="form-control" style="width: 120px; display: inline-block;">
+        <button class="btn btn-info btn-sm" onclick="rezacDodajCustomTraku()">+ Dodaj prilagođenu</button>
+      </div>
+    </div>
+    
+    <!-- VIZUALNI PRIKAZ SLOŽENIH TRAKA -->
+    <label style="font-weight: 600;">Složene trake (redoslijed rezanja):</label>
+    <div class="trake-vizualni" id="rezacSlozeneTrakePrikaz">
+      <span style="color: #6c757d; font-style: italic;">Dodajte trake klikom iznad...</span>
+    </div>
+    
+    <!-- OSTATAK -->
+    <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;" id="rezacOstatakSekcija">
+      <label style="font-weight: 600;">Ostatak (<span id="rezacOstatakSirina">0</span> cm):</label>
+      <div style="margin-top: 10px;">
+        <label style="margin-right: 20px;">
+          <input type="radio" name="ostatakOpcija" value="skladiste" checked> U Skladište Traka
+        </label>
+        <label>
+          <input type="radio" name="ostatakOpcija" value="otpad"> U Otpad
+        </label>
+      </div>
+      
+      <!-- KOREKCIJA ŠIRINE OSTATKA -->
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #dee2e6;">
+        <label style="font-weight: 600; display: block; margin-bottom: 8px;">
+          🔧 Korekcija širine ostatka:
+        </label>
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+          <select id="rezacOstatakKorekcija" class="form-control" style="width: auto;" onchange="rezacAzurirajKorekcijuOstatka()">
+            <option value="-10">-10 mm (1 cm manje)</option>
+            <option value="-5">-5 mm</option>
+            <option value="0" selected>0 mm (bez korekcije)</option>
+            <option value="+5">+5 mm</option>
+            <option value="+10">+10 mm (1 cm više)</option>
+          </select>
+          <div style="background: #e9ecef; padding: 8px 15px; border-radius: 4px;">
+            <span style="color: #6c757d;">Korigirana širina:</span>
+            <strong id="rezacOstatakKorigiranaVrijednost" style="color: #28a745; margin-left: 5px;">0 cm</strong>
+          </div>
+          <div style="background: #667eea; color: white; padding: 8px 15px; border-radius: 4px;">
+            <span>Šifra:</span>
+            <strong id="rezacOstatakKorigiranaSifra" style="margin-left: 5px;">-</strong>
+          </div>
+        </div>
+        <small style="color: #6c757d; display: block; margin-top: 8px;">
+          💡 Koristi korekciju ako namještaš noževe da sve trake budu približno iste širine
+        </small>
+      </div>
+    </div>
+    
+    <!-- BROJ PROLAZA -->
+    <div style="margin: 15px 0;">
+      <label style="font-weight: 600;">Broj prolaza:</label>
+      <select id="rezacBrojProlaza" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;" onchange="rezacPromjenaBrojaProlaza()">
+        <option value="1">1 prolaz (mala količina)</option>
+        <option value="2" selected>2 prolaza</option>
+        <option value="3">3 prolaza</option>
+      </select>
+      <span id="rezacDjeliteljInfo" style="margin-left: 15px; color: #6c757d; font-size: 13px;">
+        Djelitelj: /2
+      </span>
+    </div>
+    
+    <!-- GENERIRANI NAZIVI -->
+    <div id="rezacGeneriraniNazivi" style="display: none;">
+      <h4>📋 Generirani nazivi traka:</h4>
+      <div id="rezacNaziviContent"></div>
+    </div>
+    
+    <!-- AKCIJE -->
+    <div class="btn-group" style="margin-top: 20px;">
+      <button class="btn btn-success" onclick="rezacPokreniRezanje()">▶️ Pokreni Rezanje</button>
+      <button class="btn btn-secondary" onclick="rezacResetujSlaganje()">🔄 Resetiraj</button>
+    </div>
+  </div>
+</div>
+
+<!-- AKTIVNO REZANJE -->
+<div class="card" id="rezacAktivnoRezanjeCard" style="display: none;">
+  <div class="card-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+    ⚙️ Aktivno Rezanje - <span id="rezacAktivnoRN"></span>
+  </div>
+  
+  <div id="rezacProlaziContent"></div>
+  
+  <div class="izracun-box" id="rezacIzracunBox" style="display: none;">
+    <h4>📊 Izračun skidanja stanja:</h4>
+    <div id="rezacIzracunContent"></div>
+  </div>
+  
+  <div class="btn-group" style="padding: 15px;">
+    <button class="btn btn-success" onclick="rezacZavrsiSveIPotvrdi()">✅ Završi i Potvrdi</button>
+    <button class="btn btn-warning" onclick="rezacDodajDruguRolu()">➕ Dodaj drugu matičnu rolu</button>
+  </div>
+</div>
+
+<!-- DOSTUPNE ROLE - COLLAPSIBLE -->
+<div class="toggle-section" onclick="rezacToggleSkladiste()">
+  <h3 style="margin:0;">📦 Dostupne Role</h3>
+  <span class="toggle-icon" id="rezacToggleIcon">▼</span>
+</div>
+
+<div class="collapsible-content" id="rezacSkladisteSection">
+  <div class="card" style="margin-top:0;">
+    <!-- FILTERI -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <label>Šifra role</label>
+        <input type="text" id="rezacFilterSifraRole" class="form-control" placeholder="Pretraži šifru...">
+      </div>
+      <div class="filter-group">
+        <label>Proizvođač</label>
+        <select id="rezacFilterProizvodac" class="form-control"><option value="">Svi</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Boja</label>
+        <select id="rezacFilterBoja" class="form-control"><option value="">Sve</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Gramatura (g)</label>
+        <select id="rezacFilterGramatura" class="form-control"><option value="">Sve</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Tip Papira</label>
+        <select id="rezacFilterTipPapira" class="form-control"><option value="">Svi</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Širina OD (cm)</label>
+        <input type="number" id="rezacFilterSirinaOd" class="form-control" placeholder="Min">
+      </div>
+      <div class="filter-group">
+        <label>Širina DO (cm)</label>
+        <input type="number" id="rezacFilterSirinaDo" class="form-control" placeholder="Max">
+      </div>
+      <div class="filter-group">
+        <label>Min. Količina (kg)</label>
+        <input type="number" id="rezacFilterMinKolicina" class="form-control" placeholder="Min kg">
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" onclick="rezacPrimijeniFiltere()">🔍 Filtriraj</button>
+        <button class="btn btn-secondary" onclick="rezacResetFiltere()">↻ Reset</button>
+      </div>
+    </div>
+
+    <!-- STATISTIKA ROLA -->
+    <div class="role-stats">
+      <div class="stat-box">
+        <div class="stat-value" id="rezacStatBrojRola">0</div>
+        <div class="stat-label">Prikazano Rola</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="rezacStatUkupnoRola">0</div>
+        <div class="stat-label">Ukupno u Bazi</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="rezacStatUkupnoKg">0 kg</div>
+        <div class="stat-label">Ukupna Količina</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="rezacStatProsjekKg">0 kg</div>
+        <div class="stat-label">Prosječno po Roli</div>
+      </div>
+    </div>
+
+    <!-- TABLICA ROLA - sa scrollom -->
+    <div class="skladiste-scroll-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Šifra Role</th>
+            <th>Proizvođač</th>
+            <th>Širina (cm)</th>
+            <th>Gramatura</th>
+            <th>Boja</th>
+            <th>Tip</th>
+            <th>Preostalo (kg)</th>
+            <th>Akcija</th>
+          </tr>
+        </thead>
+        <tbody id="rezacSkladisteTableBody">
+          <tr><td colspan="8" style="text-align:center;">Učitavanje...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Info bar -->
+    <div style="padding: 10px 15px; background: #e9ecef; border-radius: 0 0 8px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #495057;">
+      <span>📜 Prikazano: <strong id="rezacInfoPrikazano">0</strong> rola</span>
+      <span>💡 Koristi filtere za brže pretraživanje</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Unos nove role -->
+<div class="modal" id="novaRolaRezacModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+      <h2>📦 Nova rola papira</h2>
+      <span class="modal-close" onclick="closeModal('novaRolaRezacModal')">&times;</span>
+    </div>
+    <form id="novaRolaRezacForm" onsubmit="submitNovaRolaRezac(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Proizvođač *</label>
+          <select class="form-control" id="rezacRolaProizvodac" required>
+            <option value="">-- Odaberi --</option>
+            <option value="Billerud">Billerud</option>
+            <option value="Mondi">Mondi</option>
+            <option value="Segezha">Segezha</option>
+            <option value="Natron Hayat">Natron Hayat</option>
+            <option value="Ostalo">Ostalo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Šifra role *</label>
+          <input type="text" class="form-control" id="rezacRolaSifra" placeholder="npr. B70-72-SE" required>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>Boja *</label>
+            <select class="form-control" id="rezacRolaBoja" required>
+              <option value="">-- Odaberi --</option>
+              <option value="Bijeli">Bijeli</option>
+              <option value="Smeđi">Smeđi</option>
+              <option value="Natural">Natural</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vrsta papira *</label>
+            <select class="form-control" id="rezacRolaTip" required>
+              <option value="">-- Odaberi --</option>
+              <option value="SE">SE - Semi Extensible</option>
+              <option value="KR">KR - Kraft</option>
+              <option value="PR">PR - Prime</option>
+              <option value="HP">HP - High Porosity</option>
+              <option value="MG">MG - Machine Glazed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>Širina (cm) *</label>
+            <input type="number" class="form-control" id="rezacRolaSirina" step="0.1" min="1" placeholder="72" required>
+          </div>
+          <div class="form-group">
+            <label>Gramatura (g/m²) *</label>
+            <input type="number" class="form-control" id="rezacRolaGramatura" min="1" placeholder="70" required>
+          </div>
+          <div class="form-group">
+            <label>Težina (kg) *</label>
+            <input type="number" class="form-control" id="rezacRolaTezina" step="0.1" min="0.1" placeholder="500" required>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('novaRolaRezacModal')">Odustani</button>
+        <button type="submit" class="btn btn-success">
+          📦 Spremi rolu
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Korekcija težine role -->
+<div class="modal" id="overrideTezineModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #e65100, #ff9800); color: white;">
+      <h2>⚖️ Korekcija težine role</h2>
+      <span class="modal-close" onclick="closeModal('overrideTezineModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+        <p><strong>⚠️</strong> Ovo će promijeniti stanje role u bazi. Koristite samo ako prethodno skidanje nije bilo ispravno.</p>
+      </div>
+      <div id="overrideRolaInfo" style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 15px;"></div>
+      <input type="hidden" id="overrideRollCode">
+      <div class="form-group">
+        <label><strong>Nova težina (kg) *</strong></label>
+        <input type="number" class="form-control" id="overrideNovaTezina" step="0.1" min="0" placeholder="Unesite stvarnu težinu" required style="font-size: 18px; padding: 12px;">
+      </div>
+      <div class="form-group">
+        <label>Razlog korekcije</label>
+        <input type="text" class="form-control" id="overrideRazlog" placeholder="npr. Krivo skinuto u prošlosti">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('overrideTezineModal')">Odustani</button>
+      <button class="btn btn-warning" onclick="confirmOverrideTezine()">⚖️ Spremi novu težinu</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Prijava kvara -->
+<div class="modal" id="localFailureModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
+      <h2>🚨 Prijava kvara - Rezač</h2>
+      <span class="modal-close" onclick="closeModal('localFailureModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Stroj *</label>
+        <select class="form-control" id="localFailureMachine">
+          <option value="CMC-1">CMC-1 - CMC 1</option>
+          <option value="CMC-2">CMC-2 - CMC 2</option>
+          <option value="CMC-3">CMC-3 - CMC 3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tip kvara</label>
+        <select class="form-control" id="localFailureType">
+          <option value="Mehanički">Mehanički</option>
+          <option value="Električni">Električni</option>
+          <option value="Pneumatski">Pneumatski</option>
+          <option value="Hidraulički">Hidraulički</option>
+          <option value="Softverski">Softverski</option>
+          <option value="Ostalo">Ostalo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Prioritet</label>
+        <select class="form-control" id="localFailurePriority">
+          <option value="Nizak">Nizak - može čekati</option>
+          <option value="Normalan" selected>Normalan</option>
+          <option value="Visok">Visok - hitno</option>
+          <option value="Kritičan">🔴 Kritičan - STROJ STOJI!</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Opis kvara *</label>
+        <textarea class="form-control" id="localFailureDesc" rows="4" 
+          placeholder="Opišite problem detaljno...&#10;- Što se događa?&#10;- Kada je počelo?&#10;- Ima li neobičnih zvukova/mirisa?"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('localFailureModal')">Odustani</button>
+      <button class="btn btn-danger" onclick="submitLocalFailure()">
+        🚨 Prijavi kvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// REZAČ MODUL - Carta ERP
+// ============================================
+console.log('✂️ Rezač view loaded');
+
+// Globalne varijable
+var rezacSveRole = [];
+var rezacTrenutniRN = null;
+var rezacOdabraneTrake = [];
+var rezacStanjeTraka = {};
+var rezacSumaPapiraData = {};
+var rezacSlozeneTrakeLista = [];
+var rezacMaticnaRolaData = null;
+var rezacBrojTrakeCounter = {};
+var rezacOstatakKorekcijaMM = 0;
+var rezacRadniNaloziData = [];
+var rezacSirinaGranica = 50; // Default granica: >50cm = Rola, ≤50cm = Traka
+
+// ============================================
+// AUTOMATSKA INICIJALIZACIJA
+// ============================================
+(async function() {
+  console.log('✅ Rezač inicijalizacija...');
+  
+  // Učitaj postavku granice širine
+  try {
+    const { data: postavka } = await initSupabase()
+      .from('settings')
+      .select('value')
+      .eq('key', 'rezac_strip_width_threshold')
+      .single();
+    
+    if (postavka && postavka.value) {
+      rezacSirinaGranica = parseFloat(postavka.value) || 50;
+      console.log('📏 Granica širine traka/rola:', rezacSirinaGranica, 'cm');
+    }
+  } catch (e) {
+    console.log('📏 Koristi se default granica širine:', rezacSirinaGranica, 'cm');
+  }
+  
+  await rezacLoadData();
+})();
+
+// ============================================
+// UČITAVANJE PODATAKA
+// ============================================
+async function rezacLoadData(onComplete) {
+  showLoading();
+  console.log('⚡ Rezač - učitavam podatke...');
+  
+  try {
+    const supabase = initSupabase();
+    
+    // 1. Učitaj stanje traka (grupirano po šifri)
+    const { data: trake, error: trakeError } = await supabase
+      .from('prod_inventory_strips')
+      .select('strip_code, weight_kg')
+      .eq('status', 'Dostupno');
+    
+    if (trakeError) throw trakeError;
+    
+    rezacStanjeTraka = {};
+    (trake || []).forEach(t => {
+      const sifra = t.strip_code ? t.strip_code.split('/')[0] : '';
+      if (sifra && t.weight_kg) {
+        if (!rezacStanjeTraka[sifra]) rezacStanjeTraka[sifra] = 0;
+        rezacStanjeTraka[sifra] += parseFloat(t.weight_kg) || 0;
+      }
+    });
+    console.log('📦 Stanje traka:', Object.keys(rezacStanjeTraka).length, 'šifri');
+    
+    // 2. Učitaj role (sve dostupne) - LIMIT 10000 za punu listu
+    const { data: role, error: roleError } = await supabase
+      .from('prod_inventory_rolls')
+      .select('*')
+      .order('entry_date', { ascending: false })
+      .limit(10000);
+    
+    if (roleError) throw roleError;
+    
+    // Filtriraj na klijentskoj strani - samo role koje imaju preostalu količinu
+    // (remaining_kg > 0 ili initial_weight_kg ako remaining_kg nije postavljen)
+    rezacSveRole = (role || []).filter(r => {
+      const preostalo = r.remaining_kg ?? r.initial_weight_kg ?? 0;
+      return preostalo > 0;
+    });
+    console.log('📦 Role učitane:', rezacSveRole.length, '(od ukupno', role?.length || 0, ')');
+    
+    // 3. Učitaj RN rezanja
+    const { data: rnRezanje, error: rnError } = await supabase
+      .from('prod_work_orders_cutting')
+      .select('*')
+      .in('status', ['Planiran', 'U tijeku'])
+      .order('wo_number', { ascending: false });
+    
+    if (rnError) throw rnError;
+    
+    rezacRadniNaloziData = rnRezanje || [];
+    console.log('📋 RN rezanja:', rezacRadniNaloziData.length);
+    
+    hideLoading();
+    
+    // Inicijaliziraj UI
+    if (rezacSveRole.length > 0) {
+      rezacInitFilterDropdowns(rezacSveRole);
+      rezacPrikaziRole(rezacSveRole);
+    }
+    
+    rezacPrikaziRadneNaloge(rezacRadniNaloziData);
+    
+    if (typeof onComplete === 'function') onComplete();
+    
+  } catch (error) {
+    hideLoading();
+    console.error('❌ Greška:', error);
+    showMessage('Greška pri učitavanju: ' + error.message, 'error');
+    if (typeof onComplete === 'function') onComplete();
+  }
+}
+
+// ============================================
+// RADNI NALOZI
+// ============================================
+function rezacPrikaziRadneNaloge(nalozi) {
+  const tbody = document.getElementById('rezacRadniNaloziTableBody');
+  tbody.innerHTML = '';
+  
+  if (!nalozi || nalozi.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nema RN za rezanje</td></tr>';
+    return;
+  }
+  
+  // Grupiraj po wo_number
+  const grupirano = {};
+  nalozi.forEach(n => {
+    const brojRN = n.wo_number;
+    if (!grupirano[brojRN]) grupirano[brojRN] = [];
+    grupirano[brojRN].push(n);
+  });
+  
+  Object.keys(grupirano).forEach(brojRN => {
+    const artikli = grupirano[brojRN];
+    const prvi = artikli[0];
+    const ukupno = artikli.reduce((sum, a) => sum + (Number(a.quantity) || 0), 0);
+    
+    const statusClass = prvi.status === 'Planiran' ? 'info' : 
+                       prvi.status === 'U tijeku' ? 'warning' : 'success';
+    
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td><strong>${brojRN}</strong></td>
+      <td>${prvi.order_number || '-'}</td>
+      <td>${prvi.article_name || '-'}</td>
+      <td><span class="badge badge-info">${prvi.article_code || '-'}</span></td>
+      <td>${ukupno} kom</td>
+      <td><span class="badge badge-${statusClass}">${prvi.status}</span></td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="rezacOdaberiRN('${brojRN}')">Odaberi</button>
+        <button class="btn btn-sm btn-success" onclick="rezacZavrsiNalog('${brojRN}')" title="Završi nalog bez obzira na količinu">✓ Završi</button>
+      </td>
+    `;
+  });
+}
+
+async function rezacOdaberiRN(rn) {
+  rezacTrenutniRN = rn;
+  showMessage('RN odabran: ' + rn, 'info');
+  await rezacPrikaziDetaljeRN(rn);
+}
+
+// ============================================
+// DETALJI RN
+// ============================================
+async function rezacPrikaziDetaljeRN(brojRN) {
+  showLoading();
+  
+  try {
+    const supabase = initSupabase();
+    
+    // 1. Dohvati RN rezanja
+    const { data: rnRezanjaData, error } = await supabase
+      .from('prod_work_orders_cutting')
+      .select('*')
+      .eq('wo_number', brojRN);
+    
+    if (error) throw error;
+    
+    if (!rnRezanjaData || rnRezanjaData.length === 0) {
+      hideLoading();
+      showMessage('Nema detalja za ovaj RN', 'warning');
+      return;
+    }
+    
+    const rnRezanja = rnRezanjaData[0];
+    console.log('📋 RN Rezanja:', rnRezanja);
+    
+    // 2. Parsiraj main_wo_number da dobiješ listu glavnih RN-ova
+    // Format: "RN602/25, RN603/25, RN604/25, RN605/25"
+    const mainWoNumbers = [];
+    if (rnRezanja.main_wo_number) {
+      const parts = rnRezanja.main_wo_number.split(',').map(s => s.trim()).filter(s => s);
+      mainWoNumbers.push(...parts);
+    }
+    
+    console.log('📌 Glavni RN-ovi:', mainWoNumbers);
+    
+    if (mainWoNumbers.length === 0) {
+      // Nema povezanih glavnih RN-ova - koristi podatke iz narudžbe
+      console.log('📦 Koristim podatke iz RN rezanja:', rnRezanja);
+      console.log('📦 order_number:', rnRezanja.order_number);
+      
+      // Dohvati stavke narudžbe iz prod_orders
+      if (rnRezanja.order_number) {
+        // Parsiraj article_id-ove iz RN rezanja (UUID-ovi odvojeni s " | ")
+        const articleUUIDs = rnRezanja.article_id ? rnRezanja.article_id.split('|').map(s => s.trim()).filter(s => s) : [];
+        console.log('📦 Article UUIDs iz RN rezanja:', articleUUIDs);
+        
+        // Dohvati sve stavke narudžbe
+        const { data: orderItems, error: orderError } = await supabase
+          .from('prod_orders')
+          .select('id, article_id, article_name, article_code, quantity_ordered, customer_name')
+          .eq('order_number', rnRezanja.order_number);
+        
+        if (orderError) {
+          console.error('Greška dohvata narudžbe:', orderError);
+        }
+        
+        console.log('📦 Stavke narudžbe:', orderItems);
+        
+        if (orderItems && orderItems.length > 0) {
+          const rnSaPodacima = [];
+          
+          for (const orderItem of orderItems) {
+            // article_id u prod_orders može biti UUID ili šifra artikla
+            // Dohvati artikl - prvo probaj kao UUID, zatim kao šifru
+            let artikl = null;
+            
+            if (orderItem.article_id) {
+              // Probaj kao UUID (spajanje na prod_articles.id)
+              const { data: artData1 } = await supabase
+                .from('prod_articles')
+                .select(`id, article_id, name, code,
+                  bag_width, bag_bottom,
+                  paper_s1_code, paper_s1_width, paper_s1_grammage,
+                  paper_s2_code, paper_s2_width, paper_s2_grammage,
+                  paper_s3_code, paper_s3_width, paper_s3_grammage,
+                  paper_s4_code, paper_s4_width, paper_s4_grammage,
+                  tube_length,
+                  valve_s1_paper_code, valve_s1_width, valve_s1_grammage, valve_s1_length, valve_s1_overlap,
+                  valve_s2_paper_code, valve_s2_width, valve_s2_grammage, valve_s2_length, valve_s2_overlap,
+                  top_paper_code, top_width, top_grammage, top_overlap,
+                  bottom_paper_code, bottom_width, bottom_grammage, bottom_overlap`)
+                .eq('id', orderItem.article_id)
+                .maybeSingle();
+              
+              if (artData1) {
+                artikl = artData1;
+              } else {
+                // Probaj kao šifru artikla (spajanje na prod_articles.article_id)
+                const { data: artData2 } = await supabase
+                  .from('prod_articles')
+                  .select(`id, article_id, name, code,
+                    bag_width, bag_bottom,
+                    paper_s1_code, paper_s1_width, paper_s1_grammage,
+                    paper_s2_code, paper_s2_width, paper_s2_grammage,
+                    paper_s3_code, paper_s3_width, paper_s3_grammage,
+                    paper_s4_code, paper_s4_width, paper_s4_grammage,
+                    tube_length,
+                    valve_s1_paper_code, valve_s1_width, valve_s1_grammage, valve_s1_length, valve_s1_overlap,
+                    valve_s2_paper_code, valve_s2_width, valve_s2_grammage, valve_s2_length, valve_s2_overlap,
+                    top_paper_code, top_width, top_grammage, top_overlap,
+                    bottom_paper_code, bottom_width, bottom_grammage, bottom_overlap`)
+                  .eq('article_id', orderItem.article_id)
+                  .maybeSingle();
+                
+                if (artData2) {
+                  artikl = artData2;
+                }
+              }
+            }
+            
+            // Ako nije pronađen po article_id, probaj po imenu
+            if (!artikl && orderItem.article_name) {
+              const { data: artData3 } = await supabase
+                .from('prod_articles')
+                .select(`id, article_id, name, code,
+                  bag_width, bag_bottom,
+                  paper_s1_code, paper_s1_width, paper_s1_grammage,
+                  paper_s2_code, paper_s2_width, paper_s2_grammage,
+                  paper_s3_code, paper_s3_width, paper_s3_grammage,
+                  paper_s4_code, paper_s4_width, paper_s4_grammage,
+                  tube_length,
+                  valve_s1_paper_code, valve_s1_width, valve_s1_grammage, valve_s1_length, valve_s1_overlap,
+                  valve_s2_paper_code, valve_s2_width, valve_s2_grammage, valve_s2_length, valve_s2_overlap,
+                  top_paper_code, top_width, top_grammage, top_overlap,
+                  bottom_paper_code, bottom_width, bottom_grammage, bottom_overlap`)
+                .eq('name', orderItem.article_name)
+                .maybeSingle();
+              
+              if (artData3) {
+                artikl = artData3;
+              }
+            }
+            
+            if (artikl) {
+              console.log('✅ Artikl pronađen:', artikl.name, '- Količina:', orderItem.quantity_ordered);
+              rnSaPodacima.push({
+                wo_number: brojRN,
+                article_name: orderItem.article_name || artikl.name,
+                article_code: orderItem.article_code || artikl.code,
+                customer_name: orderItem.customer_name || rnRezanja.customer_name || '-',
+                quantity: orderItem.quantity_ordered || 0,
+                artikl: artikl
+              });
+            }
+          }
+          
+          if (rnSaPodacima.length > 0) {
+            hideLoading();
+            rezacRenderDetaljiRN(brojRN, rnSaPodacima);
+            
+            const card = document.getElementById('rezacDetaljiCard');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            showMessage(`📦 Pronađeno ${rnSaPodacima.length} artikl(a) iz narudžbe ${rnRezanja.order_number}`, 'success');
+            return;
+          }
+        }
+      }
+      
+      // Ako nema order_number ili stavke nisu pronađene, probaj po article_id iz RN rezanja
+      const articleIds = rnRezanja.article_id ? rnRezanja.article_id.split('|').map(s => s.trim()).filter(s => s) : [];
+      const articleNames = rnRezanja.article_name ? rnRezanja.article_name.split('|').map(s => s.trim()).filter(s => s) : [];
+      
+      if (articleIds.length > 0 || articleNames.length > 0) {
+        console.log('📦 Fallback na article_id iz RN rezanja:', articleIds);
+        console.log('📦 Article names:', articleNames);
+        
+        const rnSaPodacima = [];
+        
+        for (let i = 0; i < Math.max(articleIds.length, articleNames.length); i++) {
+          const artId = articleIds[i];
+          const artName = articleNames[i] || '';
+          
+          if (artId) {
+            const { data: artikl } = await supabase
+              .from('prod_articles')
+              .select(`id, article_id, name, code,
+                bag_width, bag_bottom,
+                paper_s1_code, paper_s1_width, paper_s1_grammage,
+                paper_s2_code, paper_s2_width, paper_s2_grammage,
+                paper_s3_code, paper_s3_width, paper_s3_grammage,
+                paper_s4_code, paper_s4_width, paper_s4_grammage,
+                tube_length,
+                valve_s1_paper_code, valve_s1_width, valve_s1_grammage, valve_s1_length, valve_s1_overlap,
+                valve_s2_paper_code, valve_s2_width, valve_s2_grammage, valve_s2_length, valve_s2_overlap,
+                top_paper_code, top_width, top_grammage, top_overlap,
+                bottom_paper_code, bottom_width, bottom_grammage, bottom_overlap`)
+              .eq('id', artId)
+              .maybeSingle();
+            
+            if (artikl) {
+              // Pronađi količinu iz narudžbe - traži po imenu ili šifri artikla
+              let kolicina = 0;
+              
+              if (rnRezanja.order_number) {
+                // Probaj dohvatiti iz narudžbe po imenu artikla
+                const searchName = artName || artikl.name;
+                const { data: orderItem } = await supabase
+                  .from('prod_orders')
+                  .select('quantity_ordered')
+                  .eq('order_number', rnRezanja.order_number)
+                  .eq('article_name', searchName)
+                  .maybeSingle();
+                
+                if (orderItem && orderItem.quantity_ordered) {
+                  kolicina = orderItem.quantity_ordered;
+                  console.log('✅ Količina iz narudžbe (po imenu) za', searchName, ':', kolicina);
+                } else {
+                  // Probaj po šifri artikla
+                  const { data: orderItem2 } = await supabase
+                    .from('prod_orders')
+                    .select('quantity_ordered')
+                    .eq('order_number', rnRezanja.order_number)
+                    .eq('article_id', artikl.article_id)
+                    .maybeSingle();
+                  
+                  if (orderItem2 && orderItem2.quantity_ordered) {
+                    kolicina = orderItem2.quantity_ordered;
+                    console.log('✅ Količina iz narudžbe (po šifri) za', searchName, ':', kolicina);
+                  }
+                }
+              }
+              
+              // Fallback: podijeli ukupnu količinu
+              if (!kolicina) {
+                kolicina = Math.round((rnRezanja.quantity || 0) / articleIds.length);
+                console.log('⚠️ Količina procijenjena za', artName || artikl.name, ':', kolicina);
+              }
+              
+              rnSaPodacima.push({
+                wo_number: brojRN,
+                article_name: artName || artikl.name,
+                article_code: artikl.code,
+                customer_name: rnRezanja.customer_name || '-',
+                quantity: kolicina,
+                artikl: artikl
+              });
+            }
+          }
+        }
+        
+        if (rnSaPodacima.length > 0) {
+          hideLoading();
+          rezacRenderDetaljiRN(brojRN, rnSaPodacima);
+          
+          const card = document.getElementById('rezacDetaljiCard');
+          card.style.display = 'block';
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          
+          showMessage(`📦 Pronađeno ${rnSaPodacima.length} artikl(a) (količine procijenjene)`, 'info');
+          return;
+        }
+      }
+      
+      // Ako ništa nije pronađeno, omogući slobodno rezanje
+      console.warn('⚠️ Artikli nisu pronađeni, omogućavam slobodno rezanje');
+      hideLoading();
+      rezacRenderDetaljiRN(brojRN, [], true);
+      
+      const card = document.getElementById('rezacDetaljiCard');
+      card.style.display = 'block';
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+    
+    // 3. Dohvati glavne RN-ove s article_id (UUID)
+    const { data: glavniRNovi, error: rnError } = await supabase
+      .from('prod_work_orders')
+      .select('wo_number, article_id, article_name, article_code, quantity, customer_name')
+      .in('wo_number', mainWoNumbers);
+    
+    if (rnError) throw rnError;
+    
+    console.log('📦 Glavni RN-ovi:', glavniRNovi);
+    
+    // 4. Dohvati artikle za svaki glavni RN (preko UUID)
+    const rnSaPodacima = [];
+    for (const glavniRN of (glavniRNovi || [])) {
+      if (glavniRN.article_id) {
+        // article_id je UUID, spajamo na id kolonu u prod_articles
+        const { data: artikl, error: artError } = await supabase
+          .from('prod_articles')
+          .select(`id, article_id, name, code,
+            bag_width, bag_bottom,
+            paper_s1_code, paper_s1_width, paper_s1_grammage,
+            paper_s2_code, paper_s2_width, paper_s2_grammage,
+            paper_s3_code, paper_s3_width, paper_s3_grammage,
+            paper_s4_code, paper_s4_width, paper_s4_grammage,
+            tube_length,
+            valve_s1_paper_code, valve_s1_width, valve_s1_grammage, valve_s1_length, valve_s1_overlap,
+            valve_s2_paper_code, valve_s2_width, valve_s2_grammage, valve_s2_length, valve_s2_overlap,
+            top_paper_code, top_width, top_grammage, top_overlap,
+            bottom_paper_code, bottom_width, bottom_grammage, bottom_overlap`)
+          .eq('id', glavniRN.article_id)
+          .single();
+        
+        if (!artError && artikl) {
+          console.log('✅ Artikl pronađen:', artikl.article_id, artikl.name);
+          rnSaPodacima.push({
+            wo_number: glavniRN.wo_number,
+            article_name: glavniRN.article_name || artikl.name,
+            article_code: glavniRN.article_code || artikl.code,
+            customer_name: glavniRN.customer_name,
+            quantity: glavniRN.quantity,
+            artikl: artikl
+          });
+        } else {
+          console.warn('⚠️ Artikl nije pronađen za UUID:', glavniRN.article_id);
+          rnSaPodacima.push({
+            wo_number: glavniRN.wo_number,
+            article_name: glavniRN.article_name,
+            customer_name: glavniRN.customer_name,
+            quantity: glavniRN.quantity,
+            artikl: null
+          });
+        }
+      } else {
+        rnSaPodacima.push({
+          wo_number: glavniRN.wo_number,
+          article_name: glavniRN.article_name,
+          customer_name: glavniRN.customer_name,
+          quantity: glavniRN.quantity,
+          artikl: null
+        });
+      }
+    }
+    
+    hideLoading();
+    rezacRenderDetaljiRN(brojRN, rnSaPodacima);
+    
+    const card = document.getElementById('rezacDetaljiCard');
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+  } catch (error) {
+    hideLoading();
+    console.error('❌ Greška:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+function rezacRenderDetaljiRN(brojRN, rnData, slobodnoRezanje = false) {
+  document.getElementById('rezacDetaljiRNBroj').textContent = brojRN;
+  
+  const content = document.getElementById('rezacDetaljiContent');
+  content.innerHTML = '';
+  
+  // Ako je slobodno rezanje (bez podataka o artiklu), prikaži opcije
+  if (slobodnoRezanje) {
+    content.innerHTML = `
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+        <h3 style="margin: 0 0 15px 0;">📋 Slobodno rezanje unaprijed</h3>
+        <p style="margin: 0 0 15px 0; opacity: 0.9;">
+          Ovaj RN rezanja nema povezan artikl. Možete rezati unaprijed - 
+          odaberite matičnu rolu iz skladišta i ručno definirajte širine traka koje želite izrezati.
+        </p>
+        <button class="btn btn-light" onclick="rezacPokreniSlobodnoRezanje()" style="background: white; color: #667eea; font-weight: 600;">
+          ✂️ Pokreni slobodno rezanje
+        </button>
+      </div>
+    `;
+    
+    // Sakrij suma tablicu jer nema podataka za izračun
+    document.getElementById('rezacSumaPapiraBody').innerHTML = 
+      '<tr><td colspan="7" style="text-align:center; color: #6c757d; padding: 20px;">Nema automatskog izračuna - koristite slobodno rezanje</td></tr>';
+    
+    return;
+  }
+  
+  const sumaPapira = {};
+  
+  rnData.forEach((rn, index) => {
+    const artCard = document.createElement('div');
+    artCard.className = 'artikl-card';
+    
+    // Izvuci podatke iz artikla - FLAT STRUKTURA
+    const artikl = rn.artikl || {};
+    const kolicina = rn.quantity || 0;
+    const tubeLength = parseFloat(artikl.tube_length) || 68;  // Duljina tuljka za S1-S4
+    
+    let html = `<div class="artikl-header">
+      📦 RN ${index + 1}: ${rn.article_name || artikl.name || '-'} - ${rn.customer_name || '-'}
+      | Količina: ${kolicina} kom
+    </div>`;
+    
+    // ========== PAPIRI ZA TULJAK (S1-S4) - SKRIVENI PO DEFAULTU ==========
+    let hasTuljak = false;
+    let tuljakHtml = '';
+    
+    // Papir S1 (prvi sloj) - koristi TUBE LENGTH
+    const papirS1 = artikl.paper_s1_code;
+    const sirinaS1 = parseFloat(artikl.paper_s1_width) || 0;
+    const gramaturaS1 = parseFloat(artikl.paper_s1_grammage) || 0;
+    
+    if (papirS1 && sirinaS1 > 0) {
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaS1, gramaturaS1, tubeLength, 0, kolicina);
+      tuljakHtml += rezacGenerisiPapirBox('📄 Papir S1', papirS1, sirinaS1, gramaturaS1, tezina, tubeLength);
+      // S1 se NE dodaje u sumu - papir za tuljak dolazi već u odgovarajućoj širini i ne reže se na rezaču
+      hasTuljak = true;
+    }
+    
+    // Papir S2 (drugi sloj) - koristi TUBE LENGTH
+    const papirS2 = artikl.paper_s2_code;
+    const sirinaS2 = parseFloat(artikl.paper_s2_width) || 0;
+    const gramaturaS2 = parseFloat(artikl.paper_s2_grammage) || 0;
+    
+    if (papirS2 && sirinaS2 > 0) {
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaS2, gramaturaS2, tubeLength, 0, kolicina);
+      tuljakHtml += rezacGenerisiPapirBox('📄 Papir S2', papirS2, sirinaS2, gramaturaS2, tezina, tubeLength);
+      // S2 se NE dodaje u sumu - papir za tuljak dolazi već u odgovarajućoj širini i ne reže se na rezaču
+      hasTuljak = true;
+    }
+    
+    // Papir S3 (treći sloj) - koristi TUBE LENGTH
+    const papirS3 = artikl.paper_s3_code;
+    const sirinaS3 = parseFloat(artikl.paper_s3_width) || 0;
+    const gramaturaS3 = parseFloat(artikl.paper_s3_grammage) || 0;
+    
+    if (papirS3 && sirinaS3 > 0) {
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaS3, gramaturaS3, tubeLength, 0, kolicina);
+      tuljakHtml += rezacGenerisiPapirBox('📄 Papir S3', papirS3, sirinaS3, gramaturaS3, tezina, tubeLength);
+      // S3 se NE dodaje u sumu - papir za tuljak dolazi već u odgovarajućoj širini i ne reže se na rezaču
+      hasTuljak = true;
+    }
+    
+    // Papir S4 (četvrti sloj) - koristi TUBE LENGTH
+    const papirS4 = artikl.paper_s4_code;
+    const sirinaS4 = parseFloat(artikl.paper_s4_width) || 0;
+    const gramaturaS4 = parseFloat(artikl.paper_s4_grammage) || 0;
+    
+    if (papirS4 && sirinaS4 > 0) {
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaS4, gramaturaS4, tubeLength, 0, kolicina);
+      tuljakHtml += rezacGenerisiPapirBox('📄 Papir S4', papirS4, sirinaS4, gramaturaS4, tezina, tubeLength);
+      // S4 se NE dodaje u sumu - papir za tuljak dolazi već u odgovarajućoj širini i ne reže se na rezaču
+      hasTuljak = true;
+    }
+    
+    // Dodaj sekciju za tuljak ako postoji
+    if (hasTuljak) {
+      html += `
+        <div style="margin: 10px 0;">
+          <button class="btn btn-sm btn-secondary" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'flex' : 'none'; this.textContent = this.nextElementSibling.style.display === 'none' ? '📜 Prikaži papir za tuljak' : '📜 Sakrij papir za tuljak';">
+            📜 Prikaži papir za tuljak
+          </button>
+          <div class="papir-grid" style="display: none; margin-top: 10px;">
+            ${tuljakHtml}
+          </div>
+        </div>
+      `;
+    }
+    
+    // ========== PAPIRI ZA BOTTOMER (uvijek vidljivi) ==========
+    html += '<div class="papir-grid">';
+    
+    // Dimenzije vreće za izračun duljine dna
+    const bagWidth = parseFloat(artikl.bag_width) || 0;
+    const bagBottom = parseFloat(artikl.bag_bottom) || 0;
+    
+    // Gornje dno - formula: širina_vreće - dno_vreće + preklop
+    const sifraDnoGornje = artikl.top_paper_code;
+    const sirinaDnoGornje = parseFloat(artikl.top_width) || 0;
+    const gramaturaDnoGornje = parseFloat(artikl.top_grammage) || 0;
+    
+    if (sifraDnoGornje && sirinaDnoGornje > 0) {
+      const preklopDnoGornje = parseFloat(artikl.top_overlap) || 0;
+      const duljinaDnoGornje = bagWidth - bagBottom + preklopDnoGornje;
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaDnoGornje, gramaturaDnoGornje, duljinaDnoGornje, 0, kolicina);
+      
+      html += rezacGenerisiPapirBox('🟢 Gornje Dno', sifraDnoGornje, sirinaDnoGornje, gramaturaDnoGornje, tezina, duljinaDnoGornje);
+      if (tezina > 0) rezacDodajUSumu(sumaPapira, sifraDnoGornje, sirinaDnoGornje, gramaturaDnoGornje, tezina);
+    }
+    
+    // Donje dno - formula: širina_vreće - dno_vreće + preklop
+    const sifraDnoDonje = artikl.bottom_paper_code;
+    const sirinaDnoDonje = parseFloat(artikl.bottom_width) || 0;
+    const gramaturaDnoDonje = parseFloat(artikl.bottom_grammage) || 0;
+    
+    if (sifraDnoDonje && sirinaDnoDonje > 0) {
+      const preklopDnoDonje = parseFloat(artikl.bottom_overlap) || 0;
+      const duljinaDnoDonje = bagWidth - bagBottom + preklopDnoDonje;
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaDnoDonje, gramaturaDnoDonje, duljinaDnoDonje, 0, kolicina);
+      
+      html += rezacGenerisiPapirBox('🟡 Donje Dno', sifraDnoDonje, sirinaDnoDonje, gramaturaDnoDonje, tezina, duljinaDnoDonje);
+      if (tezina > 0) rezacDodajUSumu(sumaPapira, sifraDnoDonje, sirinaDnoDonje, gramaturaDnoDonje, tezina);
+    }
+    
+    // Ventil S1 - koristi VALVE LENGTH
+    const sifraVentilS1 = artikl.valve_s1_paper_code;
+    const sirinaVentilS1 = parseFloat(artikl.valve_s1_width) || 0;
+    const gramaturaVentilS1 = parseFloat(artikl.valve_s1_grammage) || 0;
+    
+    if (sifraVentilS1 && sirinaVentilS1 > 0) {
+      const duljinaVentilS1 = parseFloat(artikl.valve_s1_length) || 0;
+      const preklopVentilS1 = parseFloat(artikl.valve_s1_overlap) || 0;
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaVentilS1, gramaturaVentilS1, duljinaVentilS1, preklopVentilS1, kolicina);
+      
+      html += rezacGenerisiPapirBox('🔵 Ventil S1', sifraVentilS1, sirinaVentilS1, gramaturaVentilS1, tezina, duljinaVentilS1 + preklopVentilS1);
+      if (tezina > 0) rezacDodajUSumu(sumaPapira, sifraVentilS1, sirinaVentilS1, gramaturaVentilS1, tezina);
+    }
+    
+    // Ventil S2 - koristi VALVE LENGTH
+    const sifraVentilS2 = artikl.valve_s2_paper_code;
+    const sirinaVentilS2 = parseFloat(artikl.valve_s2_width) || 0;
+    const gramaturaVentilS2 = parseFloat(artikl.valve_s2_grammage) || 0;
+    
+    if (sifraVentilS2 && sirinaVentilS2 > 0) {
+      const duljinaVentilS2 = parseFloat(artikl.valve_s2_length) || 0;
+      const preklopVentilS2 = parseFloat(artikl.valve_s2_overlap) || 0;
+      const tezina = rezacIzracunajPotrebnuTezinu(sirinaVentilS2, gramaturaVentilS2, duljinaVentilS2, preklopVentilS2, kolicina);
+      
+      html += rezacGenerisiPapirBox('🔵 Ventil S2', sifraVentilS2, sirinaVentilS2, gramaturaVentilS2, tezina, duljinaVentilS2 + preklopVentilS2);
+      if (tezina > 0) rezacDodajUSumu(sumaPapira, sifraVentilS2, sirinaVentilS2, gramaturaVentilS2, tezina);
+    }
+    
+    html += '</div>';
+    artCard.innerHTML = html;
+    content.appendChild(artCard);
+  });
+  
+  rezacPrikaziSumePapira(sumaPapira);
+}
+
+/**
+ * Formula za potrebnu težinu papira:
+ * Potrebna težina (kg) = Širina × Gramatura × (Duljina + Preklop) × Količina / 10.000.000
+ * 
+ * Širina u cm, Gramatura u g/m², Duljina i Preklop u cm, Količina u kom
+ */
+function rezacIzracunajPotrebnuTezinu(sirinaCm, gramatura, duljinaCm, preklopCm, kolicina) {
+  if (!sirinaCm || !gramatura || !kolicina) return 0;
+  const duljina = (duljinaCm || 0) + (preklopCm || 0);
+  if (duljina <= 0) return 0;
+  
+  // Formula: širina × gramatura × (duljina + preklop) × količina / 10.000.000
+  const tezina = (sirinaCm * gramatura * duljina * kolicina) / 10000000;
+  return Math.round(tezina * 100) / 100; // Zaokruži na 2 decimale
+}
+
+function rezacGenerisiPapirBox(naslov, sifra, sirina, gramatura, tezina, duljina) {
+  if (!sifra) return '';
+  return `<div class="papir-box">
+    <div class="papir-title">${naslov}</div>
+    <div class="papir-detail"><span class="papir-detail-label">Šifra:</span><span class="papir-detail-value">${sifra}</span></div>
+    <div class="papir-detail"><span class="papir-detail-label">Širina:</span><span class="papir-detail-value">${sirina || '-'} cm</span></div>
+    <div class="papir-detail"><span class="papir-detail-label">Gramatura:</span><span class="papir-detail-value">${gramatura || '-'} g</span></div>
+    <div class="papir-detail"><span class="papir-detail-label">Duljina:</span><span class="papir-detail-value">${duljina ? duljina.toFixed(1) : '-'} cm</span></div>
+    <div class="papir-detail" style="border-top: 1px solid #eee; padding-top: 5px; margin-top: 5px;"><span class="papir-detail-label"><strong>Potrebno:</strong></span><span class="papir-detail-value"><strong>${tezina ? tezina.toFixed(2) : '0.00'} kg</strong></span></div>
+  </div>`;
+}
+
+function rezacDodajUSumu(sumaPapira, sifra, sirina, gramatura, tezina) {
+  if (!sifra || !tezina || tezina <= 0) return;
+  
+  const kljuc = `${sifra}|${sirina || 0}|${gramatura || 0}`;
+  
+  if (!sumaPapira[kljuc]) {
+    sumaPapira[kljuc] = { sifra, sirina: sirina || 0, gramatura: gramatura || 0, ukupnoKg: 0 };
+  }
+  sumaPapira[kljuc].ukupnoKg += tezina;
+}
+
+function rezacPrikaziSumePapira(sumaPapira) {
+  const tbody = document.getElementById('rezacSumaPapiraBody');
+  tbody.innerHTML = '';
+  
+  rezacSumaPapiraData = sumaPapira;
+  const papiri = Object.values(sumaPapira);
+  
+  if (papiri.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nema podataka</td></tr>';
+    return;
+  }
+  
+  papiri.sort((a, b) => String(a.sifra).localeCompare(String(b.sifra)));
+  
+  let ukupnaTezina = 0;
+  let ukupnoZaRezanje = 0;
+  
+  papiri.forEach(p => {
+    const naStanju = rezacStanjeTraka[p.sifra] || 0;
+    const zaRezanje = Math.max(0, p.ukupnoKg - naStanju);
+    
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td><input type="checkbox" class="traka-checkbox" data-sifra="${p.sifra}" data-sirina="${p.sirina}" data-gramatura="${p.gramatura}" data-zarezanje="${zaRezanje.toFixed(2)}" onchange="rezacUpdateOdabrane()"></td>
+      <td><strong>${p.sifra}</strong></td>
+      <td>${p.sirina} cm</td>
+      <td>${p.gramatura} g</td>
+      <td><strong>${p.ukupnoKg.toFixed(2)} kg</strong></td>
+      <td style="color: ${naStanju > 0 ? '#28a745' : '#6c757d'};">${naStanju.toFixed(2)} kg</td>
+      <td style="color: ${zaRezanje > 0 ? '#dc3545' : '#28a745'}; font-weight: 700;">${zaRezanje.toFixed(2)} kg</td>
+    `;
+    
+    ukupnaTezina += p.ukupnoKg;
+    ukupnoZaRezanje += zaRezanje;
+  });
+  
+  const totalRow = tbody.insertRow();
+  totalRow.className = 'suma-total';
+  totalRow.innerHTML = `<td></td><td colspan="3"><strong>UKUPNO:</strong></td><td><strong>${ukupnaTezina.toFixed(2)} kg</strong></td><td></td><td><strong>${ukupnoZaRezanje.toFixed(2)} kg</strong></td>`;
+}
+
+function rezacToggleSelectAll(checkbox) {
+  document.querySelectorAll('.traka-checkbox').forEach(cb => cb.checked = checkbox.checked);
+  rezacUpdateOdabrane();
+}
+
+function rezacUpdateOdabrane() {
+  rezacOdabraneTrake = [];
+  document.querySelectorAll('.traka-checkbox:checked').forEach(cb => {
+    rezacOdabraneTrake.push({
+      sifra: cb.dataset.sifra,
+      sirina: parseFloat(cb.dataset.sirina),
+      gramatura: parseFloat(cb.dataset.gramatura),
+      zaRezanje: parseFloat(cb.dataset.zarezanje)
+    });
+  });
+  
+  document.getElementById('rezacBrojOdabranih').textContent = rezacOdabraneTrake.length;
+  document.getElementById('btnPokreniSlaganje').disabled = rezacOdabraneTrake.length === 0;
+}
+
+function rezacZatvoriDetalje() {
+  document.getElementById('rezacDetaljiCard').style.display = 'none';
+}
+
+// ============================================
+// WORKFLOW SLAGANJE TRAKA
+// ============================================
+
+// Nova funkcija za slobodno rezanje bez glavnih RN-ova
+function rezacPokreniSlobodnoRezanje() {
+  // Resetiraj prethodne odabire
+  rezacOdabraneTrake = [];
+  rezacSlozeneTrakeLista = [];
+  rezacBrojTrakeCounter = {};
+  rezacMaticnaRolaData = null;
+  
+  // Prikaži workflow sekciju
+  document.getElementById('rezacWorkflowSection').classList.add('show');
+  
+  // Očisti dostupne trake - korisnik će koristiti samo custom unos
+  const dostupneDiv = document.getElementById('rezacDostupneTrake');
+  dostupneDiv.innerHTML = `
+    <div style="background: #e7f3ff; border: 1px solid #b8daff; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+      <strong>ℹ️ Slobodno rezanje:</strong><br>
+      <small>Nema predefiniranih traka. Odaberite matičnu rolu iz skladišta, 
+      zatim koristite "Dodaj custom traku" za ručni unos širina traka koje želite izrezati.</small>
+    </div>
+  `;
+  
+  // Resetiraj kalkulator
+  document.getElementById('rezacRolaInfo').style.display = 'none';
+  document.getElementById('kalkulatorSirinaRole').textContent = '0';
+  rezacAzurirajKalkulator();
+  
+  document.getElementById('rezacWorkflowSection').scrollIntoView({ behavior: 'smooth' });
+  showMessage('Odaberite matičnu rolu i dodajte custom trake za rezanje', 'info');
+}
+
+function rezacPokreniSlaganjeTraka() {
+  if (rezacOdabraneTrake.length === 0) {
+    showMessage('Odaberite barem jednu traku!', 'warning');
+    return;
+  }
+  
+  document.getElementById('rezacWorkflowSection').classList.add('show');
+  
+  const dostupneDiv = document.getElementById('rezacDostupneTrake');
+  dostupneDiv.innerHTML = '';
+  
+  rezacOdabraneTrake.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'dostupna-traka-btn';
+    btn.innerHTML = `${t.sifra} (${t.sirina} cm)`;
+    btn.onclick = () => rezacDodajTrakuUSlaganje(t.sifra, t.sirina);
+    dostupneDiv.appendChild(btn);
+  });
+  
+  rezacSlozeneTrakeLista = [];
+  rezacBrojTrakeCounter = {};
+  rezacAzurirajKalkulator();
+  
+  document.getElementById('rezacWorkflowSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function rezacZatvoriWorkflow() {
+  document.getElementById('rezacWorkflowSection').classList.remove('show');
+}
+
+async function rezacDohvatiRolu() {
+  const sifra = document.getElementById('rezacWorkflowMaticnaRola').value.trim();
+  if (!sifra) {
+    showMessage('Unesite šifru role!', 'warning');
+    return;
+  }
+
+  // Prvo traži u lokalnim podacima (remaining_kg > 0)
+  let rola = rezacSveRole.find(r => r.roll_code === sifra);
+
+  // Ako nema lokalno, traži u bazi (može biti rola s remaining_kg = 0)
+  if (!rola) {
+    try {
+      const { data, error } = await initSupabase()
+        .from('prod_inventory_rolls')
+        .select('*')
+        .eq('roll_code', sifra)
+        .single();
+
+      if (!error && data) {
+        rola = data;
+        // Ponudi override jer je rola u bazi ali s 0 kg
+        const preostalo = parseFloat(rola.remaining_kg) || 0;
+        if (preostalo <= 0) {
+          showMessage(`⚠️ Rola "${sifra}" ima stanje ${preostalo.toFixed(1)} kg. Koristite ⚖️ za korekciju težine.`, 'warning');
+        }
+      }
+    } catch (e) {
+      console.warn('Greška pretrage role u bazi:', e);
+    }
+  }
+
+  if (rola) {
+    const sirina = parseFloat(rola.width_cm) || 0;
+    const tezina = parseFloat(rola.remaining_kg) || 0;
+
+    rezacMaticnaRolaData = { sifra, sirina, tezina, id: rola.id };
+
+    document.getElementById('rezacRolaSifra').textContent = sifra;
+    document.getElementById('rezacRolaSirina').textContent = sirina.toFixed(1);
+    document.getElementById('rezacRolaTezina').textContent = tezina.toFixed(1);
+    document.getElementById('rezacRolaInfo').style.display = 'block';
+    document.getElementById('kalkulatorSirinaRole').textContent = sirina.toFixed(1);
+    document.getElementById('rezacOverrideBtnWorkflow').style.display = 'inline-block';
+
+    rezacAzurirajKalkulator();
+    showMessage(`Rola dohvaćena: ${sifra} (${tezina.toFixed(1)} kg)`, 'success');
+  } else {
+    rezacMaticnaRolaData = null;
+    document.getElementById('rezacRolaInfo').style.display = 'none';
+    document.getElementById('kalkulatorSirinaRole').textContent = '0';
+    document.getElementById('rezacOverrideBtnWorkflow').style.display = 'none';
+    rezacAzurirajKalkulator();
+    showMessage(`Rola "${sifra}" nije pronađena u bazi!`, 'error');
+  }
+}
+
+function rezacDodajTrakuUSlaganje(sifra, sirina) {
+  if (!rezacBrojTrakeCounter[sifra]) rezacBrojTrakeCounter[sifra] = 0;
+  rezacBrojTrakeCounter[sifra]++;
+  
+  rezacSlozeneTrakeLista.push({
+    sifra, sirina, brojTrake: rezacBrojTrakeCounter[sifra], isCustom: false
+  });
+  
+  rezacAzurirajKalkulator();
+  rezacPrikaziSlozeneTrakePrikaz();
+}
+
+function rezacDodajCustomTraku() {
+  const sirina = parseFloat(document.getElementById('rezacCustomSirina').value);
+  if (!sirina || sirina <= 0) {
+    showMessage('Unesite valjanu širinu!', 'warning');
+    return;
+  }
+  
+  let novaSifra;
+  
+  if (rezacOdabraneTrake.length > 0) {
+    // Imamo odabrane trake - generiraj šifru po njihovom uzoru
+    const prvaTraka = rezacOdabraneTrake[0];
+    const parts = prvaTraka.sifra.split('-');
+    novaSifra = `${parts[0]}-${sirina}-${parts[parts.length - 1]}`;
+  } else if (rezacMaticnaRolaData) {
+    // Slobodno rezanje - generiraj šifru iz matične role
+    const parts = rezacMaticnaRolaData.sifra.split('-');
+    if (parts.length >= 2) {
+      // Format: PAPIR-SIRINA ili PAPIR-SIRINA-GRAMATURA
+      novaSifra = `${parts[0]}-${sirina}`;
+      if (parts.length >= 3) novaSifra += `-${parts[parts.length - 1]}`;
+    } else {
+      novaSifra = `TRAKA-${sirina}`;
+    }
+  } else {
+    // Nema ni odabranih traka ni matične role - generiraj generičku šifru
+    novaSifra = `TRAKA-${sirina}`;
+  }
+  
+  if (!rezacBrojTrakeCounter[novaSifra]) rezacBrojTrakeCounter[novaSifra] = 0;
+  rezacBrojTrakeCounter[novaSifra]++;
+  
+  rezacSlozeneTrakeLista.push({
+    sifra: novaSifra, sirina, brojTrake: rezacBrojTrakeCounter[novaSifra], isCustom: true
+  });
+  
+  document.getElementById('rezacCustomSirina').value = '';
+  rezacAzurirajKalkulator();
+  rezacPrikaziSlozeneTrakePrikaz();
+}
+
+function rezacUkloniTrakuIzSlaganja(index) {
+  const traka = rezacSlozeneTrakeLista[index];
+  if (rezacBrojTrakeCounter[traka.sifra] > 0) rezacBrojTrakeCounter[traka.sifra]--;
+  
+  rezacSlozeneTrakeLista.splice(index, 1);
+  
+  // Renumeriraj
+  const tempCounter = {};
+  rezacSlozeneTrakeLista.forEach(t => {
+    if (!tempCounter[t.sifra]) tempCounter[t.sifra] = 0;
+    tempCounter[t.sifra]++;
+    t.brojTrake = tempCounter[t.sifra];
+  });
+  rezacBrojTrakeCounter = tempCounter;
+  
+  rezacAzurirajKalkulator();
+  rezacPrikaziSlozeneTrakePrikaz();
+}
+
+function rezacAzurirajKalkulator() {
+  const sirinaRole = rezacMaticnaRolaData ? rezacMaticnaRolaData.sirina : 0;
+  const zbroj = rezacSlozeneTrakeLista.reduce((sum, t) => sum + t.sirina, 0);
+  const ostatak = sirinaRole - zbroj;
+  
+  document.getElementById('kalkulatorZbroj').textContent = zbroj.toFixed(1);
+  document.getElementById('kalkulatorOstatak').textContent = ostatak.toFixed(1);
+  document.getElementById('rezacOstatakSirina').textContent = ostatak.toFixed(1);
+  
+  const zbrojBox = document.getElementById('kalkulatorZbrojBox');
+  const ostatakBox = document.getElementById('kalkulatorOstatakBox');
+  
+  zbrojBox.className = 'kalkulator-info-box';
+  ostatakBox.className = 'kalkulator-info-box';
+  
+  if (zbroj > sirinaRole) {
+    zbrojBox.classList.add('danger');
+    ostatakBox.classList.add('danger');
+  } else if (ostatak > 0 && ostatak < 5) {
+    zbrojBox.classList.add('success');
+    ostatakBox.classList.add('warning');
+  } else if (ostatak <= 0) {
+    zbrojBox.classList.add('success');
+    ostatakBox.classList.add('success');
+  } else {
+    ostatakBox.classList.add('warning');
+  }
+}
+
+function rezacAzurirajKorekcijuOstatka() {
+  rezacOstatakKorekcijaMM = parseInt(document.getElementById('rezacOstatakKorekcija').value) || 0;
+  
+  const korigiranaSirina = rezacGetKorigiranuSirinuOstatka();
+  document.getElementById('rezacOstatakKorigiranaVrijednost').textContent = korigiranaSirina.toFixed(1) + ' cm';
+  
+  if (rezacOdabraneTrake.length > 0 && korigiranaSirina > 0) {
+    const parts = rezacOdabraneTrake[0].sifra.split('-');
+    const korigiranaSifra = `${parts[0]}-${korigiranaSirina.toFixed(1)}-${parts[parts.length - 1]}`;
+    document.getElementById('rezacOstatakKorigiranaSifra').textContent = korigiranaSifra;
+  } else {
+    document.getElementById('rezacOstatakKorigiranaSifra').textContent = '-';
+  }
+  
+  rezacPrikaziSlozeneTrakePrikaz();
+  rezacGenerirajNazive();
+}
+
+function rezacGetKorigiranuSirinuOstatka() {
+  const sirinaRole = rezacMaticnaRolaData ? rezacMaticnaRolaData.sirina : 0;
+  const zbroj = rezacSlozeneTrakeLista.reduce((sum, t) => sum + t.sirina, 0);
+  const ostatak = sirinaRole - zbroj;
+  return Math.round((ostatak + rezacOstatakKorekcijaMM / 10) * 10) / 10;
+}
+
+function rezacGetDjelitelj() {
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value) || 2;
+  return brojProlaza === 3 ? 2.2 : 2;
+}
+
+function rezacIzracunajTezinuTrake(sirinaTrake, brojTraka) {
+  if (!rezacMaticnaRolaData) return 0;
+  const { sirina: sirinaRole, tezina: tezinaRole } = rezacMaticnaRolaData;
+  const djelitelj = rezacGetDjelitelj();
+  return Math.round((sirinaTrake * brojTraka / sirinaRole) * tezinaRole / djelitelj * 100) / 100;
+}
+
+function rezacIzracunajTezinuOstatka() {
+  if (!rezacMaticnaRolaData) return 0;
+  const korigiranaSirina = rezacGetKorigiranuSirinuOstatka();
+  const { sirina: sirinaRole, tezina: tezinaRole } = rezacMaticnaRolaData;
+  const djelitelj = rezacGetDjelitelj();
+  return Math.round((korigiranaSirina / sirinaRole) * tezinaRole / djelitelj * 100) / 100;
+}
+
+function rezacPromjenaBrojaProlaza() {
+  document.getElementById('rezacDjeliteljInfo').textContent = 'Djelitelj: /' + rezacGetDjelitelj();
+  rezacGenerirajNazive();
+  
+  if (document.getElementById('rezacAktivnoRezanjeCard').style.display !== 'none') {
+    rezacPrikaziProlaze();
+  }
+}
+
+function rezacPrikaziSlozeneTrakePrikaz() {
+  const container = document.getElementById('rezacSlozeneTrakePrikaz');
+  
+  if (rezacSlozeneTrakeLista.length === 0) {
+    container.innerHTML = '<span style="color: #6c757d; font-style: italic;">Dodajte trake klikom iznad...</span>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  rezacSlozeneTrakeLista.forEach((t, index) => {
+    const chip = document.createElement('div');
+    chip.className = 'traka-chip' + (t.isCustom ? ' custom' : '');
+    chip.innerHTML = `<span>${t.sifra}/${t.brojTrake} (${t.sirina} cm)</span>
+      <button class="remove-btn" onclick="rezacUkloniTrakuIzSlaganja(${index})">×</button>`;
+    container.appendChild(chip);
+  });
+  
+  // Ostatak
+  const ostatak = rezacGetKorigiranuSirinuOstatka();
+  if (ostatak > 0 && rezacOdabraneTrake.length > 0) {
+    const parts = rezacOdabraneTrake[0].sifra.split('-');
+    const ostatakSifra = `${parts[0]}-${ostatak.toFixed(1)}-${parts[parts.length - 1]}`;
+    
+    const chip = document.createElement('div');
+    chip.className = 'traka-chip ostatak';
+    const korekcija = rezacOstatakKorekcijaMM !== 0 ? ` <small>[${rezacOstatakKorekcijaMM > 0 ? '+' : ''}${rezacOstatakKorekcijaMM}mm]</small>` : '';
+    chip.innerHTML = `<span>OSTATAK: ${ostatakSifra}/1 (${ostatak.toFixed(1)} cm)${korekcija}</span>`;
+    container.appendChild(chip);
+    
+    document.getElementById('rezacOstatakKorigiranaVrijednost').textContent = ostatak.toFixed(1) + ' cm';
+    document.getElementById('rezacOstatakKorigiranaSifra').textContent = ostatakSifra;
+  }
+  
+  rezacGenerirajNazive();
+}
+
+function rezacGenerirajNazive() {
+  if (rezacSlozeneTrakeLista.length === 0 || !rezacMaticnaRolaData) {
+    document.getElementById('rezacGeneriraniNazivi').style.display = 'none';
+    return;
+  }
+  
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value);
+  const maticnaSifra = rezacMaticnaRolaData.sifra;
+  
+  let html = `<div style="display: grid; grid-template-columns: repeat(${brojProlaza}, 1fr); gap: 15px;">`;
+  
+  for (let prolaz = 1; prolaz <= brojProlaza; prolaz++) {
+    html += `<div class="prolaz-section">
+      <div class="prolaz-header"><span class="prolaz-title">Prolaz ${prolaz}</span></div>
+      <div style="font-size: 12px;">`;
+    
+    rezacSlozeneTrakeLista.forEach(t => {
+      html += `<div style="padding: 3px 0; border-bottom: 1px dashed #dee2e6;">${t.sifra}/${t.brojTrake}/${maticnaSifra}/${prolaz}</div>`;
+    });
+    
+    // Ostatak
+    const ostatak = rezacGetKorigiranuSirinuOstatka();
+    if (ostatak > 0 && rezacOdabraneTrake.length > 0) {
+      const parts = rezacOdabraneTrake[0].sifra.split('-');
+      const ostatakSifra = `${parts[0]}-${ostatak.toFixed(1)}-${parts[parts.length - 1]}`;
+      const korekcija = rezacOstatakKorekcijaMM !== 0 ? ` <small>[${rezacOstatakKorekcijaMM > 0 ? '+' : ''}${rezacOstatakKorekcijaMM}mm]</small>` : '';
+      html += `<div style="padding: 3px 0; color: #f5576c; font-weight: 600;">${ostatakSifra}/1/${maticnaSifra}/${prolaz} (ostatak)${korekcija}</div>`;
+    }
+    
+    html += '</div></div>';
+  }
+  
+  html += '</div>';
+  
+  document.getElementById('rezacNaziviContent').innerHTML = html;
+  document.getElementById('rezacGeneriraniNazivi').style.display = 'block';
+}
+
+function rezacResetujSlaganje() {
+  rezacSlozeneTrakeLista = [];
+  rezacBrojTrakeCounter = {};
+  rezacMaticnaRolaData = null;
+  
+  document.getElementById('rezacWorkflowMaticnaRola').value = '';
+  document.getElementById('rezacRolaInfo').style.display = 'none';
+  document.getElementById('kalkulatorSirinaRole').textContent = '0';
+  document.getElementById('rezacGeneriraniNazivi').style.display = 'none';
+  
+  rezacAzurirajKalkulator();
+  rezacPrikaziSlozeneTrakePrikaz();
+}
+
+// ============================================
+// AKTIVNO REZANJE
+// ============================================
+function rezacPokreniRezanje() {
+  if (!rezacMaticnaRolaData) {
+    showMessage('Odaberite matičnu rolu!', 'warning');
+    return;
+  }
+  
+  if (rezacSlozeneTrakeLista.length === 0) {
+    showMessage('Dodajte trake za rezanje!', 'warning');
+    return;
+  }
+  
+  const sirinaRole = rezacMaticnaRolaData.sirina;
+  const zbroj = rezacSlozeneTrakeLista.reduce((sum, t) => sum + t.sirina, 0);
+  
+  if (zbroj > sirinaRole) {
+    showMessage(`Zbroj traka (${zbroj.toFixed(1)} cm) prelazi širinu role (${sirinaRole} cm)!`, 'error');
+    return;
+  }
+  
+  document.getElementById('rezacAktivnoRezanjeCard').style.display = 'block';
+  document.getElementById('rezacAktivnoRN').textContent = document.getElementById('rezacDetaljiRNBroj').textContent;
+  
+  rezacPrikaziProlaze();
+  document.getElementById('rezacAktivnoRezanjeCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function rezacPrikaziProlaze() {
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value);
+  const djelitelj = rezacGetDjelitelj();
+  
+  let html = `<div style="background: #e7f3ff; border: 1px solid #b8daff; border-radius: 8px; padding: 12px; margin: 15px;">
+    <strong>📊 Kalkulacija:</strong> (širina_trake / ${rezacMaticnaRolaData.sirina.toFixed(1)} cm) × ${rezacMaticnaRolaData.tezina.toFixed(1)} kg / <strong>${djelitelj}</strong>
+  </div>`;
+  
+  for (let prolaz = 1; prolaz <= brojProlaza; prolaz++) {
+    html += `<div class="prolaz-section" id="rezacProlaz${prolaz}">
+      <div class="prolaz-header">
+        <span class="prolaz-title">📍 Prolaz ${prolaz}</span>
+        <span class="prolaz-status ${prolaz === 1 ? 'aktivan' : 'ceka'}">${prolaz === 1 ? 'AKTIVAN' : 'ČEKA'}</span>
+      </div>
+      <div style="margin-top: 10px;">`;
+    
+    // Grupiraj trake
+    const grupe = {};
+    rezacSlozeneTrakeLista.forEach(t => {
+      if (!grupe[t.sifra]) grupe[t.sifra] = { sifra: t.sifra, sirina: t.sirina, count: 0 };
+      grupe[t.sifra].count++;
+    });
+    
+    Object.values(grupe).forEach(g => {
+      const tezina = rezacIzracunajTezinuTrake(g.sirina, g.count);
+      html += `<div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+        <span style="font-weight: 600;">${g.sifra} (×${g.count})</span>
+        <span style="color: #6c757d;">${g.sirina} cm</span>
+        <input type="number" step="0.1" value="${tezina.toFixed(2)}" class="form-control prolaz-tezina-input" data-prolaz="${prolaz}" data-sifra="${g.sifra}" data-sirina="${g.sirina}" data-count="${g.count}" style="width: 100px;">
+        <span style="font-size: 11px; color: #28a745;">≈${tezina.toFixed(2)} kg</span>
+        <label style="font-size: 12px;"><input type="checkbox" checked class="podjeli-jednako" data-prolaz="${prolaz}" data-sifra="${g.sifra}"> Podjeli jednako</label>
+      </div>`;
+    });
+    
+    // Ostatak
+    const ostatakSirina = rezacGetKorigiranuSirinuOstatka();
+    if (ostatakSirina > 0 && rezacOdabraneTrake.length > 0) {
+      const parts = rezacOdabraneTrake[0].sifra.split('-');
+      const ostatakSifra = `${parts[0]}-${ostatakSirina.toFixed(1)}-${parts[parts.length - 1]}`;
+      const ostatakTezina = rezacIzracunajTezinuOstatka();
+      
+      const korekcija = rezacOstatakKorekcijaMM !== 0 ? ` <small style="color: #856404;">[${rezacOstatakKorekcijaMM > 0 ? '+' : ''}${rezacOstatakKorekcijaMM}mm]</small>` : '';
+      
+      html += `<div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: #fff3cd; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+        <span style="font-weight: 600; color: #856404;">OSTATAK: ${ostatakSifra}/1${korekcija}</span>
+        <span style="color: #856404;">${ostatakSirina.toFixed(1)} cm</span>
+        <input type="number" step="0.1" value="${ostatakTezina.toFixed(2)}" class="form-control prolaz-tezina-input ostatak-tezina" data-prolaz="${prolaz}" data-sifra="${ostatakSifra}" data-sirina="${ostatakSirina.toFixed(1)}" style="width: 100px; border-color: #ffc107;">
+        <span style="font-size: 11px; color: #28a745;">≈${ostatakTezina.toFixed(2)} kg</span>
+      </div>`;
+    }
+    
+    html += `</div>
+      <button class="btn btn-success btn-sm" onclick="rezacZavrsiProlaz(${prolaz})" style="margin-top: 10px;">✓ Završi Prolaz ${prolaz}</button>
+    </div>`;
+  }
+  
+  document.getElementById('rezacProlaziContent').innerHTML = html;
+}
+
+function rezacZavrsiProlaz(prolaz) {
+  const inputs = document.querySelectorAll(`.prolaz-tezina-input[data-prolaz="${prolaz}"]`);
+  let allFilled = true;
+  
+  inputs.forEach(input => {
+    if (!input.value || parseFloat(input.value) <= 0) allFilled = false;
+  });
+  
+  if (!allFilled) {
+    showMessage('Unesite težine za sve trake!', 'warning');
+    return;
+  }
+  
+  const section = document.getElementById('rezacProlaz' + prolaz);
+  section.querySelector('.prolaz-status').className = 'prolaz-status zavrsen';
+  section.querySelector('.prolaz-status').textContent = 'ZAVRŠEN';
+  section.querySelector('button').disabled = true;
+  section.querySelector('button').textContent = '✓ Završeno';
+  
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value);
+  if (prolaz < brojProlaza) {
+    const next = document.getElementById('rezacProlaz' + (prolaz + 1));
+    next.querySelector('.prolaz-status').className = 'prolaz-status aktivan';
+    next.querySelector('.prolaz-status').textContent = 'AKTIVAN';
+  }
+  
+  if (prolaz === brojProlaza) rezacIzracunajSkidanjeStanja();
+  
+  showMessage('Prolaz ' + prolaz + ' završen!', 'success');
+}
+
+function rezacIzracunajSkidanjeStanja() {
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value);
+  const { sifra: maticnaSifra, tezina: pocetnaTezina } = rezacMaticnaRolaData;
+  
+  let ukupnoIzvagano = 0;
+  for (let p = 1; p <= brojProlaza; p++) {
+    document.querySelectorAll(`.prolaz-tezina-input[data-prolaz="${p}"]`).forEach(input => {
+      ukupnoIzvagano += parseFloat(input.value) || 0;
+    });
+  }
+  
+  const ostatak = pocetnaTezina - ukupnoIzvagano;
+  
+  let html = `<div style="padding: 10px;">
+    <p><strong>Matična rola:</strong> ${maticnaSifra}</p>
+    <p><strong>Početna težina:</strong> ${pocetnaTezina.toFixed(2)} kg</p>
+    <p><strong>Ukupno izvagano:</strong> ${ukupnoIzvagano.toFixed(2)} kg</p>`;
+  
+  if (ostatak > 0) {
+    html += `<p style="color: #28a745;"><strong>Ostatak na roli:</strong> ${ostatak.toFixed(2)} kg</p>`;
+  } else if (ostatak < 0) {
+    html += `<p style="color: #dc3545;"><strong>⚠️ Prekoračenje:</strong> ${Math.abs(ostatak).toFixed(2)} kg</p>`;
+  } else {
+    html += `<p style="color: #28a745;"><strong>Rola potpuno utrošena</strong></p>`;
+  }
+  
+  html += '</div>';
+  
+  document.getElementById('rezacIzracunContent').innerHTML = html;
+  document.getElementById('rezacIzracunBox').style.display = 'block';
+}
+
+// ============================================
+// ZAVRŠI I SPREMI
+// ============================================
+async function rezacZavrsiSveIPotvrdi() {
+  const brojProlaza = parseInt(document.getElementById('rezacBrojProlaza').value);
+  
+  // Provjeri završene prolaze
+  const zavrseniProlazi = [];
+  for (let p = 1; p <= brojProlaza; p++) {
+    const section = document.getElementById('rezacProlaz' + p);
+    if (section?.querySelector('.prolaz-status')?.classList.contains('zavrsen')) {
+      zavrseniProlazi.push(p);
+    }
+  }
+  
+  if (zavrseniProlazi.length === 0) {
+    showMessage('Morate završiti barem jedan prolaz!', 'warning');
+    return;
+  }
+  
+  if (zavrseniProlazi.length < brojProlaza) {
+    if (!confirm(`Imate ${brojProlaza - zavrseniProlazi.length} nezavršenih prolaza. Nastaviti?`)) return;
+  } else {
+    if (!confirm('Završiti rezanje i spremiti sve trake?')) return;
+  }
+  
+  showLoading();
+  
+  const { sifra: maticnaSifra, tezina: pocetnaTezina } = rezacMaticnaRolaData;
+  const rnRezanja = rezacTrenutniRN;
+  
+  // Dohvati postojeće trake s istim RN da nađemo najveći broj
+  let sljedeciBroj = 1;
+  try {
+    const { data: postojeceTrake } = await initSupabase()
+      .from('prod_inventory_strips')
+      .select('strip_code')
+      .eq('wo_cutting_number', rnRezanja);
+    
+    if (postojeceTrake && postojeceTrake.length > 0) {
+      postojeceTrake.forEach(t => {
+        // Šifra format: B70-18-SE/REZ605/25-1, B70-18-SE/REZ605/25-2, itd.
+        const lastDash = t.strip_code.lastIndexOf('-');
+        if (lastDash > -1) {
+          const lastPart = parseInt(t.strip_code.substring(lastDash + 1)) || 0;
+          if (lastPart >= sljedeciBroj) {
+            sljedeciBroj = lastPart + 1;
+          }
+        }
+      });
+    }
+    console.log('📊 Sljedeći broj trake:', sljedeciBroj);
+  } catch (e) {
+    console.warn('Greška pri dohvatu postojećih traka:', e);
+  }
+  
+  const trakeZaSpremanje = [];
+  let ukupnoIzvagano = 0;
+  
+  // Brojač za R-role (šire od granice)
+  let redniBrojRola = 1;
+  try {
+    const { data: postojeceRole } = await initSupabase()
+      .from('prod_inventory_strips')
+      .select('strip_code')
+      .like('strip_code', `R-${maticnaSifra}-%`);
+    
+    if (postojeceRole && postojeceRole.length > 0) {
+      postojeceRole.forEach(r => {
+        const parts = r.strip_code.split('-');
+        const lastPart = parseInt(parts[parts.length - 1]) || 0;
+        if (lastPart >= redniBrojRola) redniBrojRola = lastPart + 1;
+      });
+    }
+  } catch (e) {
+    console.warn('Greška pri dohvatu postojećih R-rola:', e);
+  }
+  
+  zavrseniProlazi.forEach(prolaz => {
+    document.querySelectorAll(`.prolaz-tezina-input[data-prolaz="${prolaz}"]`).forEach(input => {
+      const sifra = input.dataset.sifra;
+      const tezina = parseFloat(input.value) || 0;
+      const sirina = parseFloat(input.dataset.sirina) || 0;
+      const isOstatak = input.classList.contains('ostatak-tezina');
+      const podijeliJednako = document.querySelector(`.podjeli-jednako[data-prolaz="${prolaz}"][data-sifra="${sifra}"]`);
+      
+      ukupnoIzvagano += tezina;
+      
+      // Provjeri da li je ROLA (šire od granice) ili TRAKA
+      const jeRola = sirina > rezacSirinaGranica;
+      
+      if (isOstatak) {
+        const ostatakOpcija = document.querySelector('input[name="ostatakOpcija"]:checked').value;
+        
+        // Ostatak - koristi istu logiku kao prije, ali provjeri širinu
+        let stripCode, stripType;
+        if (jeRola) {
+          stripCode = `R-${maticnaSifra}-${redniBrojRola++}`;
+          stripType = 'Rola';
+        } else {
+          stripCode = `${sifra}/${rnRezanja}-${sljedeciBroj++}`;
+          stripType = 'Ostatak';
+        }
+        
+        trakeZaSpremanje.push({
+          strip_code: stripCode,
+          parent_roll_code: maticnaSifra,
+          strip_number: 1,
+          pass_number: prolaz,
+          width_cm: sirina,
+          weight_kg: tezina,
+          strip_type: stripType,
+          wo_cutting_number: rnRezanja,
+          status: ostatakOpcija === 'skladiste' ? 'Dostupno' : 'Otpad',
+          entry_date: new Date().toISOString().split('T')[0]
+        });
+      } else {
+        const trakaInfo = rezacSlozeneTrakeLista.filter(t => t.sifra === sifra);
+        const brojTraka = trakaInfo.length;
+        const tezinaPoTraci = podijeliJednako?.checked ? tezina / brojTraka : tezina;
+        
+        trakaInfo.forEach((t, idx) => {
+          // Provjeri širinu za svaku traku
+          const jeOvaRola = t.sirina > rezacSirinaGranica;
+          let stripCode, stripType;
+          
+          if (jeOvaRola) {
+            // ROLA za Tuber/Tisak - R-prefix + šifra matične role
+            stripCode = `R-${maticnaSifra}-${redniBrojRola++}`;
+            stripType = 'Rola';
+            console.log('📦 Rola za Tuber/Tisak:', stripCode, '(' + t.sirina + ' cm)');
+          } else {
+            // TRAKA za Bottomer - standardna šifra za FIFO
+            stripCode = `${t.sifra}/${rnRezanja}-${sljedeciBroj++}`;
+            stripType = 'Traka';
+          }
+          
+          trakeZaSpremanje.push({
+            strip_code: stripCode,
+            parent_roll_code: maticnaSifra,
+            strip_number: t.brojTrake,
+            pass_number: prolaz,
+            width_cm: t.sirina,
+            weight_kg: podijeliJednako?.checked ? tezinaPoTraci : (idx === 0 ? tezina : 0),
+            strip_type: stripType,
+            wo_cutting_number: rnRezanja,
+            status: 'Dostupno',
+            entry_date: new Date().toISOString().split('T')[0]
+          });
+        });
+      }
+    });
+  });
+  
+  console.log('📦 Trake za spremanje:', trakeZaSpremanje.length);
+  
+  const utroseno = Math.min(ukupnoIzvagano, pocetnaTezina);
+  const potpunoUtrosena = utroseno >= pocetnaTezina;
+  
+  try {
+    const supabase = initSupabase();
+    
+    // 1. Spremi trake
+    if (trakeZaSpremanje.length > 0) {
+      const { error: insertError } = await supabase
+        .from('prod_inventory_strips')
+        .insert(trakeZaSpremanje);
+      
+      if (insertError) throw insertError;
+      console.log('✅ Trake spremljene');
+    }
+    
+    // 2. Ažuriraj rolu
+    const { data: rola, error: fetchError } = await supabase
+      .from('prod_inventory_rolls')
+      .select('consumed_kg')
+      .eq('roll_code', maticnaSifra)
+      .single();
+    
+    if (fetchError) throw fetchError;
+    
+    const novoUtroseno = (parseFloat(rola.consumed_kg) || 0) + utroseno;
+    const noviStatus = potpunoUtrosena ? 'Utrošena' : 'Djelomično utrošeno';
+    
+    const { error: updateError } = await supabase
+      .from('prod_inventory_rolls')
+      .update({ consumed_kg: novoUtroseno, status: noviStatus })
+      .eq('roll_code', maticnaSifra);
+    
+    if (updateError) throw updateError;
+    console.log('✅ Rola ažurirana');
+    
+    // 2b. Evidentiraj utrošak u prod_inventory_consumed_rolls
+    try {
+      // Dohvati sve podatke o roli
+      const { data: rolaFull } = await supabase
+        .from('prod_inventory_rolls')
+        .select('*')
+        .eq('roll_code', maticnaSifra)
+        .single();
+      
+      if (rolaFull) {
+        const consumedData = {
+          roll_code: maticnaSifra,
+          source_roll_id: rolaFull.id,
+          source_table: 'prod_inventory_rolls',
+          material_type: 'rolls',
+          width_cm: rolaFull.width_cm,
+          grammage: rolaFull.grammage,
+          color: rolaFull.color,
+          manufacturer: rolaFull.manufacturer,
+          consumed_kg: utroseno,
+          remaining_kg: (parseFloat(rolaFull.initial_weight_kg) || 0) - novoUtroseno,
+          work_order_number: rnRezanja,
+          production_line: 'Rezač',
+          consumption_type: 'Rezanje',
+          consumed_by: Auth.getUser()?.name || 'Nepoznato',
+          original_scanned_code: maticnaSifra
+        };
+        
+        await supabase.from('prod_inventory_consumed_rolls').insert(consumedData);
+        console.log('✅ Evidentirano u consumed_rolls');
+      }
+    } catch (e) {
+      console.warn('⚠️ Greška evidencije consumed_rolls:', e);
+    }
+    
+    // 3. Ažuriraj status RN
+    if (rnRezanja) {
+      const { error: rnError } = await supabase
+        .from('prod_work_orders_cutting')
+        .update({ status: 'U tijeku' })
+        .eq('wo_number', rnRezanja);
+      
+      if (rnError) console.warn('⚠️ RN nije ažuriran:', rnError);
+    }
+    
+    hideLoading();
+    showMessage(`✅ Spremljeno ${trakeZaSpremanje.length} traka, potrošeno ${utroseno.toFixed(2)} kg`, 'success');
+    
+    // Reset UI
+    document.getElementById('rezacAktivnoRezanjeCard').style.display = 'none';
+    document.getElementById('rezacWorkflowSection').classList.remove('show');
+    rezacResetujSlaganje();
+    
+    // Refresh
+    setTimeout(() => rezacLoadData(() => {
+      if (rezacTrenutniRN) rezacPrikaziDetaljeRN(rezacTrenutniRN);
+    }), 1000);
+    
+  } catch (error) {
+    hideLoading();
+    console.error('❌ Greška:', error);
+    showMessage('Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// ZAVRŠI NALOG (bez obzira na količinu)
+// ============================================
+async function rezacZavrsiNalog(woNumber) {
+  if (!woNumber) {
+    showMessage('Nije odabran radni nalog!', 'warning');
+    return;
+  }
+  
+  if (!confirm(`Jeste li sigurni da želite završiti nalog ${woNumber}?\n\nNalog će biti označen kao završen bez obzira na izrezanu količinu.`)) {
+    return;
+  }
+  
+  showLoading('Završavam nalog...');
+  
+  try {
+    const supabase = initSupabase();
+    const operator = Auth.getUser()?.name || 'Nepoznato';
+    
+    const { error } = await supabase
+      .from('prod_work_orders_cutting')
+      .update({ 
+        status: 'Završeno',
+        completed_at: new Date().toISOString(),
+        operator: operator
+      })
+      .eq('wo_number', woNumber);
+    
+    if (error) throw error;
+    
+    hideLoading();
+    showMessage(`✅ Nalog ${woNumber} uspješno završen!`, 'success');
+    
+    // Zatvori karticu detalja ako je otvorena
+    document.getElementById('rezacDetaljiCard').style.display = 'none';
+    rezacTrenutniRN = null;
+    
+    // Osvježi listu radnih naloga
+    rezacLoadData();
+    
+  } catch (error) {
+    hideLoading();
+    console.error('❌ Greška:', error);
+    showMessage('Greška pri završavanju naloga: ' + error.message, 'error');
+  }
+}
+
+// Završi nalog iz kartice detalja (koristi trenutni RN)
+function rezacZavrsiNalogIzDetalja() {
+  if (!rezacTrenutniRN) {
+    showMessage('Nije odabran radni nalog!', 'warning');
+    return;
+  }
+  rezacZavrsiNalog(rezacTrenutniRN);
+}
+
+function rezacDodajDruguRolu() {
+  const novaSifra = prompt('Unesite šifru druge matične role:');
+  if (!novaSifra) return;
+  
+  const novaRola = rezacSveRole.find(r => r.roll_code === novaSifra);
+  
+  if (!novaRola) {
+    showMessage('Rola nije pronađena!', 'error');
+    return;
+  }
+  
+  if (!rezacMaticnaRolaData.lanac) {
+    rezacMaticnaRolaData.lanac = [rezacMaticnaRolaData.sifra];
+  }
+  rezacMaticnaRolaData.lanac.push(novaSifra);
+  
+  const tezina = parseFloat(novaRola.remaining_kg) || 0;
+  rezacMaticnaRolaData.tezina += tezina;
+  
+  document.getElementById('rezacRolaSifra').textContent = rezacMaticnaRolaData.lanac.join(' > ');
+  document.getElementById('rezacRolaTezina').textContent = rezacMaticnaRolaData.tezina.toFixed(1);
+  
+  showMessage(`Dodana rola: ${novaSifra} (${tezina.toFixed(1)} kg)`, 'success');
+}
+
+// ============================================
+// SKLADIŠTE - FILTERI I PRIKAZ
+// ============================================
+function rezacToggleSkladiste() {
+  document.getElementById('rezacSkladisteSection').classList.toggle('hidden');
+  document.getElementById('rezacToggleIcon').classList.toggle('collapsed');
+}
+
+function rezacInitFilterDropdowns(role) {
+  if (!role || role.length === 0) return;
+  
+  const proizvodaci = [...new Set(role.map(r => r.manufacturer).filter(v => v))].sort();
+  const boje = [...new Set(role.map(r => r.color).filter(v => v))].sort();
+  const gramature = [...new Set(role.map(r => r.grammage).filter(v => v))].sort();
+  const tipovi = [...new Set(role.map(r => r.paper_type).filter(v => v))].sort();
+  
+  rezacPopulateSelect('rezacFilterProizvodac', proizvodaci);
+  rezacPopulateSelect('rezacFilterBoja', boje);
+  rezacPopulateSelect('rezacFilterGramatura', gramature);
+  rezacPopulateSelect('rezacFilterTipPapira', tipovi);
+}
+
+function rezacPopulateSelect(id, values) {
+  const select = document.getElementById(id);
+  const firstOption = select.options[0].text;
+  select.innerHTML = `<option value="">${firstOption}</option>`;
+  values.forEach(v => {
+    select.innerHTML += `<option value="${v}">${v}</option>`;
+  });
+}
+
+function rezacPrimijeniFiltere() {
+  const sifraRole = (document.getElementById('rezacFilterSifraRole').value || '').trim().toLowerCase();
+  const proizvodac = document.getElementById('rezacFilterProizvodac').value;
+  const boja = document.getElementById('rezacFilterBoja').value;
+  const gramatura = document.getElementById('rezacFilterGramatura').value;
+  const tipPapira = document.getElementById('rezacFilterTipPapira').value;
+  const sirinaOd = parseFloat(document.getElementById('rezacFilterSirinaOd').value) || 0;
+  const sirinaDo = parseFloat(document.getElementById('rezacFilterSirinaDo').value) || Infinity;
+  const minKolicina = parseFloat(document.getElementById('rezacFilterMinKolicina').value) || 0;
+
+  const filtrirane = rezacSveRole.filter(r => {
+    if (sifraRole && !(r.roll_code || '').toLowerCase().includes(sifraRole)) return false;
+    if (proizvodac && r.manufacturer !== proizvodac) return false;
+    if (boja && r.color !== boja) return false;
+    if (gramatura && r.grammage != gramatura) return false;
+    if (tipPapira && r.paper_type !== tipPapira) return false;
+    if ((r.width_cm || 0) < sirinaOd || (r.width_cm || 0) > sirinaDo) return false;
+    if ((r.remaining_kg || 0) < minKolicina) return false;
+    return true;
+  });
+  
+  rezacPrikaziRole(filtrirane);
+  showMessage(`Filtrirano: ${filtrirane.length} rola`, 'info');
+}
+
+function rezacResetFiltere() {
+  ['rezacFilterSifraRole', 'rezacFilterProizvodac', 'rezacFilterBoja', 'rezacFilterGramatura', 'rezacFilterTipPapira',
+   'rezacFilterSirinaOd', 'rezacFilterSirinaDo', 'rezacFilterMinKolicina'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  
+  // Prikaži sve role (već su filtrirane po remaining_kg > 0 prilikom učitavanja)
+  rezacPrikaziRole(rezacSveRole);
+  showMessage('Filteri resetirani', 'info');
+}
+
+function rezacPrikaziRole(role) {
+  const tbody = document.getElementById('rezacSkladisteTableBody');
+  tbody.innerHTML = '';
+  
+  // Uvijek prikaži ukupan broj rola u bazi
+  const ukupnoUBazi = rezacSveRole.length;
+  const ukupnoUBaziEl = document.getElementById('rezacStatUkupnoRola');
+  if (ukupnoUBaziEl) ukupnoUBaziEl.textContent = ukupnoUBazi;
+  
+  if (!role || role.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nema rola</td></tr>';
+    document.getElementById('rezacStatBrojRola').textContent = '0';
+    document.getElementById('rezacStatUkupnoKg').textContent = '0 kg';
+    document.getElementById('rezacStatProsjekKg').textContent = '0 kg';
+    const infoPrikazano = document.getElementById('rezacInfoPrikazano');
+    if (infoPrikazano) infoPrikazano.textContent = '0';
+    return;
+  }
+  
+  const ukupnoKg = role.reduce((sum, r) => sum + (parseFloat(r.remaining_kg) || 0), 0);
+  const prosjek = role.length > 0 ? ukupnoKg / role.length : 0;
+  
+  document.getElementById('rezacStatBrojRola').textContent = role.length;
+  document.getElementById('rezacStatUkupnoKg').textContent = ukupnoKg.toFixed(1) + ' kg';
+  document.getElementById('rezacStatProsjekKg').textContent = prosjek.toFixed(1) + ' kg';
+  
+  // Ažuriraj info bar
+  const infoPrikazano = document.getElementById('rezacInfoPrikazano');
+  if (infoPrikazano) infoPrikazano.textContent = role.length;
+  
+  role.forEach(r => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td><strong>${r.roll_code || '-'}</strong></td>
+      <td>${r.manufacturer || '-'}</td>
+      <td>${(r.width_cm || 0).toFixed(1)} cm</td>
+      <td>${r.grammage || '-'}</td>
+      <td>${r.color || '-'}</td>
+      <td>${r.paper_type || '-'}</td>
+      <td>${(r.remaining_kg || 0).toFixed(1)} kg</td>
+      <td>
+        <button class="btn btn-sm btn-success" onclick="rezacUseRola('${r.roll_code}')" style="margin-right:4px;">Koristi</button>
+        <button class="btn btn-sm" onclick="openOverrideTezine('${r.roll_code}')" title="Korekcija težine" style="background:#ff9800;color:white;padding:4px 8px;">⚖️</button>
+      </td>
+    `;
+  });
+}
+
+function rezacUseRola(sifra) {
+  const rola = rezacSveRole.find(r => r.roll_code === sifra);
+  if (!rola) {
+    showMessage('Rola nije pronađena!', 'error');
+    return;
+  }
+  
+  const sirina = parseFloat(rola.width_cm) || 0;
+  const tezina = parseFloat(rola.remaining_kg) || 0;
+  
+  document.getElementById('rezacWorkflowMaticnaRola').value = sifra;
+  
+  rezacMaticnaRolaData = { sifra, sirina, tezina, id: rola.id };
+  
+  document.getElementById('rezacRolaSifra').textContent = sifra;
+  document.getElementById('rezacRolaSirina').textContent = sirina.toFixed(1);
+  document.getElementById('rezacRolaTezina').textContent = tezina.toFixed(1);
+  document.getElementById('rezacRolaInfo').style.display = 'block';
+  document.getElementById('kalkulatorSirinaRole').textContent = sirina.toFixed(1);
+  document.getElementById('rezacOverrideBtnWorkflow').style.display = 'inline-block';
+
+  rezacAzurirajKalkulator();
+
+  const workflow = document.getElementById('rezacWorkflowSection');
+  if (!workflow.classList.contains('show')) workflow.classList.add('show');
+  workflow.scrollIntoView({ behavior: 'smooth' });
+
+  showMessage(`Rola odabrana: ${sifra} (${sirina.toFixed(1)} cm, ${tezina.toFixed(1)} kg)`, 'success');
+}
+
+// ============================================
+// PRIJAVA KVARA
+// ============================================
+var LOCAL_MODULE_NAME = 'rezac';
+
+function openLocalFailureModal() {
+  document.getElementById('localFailureMachine').value = 'CMC-1';
+  document.getElementById('localFailureType').value = 'Mehanički';
+  document.getElementById('localFailurePriority').value = 'Normalan';
+  document.getElementById('localFailureDesc').value = '';
+  openModal('localFailureModal');
+}
+
+async function submitLocalFailure() {
+  const machineCode = document.getElementById('localFailureMachine').value;
+  const desc = document.getElementById('localFailureDesc').value.trim();
+  
+  if (!desc) {
+    showMessage('Unesite opis kvara', 'warning');
+    return;
+  }
+  
+  showLoading('Prijavljujem kvar...');
+  
+  try {
+    // Koristi globalnu funkciju ako postoji (iz maintenance.html)
+    if (typeof window.reportFailureFromModule === 'function') {
+      const result = await window.reportFailureFromModule(
+        machineCode,
+        LOCAL_MODULE_NAME,
+        desc,
+        document.getElementById('localFailurePriority').value,
+        document.getElementById('localFailureType').value
+      );
+      
+      hideLoading();
+      
+      if (result.success) {
+        closeModal('localFailureModal');
+        showMessage('✅ Kvar prijavljen: ' + result.reportNumber + '\nMaintenance tim je obaviješten.', 'success');
+      } else {
+        showMessage('❌ Greška: ' + result.error, 'error');
+      }
+    } else {
+      // Direktni upit ako globalna funkcija ne postoji
+      const supabase = initSupabase();
+      
+      // Dohvati ime stroja
+      const { data: machineData } = await supabase
+        .from('prod_machines')
+        .select('name')
+        .eq('machine_code', machineCode)
+        .single();
+      
+      // Generiraj broj prijave
+      const year = new Date().getFullYear();
+      const { data: counter } = await supabase
+        .from('prod_counters')
+        .select('current_value')
+        .eq('counter_type', 'Kvar')
+        .single();
+      
+      const nextNum = (counter?.current_value || 0) + 1;
+      const reportNumber = `KV-${year}-${String(nextNum).padStart(4, '0')}`;
+      
+      // Ažuriraj brojač
+      await supabase
+        .from('prod_counters')
+        .upsert({ 
+          counter_type: 'Kvar', 
+          prefix: 'KV',
+          current_value: nextNum,
+          year: year 
+        }, { onConflict: 'counter_type' });
+      
+      // Spremi prijavu
+      const { error } = await supabase
+        .from('prod_failure_reports')
+        .insert({
+          report_number: reportNumber,
+          machine_code: machineCode,
+          machine_name: machineData?.name || machineCode,
+          reported_by: Auth.getUser()?.name || 'Operator',
+          source_module: LOCAL_MODULE_NAME,
+          failure_type: document.getElementById('localFailureType').value,
+          priority: document.getElementById('localFailurePriority').value,
+          description: desc,
+          status: 'Prijavljen'
+        });
+      
+      hideLoading();
+      
+      if (error) throw error;
+      
+      closeModal('localFailureModal');
+      showMessage('✅ Kvar prijavljen: ' + reportNumber + '\nMaintenance tim je obaviješten.', 'success');
+    }
+  } catch (error) {
+    hideLoading();
+    console.error('Failure report error:', error);
+    showMessage('❌ Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// DODAVANJE NOVE ROLE
+// ============================================
+async function submitNovaRolaRezac(event) {
+  event.preventDefault();
+
+  const rolaData = {
+    roll_code: document.getElementById('rezacRolaSifra').value.trim(),
+    manufacturer: document.getElementById('rezacRolaProizvodac').value,
+    color: document.getElementById('rezacRolaBoja').value,
+    paper_type: document.getElementById('rezacRolaTip').value,
+    width_cm: parseFloat(document.getElementById('rezacRolaSirina').value),
+    grammage: parseInt(document.getElementById('rezacRolaGramatura').value),
+    initial_weight_kg: parseFloat(document.getElementById('rezacRolaTezina').value),
+    consumed_kg: 0,
+    // remaining_kg je GENERATED kolona (= initial_weight_kg - consumed_kg), ne šaljemo ju
+    entry_date: new Date().toISOString().split('T')[0],
+    status: 'Na skladištu'
+  };
+
+  // Validacija
+  if (!rolaData.roll_code || !rolaData.manufacturer || !rolaData.color || !rolaData.paper_type) {
+    showMessage('Popunite sva obavezna polja', 'warning');
+    return;
+  }
+
+  showLoading('Spremam rolu...');
+
+  try {
+    const { data, error } = await initSupabase()
+      .from('prod_inventory_rolls')
+      .insert([rolaData])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    hideLoading();
+    closeModal('novaRolaRezacModal');
+    document.getElementById('novaRolaRezacForm').reset();
+
+    showMessage('✅ Rola uspješno dodana: ' + data.roll_code, 'success');
+
+    // Osvježi podatke ako postoji funkcija
+    if (typeof loadRezacData === 'function') {
+      await loadRezacData();
+    }
+
+  } catch (error) {
+    hideLoading();
+    console.error('Error adding roll:', error);
+    showMessage('❌ Greška: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// KOREKCIJA TEŽINE ROLE (Override)
+// ============================================
+
+async function openOverrideTezine(rollCode) {
+  // Traži lokalno ili u bazi
+  let rola = rezacSveRole.find(r => r.roll_code === rollCode);
+  if (!rola) {
+    try {
+      const { data } = await initSupabase()
+        .from('prod_inventory_rolls')
+        .select('*')
+        .eq('roll_code', rollCode)
+        .single();
+      if (data) rola = data;
+    } catch (e) { /* ignore */ }
+  }
+  if (!rola) { showMessage('Rola nije pronađena', 'error'); return; }
+
+  document.getElementById('overrideRollCode').value = rollCode;
+  document.getElementById('overrideNovaTezina').value = '';
+  document.getElementById('overrideRazlog').value = '';
+  document.getElementById('overrideRolaInfo').innerHTML = `
+    <p><strong>Šifra:</strong> ${rollCode}</p>
+    <p><strong>Početna težina:</strong> ${(rola.initial_weight_kg || 0).toFixed(1)} kg</p>
+    <p><strong>Trenutno stanje:</strong> ${(rola.remaining_kg || 0).toFixed(1)} kg</p>
+    <p><strong>Utrošeno:</strong> ${(rola.consumed_kg || 0).toFixed(1)} kg</p>
+  `;
+  openModal('overrideTezineModal');
+}
+
+// Otvori override iz workflow dijela (koristi trenutno odabranu rolu)
+function openOverrideTezineWorkflow() {
+  if (rezacMaticnaRolaData && rezacMaticnaRolaData.sifra) {
+    openOverrideTezine(rezacMaticnaRolaData.sifra);
+  } else {
+    showMessage('Prvo odaberite rolu', 'warning');
+  }
+}
+
+async function confirmOverrideTezine() {
+  const rollCode = document.getElementById('overrideRollCode').value;
+  const novaTezina = parseFloat(document.getElementById('overrideNovaTezina').value);
+  const razlog = document.getElementById('overrideRazlog').value.trim();
+
+  if (isNaN(novaTezina) || novaTezina < 0) {
+    showMessage('Unesite ispravnu težinu', 'warning');
+    return;
+  }
+
+  // Dohvati rolu iz baze za točnu initial_weight_kg
+  let rola = rezacSveRole.find(r => r.roll_code === rollCode);
+  if (!rola) {
+    try {
+      const { data } = await initSupabase()
+        .from('prod_inventory_rolls')
+        .select('*')
+        .eq('roll_code', rollCode)
+        .single();
+      if (data) rola = data;
+    } catch (e) { /* ignore */ }
+  }
+  if (!rola) { showMessage('Rola nije pronađena', 'error'); return; }
+
+  // Izračunaj novi consumed_kg da remaining_kg bude = novaTezina
+  const initialWeight = parseFloat(rola.initial_weight_kg) || 0;
+  const noviConsumedKg = Math.max(0, initialWeight - novaTezina);
+
+  // Odredi novi status
+  let noviStatus = 'Na skladištu';
+  if (novaTezina <= 0) noviStatus = 'Utrošena';
+  else if (noviConsumedKg > 0) noviStatus = 'Djelomično utrošeno';
+
+  showLoading('Ažuriram težinu role...');
+  try {
+    // remaining_kg je GENERATED kolona (= initial_weight_kg - consumed_kg)
+    // Ažuriramo samo consumed_kg, baza automatski računa remaining_kg
+    const { error } = await initSupabase()
+      .from('prod_inventory_rolls')
+      .update({
+        consumed_kg: noviConsumedKg,
+        status: noviStatus
+      })
+      .eq('roll_code', rollCode);
+
+    if (error) throw error;
+
+    hideLoading();
+    closeModal('overrideTezineModal');
+    showMessage(`✅ Težina role ${rollCode} ažurirana na ${novaTezina.toFixed(1)} kg`, 'success');
+
+    // Ako je ova rola trenutno odabrana u workflowu, ažuriraj prikaz
+    if (rezacMaticnaRolaData && rezacMaticnaRolaData.sifra === rollCode) {
+      rezacMaticnaRolaData.tezina = novaTezina;
+      document.getElementById('rezacRolaTezina').textContent = novaTezina.toFixed(1);
+    }
+
+    // Refresh podataka
+    await rezacLoadData();
+  } catch (err) {
+    hideLoading();
+    showMessage('❌ Greška: ' + err.message, 'error');
+  }
+}
+</script>
+<script src="../../js/mobile.js"></script>
