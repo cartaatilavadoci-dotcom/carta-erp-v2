@@ -1157,11 +1157,44 @@ async function traceSearchByRN(woNumber, status) {
 
   // 4. Potrošene role papira
   var consumedList = await SB.select('prod_inventory_consumed_rolls', {
-    columns: 'roll_code, material_type, source_table, width_cm, grammage, manufacturer, consumed_kg, layer_number, shift_date',
+    columns: 'roll_code, source_roll_id, material_type, source_table, width_cm, grammage, manufacturer, consumed_kg, layer_number, shift_date',
     eq: { work_order_id: wo.id },
     order: { shift_date: 'asc' },
     limit: 500
   });
+
+  // 4b. Enrichaj printed role s Tisak RN + parent roll (izvorna rola prije tiska)
+  var printedIds = (consumedList || [])
+    .filter(function(c) { return c.source_table === 'prod_inventory_printed' && c.source_roll_id; })
+    .map(function(c) { return c.source_roll_id; });
+
+  var printedMap = {};
+  if (printedIds.length > 0) {
+    try {
+      var printedRows = await SB.select('prod_inventory_printed', {
+        columns: 'id, wo_printing_number, parent_roll_code',
+        in: { id: printedIds },
+        limit: 500
+      });
+      (printedRows || []).forEach(function(p) { printedMap[p.id] = p; });
+    } catch (e) { console.warn('printed enrichment failed:', e); }
+  }
+
+  // 4c. Enrichaj parent role (izvorne papir role) s manufacturer-om
+  var parentCodes = Object.values(printedMap)
+    .map(function(p) { return p.parent_roll_code; })
+    .filter(Boolean);
+  var parentMap = {};
+  if (parentCodes.length > 0) {
+    try {
+      var parents = await SB.select('prod_inventory_rolls', {
+        columns: 'roll_code, manufacturer, width_cm, grammage',
+        in: { roll_code: parentCodes },
+        limit: 500
+      });
+      (parents || []).forEach(function(r) { parentMap[r.roll_code] = r; });
+    } catch (e) { console.warn('parent enrichment failed:', e); }
+  }
 
   status.textContent = '✅ Pronađeno';
   status.style.color = '#2e7d32';
@@ -1225,17 +1258,38 @@ async function traceSearchByRN(woNumber, status) {
     ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:right;">Stanje</th><th style="padding:6px;text-align:left;">Status</th><th style="padding:6px;text-align:left;">Datum</th></tr></thead><tbody>' + popRows + '</tbody></table>'
     : '<div style="color:#999;font-style:italic;padding:8px;">Nema POP-a</div>';
 
-  // Potrošene role (agregirane)
+  // Potrošene role (agregirane) - s Tisak enrichment-om
   var rollMap = {};
   (consumedList || []).forEach(function(c) {
     var k = c.roll_code + '|' + (c.layer_number || '');
-    if (!rollMap[k]) rollMap[k] = { code: c.roll_code, layer: c.layer_number, manufacturer: c.manufacturer, width: c.width_cm, grammage: c.grammage, type: c.material_type, kg: 0 };
+    if (!rollMap[k]) {
+      var printed = c.source_roll_id ? printedMap[c.source_roll_id] : null;
+      var parent = printed && printed.parent_roll_code ? parentMap[printed.parent_roll_code] : null;
+      rollMap[k] = {
+        code: c.roll_code,
+        layer: c.layer_number,
+        manufacturer: c.manufacturer || (parent ? parent.manufacturer : null),
+        width: c.width_cm,
+        grammage: c.grammage,
+        type: c.material_type,
+        source_table: c.source_table,
+        tisak_rn: printed ? printed.wo_printing_number : null,
+        parent_code: printed ? printed.parent_roll_code : null,
+        kg: 0
+      };
+    }
     rollMap[k].kg += parseFloat(c.consumed_kg) || 0;
   });
   var rollRows = Object.values(rollMap).map(function(r) {
+    var tipLabel = r.source_table === 'prod_inventory_printed' ? '🖨️ Otisnuto' : (r.type || '-');
+    var tisakInfo = r.source_table === 'prod_inventory_printed'
+      ? '<div style="font-size:0.85em;color:#666;margin-top:2px;">↳ ' +
+        (r.tisak_rn ? 'Tisak ' + r.tisak_rn + ' · ' : '') +
+        (r.parent_code ? 'iz role ' + r.parent_code : 'izvorna rola nepoznata') + '</div>'
+      : '';
     return '<tr>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.code || '-') + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.type || '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;"><strong>' + (r.code || '-') + '</strong>' + tisakInfo + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + tipLabel + '</td>' +
       '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;text-align:center;">' + (r.layer || '-') + '</td>' +
       '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.width || '-') + ' cm / ' + (r.grammage || '-') + ' g</td>' +
       '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.manufacturer || '-') + '</td>' +
@@ -1243,7 +1297,10 @@ async function traceSearchByRN(woNumber, status) {
       '</tr>';
   }).join('');
   var ukupnoKg = Object.values(rollMap).reduce(function(s, r) { return s + r.kg; }, 0);
-  var rollHtml = '<h4 style="margin:12px 0 6px 0;color:#1976d2;">📜 Role papira (' + Object.keys(rollMap).length + ' različitih, ukupno ' + ukupnoKg.toFixed(1) + ' kg)</h4>';
+  var printedCount = Object.values(rollMap).filter(function(r) { return r.source_table === 'prod_inventory_printed'; }).length;
+  var rollHtml = '<h4 style="margin:12px 0 6px 0;color:#1976d2;">📜 Role papira (' + Object.keys(rollMap).length + ' različitih' +
+    (printedCount > 0 ? ', od toga ' + printedCount + ' otisnutih' : '') +
+    ', ukupno ' + ukupnoKg.toFixed(1) + ' kg)</h4>';
   rollHtml += rollRows
     ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:left;">Tip</th><th style="padding:6px;text-align:center;">Sloj</th><th style="padding:6px;text-align:left;">Širina/gram.</th><th style="padding:6px;text-align:left;">Proizvođač</th><th style="padding:6px;text-align:right;">Potrošeno</th></tr></thead><tbody>' + rollRows + '</tbody></table>'
     : '<div style="color:#999;font-style:italic;padding:8px;">Nema evidencije potrošnje (tuber-materijal nije evidentiran)</div>';
