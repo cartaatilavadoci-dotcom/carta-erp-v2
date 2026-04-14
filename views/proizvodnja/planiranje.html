@@ -2757,33 +2757,91 @@ function openDeleteRNModal(id, tip, woNumber) {
 async function confirmDeleteRN() {
   const id = document.getElementById('deleteRNId').value;
   const tip = document.getElementById('deleteRNType').value;
-  
+
   if (!id || !tip) {
     showMessage('Greška: nedostaju podaci', 'error');
     return;
   }
-  
+
   showLoading('Brišem radni nalog...');
-  
+
   try {
     // Odaberi tablicu na temelju tipa
     let table = 'prod_work_orders';
     if (tip === 'Tisak') table = 'prod_work_orders_printing';
     else if (tip === 'Rezanje') table = 'prod_work_orders_cutting';
-    
+
     const { error } = await initSupabase().from(table).delete().eq('id', id);
-    
+
     if (error) throw error;
-    
+
     hideLoading();
     closeModal('deleteRNModal');
     showMessage('✅ Radni nalog obrisan', 'success');
     await loadRadniNalozi();
-    
+
   } catch (error) {
     hideLoading();
     console.error('Delete RN error:', error);
-    showMessage('❌ Greška: ' + error.message, 'error');
+
+    // FK RESTRICT violation (Postgres 23503) - RN ima POP/GOP/consumed_rolls djecu
+    const isFkViolation = error.code === '23503'
+      || (error.message && (error.message.indexOf('foreign key') >= 0
+                          || error.message.indexOf('violates') >= 0));
+
+    if (isFkViolation && tip === 'Glavni') {
+      // Ponudi soft delete kao alternativu
+      await ponudiOtkazivanjeRN(id);
+    } else {
+      showMessage('❌ Greška: ' + error.message, 'error');
+    }
+  }
+}
+
+// Soft delete alternativa kad hard delete nije moguć zbog FK
+async function ponudiOtkazivanjeRN(id) {
+  try {
+    // Dohvati broj djece za informativnu poruku
+    const counts = await Promise.all([
+      initSupabase().from('prod_inventory_pop').select('id', { count: 'exact', head: true }).eq('work_order_id', id),
+      initSupabase().from('prod_inventory_gop').select('id', { count: 'exact', head: true }).eq('work_order_id', id),
+      initSupabase().from('prod_inventory_consumed_rolls').select('id', { count: 'exact', head: true }).eq('work_order_id', id)
+    ]);
+
+    const [popCount, gopCount, crCount] = counts.map(r => r.count || 0);
+
+    const poruka =
+      '⚠️ Radni nalog ima povezanu proizvodnju:\n\n' +
+      `  • ${popCount} POP tuljak(a)\n` +
+      `  • ${gopCount} GOP paleta\n` +
+      `  • ${crCount} evidencij(a) materijala\n\n` +
+      'Brisanje nije moguće — gubitak audit trail-a.\n\n' +
+      'Želite li umjesto toga označiti RN kao "Otkazano"?\n' +
+      '(Podaci ostaju, RN se miče s aktivne liste)';
+
+    if (!confirm(poruka)) return;
+
+    showLoading('Označavam kao otkazano...');
+    const { error } = await initSupabase()
+      .from('prod_work_orders')
+      .update({ status: 'Otkazano', completed_at: new Date().toISOString() })
+      .eq('id', id);
+
+    hideLoading();
+
+    if (error) {
+      showMessage('❌ Greška: ' + error.message, 'error');
+      return;
+    }
+
+    closeModal('deleteRNModal');
+    showMessage('✅ Radni nalog označen kao "Otkazano"', 'success');
+    await loadRadniNalozi();
+
+  } catch (e) {
+    hideLoading();
+    console.error('ponudiOtkazivanjeRN error:', e);
+    showMessage('❌ Greška: ' + e.message, 'error');
   }
 }
 
