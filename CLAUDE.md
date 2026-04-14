@@ -39,9 +39,10 @@ carta-erp/
 ├── CLAUDE.md                     - AI razvojni vodič (ovaj dokument)
 ├── css/
 │   └── styles.css                - Globalni stilovi (30KB)
-├── js/                           - Core JavaScript (11 datoteka)
+├── js/                           - Core JavaScript (12 datoteka)
 │   ├── config.js                 - Konfiguracija, role, navigacija
 │   ├── supabase-client.js        - Supabase inicijalizacija i CRUD helperi
+│   ├── supabase-helpers.js       - SAFE wrapperi (SB.*) s error handlingom ⭐
 │   ├── auth.js                   - Autentikacija i sesije
 │   ├── router.js                 - SPA hash-based routing
 │   ├── utils.js                  - Proizvodni datum, smjene, helperi
@@ -473,6 +474,28 @@ const noviConsumedKg = initialWeight - novaTezina;
 // Logika:
 const newValue = maxFound;  // NE Math.max(currentValue, maxFound)!
 const needsUpdate = newValue !== currentValue;  // !== umjesto >
+```
+
+### Pravilo 24: Koristi SB.* helpere za nove Supabase pozive ⭐ NOVO
+```javascript
+// js/supabase-helpers.js (window.SB) je centralizirani wrapper koji:
+// - Baca iznimku ako Supabase vrati error (NIKAD silent fail!)
+// - Loguje grešku u console s prefiksom ❌ i imenom tablice
+// - Pokazuje toast korisniku (osim ako { silent: true })
+// - Vraća .data direktno
+// - UPDATE/DELETE ZAHTIJEVAJU filter (sigurnosna mjera)
+
+// ❌ STARO (silent fail rizik)
+const { data, error } = await initSupabase().from('prod_inventory_rolls')
+  .update({ consumed_kg: 100 }).eq('id', rollId);
+// (mnogi moduli ne provjeravaju error - bug iz cc96144 commita)
+
+// ✅ NOVO
+await SB.update('prod_inventory_rolls', { consumed_kg: 100 }, { id: rollId });
+
+// SVE METODE: SB.select, SB.insert, SB.update, SB.upsert, SB.delete, SB.rpc, SB.count
+// Vidi js/supabase-helpers.js za primjere.
+// Postojeći moduli postupno migriraju - novi kod MORA koristiti SB.*
 ```
 
 ### Pravilo 23: Tipovi radnih naloga i brojača ⭐ NOVO
