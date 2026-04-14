@@ -788,17 +788,13 @@
     if (typeof showLoading === 'function') showLoading();
 
     try {
-      var result = await initSupabase().rpc('approve_work_order', {
+      // SB.rpc auto-throws na error + auto-toast
+      var data = await SB.rpc('approve_work_order', {
         p_work_order_id: selectedRN.id,
         p_approver_user_id: currentUser.id,
         p_approver_name: currentUser.name || currentUser.username || 'Admin'
       });
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      var data = result.data;
       if (data && data.success === false) {
         throw new Error(data.error || 'Nepoznata greska');
       }
@@ -852,18 +848,13 @@
     if (typeof showLoading === 'function') showLoading();
 
     try {
-      var result = await initSupabase().rpc('reject_work_order', {
+      var data = await SB.rpc('reject_work_order', {
         p_work_order_id: selectedRN.id,
         p_rejector_user_id: currentUser.id,
         p_rejector_name: currentUser.name || currentUser.username || 'Admin',
         p_reason: reason
       });
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      var data = result.data;
       if (data && data.success === false) {
         throw new Error(data.error || 'Nepoznata greska');
       }
@@ -899,15 +890,10 @@
     if (typeof showLoading === 'function') showLoading();
 
     try {
-      var result = await initSupabase().rpc('resubmit_work_order', {
+      var data = await SB.rpc('resubmit_work_order', {
         p_work_order_id: selectedRN.id
       });
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      var data = result.data;
       if (data && data.success === false) {
         throw new Error(data.error || 'Nepoznata greska');
       }

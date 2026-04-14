@@ -1318,11 +1318,15 @@ async function loadNotifications() {
 }
 
 async function loadPalletsForOrder(orderNumber) {
-  var result = await initSupabase().rpc('get_available_pallets_for_dispatch', {
-    p_order_number: orderNumber
-  });
-  
-  return result.data || [];
+  try {
+    var data = await SB.rpc('get_available_pallets_for_dispatch', {
+      p_order_number: orderNumber
+    }, { silent: true });
+    return data || [];
+  } catch (e) {
+    console.error('loadPalletsForOrder:', e);
+    return [];
+  }
 }
 
 async function loadComments(orderNumber) {
@@ -2317,8 +2321,12 @@ async function loadPalletsForDispatch() {
     }
   } else {
     // Dohvati sve dostupne palete
-    var result = await initSupabase().rpc('get_available_pallets_for_dispatch', {});
-    allPallets = result.data || [];
+    try {
+      allPallets = (await SB.rpc('get_available_pallets_for_dispatch', {}, { silent: true })) || [];
+    } catch (e) {
+      console.error('get_available_pallets_for_dispatch:', e);
+      allPallets = [];
+    }
   }
   
   palletsData = allPallets;
@@ -2514,15 +2522,17 @@ async function saveDispatch() {
       .update({ dispatch_status: 'reserved' })
       .in('id', selectedPallets);
     
-    // 5. Kreiraj notifikaciju
-    await initSupabase().rpc('create_notification', {
-      p_type: 'dispatch_ready',
-      p_title: 'Nova otprema pripremljena',
-      p_message: 'Otprema ' + dispatchData.dispatch_number + ' za ' + dispatchData.customer_name + ' je spremna.',
-      p_related_id: dispatchId,
-      p_related_type: 'dispatch',
-      p_created_by: Auth.getUser()?.name || 'System'
-    });
+    // 5. Kreiraj notifikaciju (silent - ne blokira ostatak flow-a)
+    try {
+      await SB.rpc('create_notification', {
+        p_type: 'dispatch_ready',
+        p_title: 'Nova otprema pripremljena',
+        p_message: 'Otprema ' + dispatchData.dispatch_number + ' za ' + dispatchData.customer_name + ' je spremna.',
+        p_related_id: dispatchId,
+        p_related_type: 'dispatch',
+        p_created_by: Auth.getUser()?.name || 'System'
+      }, { silent: true });
+    } catch (e) { console.warn('Notification create failed:', e); }
     
     hideLoading();
     closeModal('newDispatchModal');
