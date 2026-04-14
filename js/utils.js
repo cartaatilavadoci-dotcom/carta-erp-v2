@@ -365,8 +365,13 @@ async function initApp() {
   if (Auth.checkSession()) {
     await Auth.loadRoles();
     buildSidebar();
+
+    // Notifikacije - pokreni tek nakon valjane sesije
+    if (typeof Notifications !== 'undefined') {
+      Notifications.init();
+    }
   }
-  
+
   // Start router
   Router.init();
 }

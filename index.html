@@ -36,11 +36,30 @@
           <span class="user-name" id="userName">-</span>
           <span class="user-role" id="userRole">-</span>
         </div>
+        <!-- Obavijesti (bell + badge) -->
+        <button class="btn-notif" id="btnNotif" onclick="Notifications.toggle()" title="Obavijesti" style="position: relative;">
+          🔔
+          <span id="notifBadge" style="display: none; position: absolute; top: -4px; right: -4px; background: #f44336; color: white; border-radius: 10px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 11px; font-weight: bold; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff;">0</span>
+        </button>
         <!-- Gumb za promjenu lozinke - samo admin/superadmin -->
         <button class="btn-password" id="btnChangePassword" onclick="otvoriPromjenuLozinkeGlobal()" title="Promijeni lozinku" style="display:none;">🔑</button>
         <button class="btn-logout" onclick="Auth.logout()" title="Odjava">🚪</button>
       </div>
     </aside>
+
+    <!-- Notifikacije panel -->
+    <div id="notifPanel" style="display:none; position: fixed; bottom: 70px; left: 10px; width: 360px; max-height: 500px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; overflow: hidden; border: 1px solid #e0e0e0;">
+      <div style="padding: 12px 16px; background: #f5f5f5; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+        <strong style="font-size: 14px;">🔔 Obavijesti</strong>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="Notifications.markAllRead()" title="Označi sve kao pročitano" style="background: none; border: none; cursor: pointer; font-size: 12px; color: #1976d2;">✓ Sve</button>
+          <button onclick="Notifications.toggle(false)" title="Zatvori" style="background: none; border: none; cursor: pointer; font-size: 16px; color: #666;">×</button>
+        </div>
+      </div>
+      <div id="notifList" style="max-height: 440px; overflow-y: auto;">
+        <div style="padding: 20px; text-align: center; color: #999;">Učitavanje...</div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
@@ -101,6 +120,7 @@
   <script src="js/router.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/supabase-helpers.js"></script>
+  <script src="js/notifications.js"></script>
   <script src="js/mobile.js"></script>
   <script src="js/scanner.js"></script>
   
@@ -187,6 +207,60 @@
     }
     .btn-password:hover {
       background: #ffe0b2;
+    }
+
+    /* Notifikacijski bell gumb */
+    .btn-notif {
+      background: #e3f2fd;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .btn-notif:hover {
+      background: #bbdefb;
+    }
+
+    /* Notifikacije - stavke u dropdown-u */
+    .notif-item {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .notif-item:hover { background: #f8f9fa; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 2px;
+    }
+    .notif-message {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      overflow-wrap: break-word;
+    }
+    .notif-meta {
+      font-size: 11px;
+      color: #999;
     }
     
     /* Sidebar footer layout */
