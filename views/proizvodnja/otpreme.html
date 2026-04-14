@@ -2638,42 +2638,40 @@ async function confirmDispatch() {
   showLoading('Potvrda otpreme...');
   
   try {
-    // Dohvati palete za ovu otpremu
-    var palletsResult = await initSupabase()
-      .from('prod_dispatch_pallets')
-      .select('gop_id')
-      .eq('dispatch_id', currentDispatch.id);
-    
-    var palletIds = (palletsResult.data || []).map(function(p) { return p.gop_id; });
-    
-    // Pozovi RPC funkciju koja skida poklopce i ažurira status
-    var result = await initSupabase().rpc('dispatch_pallets', {
+    // Dohvati palete (SB.select auto-throws na greške, auto-toast)
+    var pallets = await SB.select('prod_dispatch_pallets', {
+      columns: 'gop_id',
+      eq: { dispatch_id: currentDispatch.id }
+    });
+    var palletIds = (pallets || []).map(function(p) { return p.gop_id; });
+
+    // RPC koja skida poklopce i ažurira status paleta + dispatch headera
+    var data = await SB.rpc('dispatch_pallets', {
       p_dispatch_id: currentDispatch.id,
       p_pallet_ids: palletIds,
       p_user_name: Auth.getUser()?.name || 'System'
     });
-    
-    if (result.error) throw result.error;
-    
-    // Kreiraj notifikaciju
-    await initSupabase().rpc('create_notification', {
+
+    // Notifikacija - non-critical, silent ako padne
+    await SB.rpc('create_notification', {
       p_type: 'dispatch_sent',
       p_title: 'Otprema potvrđena',
-      p_message: 'Otprema ' + currentDispatch.dispatch_number + ' je otpremljena. Poklopaca skinuto: ' + result.data.covers_used,
+      p_message: 'Otprema ' + currentDispatch.dispatch_number + ' je otpremljena. Poklopaca skinuto: ' + data.covers_used,
       p_related_id: currentDispatch.id,
       p_related_type: 'dispatch',
       p_created_by: Auth.getUser()?.name || 'System'
-    });
-    
+    }, { silent: true });
+
     hideLoading();
     closeModal('viewDispatchModal');
-    showMessage('✅ Otprema potvrđena! Poklopaca skinuto: ' + result.data.covers_used, 'success');
-    
+    showMessage('✅ Otprema potvrđena! Poklopaca skinuto: ' + data.covers_used, 'success');
+
     await refreshOtpreme();
-    
+
   } catch (e) {
     hideLoading();
-    showMessage('Greška: ' + e.message, 'error');
+    // SB.* je već prikazao error toast, samo loggiramo dijagnostiku
+    console.error('confirmDispatch failed:', e);
   }
 }
 
@@ -2713,7 +2711,7 @@ async function processReturn() {
   showLoading('Evidentiranje povrata...');
   
   try {
-    var result = await initSupabase().rpc('return_pallet', {
+    await SB.rpc('return_pallet', {
       p_dispatch_id: dispatchId,
       p_gop_id: gopId,
       p_quantity: quantity,
@@ -2721,19 +2719,17 @@ async function processReturn() {
       p_notes: notes,
       p_user_name: Auth.getUser()?.name || 'System'
     });
-    
-    if (result.error) throw result.error;
-    
+
     hideLoading();
     closeModal('returnModal');
     closeModal('viewDispatchModal');
     showMessage('✅ Povrat evidentiran', 'success');
-    
+
     await refreshOtpreme();
-    
+
   } catch (e) {
     hideLoading();
-    showMessage('Greška: ' + e.message, 'error');
+    console.error('processReturn failed:', e);
   }
 }
 
