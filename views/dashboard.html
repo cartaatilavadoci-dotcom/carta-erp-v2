@@ -250,6 +250,21 @@
   </div>
 </div>
 
+<!-- OEE sažetak (iz v_oee_dashboard, zadnjih 30 dana) -->
+<div class="form-row" style="margin-bottom: 20px;" id="sectionOee">
+  <div class="card" style="flex: 1;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%); color: white;">
+      <span>⚡ OEE po liniji i stroju (zadnjih 30 dana)</span>
+      <a href="#oee" style="color: white; text-decoration: none; font-size: 0.85em; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 4px;">Detaljno →</a>
+    </div>
+    <div class="card-body">
+      <div id="oeeSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+        <div style="padding: 20px; text-align: center; color: #999;">Učitavanje...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Pod-proizvedeni završeni RN (variance flag iz A2) -->
 <div class="form-row" style="margin-bottom: 20px;" id="sectionVariance">
   <div class="card" style="flex: 1;">
@@ -726,6 +741,7 @@ async function initDashboardView() {
     loadTodayStats();
     loadYesterdayStats();
     loadActiveRN();
+    loadOeeSummary();
     loadPodProizvedeniRN();
     loadPOPStats();
     loadAktivniKvarovi();
@@ -1261,6 +1277,95 @@ function showPalletPicker(palletNo, gopList) {
   document.getElementById('traceModalTitle').textContent = '🔍 Više paleta s brojem ' + palletNo;
   document.getElementById('traceModalBody').innerHTML = html;
   openModal('traceModal');
+}
+
+// OEE sažetak (v_oee_dashboard) zadnjih 30 dana po liniji + stroju
+async function loadOeeSummary() {
+  var container = document.getElementById('oeeSummary');
+  if (!container) return;
+
+  try {
+    var prijeDatum = new Date();
+    prijeDatum.setDate(prijeDatum.getDate() - 30);
+    var prijeIso = prijeDatum.toISOString().split('T')[0];
+
+    // Dohvati OEE iz view-a (filter outliere > 100%)
+    var data = await SB.select('v_oee_dashboard', {
+      columns: 'production_line, machine_type, availability_pct, performance_pct, quality_pct, oee_pct',
+      gte: { shift_date: prijeIso },
+      gt: { oee_pct: 0 },
+      lte: { oee_pct: 100 },
+      limit: 5000
+    });
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Nema OEE podataka za zadnjih 30 dana</div>';
+      return;
+    }
+
+    // Agregacija po liniji + stroju (normaliziran machine_type)
+    var groups = {};
+    data.forEach(function(r) {
+      if (!r.production_line) return;
+      var machine = (r.machine_type || '').toLowerCase();
+      machine = machine.charAt(0).toUpperCase() + machine.slice(1);
+      var key = r.production_line + '|' + machine;
+      if (!groups[key]) {
+        groups[key] = { line: r.production_line, machine: machine, count: 0, oee: 0, av: 0, perf: 0, qual: 0 };
+      }
+      var g = groups[key];
+      g.count++;
+      g.oee += parseFloat(r.oee_pct) || 0;
+      g.av += parseFloat(r.availability_pct) || 0;
+      g.perf += parseFloat(r.performance_pct) || 0;
+      g.qual += parseFloat(r.quality_pct) || 0;
+    });
+
+    // Sortiraj: NLI prije WH, Tuber prije Bottomer
+    var order = { 'NLI|Tuber': 1, 'NLI|Bottomer': 2, 'WH|Tuber': 3, 'WH|Bottomer': 4 };
+    var entries = Object.values(groups).sort(function(a, b) {
+      var ak = (order[a.line + '|' + a.machine] || 99);
+      var bk = (order[b.line + '|' + b.machine] || 99);
+      return ak - bk;
+    });
+
+    var html = entries.map(function(g) {
+      var oee = g.oee / g.count;
+      var av = g.av / g.count;
+      var perf = g.perf / g.count;
+      var qual = g.qual / g.count;
+
+      // OEE world-class: 85%, good: 70%, OK: 50%
+      var oeeColor = oee >= 70 ? '#2e7d32' : (oee >= 50 ? '#f57c00' : '#d32f2f');
+      var linijaColor = g.line === 'WH' ? '#2e7d32' : '#e65100';
+      var stroj = (g.machine || '').toLowerCase();
+      var strojIcon = stroj === 'tuber' ? '🧻' : (stroj === 'bottomer' ? '🏷️' : '⚙️');
+
+      return '<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; background: #fff;">' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
+        '<span style="font-weight: 600; font-size: 0.95em;">' + strojIcon + ' ' + g.machine +
+        ' <span style="background: ' + linijaColor + '; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 6px;">' + g.line + '</span></span>' +
+        '<span style="font-size: 0.8em; color: #999;">' + g.count + ' smj.</span>' +
+        '</div>' +
+        '<div style="text-align: center; margin-bottom: 10px;">' +
+        '<div style="font-size: 2.2em; font-weight: 700; color: ' + oeeColor + '; line-height: 1;">' + oee.toFixed(1) + '%</div>' +
+        '<div style="font-size: 0.75em; color: #999; letter-spacing: 1px;">OEE</div>' +
+        '</div>' +
+        '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.8em;">' +
+        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
+        '<div style="color: #666; font-size: 0.9em;">Dostupnost</div><div style="font-weight: 600;">' + av.toFixed(0) + '%</div></div>' +
+        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
+        '<div style="color: #666; font-size: 0.9em;">Performans</div><div style="font-weight: 600;">' + perf.toFixed(0) + '%</div></div>' +
+        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
+        '<div style="color: #666; font-size: 0.9em;">Kvaliteta</div><div style="font-weight: 600;">' + qual.toFixed(0) + '%</div></div>' +
+        '</div></div>';
+    }).join('');
+
+    container.innerHTML = html;
+  } catch (e) {
+    console.error('loadOeeSummary:', e);
+    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #d32f2f;">Greška učitavanja OEE podataka</div>';
+  }
 }
 
 // Pod-proizvedeni završeni RN (variance flag)
