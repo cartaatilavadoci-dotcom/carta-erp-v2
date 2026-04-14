@@ -1992,13 +1992,17 @@ async function spremiSkidanje() {
         
         if (mat.potpunoPotrosena) {
           // OZNAČENA rola → potpuno se skida
+          // remaining_kg je GENERATED kolona na svim inventory tablicama - NE šalji!
           var updateData = {
             status: 'Utrošeno',
-            consumed_kg: mat.preostalo,
-            remaining_kg: 0
+            consumed_kg: mat.preostalo
           };
-          
-          await initSupabase().from(mat.tablica).update(updateData).eq('id', mat.id);
+
+          var updRes = await initSupabase().from(mat.tablica).update(updateData).eq('id', mat.id);
+          if (updRes.error) {
+            console.error('❌ Greška pri update-u ' + mat.tablica + ':', updRes.error);
+            throw updRes.error;
+          }
           console.log('✅ Utrošeno:', mat.sifra, mat.preostalo.toFixed(1), 'kg');
           
           // Evidencija
@@ -2029,13 +2033,17 @@ async function spremiSkidanje() {
           if (potroseno < 0) potroseno = 0;
           if (ostatak < 0) ostatak = 0;
           
+          // remaining_kg je GENERATED - izračunava ga baza iz (initial_weight - consumed_kg)
           var updateData = {
             consumed_kg: potroseno,
-            remaining_kg: ostatak,
             status: ostatak < 20 ? 'Utrošeno' : (mat.tablica === 'prod_inventory_rolls' ? 'Djelomično' : 'Na skladištu')
           };
-          
-          await initSupabase().from(mat.tablica).update(updateData).eq('id', mat.id);
+
+          var updRes2 = await initSupabase().from(mat.tablica).update(updateData).eq('id', mat.id);
+          if (updRes2.error) {
+            console.error('❌ Greška pri update-u ' + mat.tablica + ':', updRes2.error);
+            throw updRes2.error;
+          }
           console.log('✅ Djelomično:', mat.sifra, '- potrošeno:', potroseno.toFixed(1), 'kg, ostatak:', ostatak.toFixed(1), 'kg');
           
           // Evidencija
@@ -2113,8 +2121,12 @@ async function spremiSkidanje() {
         }
         
         if (matEx.potpunoPotrosena) {
-          var updateDataEx = { status: 'Utrošeno', consumed_kg: matEx.preostalo, remaining_kg: 0 };
-          await initSupabase().from(matEx.tablica).update(updateDataEx).eq('id', matEx.id);
+          var updateDataEx = { status: 'Utrošeno', consumed_kg: matEx.preostalo };
+          var updResEx = await initSupabase().from(matEx.tablica).update(updateDataEx).eq('id', matEx.id);
+          if (updResEx.error) {
+            console.error('❌ Greška pri update-u ' + matEx.tablica + ':', updResEx.error);
+            throw updResEx.error;
+          }
           console.log('✅ Dodatni sloj - Utrošeno:', matEx.sifra, matEx.preostalo.toFixed(1), 'kg');
           
           await initSupabase()
@@ -2144,11 +2156,14 @@ async function spremiSkidanje() {
           
           var updateDataEx2 = {
             consumed_kg: potroseno,
-            remaining_kg: ostatakExtra,
             status: ostatakExtra < 20 ? 'Utrošeno' : (matEx.tablica === 'prod_inventory_rolls' ? 'Djelomično' : 'Na skladištu')
           };
-          
-          await initSupabase().from(matEx.tablica).update(updateDataEx2).eq('id', matEx.id);
+
+          var updResEx2 = await initSupabase().from(matEx.tablica).update(updateDataEx2).eq('id', matEx.id);
+          if (updResEx2.error) {
+            console.error('❌ Greška pri update-u ' + matEx.tablica + ':', updResEx2.error);
+            throw updResEx2.error;
+          }
           console.log('✅ Dodatni sloj - Djelomično:', matEx.sifra, '- potrošeno:', potroseno.toFixed(1), 'kg, ostatak:', ostatakExtra.toFixed(1), 'kg');
           
           await initSupabase()
