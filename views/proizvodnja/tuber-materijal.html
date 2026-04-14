@@ -1948,10 +1948,11 @@ async function spremiSkidanje() {
   if (!confirm('Spremiti skidanje materijala?\n\nOva akcija će ažurirati stanje na skladištu.')) return;
   
   showLoading('Spremanje...');
-  
+
   var pop = materijalKontekst.proizvedenoPOP || 0;
   var rez = materijalKontekst.rez || 0;
-  
+  var linkStartTime = new Date().toISOString(); // za traceability upit
+
   try {
     for (var s = 1; s <= 4; s++) {
       if (slojevi[s].materijali.length === 0) continue;
@@ -2198,7 +2199,42 @@ async function spremiSkidanje() {
         .in('id', materijalKontekst.popIds);
       console.log('✅ Označeno', materijalKontekst.popIds.length, 'POP-ova');
     }
-    
+
+    // TRACEABILITY: poveži POP-ove s upravo evidentiranim rolama papira
+    // Ne prekidaj tok ako padne - traceability je "nice to have"
+    if (materijalKontekst.popIds && materijalKontekst.popIds.length > 0 && materijalKontekst.workOrderId) {
+      try {
+        var consumedRes = await initSupabase()
+          .from('prod_inventory_consumed_rolls')
+          .select('id, layer_number')
+          .eq('work_order_id', materijalKontekst.workOrderId)
+          .gte('created_at', linkStartTime);
+
+        if (!consumedRes.error && consumedRes.data && consumedRes.data.length > 0) {
+          var linkRows = [];
+          for (var pi = 0; pi < materijalKontekst.popIds.length; pi++) {
+            for (var ci = 0; ci < consumedRes.data.length; ci++) {
+              linkRows.push({
+                pop_id: materijalKontekst.popIds[pi],
+                consumed_roll_id: consumedRes.data[ci].id,
+                layer_number: consumedRes.data[ci].layer_number || null
+              });
+            }
+          }
+          var linkRes = await initSupabase()
+            .from('prod_pop_roll_link')
+            .upsert(linkRows, { onConflict: 'pop_id,consumed_roll_id', ignoreDuplicates: true });
+          if (linkRes.error) {
+            console.warn('⚠️ Traceability link (pop_roll) nije upisan:', linkRes.error.message);
+          } else {
+            console.log('🔗 Traceability:', linkRows.length, 'POP↔Roll veza upisano');
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ Traceability iznimka:', e);
+      }
+    }
+
     // Završi nalog
     if (materijalKontekst.tip === 'nalog' && materijalKontekst.workOrderId) {
       await initSupabase()
