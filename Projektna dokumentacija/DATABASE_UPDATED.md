@@ -2,10 +2,23 @@
 
 ## 📊 Pregled
 
+> **Zadnja analiza:** 14. travnja 2026. (direktna Supabase introspekcija)
+
 - **Baza:** Supabase PostgreSQL
-- **Ukupno tablica:** 70+
-- **View-ova:** 15+
-- **Najveće tablice:** prod_articles (119 kolona), prod_work_orders (48+ kolona), payroll (38)
+- **Ukupno tablica:** 77 (public schema)
+- **View-ova:** 19
+- **RPC funkcija:** 48 (uključujući triggere)
+- **GENERATED kolone:** 7
+- **Sve tablice imaju RLS enabled**
+- **Najveće tablice po broju kolona:**
+  - `prod_articles` (121)
+  - `prod_work_orders` (44)
+  - `prod_work_orders_cutting` (42)
+  - `prod_work_orders_printing` (40)
+  - `prod_orders` (40)
+  - `payroll` (38)
+  - `prod_inventory_consumed_rolls` (36)
+  - `prod_shift_statistics` (34)
 
 ---
 
@@ -100,14 +113,26 @@ Formula: initial_weight_kg - consumed_kg
 ✅ Samo ažuriraj: consumed_kg (sustav automatski računa remaining_kg)
 ```
 
-#### prod_inventory_strips (15 kolona)
+#### prod_inventory_strips (15 kolona) ⚠️ GENERATED KOLONA
 Rezane trake.
+```
+⚠️ remaining_kg je GENERATED kolona!
+Formula: weight_kg - consumed_kg
+```
 
-#### prod_inventory_printed (16 kolona)
+#### prod_inventory_printed (16 kolona) ⚠️ GENERATED KOLONA
 Otisnute role.
+```
+⚠️ remaining_kg je GENERATED kolona!
+Formula: weight_kg - consumed_kg
+```
 
-#### prod_inventory_foil (11 kolona)
+#### prod_inventory_foil (11 kolona) ⚠️ GENERATED KOLONA
 Folije.
+```
+⚠️ remaining_kg je GENERATED kolona!
+Formula: weight_kg - consumed_kg
+```
 
 #### prod_inventory_pop (20 kolona) ⭐ AŽURIRANO 01.02.2026
 POP - poluproizvodi (tuljci).
@@ -710,7 +735,179 @@ za vraćanje brojača na stvarni max iz baze!
 
 ---
 
-*Zadnje ažuriranje: 11. Veljače 2026*
+## 📋 Kompletan popis tablica (77) ⭐ AŽURIRANO 14.04.2026
+
+Dobiven direktnom introspekcijom Supabase baze. Svi podaci RLS enabled.
+
+### Core Production (15)
+`prod_articles` (121 kol, 807 redaka) | `prod_customers` (144) | `prod_orders` (40 kol, 209) | `prod_work_orders` (44 kol, 191) | `prod_work_orders_cutting` (42 kol, 111) | `prod_work_orders_printing` (40 kol, 135) | `prod_shift_log` (201) | `prod_shift_details` (3378) | `prod_shift_substitutions` (367) | `prod_shift_reports` (760) | `prod_shift_notes` (0) | `prod_shift_statistics` (0) | `prod_bag_controls` (747) | `prod_tape_usage` (7712) | `prod_production_plans` (48)
+
+### Inventory (10)
+`prod_inventory_rolls` (2056) | `prod_inventory_strips` (884) | `prod_inventory_printed` (393) | `prod_inventory_foil` (71) | `prod_inventory_pop` (479) | `prod_inventory_gop` (3473) | `prod_inventory_pallets` (8) | `prod_inventory_consumed_rolls` (1443) | `prod_pop_consumption` (41) | `prod_palletization_patterns` (5)
+
+### ESP32 / OEE / Machines (7)
+`prod_machines` (7) | `prod_machine_counters` (15) | `prod_machine_counter_sync` (56) | `prod_machine_events` (1108) | `prod_downtime_categories` (7) | `prod_failure_reports` (24) | `prod_counters` (11)
+
+### Dispatch (4)
+`prod_dispatch` (11) | `prod_dispatch_items` (7) | `prod_dispatch_pallets` (209) | `prod_dispatch_returns` (0)
+
+### Maintenance (6)
+`prod_maintenance` (1) | `prod_maintenance_orders` (5) | `prod_maintenance_belts` (41) | `prod_maintenance_dropdowns` (7) | `prod_spare_parts` (0) | `prod_belts` (41)
+
+### HR & Payroll (14)
+`employees` (62) | `teams` (18) | `team_members` (43) | `shifts` (4) | `time_entries` (4) | `holidays` (28) | `rotation_patterns` (15) | `hour_types` (13) | `tax_brackets` (2) | `contribution_rates` (4) | `payroll` (38 kol, 176) | `productivity` (30) | `productivity_bonus_rules` (2) | `bonuses` (105) | `monthly_hours` (24) | `work_hours` (0)
+
+### Scheduling (3)
+`prod_schedules` (834) | `prod_schedule_teams` (16) | `prod_schedule_members` (43)
+
+### Auth & Config (8)
+`prod_users` (19) | `prod_roles` (16) | `prod_settings` (0) | `settings` (70) | `prod_email_settings` (7) | `prod_email_recipients` (1) | `prod_dropdown_values` (38) | `prod_helper_values` (45)
+
+### Ostalo (10)
+`companies` (1) | `prod_paper_codes` (1585) | `prod_notifications` (7) | `prod_article_notes` (19) | `prod_order_comments` (0) | `prod_deletion_log` (0) | `prod_reserved_numbers` (0) | `app_counters` (6)
+
+---
+
+## 🔢 Sve GENERATED kolone (7) ⭐ AŽURIRANO 14.04.2026
+
+| Tablica | Kolona | Formula |
+|---------|--------|---------|
+| `prod_orders` | `quantity_remaining` | `quantity_ordered - quantity_produced` |
+| `prod_inventory_rolls` | `remaining_kg` | `initial_weight_kg - consumed_kg` |
+| `prod_inventory_strips` | `remaining_kg` | `weight_kg - consumed_kg` |
+| `prod_inventory_printed` | `remaining_kg` | `weight_kg - consumed_kg` |
+| `prod_inventory_foil` | `remaining_kg` | `weight_kg - consumed_kg` |
+| `prod_inventory_pop` | `quantity_available` | `quantity_in_stock - COALESCE(quantity_reserved, 0)` |
+| `prod_maintenance` | `total_cost` | `(parts_cost + material_cost) + labor_cost` |
+
+**⚠️ Nijednu od ovih kolona NE MOŽETE direktno upisati ili ažurirati!** Ažurirajte izvorne kolone.
+
+---
+
+## 🔧 Kompletan popis RPC funkcija (48) ⭐ AŽURIRANO 14.04.2026
+
+### Work Order Approval
+- `approve_work_order(p_work_order_id, p_approver_user_id, p_approver_name)` → json
+- `reject_work_order(p_work_order_id, p_rejector_user_id, p_rejector_name, p_reason)` → json
+- `resubmit_work_order(p_work_order_id)` → json
+
+### Machine Counter (ESP32) ⭐ KRITIČNO
+- `get_counter_status(p_machine_code)` → json
+- `get_active_work_order(p_machine_code)` → json
+- `start_machine_counter(p_machine_code, p_work_order_id, p_work_order_number, p_target_quantity)` → json
+- `stop_machine_counter(p_machine_code, p_final_count)` → json
+- `reset_machine_counter(p_machine_code)` → json
+- `increment_machine_counter(p_machine_code, p_device_id, p_increment)` → json
+
+### Tuber / Bottomer Status
+- `complete_tuber_for_work_order(p_work_order_id)` → json ⭐ NOVO
+- `reactivate_tuber_for_work_order(p_work_order_id)` → json
+- `complete_bottomer_phase(p_work_order_id, p_phase)` → json
+- `reactivate_bottomer_phase(p_work_order_id, p_phase)` → json
+
+### OEE / Statistics
+- `aggregate_shift_statistics(p_date)` → integer
+- `calculate_speed_from_syncs(p_machine_code, p_production_date, p_shift_number)` → TABLE ⭐ NOVO
+- `get_oee_target_speed(p_machine_type)` → integer ⭐ NOVO
+- `cleanup_old_esp32_data(p_days)` → TABLE
+- `daily_esp32_processing()` → text
+
+### Dispatch
+- `get_available_pallets_for_dispatch(p_order_number, p_article_code)` → TABLE
+- `dispatch_pallets(p_dispatch_id, p_pallet_ids, p_user_name)` → jsonb
+- `return_pallet(p_dispatch_id, p_gop_id, p_quantity, p_reason, p_notes, p_user_name)` → jsonb
+- `get_order_dispatch_stats(p_order_number)` → jsonb
+
+### POP Consumption
+- `fn_auto_consume_pop()` → trigger
+- `fn_manual_consume_pop(p_consumption_id, p_operator_name)` → jsonb
+
+### ID Generatori
+- `generate_next_number(p_counter_type)` → text
+- `generate_shift_id(p_date, p_line, p_shift)` → text
+- `generate_shift_detail_id()` → text
+- `generate_maintenance_order_id()` → text
+- `set_shift_detail_id()` → trigger
+
+### Ostalo
+- `check_user_access(p_email, p_page)` → boolean
+- `calculate_palletization_pattern(p_bag_width, p_bag_length, p_pallet_type)` → text
+- `get_palletization_pattern(p_pattern_code)` → json
+- `create_notification(p_type, p_title, p_message, ...)` → uuid
+- `get_unread_shift_notes(p_production_line, p_machine_type, p_days_back)` → TABLE
+
+### Triggeri (15 - interni)
+`update_updated_at_column`, `update_shift_log_updated_at`, `update_shift_reports_updated_at`, `update_shift_totals`, `update_pallet_status`, `update_roll_status`, `update_machine_counter_timestamp`, `update_consumed_rolls_timestamp`, `update_consumed_rolls_updated_at`, `update_maintenance_costs`, `update_maintenance_orders_timestamp`, `update_prod_plans_updated_at`, `update_spare_parts_stock`, `update_work_hours_timestamp`
+
+---
+
+## 👁️ Svi view-ovi (19) ⭐ AŽURIRANO 14.04.2026
+
+### Operativni
+- `v_active_orders` - Aktivne narudžbe s progressom
+- `v_work_orders_overview` - Pregled svih RN-ova
+- `v_articles_with_notes` - Artikli s pridruženim napomenama
+- `v_inventory_rolls_summary` - Sažetak stanja rola papira
+- `v_machine_counters` - Trenutno stanje brojača strojeva
+
+### Dispatch
+- `v_dispatch_summary` - Sažetak otprema
+- `v_orders_dispatch_status` - Status otpreme po narudžbama
+
+### OEE
+- `v_oee_dashboard` - Glavni OEE dashboard
+- `v_oee_daily_summary` - Dnevni OEE pregled
+- `v_oee_monthly` - Mjesečni OEE
+- `v_oee_operator_ranking` - Ranking operatera po OEE
+- `v_oee_settings` - OEE konfiguracija
+- `v_shift_reports_oee` - Smjenski izvještaji s OEE metrikama
+
+### Maintenance
+- `v_machines_maintenance_status` - Status održavanja strojeva
+- `v_maintenance_costs_by_machine` - Troškovi održavanja po stroju
+- `v_maintenance_orders_stats` - Statistika maintenance naloga
+- `v_parts_low_stock` - Upozorenje za rezervne dijelove
+
+### HR & Statistika
+- `v_payroll_details` - Detalji plaća
+- `v_monthly_line_stats` - Mjesečna statistika po linijama
+
+---
+
+## 🆕 Nove tablice identificirane 14.04.2026
+
+Tablice koje nisu dokumentirane u prethodnim verzijama:
+
+| Tablica | Kolone | Redovi | Svrha |
+|---------|--------|--------|-------|
+| `prod_notifications` | - | 7 | Sistem notifikacija (za `create_notification` RPC) |
+| `prod_palletization_patterns` | - | 5 | Uzorci slaganja na palete (za `calculate_palletization_pattern`) |
+| `prod_maintenance_dropdowns` | - | 7 | Dropdown vrijednosti za maintenance modul |
+| `prod_helper_values` | - | 45 | Helper/konfiguracijske vrijednosti |
+| `prod_belts` | - | 41 | Remeni (dupliranje s `prod_maintenance_belts`?) |
+| `app_counters` | - | 6 | Aplikacijski brojači (app-level) |
+| `prod_pop_consumption` | 20 | 41 | Rješava race condition Bottomer traži POP prije Tuber |
+| `prod_dispatch_items` | - | 7 | Stavke otpreme |
+| `prod_dispatch_pallets` | - | 209 | Palete po otpremi |
+| `prod_dispatch_returns` | - | 0 | Povrati otpremljenih paleta |
+| `prod_order_comments` | - | 0 | Komentari na narudžbe |
+
+---
+
+*Zadnje ažuriranje: 14. Travnja 2026*
+
+### 14.04.2026 (direktna Supabase introspekcija)
+- ⭐ **Ukupan broj tablica:** 77 (prije "70+")
+- ⭐ **Ukupan broj view-ova:** 19 (prije "15+")
+- ⭐ **Ukupan broj RPC funkcija:** 48 (dokumentirano 33 + 15 trigger funkcija)
+- ⭐ **GENERATED kolone povećane na 7** (prije 3) - dodane: `strips.remaining_kg`, `printed.remaining_kg`, `foil.remaining_kg`, `maintenance.total_cost`
+- ⭐ **prod_articles:** 121 kolona (prije 119)
+- ⭐ **prod_work_orders:** 44 kolone (prije 48+)
+- ⭐ **Nove tablice dokumentirane:** prod_notifications, prod_palletization_patterns, prod_maintenance_dropdowns, prod_helper_values, prod_belts, app_counters, prod_pop_consumption
+- ⭐ **Nove RPC funkcije:** complete_tuber_for_work_order, calculate_speed_from_syncs, get_oee_target_speed, fn_auto_consume_pop, fn_manual_consume_pop, get_palletization_pattern, check_user_access, create_notification, get_unread_shift_notes
+- ⭐ **Svi view-ovi kategorizirani:** Operativni, Dispatch, OEE, Maintenance, HR
+
+### 11.02.2026
 - ⭐ Dodane tablice prod_counters i prod_reserved_numbers
 - ⭐ remaining_kg dokumentirana kao GENERATED kolona (prod_inventory_rolls)
 - ⭐ sort_order kolona dodana u prod_orders
