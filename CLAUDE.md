@@ -1,6 +1,6 @@
 # CARTA-ERP - AI Razvojni Vodič
 
-> **Verzija:** 1.3 | **Zadnje ažuriranje:** 14. Travnja 2026
+> **Verzija:** 1.4 | **Zadnje ažuriranje:** 14. Travnja 2026 (sesija 2)
 
 ---
 
@@ -1022,6 +1022,44 @@ Za detaljnije informacije, pogledaj:
 
 ## 📅 Changelog & Najnovija Ažuriranja
 
+### 14. Travnja 2026 - Sesija 2 (v1.4) ⭐ VELIKA SESIJA
+
+**Workflow & Infrastructure:**
+- ⭐ **Supabase MCP integracija** - direktan pristup bazi za analizu i migracije
+- ⭐ **SB.* safe wrapper** (js/supabase-helpers.js) - centraliziran error handling za sve Supabase pozive (novo Pravilo #24)
+- ⭐ **Notifikacijski sustav UI** - bell icon + dropdown u sidebaru, surface-a prod_notifications
+
+**Kritični popravci:**
+- 🐛 **FIX: GENERATED column silent fail** u tuber-materijal.html - 4 UPDATE-a pisala remaining_kg na 5 inventory tablica, Postgres odbijao, lažni success log
+- 📊 **Backfill 557 rola** (~389 t papira) iz audit trail-a
+- 🐛 **FIX: update_roll_status trigger** - čitao STALE vrijednost GENERATED kolone u BEFORE trigger-u
+- 🐛 **RECONCILE: OTP-2026-0004** - prekinut confirmDispatch, 172,100 kom zavedeno kao neotpremljeno
+
+**Database - nove strukture:**
+- ⭐ **FK constraints** na core production lanac (POP/GOP/consumed_rolls → work_orders) s ON DELETE RESTRICT
+- ⭐ **prod_gop_pop_link** - veza GOP paleta ↔ POP tuljci (bottomer-slagac popunjava)
+- ⭐ **prod_pop_roll_link** - veza POP ↔ role papira (tuber-materijal popunjava)
+- ⭐ **v_full_traceability** view + **trace_pallet(pallet_number)** RPC za customer recall
+- ⭐ **produced_quantity** kolona (auto-sync iz GOP-a preko triggera)
+- ⭐ **produced_pct** GENERATED kolona - postotak proizvodnje vs planirano
+- ⭐ **5 novih triggera:** trg_gop_sync_wo_produced, trg_gop_dispatch_status_sync, trg_wo_rejected_notify, trg_wo_under_produced_notify, (popravljen update_roll_status)
+
+**Frontend:**
+- ⭐ **Dashboard progress bar** na aktivnim RN-ovima + **pod-proizvedeni widget**
+- ⭐ **Sljedivost search** - po RN broju ili paleti, drill-down do pojedinačne palete
+- ⭐ **Bell notifikacije** - lista nepročitanih, auto-navigate na klik
+- ⭐ **FK RESTRICT soft-delete fallback** u planiranje - "ponudi otkazati umjesto brisati"
+
+**RPC/Code refactoring:**
+- ⭐ **SB.rpc migracija** - svih 9 RPC poziva u 3 modula (ovjera-rn × 2, otpreme)
+- ⭐ **dispatch_pallets workflow** - auto-sync status trigger spriječava inkonzistentnost
+- ⭐ **Bottomer gate-keeper** - complete_bottomer_phase sad provjerava tuber_status
+
+**Git & Deployment:**
+- ⭐ **Repozitorij migriran** na cartaatilavadoci-dotcom/carta-erp-v2 (public)
+- ⭐ **GitHub Pages** omogućen
+- ⭐ **22 commita** pushana u ovoj sesiji
+
 ### 14. Travnja 2026
 
 - ⭐ **CLAUDE.md v1.3** - Kompletno ažuriranje dokumentacije
@@ -1086,8 +1124,8 @@ Za detaljnije informacije, pogledaj:
 
 ---
 
-**Verzija dokumenta:** 1.3
-**Zadnje ažuriranje:** 14. Travnja 2026
+**Verzija dokumenta:** 1.4
+**Zadnje ažuriranje:** 14. Travnja 2026 (sesija 2)
 **Autor:** AI Assistant (Claude)
 
 ---

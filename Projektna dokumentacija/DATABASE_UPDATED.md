@@ -894,7 +894,50 @@ Tablice koje nisu dokumentirane u prethodnim verzijama:
 
 ---
 
-*Zadnje ažuriranje: 14. Travnja 2026*
+*Zadnje ažuriranje: 14. Travnja 2026 (sesija 2)*
+
+### 14.04.2026 - Sesija 2 (workflow + traceability + FK) ⭐
+
+**Nove tablice:**
+- `prod_gop_pop_link` (gop_id, pop_id, quantity_used, created_by, created_at) - PK(gop_id,pop_id)
+  - FK gop_id → prod_inventory_gop ON DELETE CASCADE
+  - FK pop_id → prod_inventory_pop ON DELETE RESTRICT
+  - Popunjava bottomer-slagac.skiniPOPSaStanja kad je proslijeđen gopId
+- `prod_pop_roll_link` (pop_id, consumed_roll_id, layer_number, created_at) - PK(pop_id,consumed_roll_id)
+  - FK pop_id → prod_inventory_pop ON DELETE CASCADE
+  - FK consumed_roll_id → prod_inventory_consumed_rolls ON DELETE RESTRICT
+  - Popunjava tuber-materijal.spremiSkidanje nakon evidencije potrošnje
+
+**Nove kolone u prod_work_orders:**
+- `produced_quantity INTEGER DEFAULT 0` - auto-sync iz GOP-a preko trigger-a
+- `produced_pct NUMERIC(5,1) GENERATED ALWAYS AS` (quantity > 0: produced_quantity * 100.0 / quantity, else NULL)
+
+**Novi FK constraints (RESTRICT - spriječava brisanje RN-a s produkcijom):**
+- `prod_inventory_pop.work_order_id` → `prod_work_orders(id)`
+- `prod_inventory_gop.work_order_id` → `prod_work_orders(id)`
+- `prod_inventory_consumed_rolls.work_order_id` → `prod_work_orders(id)`
+
+**Novi triggeri (5):**
+- `trg_gop_sync_wo_produced` (AFTER INS/UPD/DEL na prod_inventory_gop) - sync produced_quantity u parent RN
+- `trg_gop_dispatch_status_sync` (BEFORE UPDATE prod_inventory_gop WHEN dispatch_status changed) - auto-sync status i dispatched_at
+- `trg_wo_rejected_notify` (AFTER UPDATE OF approval_status) - auto create_notification
+- `trg_wo_under_produced_notify` (AFTER UPDATE OF status) - notification ako Završeno + produced_pct < 90
+- `update_roll_status_trigger` (POPRAVLJEN) - funkcija sad računa remaining manualno umjesto čitanja GENERATED kolone
+
+**Novi view + RPC:**
+- `v_full_traceability` - denormalizirani view: GOP → POP → consumed_roll
+- `trace_pallet(pallet_number TEXT)` RPC - agregirani trace za customer recall
+
+**Update complete_bottomer_phase RPC:**
+- Sad provjerava `tuber_status = 'Završeno'` prije dopuštanja završetka Bottomera
+- Vraća `{success: false, error: 'Tuber faza nije završena'}` ako nije
+
+**Ukupno tablica:** 79 (prije 77)
+**Ukupno triggera:** ~21 (prije 16)
+**Ukupno view-ova:** 20 (prije 19)
+**Ukupno RPC funkcija:** 49 (prije 48)
+
+---
 
 ### 14.04.2026 (direktna Supabase introspekcija)
 - ⭐ **Ukupan broj tablica:** 77 (prije "70+")
