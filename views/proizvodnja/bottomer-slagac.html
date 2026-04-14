@@ -2155,8 +2155,9 @@ window.adminDodajPaletu = async function() {
         operator_name: postavaStr + ' (Admin)',
         status: noviStatus
       };
-      var result = await initSupabase().from('prod_inventory_gop').insert(gopData);
+      var result = await initSupabase().from('prod_inventory_gop').insert(gopData).select().single();
       if (result.error) throw result.error;
+      var adminGopId = result.data && result.data.id;
 
       // Skini praznu paletu sa stanja
       if (skiniPaletu) {
@@ -2199,9 +2200,9 @@ window.adminDodajPaletu = async function() {
       await window.updateOrderProduced(nalog.order_number, nalog.article_id, kolicina);
     }
 
-    // Skini POP sa stanja
+    // Skini POP sa stanja (gop_id za traceability)
     if (skiniPOP) {
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, adminGopId);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
     }
 
@@ -3488,9 +3489,9 @@ window.dodajPaletu = async function() {
       
       // Zapamti broj palete za evidenciju
       window.zadnjiBrojPalete = nedovrsenaPaleta.pallet_number;
-      
-      // Skini POP i paletu
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
+
+      // Skini POP i paletu (gop_id za traceability)
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, nedovrsenaPaleta.id);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
       
       // Skini trake
@@ -3525,9 +3526,10 @@ window.dodajPaletu = async function() {
         operator_name: postavaStr,
         status: noviStatus
       };
-      var result = await initSupabase().from('prod_inventory_gop').insert(gopData);
+      var result = await initSupabase().from('prod_inventory_gop').insert(gopData).select().single();
       if (result.error) throw result.error;
-      
+      var novaGopId = result.data && result.data.id;
+
       // *** SPREMI DETALJ SMJENE - nova paleta ***
       var detaljRez = await window.spremiSmjenaDetalj(brojPalete, kolicina, nalog);
       if (!detaljRez.success && confirm('Detalj smjene NIJE spremljen! Pokušati ponovno?')) {
@@ -3539,8 +3541,8 @@ window.dodajPaletu = async function() {
       
       // Zapamti broj palete za evidenciju
       window.zadnjiBrojPalete = brojPalete;
-      
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
+
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, novaGopId);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
       var palRez = await window.skiniPaletuSaStanja(dimenzija);
       if (palRez.upozorenje) showMessage('⚠️ ' + palRez.upozorenje, 'warning');
@@ -3653,8 +3655,9 @@ window.updateOrderProduced = async function(orderNumber, articleId, quantity) {
 
 // ============================================
 // SKIDANJE POP SA STANJA (s evidencijom u prod_pop_consumption)
+// Ako je proslijeđen gopId, upisuje i u prod_gop_pop_link (traceability)
 // ============================================
-window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData) {
+window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData, gopId) {
   try {
     // Dohvati kontekst ako nije proslijeđen
     var nalog = nalogData || window.trenutniRNData || {};
@@ -3803,7 +3806,30 @@ window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData) {
     } else {
       console.log('📝 Evidentirano skidanje POP:', ukupnoSkinuto, '/', kolicina, 'status:', status);
     }
-    
+
+    // 4b. TRACEABILITY: upisi vezu GOP ↔ POP (ako imamo gopId)
+    // Ne prekidaj tok ako upis padne - traceability je "nice to have"
+    if (gopId && consumptionLog.length > 0) {
+      try {
+        var linkRows = consumptionLog.map(function(c) {
+          return {
+            gop_id: gopId,
+            pop_id: c.pop_id,
+            quantity_used: c.quantity,
+            created_by: operater
+          };
+        });
+        var linkRes = await initSupabase().from('prod_gop_pop_link').insert(linkRows);
+        if (linkRes.error) {
+          console.warn('⚠️ Traceability link (gop_pop) nije upisan:', linkRes.error.message);
+        } else {
+          console.log('🔗 Traceability:', linkRows.length, 'POP↔GOP veza upisano');
+        }
+      } catch (e) {
+        console.warn('⚠️ Traceability iznimka:', e);
+      }
+    }
+
     // 5. Vrati rezultat
     if (preostalo > 0) {
       if (ukupnoSkinuto === 0) {
