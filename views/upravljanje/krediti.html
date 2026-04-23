@@ -24,6 +24,30 @@
   </div>
 </div>
 
+<!-- KPI KARTICE - Payment tracking (plan otplate) -->
+<div class="status-grid" style="margin-top: 10px;">
+  <div class="status-card info">
+    <div class="status-card-icon">📋</div>
+    <div class="status-card-value" id="kpiPreostaloZaPlatiti">-</div>
+    <div class="status-card-label">Preostalo za platiti (neplaćeno)</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon">⏰</div>
+    <div class="status-card-value" id="kpiSljedecih30Dana">-</div>
+    <div class="status-card-label">Sljedećih 30 dana</div>
+  </div>
+  <div class="status-card" style="border-left: 4px solid #f44336;">
+    <div class="status-card-icon">🔴</div>
+    <div class="status-card-value" id="kpiPrekoracene">-</div>
+    <div class="status-card-label">Prekoračene rate</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon">✅</div>
+    <div class="status-card-value" id="kpiPlaceno">-</div>
+    <div class="status-card-label">Plaćeno (kumulativno)</div>
+  </div>
+</div>
+
 <style>
 /* Timeline SVG */
 .krediti-timeline-card { margin-bottom: 20px; }
@@ -250,18 +274,28 @@
   </div>
 </div>
 
-<!-- MODAL: Amortizacijski plan -->
+<!-- MODAL: Amortizacijski plan (i stvarni plan otplate s payment tracking-om) -->
 <div class="modal" id="amortModal">
-  <div class="modal-content" style="max-width: 900px;">
+  <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
       <h2 id="amortTitle">📊 Amortizacijski plan</h2>
       <span class="modal-close" onclick="closeModal('amortModal')">&times;</span>
     </div>
     <div class="modal-body">
       <div id="amortSummary" class="amort-summary"></div>
+
+      <!-- Filter (prikazuje se samo kad postoji stvarni plan otplate) -->
+      <div id="amortFilter" style="display:none; margin:10px 0; padding:8px 10px; background:#f5f5f5; border-radius:6px;">
+        <strong style="margin-right:10px;">Prikaži:</strong>
+        <label style="margin-right:12px;"><input type="radio" name="scheduleFilter" value="all" checked onchange="kreditiRenderSchedule()"> Sve</label>
+        <label style="margin-right:12px;"><input type="radio" name="scheduleFilter" value="unpaid" onchange="kreditiRenderSchedule()"> Neplaćene</label>
+        <label style="margin-right:12px;"><input type="radio" name="scheduleFilter" value="paid" onchange="kreditiRenderSchedule()"> Plaćene</label>
+        <label><input type="radio" name="scheduleFilter" value="overdue" onchange="kreditiRenderSchedule()"> Prekoračene</label>
+      </div>
+
       <div style="max-height: 500px; overflow-y: auto;">
         <table class="amort-table" id="amortTable">
-          <thead>
+          <thead id="amortTableHead">
             <tr>
               <th>#</th>
               <th>Datum</th>
@@ -277,6 +311,37 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('amortModal')">Zatvori</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Označi ratu kao plaćenu -->
+<div class="modal" id="markPaidModal">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h2>💰 Označi ratu kao plaćenu</h2>
+      <span class="modal-close" onclick="closeModal('markPaidModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="markPaidInfo" style="background:#f5f5f5;padding:10px;border-radius:6px;margin-bottom:15px;font-size:13px;"></div>
+      <div class="form-group">
+        <label>Datum plaćanja *</label>
+        <input type="date" id="markPaidDate" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Plaćeni iznos (EUR) *</label>
+        <input type="number" step="0.01" id="markPaidAmount" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Napomena</label>
+        <textarea id="markPaidNote" class="form-control" rows="2" placeholder="opcionalno"></textarea>
+      </div>
+      <input type="hidden" id="markPaidScheduleId">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('markPaidModal')">Odustani</button>
+      <button class="btn btn-icon danger" id="markPaidUndoBtn" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:none;" onclick="kreditiUndoPayment()">↩ Poništi plaćanje</button>
+      <button class="btn btn-success" onclick="kreditiSavePayment()">💾 Spremi</button>
     </div>
   </div>
 </div>
@@ -323,6 +388,11 @@ window.initKreditiView = async function() {
     kreditiPopulateFilters();
     kreditiPrikaziTablicu();
     kreditiPrikaziTimeline();
+
+    // Load schedule data + calculate payment tracking KPIs (non-blocking)
+    kreditiLoadAllSchedules().then(kreditiCalculateScheduleKpi).catch(e => {
+      console.warn('Schedule KPI load error:', e);
+    });
   } catch (e) {
     console.error('Krediti init error:', e);
     if (typeof showMessage === 'function') {
@@ -762,12 +832,288 @@ async function kreditiDeleteKredit(id) {
 }
 
 // =============================================
-// AMORTIZACIJSKI PLAN (client-side)
+// PLAN OTPLATE: prefer real schedule from DB, fallback to calculated
 // =============================================
-function kreditiPrikaziAmortizaciju(id) {
+// State za renderiranje stvarnog plana:
+window.kreditiCurrentSchedule = [];  // svi retci iz prod_loan_payment_schedule za odabrani kredit
+window.kreditiCurrentLoan = null;
+
+async function kreditiPrikaziAmortizaciju(id) {
   const k = window.kreditiData.find(x => x.id === id);
   if (!k) return;
+  window.kreditiCurrentLoan = k;
 
+  // 1. Pokušaj učitati stvarni plan otplate iz prod_loan_payment_schedule
+  let schedule = [];
+  try {
+    schedule = await SB.select('prod_loan_payment_schedule', {
+      eq: { loan_id: k.id },
+      order: { datum_dospijeca: 'asc' },
+      limit: 1000,
+      silent: true
+    }) || [];
+  } catch (e) {
+    console.warn('prod_loan_payment_schedule read failed, fallback na izračun:', e.message);
+    schedule = [];
+  }
+
+  if (schedule.length > 0) {
+    // Stvarni plan postoji → prikaži ga s payment tracking UI
+    window.kreditiCurrentSchedule = schedule;
+    kreditiRenderRealSchedule(k, schedule);
+  } else {
+    // Nema stvarnog plana → prikaži izračunati
+    window.kreditiCurrentSchedule = [];
+    kreditiRenderCalculatedPlan(k);
+  }
+
+  openModal('amortModal');
+}
+
+// --- Stvarni plan otplate iz baze + payment tracking ---
+function kreditiRenderRealSchedule(k, schedule) {
+  document.getElementById('amortTitle').textContent = '📋 Stvarni plan otplate: ' + (k.sifra || '') + ' – ' + (k.naziv || '');
+
+  const ukupnoRata = schedule.reduce((s, r) => s + Number(r.rata_total_eur || 0), 0);
+  const ukupnoKamate = schedule.reduce((s, r) => s + Number(r.kamate_eur || 0), 0);
+  const ukupnoGlavnica = schedule.reduce((s, r) => s + Number(r.otplatna_kvota_eur || 0), 0);
+  const placenoCnt = schedule.filter(r => r.placeno).length;
+  const placenoSum = schedule.filter(r => r.placeno).reduce((s, r) => s + Number(r.placeno_iznos_eur || 0), 0);
+
+  document.getElementById('amortSummary').innerHTML =
+    '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
+      '<div><strong>Broj rata u planu:</strong> ' + schedule.length + '</div>' +
+      '<div><strong>Ukupno za platiti:</strong> ' + kreditiFmtEur(ukupnoRata) + '</div>' +
+      '<div><strong>Od toga kamate:</strong> ' + kreditiFmtEur(ukupnoKamate) + '</div>' +
+      '<div><strong>Glavnica:</strong> ' + kreditiFmtEur(ukupnoGlavnica) + '</div>' +
+      '<div style="color:#2e7d32;"><strong>✓ Plaćeno:</strong> ' + placenoCnt + ' rata (' + kreditiFmtEur(placenoSum) + ')</div>' +
+    '</div>' +
+    '<div style="color:#1565c0;margin-top:8px;font-size:12px;">ℹ Plan iz HBOR PDF-ova (prod_loan_payment_schedule). Klikni 💰 na retku za označavanje plaćenog.</div>';
+
+  // Zamijeni header - dodaj Status + Akcije kolone
+  document.getElementById('amortTableHead').innerHTML =
+    '<tr>' +
+      '<th style="text-align:left;">#</th>' +
+      '<th style="text-align:left;">Datum</th>' +
+      '<th>Rata</th>' +
+      '<th>Glavnica</th>' +
+      '<th>Kamata</th>' +
+      '<th>Ostatak duga</th>' +
+      '<th style="text-align:left;">Status</th>' +
+      '<th style="text-align:center;">Akcija</th>' +
+    '</tr>';
+
+  // Prikaži filter
+  document.getElementById('amortFilter').style.display = 'block';
+  // Reset filter na "Sve"
+  const radio = document.querySelector('input[name="scheduleFilter"][value="all"]');
+  if (radio) radio.checked = true;
+
+  kreditiRenderSchedule();
+}
+
+function kreditiRenderSchedule() {
+  const schedule = window.kreditiCurrentSchedule || [];
+  if (schedule.length === 0) return;
+
+  const filterEl = document.querySelector('input[name="scheduleFilter"]:checked');
+  const filter = filterEl ? filterEl.value : 'all';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const soon = new Date(today);
+  soon.setDate(soon.getDate() + 7);
+
+  const rows = schedule.filter(r => {
+    const datum = new Date(r.datum_dospijeca + 'T00:00:00');
+    const overdue = !r.placeno && datum < today;
+    if (filter === 'paid') return r.placeno;
+    if (filter === 'unpaid') return !r.placeno;
+    if (filter === 'overdue') return overdue;
+    return true;
+  });
+
+  const tbody = document.getElementById('amortTableBody');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#999;">Nema rata za ovaj filter</td></tr>';
+    return;
+  }
+
+  const html = rows.map(r => {
+    const datum = new Date(r.datum_dospijeca + 'T00:00:00');
+    let bg = '', statusLabel;
+
+    if (r.placeno) {
+      bg = 'background:#e8f5e9;';
+      const placenoDatumStr = r.placeno_datum ? kreditiFmtDatum(r.placeno_datum) : '';
+      const placenoIznosStr = r.placeno_iznos_eur != null ? kreditiFmtEur(r.placeno_iznos_eur) : '';
+      statusLabel = '<span style="color:#2e7d32;font-weight:600;">✓ Plaćeno</span>' +
+        (placenoDatumStr ? '<div style="font-size:11px;color:#666;">' + placenoDatumStr + ' · ' + placenoIznosStr + '</div>' : '');
+    } else if (datum < today) {
+      bg = 'background:#ffebee;';
+      statusLabel = '<span style="color:#c62828;font-weight:600;">🔴 Prekoračeno</span>';
+    } else if (datum <= soon) {
+      bg = 'background:#fff3e0;';
+      statusLabel = '<span style="color:#e65100;font-weight:600;">⚠ Uskoro</span>';
+    } else {
+      statusLabel = '<span style="color:#999;">·</span>';
+    }
+
+    const btnIcon = r.placeno ? '✏️' : '💰';
+    const btnTitle = r.placeno ? 'Uredi / poništi plaćanje' : 'Označi plaćeno';
+
+    return '<tr style="' + bg + '">' +
+      '<td style="text-align:left;">' + (r.redni_br != null ? r.redni_br : '-') + '</td>' +
+      '<td style="text-align:left;">' + kreditiFmtDatum(r.datum_dospijeca) + '</td>' +
+      '<td>' + kreditiFmtEur(r.rata_total_eur) + '</td>' +
+      '<td>' + kreditiFmtEur(r.otplatna_kvota_eur) + '</td>' +
+      '<td>' + kreditiFmtEur(r.kamate_eur) + '</td>' +
+      '<td>' + kreditiFmtEur(r.ostatak_duga_eur) + '</td>' +
+      '<td style="text-align:left;">' + statusLabel + '</td>' +
+      '<td style="text-align:center;"><button class="btn-icon" title="' + btnTitle + '" onclick="kreditiOpenMarkPaidModal(\'' + r.id + '\')" style="padding:4px 8px;">' + btnIcon + '</button></td>' +
+    '</tr>';
+  }).join('');
+
+  tbody.innerHTML = html;
+}
+
+function kreditiOpenMarkPaidModal(scheduleId) {
+  const row = (window.kreditiCurrentSchedule || []).find(r => r.id === scheduleId);
+  if (!row) return;
+
+  document.getElementById('markPaidScheduleId').value = scheduleId;
+  document.getElementById('markPaidDate').value = row.placeno_datum || row.datum_dospijeca;
+  document.getElementById('markPaidAmount').value = row.placeno_iznos_eur != null ? row.placeno_iznos_eur : row.rata_total_eur;
+  document.getElementById('markPaidNote').value = row.napomena || '';
+  document.getElementById('markPaidInfo').innerHTML =
+    '<strong>Rata #' + (row.redni_br || '-') + '</strong> – dospijeće ' + kreditiFmtDatum(row.datum_dospijeca) +
+    '<br>Planirana rata: <strong>' + kreditiFmtEur(row.rata_total_eur) + '</strong>';
+
+  // Undo gumb samo ako je rata već označena kao plaćena
+  document.getElementById('markPaidUndoBtn').style.display = row.placeno ? 'inline-block' : 'none';
+
+  openModal('markPaidModal');
+}
+
+async function kreditiSavePayment() {
+  const id = document.getElementById('markPaidScheduleId').value;
+  const datum = document.getElementById('markPaidDate').value;
+  const amount = parseFloat(document.getElementById('markPaidAmount').value);
+  const note = document.getElementById('markPaidNote').value.trim();
+
+  if (!datum || isNaN(amount)) {
+    showMessage('Datum i iznos su obavezni', 'warning');
+    return;
+  }
+
+  try {
+    await SB.update('prod_loan_payment_schedule', {
+      placeno: true,
+      placeno_datum: datum,
+      placeno_iznos_eur: amount,
+      napomena: note || null
+    }, { id: id });
+
+    showMessage('✅ Plaćanje spremljeno', 'success');
+    closeModal('markPaidModal');
+
+    // Update cache + re-render
+    const row = window.kreditiCurrentSchedule.find(r => r.id === id);
+    if (row) {
+      row.placeno = true;
+      row.placeno_datum = datum;
+      row.placeno_iznos_eur = amount;
+      row.napomena = note || null;
+    }
+    kreditiRenderSchedule();
+    // Ažuriraj summary u amort modalu
+    if (window.kreditiCurrentLoan) kreditiRenderRealSchedule(window.kreditiCurrentLoan, window.kreditiCurrentSchedule);
+    // Ažuriraj globalne KPI-je
+    kreditiCalculateScheduleKpi();
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+async function kreditiUndoPayment() {
+  if (!confirm('Poništiti zapis o plaćanju ove rate?')) return;
+  const id = document.getElementById('markPaidScheduleId').value;
+  try {
+    await SB.update('prod_loan_payment_schedule', {
+      placeno: false,
+      placeno_datum: null,
+      placeno_iznos_eur: null,
+      napomena: null
+    }, { id: id });
+
+    showMessage('Plaćanje poništeno', 'success');
+    closeModal('markPaidModal');
+
+    const row = window.kreditiCurrentSchedule.find(r => r.id === id);
+    if (row) {
+      row.placeno = false;
+      row.placeno_datum = null;
+      row.placeno_iznos_eur = null;
+      row.napomena = null;
+    }
+    kreditiRenderSchedule();
+    if (window.kreditiCurrentLoan) kreditiRenderRealSchedule(window.kreditiCurrentLoan, window.kreditiCurrentSchedule);
+    kreditiCalculateScheduleKpi();
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+// =============================================
+// GLOBAL KPI za payment tracking (učitava sve rate iz svih aktivnih kredita)
+// =============================================
+window.kreditiScheduleAll = [];
+
+async function kreditiLoadAllSchedules() {
+  try {
+    const data = await SB.select('prod_loan_payment_schedule', {
+      order: { datum_dospijeca: 'asc' },
+      limit: 5000,
+      silent: true
+    });
+    window.kreditiScheduleAll = data || [];
+  } catch (e) {
+    console.warn('kreditiLoadAllSchedules failed:', e.message);
+    window.kreditiScheduleAll = [];
+  }
+}
+
+function kreditiCalculateScheduleKpi() {
+  const all = window.kreditiScheduleAll || [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const u30 = new Date(today);
+  u30.setDate(u30.getDate() + 30);
+
+  let preostalo = 0, sljedecih30 = 0, prekoracene = 0, placeno = 0;
+  for (const r of all) {
+    const datum = new Date(r.datum_dospijeca + 'T00:00:00');
+    const rataEur = Number(r.rata_total_eur || 0);
+    if (r.placeno) {
+      placeno += Number(r.placeno_iznos_eur || 0);
+    } else {
+      preostalo += rataEur;
+      if (datum < today) prekoracene++;
+      if (datum >= today && datum <= u30) sljedecih30 += rataEur;
+    }
+  }
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('kpiPreostaloZaPlatiti', all.length === 0 ? '—' : kreditiFmtEur(preostalo));
+  set('kpiSljedecih30Dana', all.length === 0 ? '—' : kreditiFmtEur(sljedecih30));
+  set('kpiPrekoracene', all.length === 0 ? '—' : String(prekoracene));
+  set('kpiPlaceno', all.length === 0 ? '—' : kreditiFmtEur(placeno));
+}
+
+// --- Izračunati plan (fallback kad nema stvarnog plana) ---
+function kreditiRenderCalculatedPlan(k) {
   const preostalaGlavnica = Number(k.preostala_glavnica_eur);
   const godKamata = Number(k.kamatna_stopa);
   const mjKamata = godKamata / 12 / 100;
@@ -786,12 +1132,23 @@ function kreditiPrikaziAmortizaciju(id) {
     mjRata = preostalaGlavnica * mjKamata * factor / (factor - 1);
   }
 
-  // Ako je u bazi spremljena stvarna mjesecna rata, koristimo nju za prikaz ("knjigovodstvena stvarnost")
-  // Inace koristimo izracunatu. Prikazat cemo obje u summary.
+  // Ako je u bazi spremljena stvarna mjesecna rata, koristimo nju za prikaz
   const ratomIzBaze = Number(k.mjesecna_rata_eur);
   const useRata = ratomIzBaze > 0 ? ratomIzBaze : mjRata;
 
-  document.getElementById('amortTitle').textContent = '📊 Plan otplate: ' + (k.sifra || '') + ' - ' + (k.naziv || '');
+  document.getElementById('amortTitle').textContent = '📊 Izračunati plan otplate: ' + (k.sifra || '') + ' – ' + (k.naziv || '');
+
+  // Header: vrati originalne kolone
+  document.getElementById('amortTableHead').innerHTML =
+    '<tr>' +
+      '<th>#</th>' +
+      '<th>Datum</th>' +
+      '<th>Rata</th>' +
+      '<th>Glavnica</th>' +
+      '<th>Kamata</th>' +
+      '<th>Preostala glavnica</th>' +
+    '</tr>';
+  document.getElementById('amortFilter').style.display = 'none';
 
   // Summary
   const varWarning = k.tip_kamate === 'Varijabilna'
@@ -804,7 +1161,8 @@ function kreditiPrikaziAmortizaciju(id) {
       '<div><strong>Preostalo mjeseci:</strong> ' + brMjeseci + '</div>' +
       '<div><strong>Izračunata anuitetska rata:</strong> ' + kreditiFmtEur(mjRata) + '</div>' +
       '<div><strong>Rata u evidenciji:</strong> ' + kreditiFmtEur(ratomIzBaze) + '</div>' +
-    '</div>' + varWarning;
+    '</div>' + varWarning +
+    '<div style="color:#777;margin-top:8px;font-size:12px;">ℹ Stvarni plan otplate nije unesen u bazu (prod_loan_payment_schedule). Prikazan izračunati plan za referencu.</div>';
 
   // Generiraj tablicu rata
   const tbody = document.getElementById('amortTableBody');
@@ -852,7 +1210,12 @@ function kreditiPrikaziAmortizaciju(id) {
     '</tr>'
   );
   tbody.innerHTML = rows.join('');
-
-  openModal('amortModal');
 }
+
+// Window exports za onclick handlere
+window.kreditiPrikaziAmortizaciju = kreditiPrikaziAmortizaciju;
+window.kreditiRenderSchedule = kreditiRenderSchedule;
+window.kreditiOpenMarkPaidModal = kreditiOpenMarkPaidModal;
+window.kreditiSavePayment = kreditiSavePayment;
+window.kreditiUndoPayment = kreditiUndoPayment;
 </script>
