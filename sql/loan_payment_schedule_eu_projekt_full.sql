@@ -8,12 +8,13 @@
 -- (osim zadnje 2 rate koje zbog zaokruživanja imaju 13095.76).
 --
 -- ⚠️ NAPOMENA O ROW 176 (2034-08-31, ostatak 52.384,45):
--- Ovaj redak nije eksplicitno vidljiv u PDF-u (str 3 završava sa
--- 31.07.2034 ostatak 65.480,68, str 4 počinje s 30.09.2034 ostatak
--- 39.288,22). Vrijednost 52.384,45 = 65.480,68 - 13.096,23 što
--- matematički potvrđuje da je ovo 31.08.2034 rata. Kamata/rata
--- preuzeta kao prosjek susjednih redova; PROVJERITI S PDF-OM
--- prije produkcijskog izvršavanja.
+-- Ovaj redak nije eksplicitno vidljiv u PDF-u (cutoff između str 3 i str 4).
+-- Ostatak 52.384,45 EUR je matematički potvrđen (65.480,68 - 13.096,23).
+-- Kamata i rata_total su REKONSTRUIRANE iz dnevne stope okolnih redova
+-- (row 175: 128.56 / 78576.91 / 31d ≈ row 177: 82.94 / 52384.45 / 30d ≈ 5.277e-5/d):
+--   kamate = 65480.68 × 5.277e-5 × 31d ≈ 107.14 EUR
+--   rata_total = 13096.23 + 107.14 ≈ 13203.37 EUR
+-- Ako PDF pokazuje drugačije vrijednosti za ovaj redak, ispravi prije produkcije.
 -- ============================================================
 
 INSERT INTO prod_loan_payment_schedule
@@ -107,7 +108,7 @@ VALUES
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 173, '2034-05-31', 13241.38,  145.15, 0, 13096.23,   91673.14),
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 174, '2034-06-30', 13224.79,  128.56, 0, 13096.23,   78576.91),
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 175, '2034-07-31', 13224.79,  128.56, 0, 13096.23,   65480.68),
-  ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 176, '2034-08-31', 13179.17,   82.94, 0, 13096.23,   52384.45), -- PROVJERITI s PDF str 3-4
+  ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 176, '2034-08-31', 13203.37,  107.14, 0, 13096.23,   52384.45), -- REKONSTRUIRANO (nije vidljiv u PDF skenu)
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 177, '2034-09-30', 13179.17,   82.94, 0, 13096.23,   39288.22),
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 178, '2034-10-31', 13160.51,   64.28, 0, 13096.23,   26191.99),
   ('56eb7fcc-795f-4268-b851-de6bfdaabc35', 179, '2034-11-30', 13137.70,   41.47, 0, 13095.76,   13095.76), -- otplata smanjena na 13095.76 (zaokruživanje)
