@@ -149,27 +149,25 @@
 .krediti-table tbody tr:hover { background: #f5f9fc; }
 .krediti-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* Akcijski gumbi - generičko (radi u krediti-table i amort-table) */
-.actions { display: flex; gap: 4px; }
+/* Akcijski gumbi - tekstualni, mali, interaktivni (radi u obje tablice) */
+.actions { display: flex; gap: 6px; }
 .action-btn {
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px;
-  max-width: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 5px 11px;
   border: 1px solid #d5dbe3;
   background: #fff;
   border-radius: 5px;
   cursor: pointer;
-  color: #6c7a89;
+  color: #556070;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
   transition: all 0.15s ease;
-  flex-shrink: 0;
+  white-space: nowrap;
   box-sizing: border-box;
 }
-.action-btn svg { width: 15px !important; height: 15px !important; stroke-width: 2; display: block; flex-shrink: 0; }
 .action-btn:hover {
   background: var(--primary);
   border-color: var(--primary);
@@ -197,18 +195,15 @@
 .krediti-tip-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #f0f0f0; color: #666; }
 .krediti-tip-badge.var { background: #fff3e0; color: #e65100; }
 
-/* Ikona za status u amortizaciji */
+/* Status pil u planu otplate */
 .krediti-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  display: inline-block;
+  padding: 3px 10px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
-.krediti-status-pill svg { width: 12px; height: 12px; }
 .krediti-status-pill.paid    { background: #e8f5e9; color: #2e7d32; }
 .krediti-status-pill.overdue { background: #ffebee; color: #c62828; }
 .krediti-status-pill.soon    { background: #fff3e0; color: #e65100; }
@@ -596,11 +591,6 @@ function kreditiPrikaziTablicu() {
     return;
   }
 
-  // Inline SVG ikone (Lucide-style, stroke-based, profesionalne)
-  const ICON_PLAN   = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="10" width="3" height="8"/></svg>';
-  const ICON_EDIT   = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
-  const ICON_DELETE = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
-
   tbody.innerHTML = filtered.map(k => {
     const statusKlasa = (k.status || 'Aktivan').toLowerCase().replace(/[^a-z]/g, '');
     const tipKamate = k.tip_kamate || 'Fiksna';
@@ -618,9 +608,9 @@ function kreditiPrikaziTablicu() {
       '<td>' + kreditiFmtDatum(k.zavrsni_datum) + '</td>' +
       '<td><span class="krediti-status-badge ' + statusKlasa + '">' + (k.status || '-') + '</span></td>' +
       '<td><div class="actions">' +
-        '<button class="action-btn action-plan" title="Plan otplate" aria-label="Plan otplate" onclick="kreditiPrikaziAmortizaciju(\'' + k.id + '\')">' + ICON_PLAN + '</button>' +
-        '<button class="action-btn action-edit" title="Uredi kredit" aria-label="Uredi kredit" onclick="kreditiOpenModal(\'' + k.id + '\')">' + ICON_EDIT + '</button>' +
-        '<button class="action-btn action-delete" title="Obriši kredit" aria-label="Obriši kredit" onclick="kreditiDeleteKredit(\'' + k.id + '\')">' + ICON_DELETE + '</button>' +
+        '<button class="action-btn action-plan" title="Plan otplate" onclick="kreditiPrikaziAmortizaciju(\'' + k.id + '\')">Plan</button>' +
+        '<button class="action-btn action-edit" title="Uredi kredit" onclick="kreditiOpenModal(\'' + k.id + '\')">Uredi</button>' +
+        '<button class="action-btn action-delete" title="Obriši kredit" onclick="kreditiDeleteKredit(\'' + k.id + '\')">Obriši</button>' +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -1063,12 +1053,6 @@ function kreditiRenderSchedule() {
     return;
   }
 
-  // SVG ikone za status + akcija
-  const ICON_CHECK = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  const ICON_ALERT = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-  const ICON_CLOCK = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-  const ICON_PAY   = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
-
   const html = rows.map(r => {
     const datum = new Date(r.datum_dospijeca + 'T00:00:00');
     let bg = '', statusLabel;
@@ -1077,20 +1061,20 @@ function kreditiRenderSchedule() {
       bg = 'background:#f0faf1;';
       const placenoDatumStr = r.placeno_datum ? kreditiFmtDatum(r.placeno_datum) : '';
       const placenoIznosStr = r.placeno_iznos_eur != null ? kreditiFmtEur(r.placeno_iznos_eur) : '';
-      statusLabel = '<span class="krediti-status-pill paid">' + ICON_CHECK + 'Plaćeno</span>' +
+      statusLabel = '<span class="krediti-status-pill paid">Plaćeno</span>' +
         (placenoDatumStr ? '<div style="font-size:11px;color:#666;margin-top:2px;">' + placenoDatumStr + ' · ' + placenoIznosStr + '</div>' : '');
     } else if (datum < today) {
       bg = 'background:#fff0f0;';
-      statusLabel = '<span class="krediti-status-pill overdue">' + ICON_ALERT + 'Prekoračeno</span>';
+      statusLabel = '<span class="krediti-status-pill overdue">Prekoračeno</span>';
     } else if (datum <= soon) {
       bg = 'background:#fff8ef;';
-      statusLabel = '<span class="krediti-status-pill soon">' + ICON_CLOCK + 'Uskoro</span>';
+      statusLabel = '<span class="krediti-status-pill soon">Uskoro</span>';
     } else {
       statusLabel = '<span class="krediti-status-pill future">—</span>';
     }
 
+    const btnLabel = r.placeno ? 'Uredi' : 'Plati';
     const btnTitle = r.placeno ? 'Uredi / poništi plaćanje' : 'Označi plaćeno';
-    const btnIcon = r.placeno ? ICON_CHECK : ICON_PAY;
 
     return '<tr style="' + bg + '">' +
       '<td style="text-align:left;">' + (r.redni_br != null ? r.redni_br : '-') + '</td>' +
@@ -1100,7 +1084,7 @@ function kreditiRenderSchedule() {
       '<td>' + kreditiFmtEur(r.kamate_eur) + '</td>' +
       '<td>' + kreditiFmtEur(r.ostatak_duga_eur) + '</td>' +
       '<td style="text-align:left;">' + statusLabel + '</td>' +
-      '<td style="text-align:center;"><button class="action-btn action-edit" title="' + btnTitle + '" aria-label="' + btnTitle + '" onclick="kreditiOpenMarkPaidModal(\'' + r.id + '\')">' + btnIcon + '</button></td>' +
+      '<td style="text-align:center;"><button class="action-btn action-edit" title="' + btnTitle + '" onclick="kreditiOpenMarkPaidModal(\'' + r.id + '\')">' + btnLabel + '</button></td>' +
     '</tr>';
   }).join('');
 
