@@ -490,6 +490,39 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
 
 <div id="tuberMaterijalContent" style="padding: 15px; max-width: 900px; margin: 0 auto;">
 
+  <!-- ===== FIFO MODE TOGGLE (novi način, beta) ===== -->
+  <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #f57c00;">
+    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+      <input type="checkbox" id="fifoModeToggle" onchange="toggleFifoMode()" style="width:18px; height:18px;">
+      <span>
+        <strong>🧪 Novi FIFO način (beta)</strong>
+        <span style="color: #666; font-size: 0.9em;">— samo skeniraš šifre, sustav sam računa FIFO skidanje</span>
+      </span>
+    </label>
+  </div>
+
+  <!-- ===== FIFO UI SEKCIJA (skrivena dok se toggle ne uključi) ===== -->
+  <div id="fifoSection" style="display: none;">
+    <div id="fifoHeader" style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+      <div id="fifoHeaderContent">Učitavanje...</div>
+    </div>
+
+    <div id="fifoPrintingBanner" style="display: none; background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #1976d2;">
+      🖨️ <strong>Ovaj RN koristi otisnuti papir.</strong>
+      Sloj 1 će skidati FIFO iz otisnutih rola (printed).
+    </div>
+
+    <div id="fifoLayers"></div>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding: 15px 0; border-top: 1px solid #e0e0e0;">
+      <button class="btn-back" onclick="natragBezSpremanja()">← Natrag</button>
+      <button class="btn-save" onclick="fifoSave()">💾 Spremi (FIFO)</button>
+    </div>
+  </div>
+
+  <!-- ===== LEGACY SECTION (postojeći UI, default aktivan) ===== -->
+  <div id="legacySection">
+
   <!-- HEADER -->
   <div class="module-header">
     <h2>📦 <span id="headerTip">Završetak naloga</span> - Evidencija materijala</h2>
@@ -556,7 +589,9 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
     </button>
   </div>
 
-</div>
+  </div><!-- /legacySection -->
+
+</div><!-- /tuberMaterijalContent -->
 
 <!-- POPUP ZA ODABIR MATERIJALA -->
 <div class="select-popup-overlay" id="selectPopup">
@@ -2617,4 +2652,338 @@ if (document.readyState === 'loading') {
 window.cleanupCurrentView = function() {
   console.log('🧹 Cleanup tuber-materijal');
 };
+
+// ============================================================
+// FIFO MODE (novi način skidanja - beta)
+// ============================================================
+var fifoState = {
+  active: false,
+  article: null,
+  hasPrinting: false,
+  popIds: [],
+  scanned: { 1: [], 2: [], 3: [], 4: [] }
+};
+
+async function toggleFifoMode() {
+  var isOn = document.getElementById('fifoModeToggle').checked;
+  fifoState.active = isOn;
+  document.getElementById('fifoSection').style.display = isOn ? 'block' : 'none';
+  document.getElementById('legacySection').style.display = isOn ? 'none' : 'block';
+
+  if (isOn && !fifoState.article) {
+    await fifoInit();
+  }
+}
+
+async function fifoInit() {
+  if (typeof materijalKontekst === 'undefined' || !materijalKontekst || !materijalKontekst.articleId) {
+    document.getElementById('fifoHeaderContent').innerHTML =
+      '<span style="color:#d32f2f;">⚠️ Nema materijalKontekst.articleId - otvori tuber-materijal iz tuber modula (Završi smjenu / Završi nalog).</span>';
+    return;
+  }
+
+  try {
+    // Artikl - koristi SB ako postoji, inače direktno
+    var article;
+    if (typeof SB !== 'undefined' && SB.select) {
+      article = await SB.select('prod_articles', {
+        eq: { id: materijalKontekst.articleId },
+        single: true
+      });
+    } else {
+      var r = await initSupabase().from('prod_articles').select('*').eq('id', materijalKontekst.articleId).single();
+      article = r.data;
+    }
+    fifoState.article = article;
+
+    // Printing detekcija
+    try {
+      var r2 = await initSupabase().rpc('wo_has_printing', { p_wo_number: materijalKontekst.workOrderNumber });
+      fifoState.hasPrinting = r2.data === true;
+    } catch (e) { fifoState.hasPrinting = false; }
+
+    fifoState.popIds = materijalKontekst.popIds || [];
+
+    fifoRenderHeader();
+    fifoRenderLayers();
+  } catch (e) {
+    console.error('fifoInit greška:', e);
+    document.getElementById('fifoHeaderContent').innerHTML =
+      '<span style="color:#d32f2f;">Greška: ' + (e.message || e) + '</span>';
+  }
+}
+
+function fifoRenderHeader() {
+  var a = fifoState.article || {};
+  var h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size:14px;">';
+  h += '<div><strong>RN:</strong> ' + (materijalKontekst.workOrderNumber || '-') + '</div>';
+  h += '<div><strong>Linija:</strong> ' + (materijalKontekst.linija || '-') + '</div>';
+  h += '<div style="grid-column:1/3;"><strong>Artikl:</strong> ' + (a.name || '-') + ' (' + (a.code || '-') + ')</div>';
+  h += '<div><strong>POP proizvedeno:</strong> ' + (materijalKontekst.proizvedenoPOP || 0).toLocaleString('hr-HR') + '</div>';
+  h += '<div><strong>REZ:</strong> ' + (materijalKontekst.rez || '-') + '</div>';
+  h += '</div>';
+  document.getElementById('fifoHeaderContent').innerHTML = h;
+  document.getElementById('fifoPrintingBanner').style.display = fifoState.hasPrinting ? 'block' : 'none';
+}
+
+function fifoRenderLayers() {
+  var html = '';
+  var a = fifoState.article || {};
+  for (var s = 1; s <= 4; s++) {
+    var code = a['paper_s' + s + '_code'];
+    if (!code) continue;
+
+    // Folija - preskoči
+    if (code.charAt(0).toUpperCase() === 'F') {
+      html += '<div style="background:#fff; border:1px dashed #ccc; padding:10px; border-radius:6px; margin-bottom:10px; color:#999;">';
+      html += '<strong>SLOJ ' + s + ':</strong> ' + code + ' <em>(folija - preskačem, ne trebaš skidati)</em>';
+      html += '</div>';
+      continue;
+    }
+
+    var width = a['paper_s' + s + '_width'] || '-';
+    var gram = a['paper_s' + s + '_grammage'] || '-';
+    var firstChar = code.charAt(0).toUpperCase();
+    var bojaLabel = firstChar === 'B' ? '⚪ Bijeli' : (firstChar === 'S' ? '🟫 Smeđi' : firstChar);
+
+    html += '<div style="background:#fff; border:1px solid #e0e0e0; padding:12px; border-radius:6px; margin-bottom:12px;" data-layer="' + s + '">';
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">';
+    html += '<div><strong>SLOJ ' + s + ':</strong> ' + code + ' <span style="color:#666;">(' + bojaLabel + ', ' + gram + 'g, ' + width + 'cm)</span>';
+    if (s === 1 && fifoState.hasPrinting) {
+      html += ' <span style="background:#1976d2;color:white;padding:2px 8px;border-radius:3px;font-size:0.75em;margin-left:6px;">🖨️ OTISAK</span>';
+    }
+    html += '</div></div>';
+
+    html += '<div style="display:flex; gap:8px; margin-bottom:10px;">';
+    html += '<input type="text" placeholder="Skeniraj/unesi šifru role" class="form-control" style="flex:1;" id="fifoInput_' + s + '" onkeydown="if(event.key===\'Enter\') fifoScanRoll(' + s + ')">';
+    html += '<button class="btn btn-primary btn-sm" onclick="fifoScanRoll(' + s + ')">+ Dodaj</button>';
+    html += '</div>';
+
+    html += '<div id="fifoList_' + s + '"></div>';
+    html += '</div>';
+  }
+  document.getElementById('fifoLayers').innerHTML = html;
+
+  for (var si = 1; si <= 4; si++) fifoRenderList(si);
+}
+
+function fifoRenderList(layer) {
+  var items = fifoState.scanned[layer] || [];
+  var container = document.getElementById('fifoList_' + layer);
+  if (!container) return;
+
+  if (items.length === 0) {
+    container.innerHTML = '<div style="color:#999; font-style:italic; padding:4px;">Nema skeniranih rola za ovaj sloj</div>';
+    return;
+  }
+
+  var html = '';
+  items.forEach(function(item, idx) {
+    var bgColor = item.resolved.isPlaceholder ? '#fff3e0' : '#f5f5f5';
+    var icon = item.resolved.isPlaceholder ? '⚠️' : (item.fullyConsumed ? '✓' : '◐');
+    var rollKg = item.resolved.roll ? (parseFloat(item.resolved.roll.remaining_kg) || 0) : 0;
+    var weight = item.resolved.isPlaceholder
+      ? '(placeholder - posuđuje iz ' + (item.resolved.placeholderSource && item.resolved.placeholderSource.roll_code || 'FIFO') + ')'
+      : rollKg.toFixed(1) + ' kg';
+
+    html += '<div style="background:' + bgColor + '; padding:8px 10px; border-radius:4px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">';
+    html += '<div>' + icon + ' <strong>' + item.code + '</strong> — ' + weight + '</div>';
+    html += '<div style="display:flex; gap:10px; align-items:center;">';
+    if (!item.resolved.isPlaceholder) {
+      html += '<label style="font-size:13px; cursor:pointer;"><input type="checkbox"' + (!item.fullyConsumed ? ' checked' : '') + ' onchange="fifoToggleConsumed(' + layer + ',' + idx + ')"> nije potpuno potrošena</label>';
+    }
+    html += '<button onclick="fifoRemoveRoll(' + layer + ',' + idx + ')" style="background:none;border:none;cursor:pointer;color:#d32f2f;">🗑️</button>';
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+async function fifoScanRoll(layer) {
+  var input = document.getElementById('fifoInput_' + layer);
+  var code = (input.value || '').trim();
+  if (!code) return;
+  input.value = '';
+
+  var paperCode = fifoState.article['paper_s' + layer + '_code'];
+  var resolved;
+  try {
+    resolved = await TuberFifo._resolveScannedRoll(code, paperCode);
+  } catch (e) {
+    console.error('fifoScanRoll resolve greška:', e);
+    resolved = { roll: null, isPlaceholder: true, placeholderSource: null, error: e.message };
+  }
+
+  fifoState.scanned[layer].push({
+    code: code,
+    fullyConsumed: true,
+    resolved: resolved
+  });
+
+  fifoRenderList(layer);
+  input.focus();
+}
+
+function fifoToggleConsumed(layer, index) {
+  fifoState.scanned[layer][index].fullyConsumed = !fifoState.scanned[layer][index].fullyConsumed;
+  fifoRenderList(layer);
+}
+
+function fifoRemoveRoll(layer, index) {
+  fifoState.scanned[layer].splice(index, 1);
+  fifoRenderList(layer);
+}
+
+var fifoRemainderChoices = {};
+var fifoCurrentPlan = null;
+var fifoCurrentCtx = null;
+
+async function fifoSave() {
+  if (!fifoState.article) {
+    showMessage('Artikl nije učitan', 'error');
+    return;
+  }
+
+  var ctx = {
+    workOrderId: materijalKontekst.workOrderId,
+    workOrderNumber: materijalKontekst.workOrderNumber,
+    articleId: materijalKontekst.articleId,
+    article: fifoState.article,
+    articleName: materijalKontekst.articleName,
+    popProduced: materijalKontekst.proizvedenoPOP || 0,
+    rez: materijalKontekst.rez || 0,
+    productionLine: materijalKontekst.linija,
+    shiftDate: (typeof getProductionDate === 'function') ? getProductionDate() : new Date().toISOString().split('T')[0],
+    operator: (typeof Auth !== 'undefined' && Auth.getUser && Auth.getUser() && Auth.getUser().name) || 'Operator',
+    tip: materijalKontekst.tip || 'nalog',
+    popIds: fifoState.popIds,
+    paperCodes: {
+      1: fifoState.article.paper_s1_code,
+      2: fifoState.article.paper_s2_code,
+      3: fifoState.article.paper_s3_code,
+      4: fifoState.article.paper_s4_code
+    },
+    scannedRolls: fifoState.scanned
+  };
+
+  try {
+    if (typeof showLoading === 'function') showLoading('Računam FIFO plan...');
+    var plan = await TuberFifo.computePlan(ctx);
+    if (typeof hideLoading === 'function') hideLoading();
+
+    var warnings = [];
+    Object.keys(plan.layers).forEach(function(k) {
+      var L = plan.layers[k];
+      if (L.warning) warnings.push('Sloj ' + k + ': ' + L.warning);
+    });
+    if (warnings.length > 0 && !confirm('Upozorenja:\n- ' + warnings.join('\n- ') + '\n\nNastaviti?')) return;
+
+    if (plan.needsRemainderChoice) {
+      fifoCurrentPlan = plan;
+      fifoCurrentCtx = ctx;
+      fifoRemainderChoices = {};
+      fifoShowRemainderModal(plan);
+      return;
+    }
+
+    await fifoExecuteFinal(ctx, plan, {});
+  } catch (e) {
+    if (typeof hideLoading === 'function') hideLoading();
+    console.error('fifoSave greška:', e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+function fifoShowRemainderModal(plan) {
+  var html = '<p style="color:#666; margin-bottom:15px;">Neki slojevi imaju više rola koje nisu potpuno potrošene. Odaberi na koju rolu ide ostatak:</p>';
+
+  Object.keys(plan.layers).forEach(function(k) {
+    var L = plan.layers[k];
+    if (L.unmarkedCount <= 1 || L.remainder <= 0.01) return;
+
+    html += '<div style="background:#f5f5f5; padding:12px; border-radius:6px; margin-bottom:10px;">';
+    html += '<strong>Sloj ' + k + '</strong> — ostatak: <strong>' + L.remainder.toFixed(1) + ' kg</strong>';
+    html += '<div style="margin-top:8px;">';
+    L.scannedResolved.forEach(function(r) {
+      if (r.fullyConsumed || r.isPlaceholder || !r.roll) return;
+      html += '<label style="display:block; padding:4px 0; cursor:pointer;">';
+      html += '<input type="radio" name="remainder_' + k + '" value="' + r.roll.id + '" onchange="fifoRemainderChoose(' + k + ',\'' + r.roll.id + '\')"> ';
+      html += r.roll.roll_code + ' (' + (parseFloat(r.roll.remaining_kg) || 0).toFixed(1) + ' kg)';
+      html += '</label>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('fifoRemainderBody').innerHTML = html;
+  openModal('fifoRemainderModal');
+}
+
+function fifoRemainderChoose(layer, rollId) {
+  fifoRemainderChoices[layer] = rollId;
+}
+
+async function fifoRemainderConfirm() {
+  var missing = [];
+  Object.keys(fifoCurrentPlan.layers).forEach(function(k) {
+    var L = fifoCurrentPlan.layers[k];
+    if (L.unmarkedCount > 1 && L.remainder > 0.01 && !fifoRemainderChoices[k]) {
+      missing.push(k);
+    }
+  });
+  if (missing.length > 0) {
+    alert('Odaberi rolu za slojeve: ' + missing.join(', '));
+    return;
+  }
+
+  closeModal('fifoRemainderModal');
+  await fifoExecuteFinal(fifoCurrentCtx, fifoCurrentPlan, fifoRemainderChoices);
+}
+
+async function fifoExecuteFinal(ctx, plan, remainderAssignments) {
+  try {
+    if (typeof showLoading === 'function') showLoading('Spremanje FIFO skidanja...');
+    var result = await TuberFifo.executePlan(ctx, plan, remainderAssignments);
+    if (typeof hideLoading === 'function') hideLoading();
+
+    if (result.errors && result.errors.length > 0) {
+      console.error('FIFO errors:', result.errors);
+      showMessage('⚠️ ' + result.errors.length + ' grešaka — provjeri console. Uspjelo: ' + result.successCount + ' slojeva.', 'warning');
+    } else {
+      showMessage('✅ FIFO skidanje spremljeno (' + result.successCount + ' slojeva)', 'success');
+    }
+
+    fifoState.scanned = { 1: [], 2: [], 3: [], 4: [] };
+    fifoRemainderChoices = {};
+
+    setTimeout(function() {
+      if (typeof natragSaSpremanjem === 'function') natragSaSpremanjem();
+    }, 1500);
+  } catch (e) {
+    if (typeof hideLoading === 'function') hideLoading();
+    console.error('fifoExecuteFinal:', e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+window.toggleFifoMode = toggleFifoMode;
+window.fifoScanRoll = fifoScanRoll;
+window.fifoToggleConsumed = fifoToggleConsumed;
+window.fifoRemoveRoll = fifoRemoveRoll;
+window.fifoSave = fifoSave;
+window.fifoRemainderChoose = fifoRemainderChoose;
+window.fifoRemainderConfirm = fifoRemainderConfirm;
 </script>
+
+<!-- FIFO Remainder Distribution Modal -->
+<div class="select-popup-overlay" id="fifoRemainderModal">
+  <div class="select-popup" style="max-width: 550px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <h3 style="margin:0;">📦 Raspodjela ostatka po slojevima</h3>
+      <button onclick="closeModal('fifoRemainderModal')" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666;">×</button>
+    </div>
+    <div id="fifoRemainderBody" style="max-height:50vh; overflow-y:auto;"></div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:15px; border-top:1px solid #e0e0e0;">
+      <button class="btn btn-secondary" onclick="closeModal('fifoRemainderModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="fifoRemainderConfirm()">Nastavi →</button>
+    </div>
+  </div>
+</div>

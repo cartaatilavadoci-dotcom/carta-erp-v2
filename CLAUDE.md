@@ -1022,6 +1022,18 @@ Za detaljnije informacije, pogledaj:
 
 ## 📅 Changelog & Najnovija Ažuriranja
 
+### 14. Travnja 2026 - Sesija 2 finale: Tuber FIFO sustav ⭐
+
+**Novi opcijski FIFO flow za Tuber (beta, toggle mode):**
+- ⭐ **Operater samo skenira šifre rola** — sustav automatski FIFO skida po `internal_id` iz artikla (`paper_sN_code`)
+- ⭐ **Folija (prefix F) se preskače** (user uputstvo)
+- ⭐ **Sloj 1 + RN s tiskom** → FIFO iz `prod_inventory_printed` (wo_has_printing RPC)
+- ⭐ **Nepoznate šifre → placeholder** (posudba iz FIFO role istog internal_id-a). Kad stvarna rola kasnije dođe kroz rezač/tisak/skladište, trigger `trg_resolve_placeholder_on_roll_insert` vraća kg i pripisuje stvarnoj roli
+- ⭐ **Toggle na vrhu tuber-materijal.html** — default OFF (stari UI radi), ON (novi FIFO UI)
+- ⭐ **DB:** `prod_inventory_placeholder_consumption` + 5 RPC funkcija (`fifo_roll_candidates`, `atomic_consume_roll`, `wo_has_printing`, `fifo_printed_rolls_for_wo`, resolve function)
+- ⭐ **JS library:** `js/tuber-fifo.js` — `TuberFifo.computePlan()` + `TuberFifo.executePlan()`
+- **Backward compatible:** postojeći produkcijski flow nije dirnut, može se vratiti isključivanjem toggle-a
+
 ### 14. Travnja 2026 - Sesija 2 (v1.4) ⭐ VELIKA SESIJA (27 commitova)
 
 **Dashboard nadogradnje (sve aktivno):**
