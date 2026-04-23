@@ -145,14 +145,27 @@ const Router = {
       
       // Execute scripts in loaded HTML
       const scripts = container.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
-        if (oldScript.src) {
-          newScript.src = oldScript.src;
-        } else {
-          newScript.textContent = oldScript.textContent;
+      scripts.forEach((oldScript, idx) => {
+        try {
+          const newScript = document.createElement('script');
+          // Preserve common attributes (type, nomodule, etc.)
+          for (const attr of oldScript.attributes) {
+            if (attr.name !== 'src' || oldScript.src) {
+              newScript.setAttribute(attr.name, attr.value);
+            }
+          }
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          oldScript.parentNode.replaceChild(newScript, oldScript);
+        } catch (err) {
+          console.warn(`[Router] Script #${idx} execution failed (continuing):`, err.message);
+          console.warn(`[Router] First 200 chars of failed script:`, (oldScript.textContent || oldScript.src || '').slice(0, 200));
+          // Remove the broken script so it doesn't linger in DOM
+          if (oldScript.parentNode) oldScript.parentNode.removeChild(oldScript);
         }
-        oldScript.parentNode.replaceChild(newScript, oldScript);
       });
 
       // Update sidebar active state
