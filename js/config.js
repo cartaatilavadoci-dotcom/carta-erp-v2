@@ -20,7 +20,7 @@ const CONFIG = {
   // Ovo je fallback ako baza nije dostupna
   DEFAULT_ROLES: {
     'superadmin': ['*'],
-    'admin': ['dashboard', 'djelatnici', 'place', 'produktivnost', 'izvjestaji', 'terminal', 'planiranje', 'artikli', 'skladiste', 'rezac', 'tisak', 'tuber', 'bottomer-wh', 'bottomer-nli', 'bottomer-slagac', 'bottomer-voditelj', 'pvnd', 'otpreme', 'kuhinja', 'oee', 'produktivnost-strojara', 'raspored-nli', 'raspored-wh', 'raspored-tisak', 'maintenance', 'videonadzor', 'ovjera-rn'],
+    'admin': ['dashboard', 'djelatnici', 'place', 'produktivnost', 'izvjestaji', 'terminal', 'planiranje', 'artikli', 'skladiste', 'rezac', 'tisak', 'tuber', 'bottomer-wh', 'bottomer-nli', 'bottomer-slagac', 'bottomer-voditelj', 'pvnd', 'otpreme', 'kuhinja', 'oee', 'produktivnost-strojara', 'raspored-nli', 'raspored-wh', 'raspored-tisak', 'maintenance', 'videonadzor', 'ovjera-rn', 'krediti'],
     'racunovodstvo': ['dashboard', 'djelatnici', 'place', 'produktivnost', 'izvjestaji', 'planiranje'],
     'uprava': ['dashboard', 'planiranje', 'ovjera-rn', 'artikli', 'pvnd', 'otpreme', 'izvjestaji', 'oee', 'produktivnost-strojara', 'raspored-nli', 'raspored-wh', 'raspored-tisak', 'videonadzor'],
     'koordinator-proizvodnje': ['dashboard', 'planiranje', 'ovjera-rn', 'artikli', 'skladiste', 'otpreme', 'oee', 'produktivnost-strojara', 'raspored-nli', 'raspored-wh', 'raspored-tisak', 'pvnd', 'videonadzor'],
@@ -63,6 +63,7 @@ const CONFIG = {
     { id: 'raspored-tisak', icon: '🎨', label: 'Raspored Tisak', section: 'Upravljanje' },
     { id: 'videonadzor', icon: '📹', label: 'Videonadzor', section: 'Upravljanje' },
     { id: 'maintenance', icon: '🔧', label: 'Odrzavanje', section: 'Upravljanje' },
+    { id: 'krediti', icon: '🏦', label: 'Krediti', section: 'Upravljanje' },
     { id: 'postavke', icon: '⚙️', label: 'Postavke', section: 'Upravljanje', superadminOnly: true }
   ]
 };

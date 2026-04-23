@@ -122,7 +122,7 @@ const Router = {
         viewPath = `views/hr/${viewId}.html`;
       } else if (['planiranje', 'artikli', 'skladiste', 'rezac', 'tisak', 'tuber', 'tuber-materijal', 'bottomer-wh', 'bottomer-nli', 'bottomer-slagac', 'bottomer-voditelj', 'pvnd', 'otpreme', 'kuhinja', 'oee', 'produktivnost-strojara', 'raspored-nli', 'raspored-wh', 'raspored-tisak', 'maintenance', 'videonadzor', 'slagac-pomocnik'].includes(viewId)) {
         viewPath = `views/proizvodnja/${viewId}.html`;
-      } else if (['ovjera-rn'].includes(viewId)) {
+      } else if (['ovjera-rn', 'krediti'].includes(viewId)) {
         viewPath = `views/upravljanje/${viewId}.html`;
       } else if (['postavke', 'admin'].includes(viewId)) {
         viewPath = `views/admin/${viewId}.html`;
