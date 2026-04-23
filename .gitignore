@@ -1,6 +1,10 @@
 # Data exports (contain production data)
 *.csv
 
+# Osjetljivi skenovi (financijski dokumenti, OIB, iznosi kredita)
+Plan_otplate_scan/
+Projektna dokumentacija/*.csv
+
 # Temporary scripts
 temp_*.ps1
 

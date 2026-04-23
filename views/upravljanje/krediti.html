@@ -1,0 +1,858 @@
+<h1 style="margin-bottom: 20px; color: var(--primary);">🏦 Krediti - Zaduženost tvrtke</h1>
+
+<!-- KPI KARTICE -->
+<div class="status-grid">
+  <div class="status-card">
+    <div class="status-card-icon">💶</div>
+    <div class="status-card-value" id="kpiUkupanDug">-</div>
+    <div class="status-card-label">Ukupan preostali dug</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon">📅</div>
+    <div class="status-card-value" id="kpiMjesecniObrok">-</div>
+    <div class="status-card-label">Mjesečna obveza (trenutno)</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon">🔮</div>
+    <div class="status-card-value" id="kpiObrokZa12Mj">-</div>
+    <div class="status-card-label">Mjesečna obveza za 12 mj</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon">🏦</div>
+    <div class="status-card-value" id="kpiBrojKredita">-</div>
+    <div class="status-card-label">Aktivnih kredita</div>
+  </div>
+</div>
+
+<style>
+/* Timeline SVG */
+.krediti-timeline-card { margin-bottom: 20px; }
+.krediti-timeline-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+.krediti-timeline-title { font-size: 1.1em; font-weight: 600; color: var(--primary); }
+.krediti-timeline-scroll { overflow-x: auto; padding-bottom: 10px; }
+#kreditiTimelineSvg { display: block; min-width: 900px; background: white; }
+.krediti-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 13px; }
+.krediti-legend-item { display: flex; align-items: center; gap: 6px; }
+.krediti-legend-color { width: 16px; height: 12px; border-radius: 3px; }
+
+/* Tablica razdoblja mjesecnih obveza */
+.krediti-periods-wrap { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); }
+.krediti-periods-wrap h4 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.krediti-periods-wrap .table-scroll { overflow-x: auto; }
+.krediti-periods { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+.krediti-periods thead th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; color: #666; }
+.krediti-periods tbody td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.krediti-periods tbody tr:hover { background: #fafafa; }
+.krediti-periods tbody tr.current-period { background: #fff3e0; }
+.krediti-periods tbody tr.current-period td { font-weight: 600; }
+.krediti-periods tbody tr.current-period td:first-child::before { content: "➜ "; color: #e65100; font-weight: bold; }
+.krediti-periods .period-cell { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.krediti-periods .amount-cell { text-align: right; color: #2e7d32; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.krediti-periods .num-cell { text-align: right; color: #666; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.krediti-periods .badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.krediti-periods .period-badge { display: inline-block; padding: 3px 9px; font-size: 11px; border-radius: 10px; color: white; font-weight: 600; white-space: nowrap; }
+
+/* Tablica */
+.krediti-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.krediti-table thead th { background: #f5f5f5; padding: 10px 8px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border); white-space: nowrap; position: sticky; top: 0; }
+.krediti-table tbody td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+.krediti-table tbody tr:hover { background: #f9f9f9; }
+.krediti-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.krediti-table .actions { display: flex; gap: 5px; }
+.krediti-table .btn-icon { padding: 5px 8px; font-size: 14px; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; }
+.krediti-table .btn-icon:hover { background: #f0f0f0; }
+.krediti-table .btn-icon.danger:hover { background: #ffebee; border-color: var(--danger); }
+
+.krediti-status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+.krediti-status-badge.aktivan { background: #e3f2fd; color: #1565c0; }
+.krediti-status-badge.otplacen { background: #e8f5e9; color: #2e7d32; }
+.krediti-status-badge.refinanciran { background: #fff3e0; color: #e65100; }
+
+.krediti-tip-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #f0f0f0; color: #666; }
+.krediti-tip-badge.var { background: #fff3e0; color: #e65100; }
+
+/* Amortizacija tablica */
+.amort-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.amort-table thead th { background: #366092; color: white; padding: 8px; text-align: right; }
+.amort-table thead th:first-child, .amort-table thead th:nth-child(2) { text-align: left; }
+.amort-table tbody td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right; font-variant-numeric: tabular-nums; }
+.amort-table tbody td:first-child, .amort-table tbody td:nth-child(2) { text-align: left; }
+.amort-table tbody tr:nth-child(even) { background: #fafafa; }
+.amort-summary { background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+.amort-summary strong { color: var(--primary); }
+
+.krediti-filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 15px; }
+.krediti-filter-row .form-group { flex: 1; min-width: 150px; margin: 0; }
+
+@media (max-width: 768px) {
+  .krediti-table { font-size: 11px; }
+  .krediti-table thead th, .krediti-table tbody td { padding: 6px 4px; }
+  #kreditiTimelineSvg { min-width: 700px; }
+}
+</style>
+
+<!-- TIMELINE GRAF -->
+<div class="card krediti-timeline-card">
+  <div class="card-header">
+    <div class="krediti-timeline-header">
+      <div class="krediti-timeline-title">📊 Timeline kreditne zaduženosti (projekcija)</div>
+      <button class="btn btn-success" onclick="kreditiOpenModal()">+ Novi kredit</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="krediti-timeline-scroll">
+      <svg id="kreditiTimelineSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="kreditiPeriodsTable" class="krediti-periods-wrap"></div>
+    <div class="krediti-legend" id="kreditiLegend"></div>
+  </div>
+</div>
+
+<!-- TABLICA KREDITA -->
+<div class="card">
+  <div class="card-header">📋 Pregled kredita</div>
+  <div class="card-body">
+    <div class="krediti-filter-row">
+      <div class="form-group">
+        <label>Pretraga</label>
+        <input type="text" class="form-control" id="filterSearch" oninput="kreditiPrikaziTablicu()" placeholder="Šifra, naziv, davatelj...">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" id="filterStatus" onchange="kreditiPrikaziTablicu()">
+          <option value="">Svi</option>
+          <option value="Aktivan" selected>Aktivan</option>
+          <option value="Otplaćen">Otplaćen</option>
+          <option value="Refinanciran">Refinanciran</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Davatelj</label>
+        <select class="form-control" id="filterDavatelj" onchange="kreditiPrikaziTablicu()">
+          <option value="">Svi</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="krediti-table" id="kreditiTable">
+        <thead>
+          <tr>
+            <th>Šifra</th>
+            <th>Naziv</th>
+            <th>Davatelj</th>
+            <th class="num">Ukupan iznos €</th>
+            <th class="num">Preostala glavnica €</th>
+            <th class="num">Mj. rata €</th>
+            <th>Kamata</th>
+            <th>Početak</th>
+            <th>Kraj</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody id="kreditiTableBody">
+          <tr><td colspan="11" style="text-align: center; color: #999; padding: 30px;">Učitavanje...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Novi/Uredi kredit -->
+<div class="modal" id="kreditiModal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h2 id="kreditiModalTitle">🏦 Novi kredit</h2>
+      <span class="modal-close" onclick="closeModal('kreditiModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="kreditId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Šifra *</label>
+          <input type="text" class="form-control" id="kreditSifra" placeholder="npr. NP-17/14">
+        </div>
+        <div class="form-group">
+          <label>Davatelj *</label>
+          <input type="text" class="form-control" id="kreditDavatelj" list="davateljSuggest" placeholder="HBOR, OBS, ZABA...">
+          <datalist id="davateljSuggest">
+            <option value="HBOR">
+            <option value="OBS">
+            <option value="ZABA">
+            <option value="PBZ">
+            <option value="Erste">
+            <option value="Raiffeisen">
+          </datalist>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Naziv kredita *</label>
+        <input type="text" class="form-control" id="kreditNaziv" placeholder="npr. HBOR - kupnja hale">
+      </div>
+      <div class="form-group">
+        <label>Svrha</label>
+        <input type="text" class="form-control" id="kreditSvrha" placeholder="kupnja hale, EU projekt, obrtna sredstva...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Iznos ukupni (€) *</label>
+          <input type="number" step="0.01" min="0" class="form-control" id="kreditIznos" placeholder="1000000.00">
+        </div>
+        <div class="form-group">
+          <label>Preostala glavnica (€) *</label>
+          <input type="number" step="0.01" min="0" class="form-control" id="kreditGlavnica" placeholder="500000.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mjesečna rata (€) *</label>
+          <input type="number" step="0.01" min="0" class="form-control" id="kreditRata" placeholder="16666.67">
+        </div>
+        <div class="form-group">
+          <label>Kamatna stopa (% godišnje) *</label>
+          <input type="number" step="0.001" min="0" class="form-control" id="kreditKamata" placeholder="3.500">
+        </div>
+        <div class="form-group">
+          <label>Tip kamate</label>
+          <select class="form-control" id="kreditTipKamate">
+            <option value="Fiksna">Fiksna</option>
+            <option value="Varijabilna">Varijabilna</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Početni datum *</label>
+          <input type="date" class="form-control" id="kreditPocetak">
+        </div>
+        <div class="form-group">
+          <label>Završni datum *</label>
+          <input type="date" class="form-control" id="kreditKraj">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="kreditStatus">
+            <option value="Aktivan">Aktivan</option>
+            <option value="Otplaćen">Otplaćen</option>
+            <option value="Refinanciran">Refinanciran</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Napomene</label>
+        <textarea class="form-control" id="kreditNapomene" rows="2" placeholder="Dodatne napomene, ugovorni broj, garanti..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('kreditiModal')">Odustani</button>
+      <button class="btn btn-success" onclick="kreditiSaveKredit()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Amortizacijski plan -->
+<div class="modal" id="amortModal">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2 id="amortTitle">📊 Amortizacijski plan</h2>
+      <span class="modal-close" onclick="closeModal('amortModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="amortSummary" class="amort-summary"></div>
+      <div style="max-height: 500px; overflow-y: auto;">
+        <table class="amort-table" id="amortTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Datum</th>
+              <th>Rata</th>
+              <th>Glavnica</th>
+              <th>Kamata</th>
+              <th>Preostala glavnica</th>
+            </tr>
+          </thead>
+          <tbody id="amortTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('amortModal')">Zatvori</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// KREDITI MODUL - Pracenje kreditne zaduzenosti
+// =============================================
+
+window.kreditiData = [];
+
+// Paleta boja po davatelju (deterministicno - isti davatelj = ista boja)
+const KREDITI_COLORS = [
+  '#1976d2', '#e65100', '#2e7d32', '#8e24aa', '#c62828',
+  '#00838f', '#5d4037', '#455a64', '#ad1457', '#558b2f'
+];
+const kreditiDavateljColorMap = {};
+function kreditiGetColor(davatelj) {
+  if (kreditiDavateljColorMap[davatelj]) return kreditiDavateljColorMap[davatelj];
+  const idx = Object.keys(kreditiDavateljColorMap).length % KREDITI_COLORS.length;
+  kreditiDavateljColorMap[davatelj] = KREDITI_COLORS[idx];
+  return KREDITI_COLORS[idx];
+}
+
+// Formatiranje: 1234567.89 -> "1.234.567,89"
+function kreditiFmtEur(value) {
+  if (value === null || value === undefined || isNaN(value)) return '-';
+  return Number(value).toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+function kreditiFmtDatum(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear() + '.';
+}
+
+// =============================================
+// INIT
+// =============================================
+window.initKreditiView = async function() {
+  try {
+    await kreditiLoadData();
+    kreditiCalculateKpi();
+    kreditiPopulateFilters();
+    kreditiPrikaziTablicu();
+    kreditiPrikaziTimeline();
+  } catch (e) {
+    console.error('Krediti init error:', e);
+    if (typeof showMessage === 'function') {
+      showMessage('Greška pri učitavanju kredita: ' + (e.message || e), 'error');
+    }
+  }
+};
+
+async function kreditiLoadData() {
+  try {
+    const data = await DB.select('prod_company_loans', {
+      order: { column: 'pocetni_datum', ascending: true },
+      limit: 10000
+    });
+    window.kreditiData = data || [];
+  } catch (e) {
+    console.error('Load loans error:', e);
+    window.kreditiData = [];
+    throw e;
+  }
+}
+
+// =============================================
+// KPI IZRACUN
+// =============================================
+function kreditiCalculateKpi() {
+  const aktivni = window.kreditiData.filter(k => k.status === 'Aktivan');
+  const ukupanDug = aktivni.reduce((s, k) => s + Number(k.preostala_glavnica_eur || 0), 0);
+  const mjesecniObrok = aktivni.reduce((s, k) => s + Number(k.mjesecna_rata_eur || 0), 0);
+
+  // Obrok za 12 mjeseci: suma rata kredita koji ce jos biti aktivni za 12 mj
+  const za12mj = new Date();
+  za12mj.setMonth(za12mj.getMonth() + 12);
+  const obrokZa12 = aktivni
+    .filter(k => new Date(k.zavrsni_datum) >= za12mj)
+    .reduce((s, k) => s + Number(k.mjesecna_rata_eur || 0), 0);
+
+  // Prosjecna kamata (ponderirana po glavnici)
+  const totalKamata = aktivni.reduce((s, k) => s + Number(k.kamatna_stopa || 0) * Number(k.preostala_glavnica_eur || 0), 0);
+  const prosjecnaKamata = ukupanDug > 0 ? (totalKamata / ukupanDug).toFixed(2) : '0.00';
+
+  document.getElementById('kpiUkupanDug').textContent = kreditiFmtEur(ukupanDug);
+  document.getElementById('kpiMjesecniObrok').textContent = kreditiFmtEur(mjesecniObrok);
+  document.getElementById('kpiObrokZa12Mj').textContent = kreditiFmtEur(obrokZa12);
+  document.getElementById('kpiBrojKredita').textContent = aktivni.length + ' (⌀ kamata ' + prosjecnaKamata + '%)';
+}
+
+// =============================================
+// FILTER DROPDOWN POPULATE
+// =============================================
+function kreditiPopulateFilters() {
+  const davatelji = [...new Set(window.kreditiData.map(k => k.davatelj).filter(Boolean))].sort();
+  const sel = document.getElementById('filterDavatelj');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Svi</option>' +
+    davatelji.map(d => '<option value="' + d + '">' + d + '</option>').join('');
+  sel.value = current;
+}
+
+// =============================================
+// TABLICA
+// =============================================
+function kreditiPrikaziTablicu() {
+  const search = (document.getElementById('filterSearch').value || '').toLowerCase();
+  const status = document.getElementById('filterStatus').value;
+  const davatelj = document.getElementById('filterDavatelj').value;
+
+  const filtered = window.kreditiData.filter(k => {
+    if (status && k.status !== status) return false;
+    if (davatelj && k.davatelj !== davatelj) return false;
+    if (search) {
+      const hay = ((k.sifra || '') + ' ' + (k.naziv || '') + ' ' + (k.davatelj || '') + ' ' + (k.svrha || '')).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('kreditiTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #999; padding: 30px;">Nema kredita za prikaz</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(k => {
+    const statusKlasa = (k.status || 'Aktivan').toLowerCase().replace(/[^a-z]/g, '');
+    const tipKamate = k.tip_kamate || 'Fiksna';
+    const tipKlasa = tipKamate === 'Varijabilna' ? 'var' : '';
+    const boja = kreditiGetColor(k.davatelj);
+    return '<tr>' +
+      '<td><span style="display:inline-block;width:4px;height:16px;background:' + boja + ';vertical-align:middle;margin-right:6px;border-radius:2px;"></span>' + (k.sifra || '-') + '</td>' +
+      '<td>' + (k.naziv || '-') + (k.svrha ? '<div style="font-size:11px;color:#999;">' + k.svrha + '</div>' : '') + '</td>' +
+      '<td><strong>' + (k.davatelj || '-') + '</strong></td>' +
+      '<td class="num">' + kreditiFmtEur(k.iznos_ukupni_eur) + '</td>' +
+      '<td class="num">' + kreditiFmtEur(k.preostala_glavnica_eur) + '</td>' +
+      '<td class="num"><strong>' + kreditiFmtEur(k.mjesecna_rata_eur) + '</strong></td>' +
+      '<td>' + Number(k.kamatna_stopa).toFixed(3) + '% <span class="krediti-tip-badge ' + tipKlasa + '">' + tipKamate + '</span></td>' +
+      '<td>' + kreditiFmtDatum(k.pocetni_datum) + '</td>' +
+      '<td>' + kreditiFmtDatum(k.zavrsni_datum) + '</td>' +
+      '<td><span class="krediti-status-badge ' + statusKlasa + '">' + (k.status || '-') + '</span></td>' +
+      '<td><div class="actions">' +
+        '<button class="btn-icon" title="Plan otplate" onclick="kreditiPrikaziAmortizaciju(\'' + k.id + '\')">📊</button>' +
+        '<button class="btn-icon" title="Uredi" onclick="kreditiOpenModal(\'' + k.id + '\')">✏️</button>' +
+        '<button class="btn-icon danger" title="Obriši" onclick="kreditiDeleteKredit(\'' + k.id + '\')">🗑️</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// =============================================
+// TIMELINE SVG GRAF
+// =============================================
+function kreditiPrikaziTimeline() {
+  const svg = document.getElementById('kreditiTimelineSvg');
+  const legend = document.getElementById('kreditiLegend');
+  const periodsWrap = document.getElementById('kreditiPeriodsTable');
+  if (!svg) return;
+
+  const aktivni = window.kreditiData.filter(k => k.status === 'Aktivan');
+  if (aktivni.length === 0) {
+    svg.setAttribute('viewBox', '0 0 800 100');
+    svg.innerHTML = '<text x="400" y="50" text-anchor="middle" fill="#999" font-size="14">Nema aktivnih kredita za prikaz</text>';
+    legend.innerHTML = '';
+    if (periodsWrap) periodsWrap.innerHTML = '';
+    return;
+  }
+
+  // Raspon datuma
+  let minDate = new Date(aktivni[0].pocetni_datum);
+  let maxDate = new Date(aktivni[0].zavrsni_datum);
+  aktivni.forEach(k => {
+    const p = new Date(k.pocetni_datum);
+    const z = new Date(k.zavrsni_datum);
+    if (p < minDate) minDate = p;
+    if (z > maxDate) maxDate = z;
+  });
+
+  const today = new Date();
+
+  // Dimenzije grafa
+  const padLeft = 180;
+  const padRight = 60;
+  const padTop = 40;
+  const rowHeight = 36;
+  const rowGap = 10;
+  const axisHeight = 70;
+  const width = 1200;
+  const height = padTop + aktivni.length * (rowHeight + rowGap) + axisHeight;
+
+  const chartLeft = padLeft;
+  const chartRight = width - padRight;
+  const chartWidth = chartRight - chartLeft;
+
+  const totalMs = maxDate - minDate;
+  function xForDate(d) {
+    const ms = (d instanceof Date ? d : new Date(d)) - minDate;
+    return chartLeft + (ms / totalMs) * chartWidth;
+  }
+
+  // Kljucne tocke: svi pocetni i zavrsni datumi + danas + min/max
+  const keyDatesSet = new Set();
+  keyDatesSet.add(minDate.getTime());
+  keyDatesSet.add(maxDate.getTime());
+  keyDatesSet.add(today.getTime());
+  aktivni.forEach(k => {
+    keyDatesSet.add(new Date(k.pocetni_datum).getTime());
+    keyDatesSet.add(new Date(k.zavrsni_datum).getTime());
+  });
+  const keyDates = [...keyDatesSet].sort((a, b) => a - b).map(ms => new Date(ms));
+
+  // Helper: koji su krediti aktivni na datumu
+  function aktivniNaDatumu(datum) {
+    return aktivni.filter(k => {
+      const p = new Date(k.pocetni_datum);
+      const z = new Date(k.zavrsni_datum);
+      return p <= datum && z >= datum;
+    });
+  }
+  function sumMjesecnih(datum) {
+    return aktivniNaDatumu(datum).reduce((s, k) => s + Number(k.mjesecna_rata_eur || 0), 0);
+  }
+  function brojMjeseciIzmedju(d1, d2) {
+    const msPerMonth = 1000 * 60 * 60 * 24 * 30.4375;
+    return Math.max(0, Math.round((d2 - d1) / msPerMonth));
+  }
+
+  let svgParts = [];
+
+  // Vertikalne kljucne linije + rotirane labele datuma
+  keyDates.forEach(d => {
+    const x = xForDate(d);
+    const isToday = Math.abs(d - today) < 86400000;
+    const stroke = isToday ? '#e74c3c' : '#cbd5e1';
+    const strokeDash = isToday ? '' : 'stroke-dasharray="3,3"';
+    svgParts.push(
+      '<line x1="' + x + '" y1="' + padTop + '" x2="' + x + '" y2="' + (height - axisHeight) + '" stroke="' + stroke + '" stroke-width="' + (isToday ? 2 : 1) + '" ' + strokeDash + '/>'
+    );
+    // Datum: rotirano -40° oko tocke vrha (izbjegava preklapanje)
+    const labelY = height - axisHeight + 14;
+    const fill = isToday ? '#e74c3c' : '#333';
+    const weight = isToday ? 'font-weight="bold"' : '';
+    svgParts.push(
+      '<text x="' + x + '" y="' + labelY + '" transform="rotate(-40 ' + x + ' ' + labelY + ')" text-anchor="end" font-size="11" fill="' + fill + '" ' + weight + '>' +
+      kreditiFmtDatum(d.toISOString().slice(0, 10)) + '</text>'
+    );
+    // Mali "DANAS" indikator iznad crvene linije
+    if (isToday) {
+      svgParts.push(
+        '<text x="' + x + '" y="' + (padTop - 8) + '" text-anchor="middle" font-size="10" fill="#e74c3c" font-weight="bold">DANAS</text>'
+      );
+    }
+  });
+
+  // Horizontalne trake za svaki kredit
+  const sorted = [...aktivni].sort((a, b) => new Date(a.pocetni_datum) - new Date(b.pocetni_datum));
+  sorted.forEach((k, i) => {
+    const y = padTop + i * (rowHeight + rowGap);
+    const x1 = xForDate(k.pocetni_datum);
+    const x2 = xForDate(k.zavrsni_datum);
+    const boja = kreditiGetColor(k.davatelj);
+
+    svgParts.push(
+      '<text x="' + (chartLeft - 10) + '" y="' + (y + rowHeight / 2 + 4) + '" text-anchor="end" font-size="12" fill="#333" font-weight="bold">' +
+      (k.sifra || k.naziv || '') + '</text>'
+    );
+
+    const arrowSize = 8;
+    const barEnd = Math.max(x2 - arrowSize, x1 + 1);
+    svgParts.push(
+      '<rect x="' + x1 + '" y="' + y + '" width="' + Math.max(barEnd - x1, 1) + '" height="' + rowHeight + '" fill="' + boja + '" opacity="0.85" rx="4"/>'
+    );
+    svgParts.push(
+      '<polygon points="' + barEnd + ',' + y + ' ' + x2 + ',' + (y + rowHeight / 2) + ' ' + barEnd + ',' + (y + rowHeight) + '" fill="' + boja + '"/>'
+    );
+
+    if (x2 - x1 > 100) {
+      svgParts.push(
+        '<text x="' + (x1 + 8) + '" y="' + (y + rowHeight / 2 + 4) + '" font-size="11" fill="white" font-weight="bold">' +
+        (k.naziv || '') + ' (' + kreditiFmtEur(k.mjesecna_rata_eur) + '/mj)</text>'
+      );
+    }
+  });
+
+  // Horizontalna os ispod traka
+  const axisY = padTop + sorted.length * (rowHeight + rowGap) + 5;
+  svgParts.push('<line x1="' + chartLeft + '" y1="' + axisY + '" x2="' + chartRight + '" y2="' + axisY + '" stroke="#333" stroke-width="2"/>');
+
+  svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', height);
+  svg.innerHTML = svgParts.join('\n');
+
+  // ===== Tablica razdoblja mjesecnih obveza =====
+  const periods = [];
+  for (let i = 0; i < keyDates.length - 1; i++) {
+    const d1 = keyDates[i];
+    const d2 = keyDates[i + 1];
+    const mid = new Date((d1.getTime() + d2.getTime()) / 2);
+    const activeNow = aktivniNaDatumu(mid);
+    const sum = activeNow.reduce((s, k) => s + Number(k.mjesecna_rata_eur || 0), 0);
+    const months = brojMjeseciIzmedju(d1, d2);
+    if (sum === 0 && months === 0) continue;
+    periods.push({
+      od: d1,
+      do_: d2,
+      mjeseci: months,
+      rata: sum,
+      krediti: activeNow,
+      isCurrent: today >= d1 && today < d2
+    });
+  }
+
+  const rows = periods.map(p => {
+    const odStr = kreditiFmtDatum(p.od.toISOString().slice(0, 10));
+    const doStr = kreditiFmtDatum(p.do_.toISOString().slice(0, 10));
+    const kumOpterecenje = p.rata * p.mjeseci;
+    const badges = p.krediti.map(k =>
+      '<span class="period-badge" style="background:' + kreditiGetColor(k.davatelj) + ';" title="' + (k.naziv || '') + ' - ' + kreditiFmtEur(k.mjesecna_rata_eur) + '/mj">' +
+      (k.sifra || k.naziv) + '</span>'
+    ).join('');
+    return '<tr class="' + (p.isCurrent ? 'current-period' : '') + '">' +
+      '<td class="period-cell">' + odStr + ' – ' + doStr + '</td>' +
+      '<td class="num-cell">' + p.mjeseci + '</td>' +
+      '<td class="amount-cell">' + kreditiFmtEur(p.rata) + '</td>' +
+      '<td class="num-cell">' + kreditiFmtEur(kumOpterecenje) + '</td>' +
+      '<td><div class="badges">' + badges + '</div></td>' +
+    '</tr>';
+  }).join('');
+
+  if (periodsWrap) {
+    periodsWrap.innerHTML =
+      '<h4>📅 Mjesečne obveze kroz vrijeme <span style="font-weight:normal;color:#999;font-size:12px;">(kako krediti dospijevaju, obveza pada)</span></h4>' +
+      '<div class="table-scroll">' +
+      '<table class="krediti-periods">' +
+        '<thead><tr>' +
+          '<th>Razdoblje</th>' +
+          '<th style="text-align:right;">Trajanje (mj)</th>' +
+          '<th style="text-align:right;">Mjesečna obveza</th>' +
+          '<th style="text-align:right;">Kumulativno razdoblje</th>' +
+          '<th>Aktivni krediti</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      '</div>';
+  }
+
+  // ===== Legenda po davatelju =====
+  const davatelji = [...new Set(sorted.map(k => k.davatelj))];
+  legend.innerHTML = davatelji.map(d => {
+    const krediti = sorted.filter(k => k.davatelj === d);
+    const ukupno = krediti.reduce((s, k) => s + Number(k.iznos_ukupni_eur || 0), 0);
+    const glavnica = krediti.reduce((s, k) => s + Number(k.preostala_glavnica_eur || 0), 0);
+    const rata = krediti.reduce((s, k) => s + Number(k.mjesecna_rata_eur || 0), 0);
+    return '<div class="krediti-legend-item">' +
+      '<span class="krediti-legend-color" style="background:' + kreditiGetColor(d) + ';"></span>' +
+      '<strong>' + d + '</strong> — ' + krediti.length + ' kr., ukupno ' + kreditiFmtEur(ukupno) +
+      ', preostalo ' + kreditiFmtEur(glavnica) + ', rata ' + kreditiFmtEur(rata) + '/mj' +
+    '</div>';
+  }).join('');
+}
+
+// =============================================
+// MODAL: Novi/Uredi
+// =============================================
+function kreditiOpenModal(id) {
+  document.getElementById('kreditId').value = id || '';
+  if (id) {
+    const k = window.kreditiData.find(x => x.id === id);
+    if (!k) return;
+    document.getElementById('kreditiModalTitle').textContent = '✏️ Uredi kredit: ' + (k.sifra || '');
+    document.getElementById('kreditSifra').value = k.sifra || '';
+    document.getElementById('kreditDavatelj').value = k.davatelj || '';
+    document.getElementById('kreditNaziv').value = k.naziv || '';
+    document.getElementById('kreditSvrha').value = k.svrha || '';
+    document.getElementById('kreditIznos').value = k.iznos_ukupni_eur || '';
+    document.getElementById('kreditGlavnica').value = k.preostala_glavnica_eur || '';
+    document.getElementById('kreditRata').value = k.mjesecna_rata_eur || '';
+    document.getElementById('kreditKamata').value = k.kamatna_stopa || '';
+    document.getElementById('kreditTipKamate').value = k.tip_kamate || 'Fiksna';
+    document.getElementById('kreditPocetak').value = k.pocetni_datum || '';
+    document.getElementById('kreditKraj').value = k.zavrsni_datum || '';
+    document.getElementById('kreditStatus').value = k.status || 'Aktivan';
+    document.getElementById('kreditNapomene').value = k.napomene || '';
+  } else {
+    document.getElementById('kreditiModalTitle').textContent = '🏦 Novi kredit';
+    ['kreditSifra','kreditDavatelj','kreditNaziv','kreditSvrha','kreditIznos','kreditGlavnica','kreditRata','kreditKamata','kreditPocetak','kreditKraj','kreditNapomene'].forEach(f => {
+      const el = document.getElementById(f);
+      if (el) el.value = '';
+    });
+    document.getElementById('kreditTipKamate').value = 'Fiksna';
+    document.getElementById('kreditStatus').value = 'Aktivan';
+  }
+  openModal('kreditiModal');
+}
+
+async function kreditiSaveKredit() {
+  const id = document.getElementById('kreditId').value;
+  const sifra = document.getElementById('kreditSifra').value.trim();
+  const davatelj = document.getElementById('kreditDavatelj').value.trim();
+  const naziv = document.getElementById('kreditNaziv').value.trim();
+  const iznos = parseFloat(document.getElementById('kreditIznos').value);
+  const glavnica = parseFloat(document.getElementById('kreditGlavnica').value);
+  const rata = parseFloat(document.getElementById('kreditRata').value);
+  const kamata = parseFloat(document.getElementById('kreditKamata').value);
+  const pocetak = document.getElementById('kreditPocetak').value;
+  const kraj = document.getElementById('kreditKraj').value;
+
+  if (!sifra || !davatelj || !naziv) {
+    showMessage('Šifra, davatelj i naziv su obavezni', 'error');
+    return;
+  }
+  if (isNaN(iznos) || isNaN(glavnica) || isNaN(rata) || isNaN(kamata)) {
+    showMessage('Iznos, glavnica, rata i kamata moraju biti brojevi', 'error');
+    return;
+  }
+  if (!pocetak || !kraj) {
+    showMessage('Početni i završni datum su obavezni', 'error');
+    return;
+  }
+  if (new Date(kraj) <= new Date(pocetak)) {
+    showMessage('Završni datum mora biti nakon početnog', 'error');
+    return;
+  }
+
+  const payload = {
+    sifra: sifra,
+    davatelj: davatelj,
+    naziv: naziv,
+    svrha: document.getElementById('kreditSvrha').value.trim() || null,
+    iznos_ukupni_eur: iznos,
+    preostala_glavnica_eur: glavnica,
+    mjesecna_rata_eur: rata,
+    kamatna_stopa: kamata,
+    tip_kamate: document.getElementById('kreditTipKamate').value,
+    pocetni_datum: pocetak,
+    zavrsni_datum: kraj,
+    status: document.getElementById('kreditStatus').value,
+    napomene: document.getElementById('kreditNapomene').value.trim() || null
+  };
+
+  try {
+    if (id) {
+      await DB.update('prod_company_loans', id, payload);
+      showMessage('Kredit ažuriran', 'success');
+    } else {
+      await DB.insert('prod_company_loans', payload);
+      showMessage('Kredit dodan', 'success');
+    }
+    closeModal('kreditiModal');
+    await kreditiLoadData();
+    kreditiCalculateKpi();
+    kreditiPopulateFilters();
+    kreditiPrikaziTablicu();
+    kreditiPrikaziTimeline();
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška pri spremanju: ' + (e.message || e), 'error');
+  }
+}
+
+async function kreditiDeleteKredit(id) {
+  const k = window.kreditiData.find(x => x.id === id);
+  if (!k) return;
+  if (!confirm('Obrisati kredit "' + (k.sifra || k.naziv) + '"?\n\nOva akcija se ne može poništiti.')) return;
+  try {
+    await DB.delete('prod_company_loans', id);
+    showMessage('Kredit obrisan', 'success');
+    await kreditiLoadData();
+    kreditiCalculateKpi();
+    kreditiPopulateFilters();
+    kreditiPrikaziTablicu();
+    kreditiPrikaziTimeline();
+  } catch (e) {
+    console.error(e);
+    showMessage('Greška pri brisanju: ' + (e.message || e), 'error');
+  }
+}
+
+// =============================================
+// AMORTIZACIJSKI PLAN (client-side)
+// =============================================
+function kreditiPrikaziAmortizaciju(id) {
+  const k = window.kreditiData.find(x => x.id === id);
+  if (!k) return;
+
+  const preostalaGlavnica = Number(k.preostala_glavnica_eur);
+  const godKamata = Number(k.kamatna_stopa);
+  const mjKamata = godKamata / 12 / 100;
+
+  // Broj mjeseci od danas do zavrsnog datuma
+  const danas = new Date();
+  const kraj = new Date(k.zavrsni_datum);
+  const brMjeseci = Math.max(1, Math.round((kraj - danas) / (1000 * 60 * 60 * 24 * 30.4375)));
+
+  // Anuitet M = P * r(1+r)^n / ((1+r)^n - 1)
+  let mjRata;
+  if (mjKamata === 0) {
+    mjRata = preostalaGlavnica / brMjeseci;
+  } else {
+    const factor = Math.pow(1 + mjKamata, brMjeseci);
+    mjRata = preostalaGlavnica * mjKamata * factor / (factor - 1);
+  }
+
+  // Ako je u bazi spremljena stvarna mjesecna rata, koristimo nju za prikaz ("knjigovodstvena stvarnost")
+  // Inace koristimo izracunatu. Prikazat cemo obje u summary.
+  const ratomIzBaze = Number(k.mjesecna_rata_eur);
+  const useRata = ratomIzBaze > 0 ? ratomIzBaze : mjRata;
+
+  document.getElementById('amortTitle').textContent = '📊 Plan otplate: ' + (k.sifra || '') + ' - ' + (k.naziv || '');
+
+  // Summary
+  const varWarning = k.tip_kamate === 'Varijabilna'
+    ? '<div style="color:#e65100;margin-top:8px;font-size:12px;">⚠ Kamata je <strong>varijabilna</strong>. Izračun koristi trenutnu kamatu od ' + godKamata.toFixed(3) + '% - stvarne rate mogu odstupati.</div>'
+    : '';
+  document.getElementById('amortSummary').innerHTML =
+    '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
+      '<div><strong>Preostala glavnica:</strong> ' + kreditiFmtEur(preostalaGlavnica) + '</div>' +
+      '<div><strong>Kamata:</strong> ' + godKamata.toFixed(3) + '% god. (' + k.tip_kamate + ')</div>' +
+      '<div><strong>Preostalo mjeseci:</strong> ' + brMjeseci + '</div>' +
+      '<div><strong>Izračunata anuitetska rata:</strong> ' + kreditiFmtEur(mjRata) + '</div>' +
+      '<div><strong>Rata u evidenciji:</strong> ' + kreditiFmtEur(ratomIzBaze) + '</div>' +
+    '</div>' + varWarning;
+
+  // Generiraj tablicu rata
+  const tbody = document.getElementById('amortTableBody');
+  let preostalo = preostalaGlavnica;
+  let datum = new Date(danas.getFullYear(), danas.getMonth() + 1, 1); // prvi dan slijedeceg mjeseca
+  const rows = [];
+  let ukupnoKamate = 0;
+  let ukupnoRata = 0;
+  for (let i = 1; i <= brMjeseci; i++) {
+    const kamataMj = preostalo * mjKamata;
+    let rataMj = useRata;
+    let glavnicaMj = rataMj - kamataMj;
+
+    // Zadnji mjesec: uskladi da preostalo bude 0
+    if (i === brMjeseci || glavnicaMj > preostalo) {
+      glavnicaMj = preostalo;
+      rataMj = glavnicaMj + kamataMj;
+    }
+    preostalo -= glavnicaMj;
+    ukupnoKamate += kamataMj;
+    ukupnoRata += rataMj;
+
+    rows.push(
+      '<tr>' +
+        '<td>' + i + '</td>' +
+        '<td>' + kreditiFmtDatum(datum.toISOString().slice(0, 10)) + '</td>' +
+        '<td>' + kreditiFmtEur(rataMj) + '</td>' +
+        '<td>' + kreditiFmtEur(glavnicaMj) + '</td>' +
+        '<td>' + kreditiFmtEur(kamataMj) + '</td>' +
+        '<td>' + kreditiFmtEur(Math.max(0, preostalo)) + '</td>' +
+      '</tr>'
+    );
+
+    datum.setMonth(datum.getMonth() + 1);
+    if (preostalo <= 0.01) break;
+  }
+  // Total redak
+  rows.push(
+    '<tr style="background:#e3f2fd;font-weight:bold;">' +
+      '<td colspan="2">UKUPNO</td>' +
+      '<td>' + kreditiFmtEur(ukupnoRata) + '</td>' +
+      '<td>' + kreditiFmtEur(preostalaGlavnica) + '</td>' +
+      '<td>' + kreditiFmtEur(ukupnoKamate) + '</td>' +
+      '<td>-</td>' +
+    '</tr>'
+  );
+  tbody.innerHTML = rows.join('');
+
+  openModal('amortModal');
+}
+</script>
