@@ -2713,26 +2713,40 @@ async function fifoFetchAvailableRolls() {
     if (code.charAt(0).toUpperCase() === 'F') continue;  // folija
 
     try {
-      if (s === 1 && fifoState.hasPrinting) {
-        fifoState.availableByLayer[s] = await fifoFetchPrintedRollsForOrder(a.id, materijalKontekst.orderNumber);
+      var printed = [];
+      // Sloj 1: uvijek provjeri ima li otiskanih rola za taj artikl (ne ovisi o wo_has_printing)
+      if (s === 1) {
+        printed = await fifoFetchPrintedRollsForArticle(a.id);
+      }
+
+      if (printed.length > 0) {
+        // Ima otiskanih → koristi ih
+        fifoState.availableByLayer[s] = printed;
+        if (s === 1) fifoState.hasPrinting = true;
       } else {
+        // Nema otiskanih → koristi stock role matchirane po paper_code
         fifoState.availableByLayer[s] = await fifoFetchStockRollsForLayer(a, s);
+        if (s === 1) fifoState.hasPrinting = false;
       }
     } catch (err) {
       console.error('fifoFetchAvailableRolls sloj ' + s + ':', err);
       fifoState.availableByLayer[s] = [];
     }
   }
+
+  // Re-renderaj header (badge OTISAK) nakon što znamo stvarno stanje
+  try { fifoRenderHeader(); } catch (e) {}
 }
 
-// Printed role za artikl unutar iste narudžbe (uključujući role bez order_number ako ne znamo)
-async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
-  console.log('[FIFO] fifoFetchPrintedRollsForOrder articleId=' + articleId + ' orderNumber=' + orderNumber);
+// Printed role SAMO po article_id — bez filtera po work_order_number / order_number
+async function fifoFetchPrintedRollsForArticle(articleId) {
+  console.log('[FIFO] fifoFetchPrintedRollsForArticle articleId=' + articleId);
   var r = await initSupabase()
     .from('prod_inventory_printed')
     .select('*')
     .eq('article_id', articleId)
     .gt('remaining_kg', 0)
+    .in('status', ['Na skladištu', 'Djelomično'])
     .order('entry_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true });
   if (r.error) {
@@ -2740,33 +2754,14 @@ async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
     throw r.error;
   }
   var rolls = r.data || [];
-  console.log('[FIFO] printed rolls za article (prije order filter): ' + rolls.length);
-
-  if (orderNumber && rolls.length > 0) {
-    var woNums = [...new Set(rolls.map(p => p.work_order_number).filter(Boolean))];
-    if (woNums.length > 0) {
-      var r2 = await initSupabase()
-        .from('prod_work_orders_printing')
-        .select('wo_number, order_number')
-        .in('wo_number', woNums);
-      var mapWoToOrder = {};
-      (r2.data || []).forEach(w => { mapWoToOrder[w.wo_number] = w.order_number; });
-      console.log('[FIFO] tisak RN → order_number map:', mapWoToOrder);
-      // Zadrži role koje: a) pripadaju istoj narudžbi, ili b) nemaju povezan tisak RN (manualne)
-      rolls = rolls.filter(p => {
-        if (!p.work_order_number) return true;
-        var ord = mapWoToOrder[p.work_order_number];
-        return !ord || ord === orderNumber;
-      });
-      console.log('[FIFO] printed rolls nakon order filter: ' + rolls.length);
-    }
-  }
+  console.log('[FIFO] printed rolls za article: ' + rolls.length);
 
   return rolls.map(r => ({
     source: 'printed',
     id: r.id,
     code: r.printed_roll_code,
-    label: r.printed_roll_code + (r.parent_roll_code ? ' (iz ' + r.parent_roll_code + ')' : ''),
+    label: r.printed_roll_code + (r.parent_roll_code ? ' (iz ' + r.parent_roll_code + ')' : '') +
+           (r.work_order_number ? ' · ' + r.work_order_number : ''),
     weight_kg: r.weight_kg,
     consumed_kg: r.consumed_kg || 0,
     remaining_kg: parseFloat(r.remaining_kg || 0),
