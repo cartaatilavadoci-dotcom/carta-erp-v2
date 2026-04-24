@@ -40,6 +40,59 @@
     0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.4); }
     50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); }
   }
+
+  /* ============================================ */
+  /* ROLA PO RN — group rows + expand/collapse   */
+  /* ============================================ */
+  .rpr-group-row {
+    background: linear-gradient(90deg, #f0f7f1 0%, #e3efe6 100%);
+    border-top: 2px solid #b6d4be;
+    border-bottom: 1px solid #b6d4be;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+  .rpr-group-row:hover { background: linear-gradient(90deg, #e3efe6 0%, #d0e6d5 100%); }
+  .rpr-group-row td { padding: 10px 8px !important; vertical-align: middle; }
+  .rpr-group-row .group-chevron {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    transition: transform 0.15s ease;
+    color: #2e7d32;
+    font-weight: bold;
+    user-select: none;
+  }
+  .rpr-group-row.expanded .group-chevron { transform: rotate(90deg); }
+  .rpr-group-row .rpr-rn-num { font-size: 1.05em; color: #2e7d32; }
+  .rpr-group-row .rpr-count {
+    display: inline-block;
+    background: #c8e6c9;
+    color: #2e7d32;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  .rpr-leaf-row { background: #fafcfa; }
+  .rpr-leaf-row.hidden { display: none; }
+  .rpr-leaf-row td:first-child { padding-left: 28px !important; }
+  .rpr-leaf-row td { border-bottom: 1px dashed #dfe6e0; }
+
+  .rpr-toolbar-btn {
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #334155;
+    transition: all 0.15s ease;
+  }
+  .rpr-toolbar-btn:hover { background: #eef2f7; border-color: #94a3b8; }
+  .rpr-toolbar-btn:active { background: #dde5ed; }
 </style>
 
 <h1 style="margin-bottom: 30px; color: var(--primary);">🏭 Skladište</h1>
@@ -99,6 +152,7 @@
   <button class="tab-btn" onclick="showTab('palete')">🏗️ Prazne palete</button>
   <button class="tab-btn" onclick="showTab('korekcije')" style="background: #fff3e0; color: #e65100;">🔧 Korekcije rola</button>
   <button class="tab-btn" onclick="showTab('neuskladjeno')" style="background: #ffebee; color: #c62828;">⚠️ Neusklađeno</button>
+  <button class="tab-btn" onclick="showTab('rolePoRN')" style="background: #e8f5e9; color: #2e7d32;">📊 Rola po RN</button>
 </div>
 
 <!-- ==================== TAB: ROLE PAPIRA ==================== -->
@@ -754,6 +808,82 @@
   </div>
 </div>
 
+<!-- ==================== TAB: ROLA PO RN ==================== -->
+<div class="tab-content" id="rolePoRN">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-left: 4px solid #2e7d32;">
+    <div class="card-body">
+      <h4 style="color: #2e7d32; margin-bottom: 6px;">📊 Potrošnja rola po radnom nalogu</h4>
+      <p style="color: #2c3e50; margin: 0; font-size: 0.92em;">
+        Prikaz potrošenih i djelomično potrošenih rola grupiranih po RN-u. Klikni narudžbu za detalje — koje role, s kojom težinom su utrošene.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filteri -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end; gap: 10px;">
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: #666;">Radni nalog (RN)</label>
+          <input type="text" id="rprFilterRN" class="form-control form-control-sm" placeholder="npr. RN1001/26" oninput="rprApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 0 0 120px;">
+          <label style="font-size: 12px; color: #666;">Linija</label>
+          <select id="rprFilterLinija" class="form-control form-control-sm" onchange="rprApplyFilters()">
+            <option value="">Sve</option>
+            <option value="WH">W&H</option>
+            <option value="NLI">NLI</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 0 0 130px;">
+          <label style="font-size: 12px; color: #666;">Datum od</label>
+          <input type="date" id="rprFilterDatumOd" class="form-control form-control-sm" onchange="rprApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 0 0 130px;">
+          <label style="font-size: 12px; color: #666;">Datum do</label>
+          <input type="date" id="rprFilterDatumDo" class="form-control form-control-sm" onchange="rprApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: #666;">Šifra role / artikl</label>
+          <input type="text" id="rprFilterSearch" class="form-control form-control-sm" placeholder="Pretraga..." oninput="rprApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 0 0 auto; display: flex; gap: 4px;">
+          <button class="rpr-toolbar-btn" type="button" onclick="rprExpandAll()">Proširi sve</button>
+          <button class="rpr-toolbar-btn" type="button" onclick="rprCollapseAll()">Skupi sve</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadRolePoRN()">🔄 Osvježi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablica -->
+  <div class="card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 Pregled potrošnje po RN <span id="rprInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>RN / Šifra role</th>
+            <th>Artikl</th>
+            <th>Proizvođač</th>
+            <th style="text-align:right;">Širina (cm)</th>
+            <th>Gramatura</th>
+            <th style="text-align:right;">Potrošeno (kg)</th>
+            <th>Datum</th>
+            <th>Linija</th>
+            <th>Sloj / POP</th>
+          </tr>
+        </thead>
+        <tbody id="rolePoRNTableBody">
+          <tr><td colspan="9" style="text-align:center; color:#999; padding:40px;">Kliknite tab da učitate podatke</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== MODAL: KOREKCIJA POTROŠNJE ==================== -->
 <div id="korekcijaModal" class="modal">
   <div class="modal-content" style="max-width: 600px;">
@@ -1375,6 +1505,7 @@ function showTab(tabId) {
   if (tabId === 'gop') loadGOP();
   if (tabId === 'palete') loadPalete();
   if (tabId === 'neuskladjeno') loadNeuskladjeno();
+  if (tabId === 'rolePoRN') loadRolePoRN();
 }
 
 // ============================================
@@ -3772,5 +3903,203 @@ async function obrisiGOPPaletu(paletaId) {
     showMessage('Greška: ' + e.message, 'error');
   }
 }
+
+// ============================================
+// ROLA PO RN — pregled potrošenih rola po RN-u
+// ============================================
+var rprData = [];  // prod_inventory_consumed_rolls zapisi
+window.rprExpandedGroups = window.rprExpandedGroups || new Set();
+
+async function loadRolePoRN() {
+  var tbody = document.getElementById('rolePoRNTableBody');
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px;">Učitavanje...</td></tr>';
+
+  try {
+    var result = await initSupabase()
+      .from('prod_inventory_consumed_rolls')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5000);
+
+    if (result.error) throw result.error;
+    rprData = result.data || [];
+    rprApplyFilters();
+  } catch (e) {
+    console.error('loadRolePoRN error:', e);
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:red; padding:30px;">Greška: ' + (e.message || e) + '</td></tr>';
+  }
+}
+
+function rprApplyFilters() {
+  var rnFilter = (document.getElementById('rprFilterRN').value || '').toLowerCase().trim();
+  var linijaFilter = document.getElementById('rprFilterLinija').value;
+  var datumOd = document.getElementById('rprFilterDatumOd').value;
+  var datumDo = document.getElementById('rprFilterDatumDo').value;
+  var search = (document.getElementById('rprFilterSearch').value || '').toLowerCase().trim();
+
+  var filtered = rprData.filter(function(r) {
+    if (rnFilter && !(r.work_order_number || '').toLowerCase().includes(rnFilter)) return false;
+    if (linijaFilter && r.production_line !== linijaFilter) return false;
+    var datum = r.shift_date || (r.created_at ? r.created_at.split('T')[0] : '');
+    if (datumOd && datum < datumOd) return false;
+    if (datumDo && datum > datumDo) return false;
+    if (search) {
+      var match = (r.roll_code || '').toLowerCase().includes(search) ||
+                  (r.article_name || '').toLowerCase().includes(search) ||
+                  (r.manufacturer || '').toLowerCase().includes(search);
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  // Auto-expand grupe koje sadrže match ako je aktivan search / RN filter
+  var hasNarrowFilter = !!rnFilter || !!search;
+  if (hasNarrowFilter) {
+    filtered.forEach(function(r) {
+      var key = r.work_order_number || '(bez RN)';
+      window.rprExpandedGroups.add(key);
+    });
+  }
+
+  rprRenderTable(filtered);
+}
+
+function rprRenderTable(data) {
+  var tbody = document.getElementById('rolePoRNTableBody');
+  var info = document.getElementById('rprInfo');
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#999; padding:40px;">Nema zapisa za zadane filtere</td></tr>';
+    if (info) info.textContent = '';
+    return;
+  }
+
+  // Grupiraj po RN-u
+  var groupsMap = new Map();
+  var groupOrder = [];
+  data.forEach(function(r) {
+    var key = r.work_order_number || '(bez RN)';
+    if (!groupsMap.has(key)) {
+      groupsMap.set(key, { rn: key, items: [], articles: new Set() });
+      groupOrder.push(key);
+    }
+    var g = groupsMap.get(key);
+    g.items.push(r);
+    if (r.article_name) g.articles.add(r.article_name);
+  });
+
+  // Sortiraj grupe po najnovijem zapisu
+  groupOrder.sort(function(a, b) {
+    var ga = groupsMap.get(a);
+    var gb = groupsMap.get(b);
+    var latestA = ga.items.reduce(function(max, it) {
+      var d = it.created_at || '';
+      return d > max ? d : max;
+    }, '');
+    var latestB = gb.items.reduce(function(max, it) {
+      var d = it.created_at || '';
+      return d > max ? d : max;
+    }, '');
+    return latestB.localeCompare(latestA);
+  });
+
+  var html = '';
+  var totalKg = 0;
+  var totalItems = 0;
+
+  groupOrder.forEach(function(key) {
+    var g = groupsMap.get(key);
+    var isExpanded = window.rprExpandedGroups.has(key);
+    var keyEsc = key.replace(/'/g, "\\'");
+
+    // Sortiraj role unutar grupe po datumu DESC
+    g.items.sort(function(a, b) {
+      return (b.created_at || '').localeCompare(a.created_at || '');
+    });
+
+    var groupKg = g.items.reduce(function(s, it) { return s + Number(it.consumed_kg || 0); }, 0);
+    var groupLinije = new Set();
+    g.items.forEach(function(it) { if (it.production_line) groupLinije.add(it.production_line); });
+    var linijaLabel = [...groupLinije].join(', ') || '-';
+    var articlesLabel = [...g.articles].slice(0, 2).join(', ') + (g.articles.size > 2 ? ' +' + (g.articles.size - 2) : '');
+
+    totalKg += groupKg;
+    totalItems += g.items.length;
+
+    // Grupni red
+    html += '<tr class="rpr-group-row ' + (isExpanded ? 'expanded' : '') + '" data-rpr-group="' + key + '" onclick="rprToggleGroup(\'' + keyEsc + '\', event)">';
+    html += '<td><span class="group-chevron">▶</span><strong class="rpr-rn-num">' + key + '</strong></td>';
+    html += '<td>' + (articlesLabel || '-') + '</td>';
+    html += '<td colspan="3" style="color:#94a3b8; font-size:0.85em;">— ' + g.items.length + ' ' + (g.items.length === 1 ? 'rola' : 'rola') + ' —</td>';
+    html += '<td style="text-align:right;"><strong>' + groupKg.toFixed(2) + '</strong></td>';
+    html += '<td colspan="2"><span class="rpr-count">' + g.items.length + ' ' + (g.items.length === 1 ? 'zapis' : 'zapisa') + '</span></td>';
+    html += '<td><span class="badge badge-' + (linijaLabel === 'WH' ? 'success' : linijaLabel === 'NLI' ? 'warning' : 'secondary') + '">' + linijaLabel + '</span></td>';
+    html += '</tr>';
+
+    // Leaf redovi
+    g.items.forEach(function(r) {
+      var datum = r.shift_date || (r.created_at ? r.created_at.split('T')[0] : '-');
+      html += '<tr class="rpr-leaf-row ' + (isExpanded ? '' : 'hidden') + '" data-rpr-parent="' + key + '">';
+      html += '<td><strong>' + (r.roll_code || '-') + '</strong></td>';
+      html += '<td style="font-size:0.88em;">' + (r.article_name || '-') + '</td>';
+      html += '<td>' + (r.manufacturer || '-') + '</td>';
+      html += '<td style="text-align:right;">' + (r.roll_width_cm || '-') + '</td>';
+      html += '<td>' + (r.roll_grammage || '-') + '</td>';
+      html += '<td style="text-align:right; font-weight:600; color:#e65100;">' + (r.consumed_kg ? Number(r.consumed_kg).toFixed(2) : '0') + '</td>';
+      html += '<td>' + datum + '</td>';
+      html += '<td><span class="badge badge-' + (r.production_line === 'WH' ? 'success' : 'warning') + '">' + (r.production_line || '-') + '</span></td>';
+      html += '<td>S' + (r.layer_number || '-') + ' / ' + formatBroj(r.pop_quantity || 0, 0) + '</td>';
+      html += '</tr>';
+    });
+  });
+
+  tbody.innerHTML = html;
+  if (info) {
+    info.textContent = '(' + groupsMap.size + ' RN-ova, ' + totalItems + ' zapisa, ' + totalKg.toFixed(2) + ' kg ukupno)';
+  }
+}
+
+function rprToggleGroup(key, event) {
+  if (event && event.target) {
+    var tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'button' || tag === 'a' || tag === 'input') return;
+  }
+  if (window.rprExpandedGroups.has(key)) {
+    window.rprExpandedGroups.delete(key);
+  } else {
+    window.rprExpandedGroups.add(key);
+  }
+  rprApplyGroupVisibility();
+}
+
+function rprApplyGroupVisibility() {
+  document.querySelectorAll('.rpr-group-row').forEach(function(row) {
+    var key = row.getAttribute('data-rpr-group');
+    row.classList.toggle('expanded', window.rprExpandedGroups.has(key));
+  });
+  document.querySelectorAll('.rpr-leaf-row').forEach(function(row) {
+    var key = row.getAttribute('data-rpr-parent');
+    row.classList.toggle('hidden', !window.rprExpandedGroups.has(key));
+  });
+}
+
+function rprExpandAll() {
+  document.querySelectorAll('.rpr-group-row').forEach(function(row) {
+    var key = row.getAttribute('data-rpr-group');
+    if (key) window.rprExpandedGroups.add(key);
+  });
+  rprApplyGroupVisibility();
+}
+
+function rprCollapseAll() {
+  window.rprExpandedGroups.clear();
+  rprApplyGroupVisibility();
+}
+
+window.loadRolePoRN = loadRolePoRN;
+window.rprApplyFilters = rprApplyFilters;
+window.rprToggleGroup = rprToggleGroup;
+window.rprExpandAll = rprExpandAll;
+window.rprCollapseAll = rprCollapseAll;
 
 </script>
