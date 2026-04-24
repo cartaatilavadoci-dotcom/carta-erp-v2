@@ -245,6 +245,31 @@
 .order-article-row td:first-child { padding-left: 24px !important; }
 .order-article-row td { border-bottom: 1px dashed #e4e8ed; }
 
+/* RN sub-group row (razina 2: Narudžba unutar Tip grupe) */
+.rn-subgroup-row {
+  background: #f5f9fd;
+  border-top: 1px solid #cfd8e3;
+  border-bottom: 1px solid #e4eaf0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+.rn-subgroup-row:hover { background: #ecf3fb; }
+.rn-subgroup-row.hidden { display: none; }
+.rn-subgroup-row td { padding: 7px 8px !important; }
+.rn-subgroup-row .group-chevron {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  transition: transform 0.15s ease;
+  color: #1565c0;
+  font-weight: bold;
+  user-select: none;
+  font-size: 0.9em;
+}
+.rn-subgroup-row.expanded .group-chevron { transform: rotate(90deg); }
+
 /* Toolbar expand/collapse gumbi */
 .group-toolbar-btn {
   padding: 5px 10px;
@@ -3099,7 +3124,8 @@ function updateWeightSummary(sums) {
 }
 
 // State: koje su RN grupe otvorene
-window.expandedRNGroups = window.expandedRNGroups || new Set();
+window.expandedRNGroups = window.expandedRNGroups || new Set();        // Tip level (Glavni/Tisak/Rezanje)
+window.expandedRNSubgroups = window.expandedRNSubgroups || new Set();  // Tip::order_number level
 
 // Sortiraj RN-ove unutar grupe: Planiran → U tijeku → Pauziran → Završeno, zatim wo_number desc
 function _sortRN(a, b) {
@@ -3107,6 +3133,12 @@ function _sortRN(a, b) {
   const statusDiff = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
   if (statusDiff !== 0) return statusDiff;
   return (b.wo_number || '').localeCompare(a.wo_number || '');
+}
+
+// Ako order_number sadrži CSV ("N100/26, N101/26"), uzmi prvi narudžba broj za grupiranje
+function _primaryOrderNumber(orderNumberStr) {
+  if (!orderNumberStr) return '(bez narudžbe)';
+  return String(orderNumberStr).split(',')[0].trim() || '(bez narudžbe)';
 }
 
 function renderRNTable(rn) {
@@ -3134,9 +3166,9 @@ function renderRNTable(rn) {
     groupRN.sort(_sortRN);
 
     const count = groupRN.length;
-    const isExpanded = window.expandedRNGroups.has(g.tip);
+    const isTipExpanded = window.expandedRNGroups.has(g.tip);
 
-    // Status breakdown
+    // Status breakdown na razini tipa
     const byStatus = { Planiran: 0, 'U tijeku': 0, Pauziran: 0, Završeno: 0 };
     groupRN.forEach(r => { if (byStatus[r.status] != null) byStatus[r.status]++; });
     const totalQty = groupRN.reduce((s, r) => s + Number(r.quantity || 0), 0);
@@ -3147,14 +3179,28 @@ function renderRNTable(rn) {
     if (byStatus['Pauziran']) statusBadges.push(`<span class="badge badge-secondary" style="font-size:0.7em;margin-right:2px;">${byStatus['Pauziran']} Pauziran</span>`);
     if (byStatus['Završeno']) statusBadges.push(`<span class="badge badge-success" style="font-size:0.7em;margin-right:2px;">${byStatus['Završeno']} Završeno</span>`);
 
-    // Grupni red — uvijek vidljiv
+    // Grupiraj RN-ove u tipu po primarnoj narudžbi
+    const subgroupsMap = new Map();
+    const subgroupOrder = [];
+    groupRN.forEach(r => {
+      const key = _primaryOrderNumber(r.order_number);
+      if (!subgroupsMap.has(key)) {
+        subgroupsMap.set(key, { order_number: key, customer_name: r.customer_name || '-', rns: [] });
+        subgroupOrder.push(key);
+      }
+      subgroupsMap.get(key).rns.push(r);
+    });
+
+    // TIP grupni red — uvijek vidljiv (razina 1)
+    const subgroupCountLabel = subgroupsMap.size === 1 ? '1 narudžba' : `${subgroupsMap.size} narudžbi`;
     html += `
-      <tr class="order-group-row ${isExpanded ? 'expanded' : ''}" data-rngroup="${g.tip}" onclick="toggleRNGroup('${g.tip}', event)" ${count === 0 ? 'style="opacity:0.55;"' : ''}>
+      <tr class="order-group-row ${isTipExpanded ? 'expanded' : ''}" data-rngroup="${g.tip}" onclick="toggleRNGroup('${g.tip}', event)" ${count === 0 ? 'style="opacity:0.55;"' : ''}>
         <td colspan="3">
           <span class="group-chevron">▶</span>
           <span style="font-size:1.05em;"><span class="badge ${g.tipClass}">${g.icon} ${g.label}</span></span>
           &nbsp;·&nbsp;
-          <span class="group-article-count" title="Broj radnih naloga u grupi">${count} ${count === 1 ? 'nalog' : (count >= 2 && count <= 4 ? 'naloga' : 'naloga')}</span>
+          <span class="group-article-count" title="Broj radnih naloga u grupi">${count} ${count === 1 ? 'nalog' : 'naloga'}</span>
+          <span style="color:#94a3b8;font-size:0.85em;margin-left:8px;">(${subgroupCountLabel})</span>
         </td>
         <td colspan="2"></td>
         <td colspan="1"></td>
@@ -3164,51 +3210,89 @@ function renderRNTable(rn) {
       </tr>
     `;
 
-    // RN redovi — skriveni kad grupa nije proširena
-    groupRN.forEach(r => {
-      totalDisplayed++;
-      let statusClass = 'warning';
-      if (r.status === 'U tijeku') statusClass = 'primary';
-      else if (r.status === 'Završeno') statusClass = 'success';
-      else if (r.status === 'Pauziran') statusClass = 'secondary';
+    // Za svaku narudžbu unutar tipa: sub-grupni red + RN redovi
+    subgroupOrder.forEach(orderKey => {
+      const sub = subgroupsMap.get(orderKey);
+      const subKey = `${g.tip}::${orderKey}`;
+      const subKeyEsc = subKey.replace(/'/g, "\\'");
+      const isSubExpanded = window.expandedRNSubgroups.has(subKey);
 
-      const isPaused = r.status === 'Pauziran';
-      const isFinished = r.status === 'Završeno';
+      // Agregati sub-grupe
+      const subQty = sub.rns.reduce((s, r) => s + Number(r.quantity || 0), 0);
+      const subByStatus = { Planiran: 0, 'U tijeku': 0, Pauziran: 0, Završeno: 0 };
+      sub.rns.forEach(r => { if (subByStatus[r.status] != null) subByStatus[r.status]++; });
+      const subStatusBadges = [];
+      if (subByStatus['Planiran']) subStatusBadges.push(`<span class="badge badge-warning" style="font-size:0.65em;margin-right:2px;">${subByStatus['Planiran']} Plan.</span>`);
+      if (subByStatus['U tijeku']) subStatusBadges.push(`<span class="badge badge-primary" style="font-size:0.65em;margin-right:2px;">${subByStatus['U tijeku']} U tij.</span>`);
+      if (subByStatus['Pauziran']) subStatusBadges.push(`<span class="badge badge-secondary" style="font-size:0.65em;margin-right:2px;">${subByStatus['Pauziran']} Pauz.</span>`);
+      if (subByStatus['Završeno']) subStatusBadges.push(`<span class="badge badge-success" style="font-size:0.65em;margin-right:2px;">${subByStatus['Završeno']} Zav.</span>`);
 
-      const safeId = r.id;
-      const safeTip = (r.tip || '').replace(/'/g, "\\'");
-      const safeWoNumber = (r.wo_number || '').replace(/'/g, "\\'");
-
-      let actions = '';
-      if (!isFinished && !planiranjeReadOnly) {
-        actions += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">`;
-        actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: #1976d2; padding: 2px 4px;">📊</button>`;
-        if (isPaused) {
-          actions += `<button class="action-btn" onclick="window.openResumeRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Nastavi" style="padding: 2px 4px;">▶️</button>`;
-        } else {
-          actions += `<button class="action-btn" onclick="window.openPauseRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Pauziraj" style="padding: 2px 4px;">⏸️</button>`;
-        }
-        actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: #2e7d32; padding: 2px 4px;">🏁</button>`;
-        actions += `<button class="action-btn delete" onclick="window.openDeleteRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Obriši" style="padding: 2px 4px;">🗑️</button>`;
-        actions += `</div>`;
-      }
-
-      const rowStyle = (isPaused ? 'opacity: 0.6; background: #f5f5f5;' : '');
-
+      // Razina 2: narudžba sub-grupni red (vidljiv kad je tip otvoren)
       html += `
-        <tr class="order-article-row ${isExpanded ? '' : 'hidden'}" data-rnparent="${g.tip}" style="${rowStyle}">
-          <td><strong>${r.wo_number || '-'}</strong></td>
-          <td><span class="badge ${g.tipClass}">${g.icon} ${r.tip || '-'}</span></td>
-          <td>${r.order_number || '-'}</td>
-          <td>${r.customer_name || '-'}</td>
-          <td>${r.article_name || '-'}</td>
-          <td><span class="badge badge-info">${r.article_code || '-'}</span></td>
-          <td style="text-align: right;">${formatBroj(r.quantity, 0)}</td>
-          <td><span class="badge badge-${r.production_line === 'NLI' ? 'primary' : r.production_line === 'WH' ? 'success' : 'secondary'}">${r.production_line || '-'}</span></td>
-          <td><span class="badge badge-${statusClass}">${r.status || '-'}</span></td>
-          <td style="padding: 4px;">${actions}</td>
+        <tr class="rn-subgroup-row ${isSubExpanded ? 'expanded' : ''} ${isTipExpanded ? '' : 'hidden'}" data-rnsubgroup="${subKey}" data-rn-parent-tip="${g.tip}" onclick="toggleRNSubgroup('${subKeyEsc}', event)">
+          <td colspan="3" style="padding-left:26px;">
+            <span class="group-chevron">▶</span>
+            <strong style="color:#1565c0;">${orderKey}</strong>
+            &nbsp;·&nbsp;
+            <span style="color:#2c3e50;">${sub.customer_name}</span>
+            &nbsp;·&nbsp;
+            <span class="group-article-count" style="background:#e3ecf6;color:#1565c0;">${sub.rns.length} ${sub.rns.length === 1 ? 'nalog' : 'naloga'}</span>
+          </td>
+          <td colspan="2"></td>
+          <td></td>
+          <td style="text-align: right;font-weight:600;">${formatBroj(subQty, 0)}</td>
+          <td colspan="2">${subStatusBadges.join('')}</td>
+          <td></td>
         </tr>
       `;
+
+      // Razina 3: RN redovi — vidljivi samo kad su i tip i sub-grupa otvoreni
+      sub.rns.forEach(r => {
+        totalDisplayed++;
+        let statusClass = 'warning';
+        if (r.status === 'U tijeku') statusClass = 'primary';
+        else if (r.status === 'Završeno') statusClass = 'success';
+        else if (r.status === 'Pauziran') statusClass = 'secondary';
+
+        const isPaused = r.status === 'Pauziran';
+        const isFinished = r.status === 'Završeno';
+
+        const safeId = r.id;
+        const safeTip = (r.tip || '').replace(/'/g, "\\'");
+        const safeWoNumber = (r.wo_number || '').replace(/'/g, "\\'");
+
+        let actions = '';
+        if (!isFinished && !planiranjeReadOnly) {
+          actions += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">`;
+          actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: #1976d2; padding: 2px 4px;">📊</button>`;
+          if (isPaused) {
+            actions += `<button class="action-btn" onclick="window.openResumeRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Nastavi" style="padding: 2px 4px;">▶️</button>`;
+          } else {
+            actions += `<button class="action-btn" onclick="window.openPauseRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Pauziraj" style="padding: 2px 4px;">⏸️</button>`;
+          }
+          actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: #2e7d32; padding: 2px 4px;">🏁</button>`;
+          actions += `<button class="action-btn delete" onclick="window.openDeleteRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Obriši" style="padding: 2px 4px;">🗑️</button>`;
+          actions += `</div>`;
+        }
+
+        const rowStyle = (isPaused ? 'opacity: 0.6; background: #f5f5f5;' : '');
+        const rnVisible = isTipExpanded && isSubExpanded;
+
+        html += `
+          <tr class="order-article-row rn-leaf-row ${rnVisible ? '' : 'hidden'}" data-rn-parent-tip="${g.tip}" data-rn-parent-sub="${subKey}" style="${rowStyle}">
+            <td style="padding-left:48px;"><strong>${r.wo_number || '-'}</strong></td>
+            <td><span class="badge ${g.tipClass}">${g.icon} ${r.tip || '-'}</span></td>
+            <td>${r.order_number || '-'}</td>
+            <td>${r.customer_name || '-'}</td>
+            <td>${r.article_name || '-'}</td>
+            <td><span class="badge badge-info">${r.article_code || '-'}</span></td>
+            <td style="text-align: right;">${formatBroj(r.quantity, 0)}</td>
+            <td><span class="badge badge-${r.production_line === 'NLI' ? 'primary' : r.production_line === 'WH' ? 'success' : 'secondary'}">${r.production_line || '-'}</span></td>
+            <td><span class="badge badge-${statusClass}">${r.status || '-'}</span></td>
+            <td style="padding: 4px;">${actions}</td>
+          </tr>
+        `;
+      });
     });
   });
 
@@ -3217,42 +3301,72 @@ function renderRNTable(rn) {
 }
 
 // ============================================
-// RN GROUP EXPAND / COLLAPSE
+// RN GROUP EXPAND / COLLAPSE (2 razine: Tip → Narudžba → RN)
 // ============================================
+function _isButtonish(event) {
+  if (!event || !event.target) return false;
+  const tag = (event.target.tagName || '').toLowerCase();
+  return tag === 'button' || tag === 'a' || tag === 'input' || !!event.target.closest('button, a, input');
+}
+
 function toggleRNGroup(tip, event) {
-  if (event && event.target) {
-    const tag = (event.target.tagName || '').toLowerCase();
-    if (tag === 'button' || tag === 'a' || tag === 'input' || event.target.closest('button, a, input')) return;
-  }
+  if (_isButtonish(event)) return;
   if (window.expandedRNGroups.has(tip)) window.expandedRNGroups.delete(tip);
   else window.expandedRNGroups.add(tip);
   applyRNGroupVisibility();
 }
 
+function toggleRNSubgroup(subKey, event) {
+  if (event) event.stopPropagation();
+  if (_isButtonish(event)) return;
+  if (window.expandedRNSubgroups.has(subKey)) window.expandedRNSubgroups.delete(subKey);
+  else window.expandedRNSubgroups.add(subKey);
+  applyRNGroupVisibility();
+}
+
 function applyRNGroupVisibility() {
+  // Razina 1: tip group rows — uvijek vidljivi
   document.querySelectorAll('.order-group-row[data-rngroup]').forEach(row => {
     const tip = row.getAttribute('data-rngroup');
-    const isOpen = window.expandedRNGroups.has(tip);
-    row.classList.toggle('expanded', isOpen);
+    row.classList.toggle('expanded', window.expandedRNGroups.has(tip));
   });
-  document.querySelectorAll('.order-article-row[data-rnparent]').forEach(row => {
-    const tip = row.getAttribute('data-rnparent');
-    const isOpen = window.expandedRNGroups.has(tip);
-    row.classList.toggle('hidden', !isOpen);
+  // Razina 2: narudžba sub-group rows — vidljivi kad je tip otvoren
+  document.querySelectorAll('.rn-subgroup-row').forEach(row => {
+    const tip = row.getAttribute('data-rn-parent-tip');
+    const subKey = row.getAttribute('data-rnsubgroup');
+    const tipOpen = window.expandedRNGroups.has(tip);
+    const subOpen = window.expandedRNSubgroups.has(subKey);
+    row.classList.toggle('hidden', !tipOpen);
+    row.classList.toggle('expanded', subOpen);
+  });
+  // Razina 3: RN leaf rows — vidljivi kad su i tip i narudžba otvoreni
+  document.querySelectorAll('.rn-leaf-row').forEach(row => {
+    const tip = row.getAttribute('data-rn-parent-tip');
+    const subKey = row.getAttribute('data-rn-parent-sub');
+    const visible = window.expandedRNGroups.has(tip) && window.expandedRNSubgroups.has(subKey);
+    row.classList.toggle('hidden', !visible);
   });
 }
 
 function expandAllRNGroups() {
+  // Otvori sve 3 tip grupe
   ['Glavni', 'Tisak', 'Rezanje'].forEach(t => window.expandedRNGroups.add(t));
+  // Otvori i sve narudžba sub-grupe
+  document.querySelectorAll('.rn-subgroup-row').forEach(row => {
+    const subKey = row.getAttribute('data-rnsubgroup');
+    if (subKey) window.expandedRNSubgroups.add(subKey);
+  });
   applyRNGroupVisibility();
 }
 
 function collapseAllRNGroups() {
   window.expandedRNGroups.clear();
+  window.expandedRNSubgroups.clear();
   applyRNGroupVisibility();
 }
 
 window.toggleRNGroup = toggleRNGroup;
+window.toggleRNSubgroup = toggleRNSubgroup;
 window.expandAllRNGroups = expandAllRNGroups;
 window.collapseAllRNGroups = collapseAllRNGroups;
 
@@ -3291,8 +3405,11 @@ function filterRN() {
   // Auto-expand grupe koje imaju match (kad je aktivan search ili tip/kupac/artikl filter)
   const hasActiveFilter = !!search || !!tipFilter || !!kupacFilter || !!artiklFilter;
   if (hasActiveFilter) {
-    const matchedTips = new Set(filtered.map(r => r.tip).filter(Boolean));
-    matchedTips.forEach(t => window.expandedRNGroups.add(t));
+    filtered.forEach(r => {
+      if (r.tip) window.expandedRNGroups.add(r.tip);
+      const ord = _primaryOrderNumber(r.order_number);
+      if (r.tip && ord) window.expandedRNSubgroups.add(`${r.tip}::${ord}`);
+    });
   }
 
   renderRNTable(filtered);
