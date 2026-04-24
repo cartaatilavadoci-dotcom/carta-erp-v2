@@ -1115,7 +1115,10 @@
 
 <!-- POP DETALJI -->
 <div class="card">
-  <div class="card-header">🧻 Proizvedeni POP (Tuljci) - Pojedinačni Zapisi</div>
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <span>🧻 Proizvedeni POP (Tuljci) - Pojedinačni Zapisi <span id="tuberPopDetailsInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    <button id="tuberPopDetailsToggleBtn" onclick="tuberTogglePOPDetailsLimit()" class="btn btn-sm btn-outline">Prikaži sve</button>
+  </div>
   <div class="table-container">
     <table>
       <thead><tr><th>Šifra POP</th><th>RN</th><th>Artikl</th><th>Količina</th><th>Linija</th><th>Datum</th><th>Status</th></tr></thead>
@@ -2577,19 +2580,31 @@ function tuberTogglePOPZbirLimit() {
 }
 window.tuberTogglePOPZbirLimit = tuberTogglePOPZbirLimit;
 
-function tuberLoadPOPFromData() {
+// Default: prikazuj samo zadnjih 10 POP-a (po created_at DESC)
+window.tuberPopDetailsShowAll = window.tuberPopDetailsShowAll || false;
+var TUBER_POP_DETAILS_LIMIT = 10;
+
+function _tuberRenderPOPDetails(popList, contextLabel) {
   const tbody = document.getElementById('tuberPopTableBody');
-  
-  // Filtriraj samo POP-ove na skladištu (sakrij utrošene)
-  const aktivniPOP = tuberSvePOPListe.filter(pop => pop.status === 'Na skladištu');
-  
-  if (!aktivniPOP.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nema aktivnih POP-a na skladištu</td></tr>';
+  const infoSpan = document.getElementById('tuberPopDetailsInfo');
+  const toggleBtn = document.getElementById('tuberPopDetailsToggleBtn');
+
+  if (!popList.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nema aktivnih POP-a' + (contextLabel ? ' ' + contextLabel : ' na skladištu') + '</td></tr>';
+    if (infoSpan) infoSpan.textContent = '';
+    if (toggleBtn) toggleBtn.style.display = 'none';
     return;
   }
-  
+
+  // Sortiraj po created_at DESC (najnoviji prvo)
+  popList = popList.slice().sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+  const showAll = !!window.tuberPopDetailsShowAll;
+  const totalCount = popList.length;
+  const visiblePOP = showAll ? popList : popList.slice(0, TUBER_POP_DETAILS_LIMIT);
+
   let html = '';
-  aktivniPOP.forEach(pop => {
+  visiblePOP.forEach(pop => {
     const datum = pop.created_at ? formatDatum(pop.created_at) : '-';
     html += `<tr>
       <td><strong>${pop.pop_code || '-'}</strong></td>
@@ -2602,31 +2617,38 @@ function tuberLoadPOPFromData() {
     </tr>`;
   });
   tbody.innerHTML = html;
+
+  // Info + toggle gumb
+  if (infoSpan) {
+    const ctx = contextLabel ? ' ' + contextLabel : '';
+    if (totalCount <= TUBER_POP_DETAILS_LIMIT) {
+      infoSpan.textContent = `(${totalCount}${ctx})`;
+    } else if (showAll) {
+      infoSpan.textContent = `(prikazano svih ${totalCount}${ctx})`;
+    } else {
+      infoSpan.textContent = `(prikazano ${TUBER_POP_DETAILS_LIMIT} od ${totalCount}${ctx} — najnoviji)`;
+    }
+  }
+  if (toggleBtn) {
+    if (totalCount <= TUBER_POP_DETAILS_LIMIT) {
+      toggleBtn.style.display = 'none';
+    } else {
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.textContent = showAll ? `Prikaži zadnjih ${TUBER_POP_DETAILS_LIMIT}` : `Prikaži sve (${totalCount})`;
+    }
+  }
+}
+
+function tuberLoadPOPFromData() {
+  // Filtriraj samo POP-ove na skladištu (sakrij utrošene)
+  const aktivniPOP = tuberSvePOPListe.filter(pop => pop.status === 'Na skladištu');
+  _tuberRenderPOPDetails(aktivniPOP, '');
 }
 
 function tuberFiltrirPOPZaRN(rn) {
-  const tbody = document.getElementById('tuberPopTableBody');
   // Filtriraj samo aktivne POP-ove za ovaj RN (sakrij utrošene)
   const filtrirani = tuberSvePOPListe.filter(p => p.work_order_number === rn && p.status === 'Na skladištu');
-  
-  if (!filtrirani.length) {
-    tbody.innerHTML = '<tr><td colspan="7">Nema aktivnih POP za RN ' + rn + '</td></tr>';
-  } else {
-    let html = '';
-    filtrirani.forEach(pop => {
-      const datum = pop.created_at ? formatDatum(pop.created_at) : '-';
-      html += `<tr>
-        <td><strong>${pop.pop_code}</strong></td>
-        <td>${pop.work_order_number}</td>
-        <td>${pop.article_name || '-'}</td>
-        <td>${pop.quantity} kom</td>
-        <td>${pop.production_line}</td>
-        <td>${datum}</td>
-        <td><span class="badge badge-success">${pop.status}</span></td>
-      </tr>`;
-    });
-    tbody.innerHTML = html;
-  }
+  _tuberRenderPOPDetails(filtrirani, `za RN ${rn}`);
   document.getElementById('tuberResetPOPFilterBtn').style.display = 'inline-block';
 }
 
@@ -2634,6 +2656,23 @@ function tuberResetPOPFilter() {
   tuberLoadPOPFromData();
   document.getElementById('tuberResetPOPFilterBtn').style.display = 'none';
 }
+
+function tuberTogglePOPDetailsLimit() {
+  window.tuberPopDetailsShowAll = !window.tuberPopDetailsShowAll;
+  // Detektiraj jesmo li u filter modu — ako je reset gumb vidljiv, znači filtriramo RN
+  const resetBtn = document.getElementById('tuberResetPOPFilterBtn');
+  if (resetBtn && resetBtn.style.display === 'inline-block') {
+    // U filter modu — potreban nam je trenutni RN iz prvog vidljivog reda
+    const firstRow = document.querySelector('#tuberPopTableBody tr td:nth-child(2)');
+    const rn = firstRow ? firstRow.textContent.trim() : '';
+    if (rn && rn !== '-') {
+      tuberFiltrirPOPZaRN(rn);
+      return;
+    }
+  }
+  tuberLoadPOPFromData();
+}
+window.tuberTogglePOPDetailsLimit = tuberTogglePOPDetailsLimit;
 
 // ============================================
 // AKCIJE NA RN
