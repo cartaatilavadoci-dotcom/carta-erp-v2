@@ -1098,9 +1098,12 @@
 
 <!-- POP ZBIRNI -->
 <div class="card">
-  <div class="card-header">
-    📊 Proizveden POP - Zbirni Pregled po RN
-    <button id="tuberResetPOPFilterBtn" onclick="tuberResetPOPFilter()" style="float: right; display: none;" class="btn btn-sm btn-outline">↺ Prikaži sve</button>
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <span>📊 Proizveden POP - Zbirni Pregled po RN <span id="tuberPopZbirInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    <span style="display:flex; gap:6px;">
+      <button id="tuberPopZbirToggleBtn" onclick="tuberTogglePOPZbirLimit()" class="btn btn-sm btn-outline">Prikaži sve</button>
+      <button id="tuberResetPOPFilterBtn" onclick="tuberResetPOPFilter()" style="display: none;" class="btn btn-sm btn-outline">↺ Poništi filter</button>
+    </span>
   </div>
   <div class="table-container">
     <table>
@@ -2502,34 +2505,77 @@ async function tuberReaktivirajNalog(id) {
 // ============================================
 // POP TABLICE
 // ============================================
+// Default: prikazuj samo zadnjih 10 RN-ova (po najnovijem POP-u)
+window.tuberPopZbirShowAll = window.tuberPopZbirShowAll || false;
+var TUBER_POP_ZBIR_LIMIT = 10;
+
 function tuberLoadPOPZbirPoRN() {
   const tbody = document.getElementById('tuberPopZbirTableBody');
+  const infoSpan = document.getElementById('tuberPopZbirInfo');
+  const toggleBtn = document.getElementById('tuberPopZbirToggleBtn');
   const zbirPoRN = {};
-  
+
   // Filtriraj samo aktivne POP-ove (sakrij utrošene)
   const aktivniPOP = tuberSvePOPListe.filter(pop => pop.status === 'Na skladištu');
-  
+
   aktivniPOP.forEach(pop => {
     const rn = pop.work_order_number || '';
-    if (!zbirPoRN[rn]) zbirPoRN[rn] = { rn, artikl: pop.article_name, linija: pop.production_line, brojPOP: 0, ukupno: 0 };
+    if (!zbirPoRN[rn]) zbirPoRN[rn] = { rn, artikl: pop.article_name, linija: pop.production_line, brojPOP: 0, ukupno: 0, lastDate: '' };
     zbirPoRN[rn].brojPOP++;
     zbirPoRN[rn].ukupno += parseInt(pop.quantity || 0);
+    if (pop.created_at && pop.created_at > zbirPoRN[rn].lastDate) {
+      zbirPoRN[rn].lastDate = pop.created_at;
+    }
   });
-  
+
   const zbir = Object.values(zbirPoRN);
   if (zbir.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nema aktivnih POP-a na skladištu</td></tr>';
+    if (infoSpan) infoSpan.textContent = '';
+    if (toggleBtn) toggleBtn.style.display = 'none';
     return;
   }
-  
+
+  // Sortiraj po najnovijem POP-u (DESC) pa prikaži zadnjih 10 osim ako je "Prikaži sve" aktivno
+  zbir.sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
+
+  const showAll = !!window.tuberPopZbirShowAll;
+  const totalCount = zbir.length;
+  const visibleZbir = showAll ? zbir : zbir.slice(0, TUBER_POP_ZBIR_LIMIT);
+
   let html = '';
-  zbir.forEach(z => {
+  visibleZbir.forEach(z => {
     html += `<tr onclick="tuberFiltrirPOPZaRN('${z.rn}')" style="cursor:pointer;">
       <td><strong>${z.rn}</strong></td><td>${z.artikl || '-'}</td><td>${z.brojPOP}</td><td>${z.ukupno} kom</td><td>${z.linija || '-'}</td>
     </tr>`;
   });
   tbody.innerHTML = html;
+
+  // Info tekst + toggle gumb
+  if (infoSpan) {
+    if (totalCount <= TUBER_POP_ZBIR_LIMIT) {
+      infoSpan.textContent = `(${totalCount})`;
+    } else if (showAll) {
+      infoSpan.textContent = `(prikazano svih ${totalCount})`;
+    } else {
+      infoSpan.textContent = `(prikazano ${TUBER_POP_ZBIR_LIMIT} od ${totalCount} — najnoviji po POP-u)`;
+    }
+  }
+  if (toggleBtn) {
+    if (totalCount <= TUBER_POP_ZBIR_LIMIT) {
+      toggleBtn.style.display = 'none';
+    } else {
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.textContent = showAll ? `Prikaži zadnjih ${TUBER_POP_ZBIR_LIMIT}` : `Prikaži sve (${totalCount})`;
+    }
+  }
 }
+
+function tuberTogglePOPZbirLimit() {
+  window.tuberPopZbirShowAll = !window.tuberPopZbirShowAll;
+  tuberLoadPOPZbirPoRN();
+}
+window.tuberTogglePOPZbirLimit = tuberTogglePOPZbirLimit;
 
 function tuberLoadPOPFromData() {
   const tbody = document.getElementById('tuberPopTableBody');
