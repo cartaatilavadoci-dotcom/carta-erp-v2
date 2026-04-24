@@ -155,6 +155,110 @@
   font-size: 1.2em;
   margin-right: 3px;
 }
+
+/* ========================================== */
+/* ORDER GROUPING — Narudžba → Artikli        */
+/* ========================================== */
+.order-group-row {
+  background: linear-gradient(90deg, #eef4fa 0%, #e3ecf6 100%);
+  border-top: 2px solid #b6c7da;
+  border-bottom: 1px solid #b6c7da;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.order-group-row:hover { background: linear-gradient(90deg, #e2ecf7 0%, #d5e2f1 100%); }
+.order-group-row td { padding: 10px 8px !important; vertical-align: middle; }
+.order-group-row .group-chevron {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+  color: #2c3e50;
+  font-weight: bold;
+  user-select: none;
+}
+.order-group-row.expanded .group-chevron { transform: rotate(90deg); }
+
+.order-group-row .group-order-number { font-size: 1.05em; color: #1565c0; }
+.order-group-row .group-customer { color: #2c3e50; }
+.order-group-row .group-article-count {
+  display: inline-block;
+  background: #d5e2f1;
+  color: #1565c0;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+/* Progress bars u grupnom redu */
+.group-progress {
+  display: inline-block;
+  width: 72px;
+  height: 10px;
+  background: #d5dde6;
+  border-radius: 5px;
+  overflow: hidden;
+  vertical-align: middle;
+  margin-right: 6px;
+  position: relative;
+}
+.group-progress-fill {
+  display: block;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.group-progress-rn .group-progress-fill { background: linear-gradient(90deg, #ffd54f 0%, #ffb300 100%); }
+.group-progress-prod .group-progress-fill { background: linear-gradient(90deg, #66bb6a 0%, #2e7d32 100%); }
+.group-progress-label {
+  font-size: 0.75em;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+.group-progress-cell { white-space: nowrap; }
+
+/* Privici gumb badge */
+.attach-btn-wrap { position: relative; display: inline-block; }
+.attach-badge {
+  position: absolute;
+  top: -4px; right: -6px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 14px;
+  text-align: center;
+}
+.attach-badge.zero { background: #9e9e9e; }
+
+/* Artikl redovi (skriveni dok se narudžba ne otvori) */
+.order-article-row {
+  background: #fafbfc;
+}
+.order-article-row.hidden { display: none; }
+.order-article-row td:first-child { padding-left: 24px !important; }
+.order-article-row td { border-bottom: 1px dashed #e4e8ed; }
+
+/* Toolbar expand/collapse gumbi */
+.group-toolbar-btn {
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #334155;
+  transition: all 0.15s ease;
+  margin-right: 4px;
+}
+.group-toolbar-btn:hover { background: #eef2f7; border-color: #94a3b8; }
+.group-toolbar-btn:active { background: #dde5ed; }
 </style>
 
 <!-- ========================================== -->
@@ -221,6 +325,10 @@
     <div class="form-group" style="min-width: 180px; flex: 2;">
       <label style="font-size: 0.8em;">Pretraži</label>
       <input type="text" class="form-control form-control-sm" id="searchOrders" placeholder="Broj, artikl, šifra..." oninput="filterOrdersLocal()">
+    </div>
+    <div class="form-group" style="flex: 0 0 auto;">
+      <button class="group-toolbar-btn" type="button" onclick="expandAllOrderGroups()" title="Proširi sve narudžbe">Proširi sve</button>
+      <button class="group-toolbar-btn" type="button" onclick="collapseAllOrderGroups()" title="Skupi sve narudžbe">Skupi sve</button>
     </div>
     <div class="form-group" style="flex: 0 0 auto;">
       <button class="btn btn-sm btn-success" onclick="openNewOrderModal()">+ Nova</button>
@@ -2429,13 +2537,24 @@ function filterOrdersLocal() {
     return true;
   });
 
+  // Auto-expand narudžbe koje sadrže match — samo ako pretraga traži artikl/šifru
+  // (kada je search prazan i nema filtera, vrati default collapsed stanje)
+  const hasActiveSearchOrFilter = !!search || !!customerFilter || !!articleFilter;
+  if (hasActiveSearchOrFilter) {
+    const matchedOrderNumbers = new Set(filtered.map(o => o.order_number).filter(Boolean));
+    matchedOrderNumbers.forEach(n => window.expandedOrderGroups.add(n));
+  }
+
   renderOrdersTable(filtered);
 }
+
+// State: otvorene narudžbe (po order_number)
+window.expandedOrderGroups = window.expandedOrderGroups || new Set();
 
 function renderOrdersTable(orders) {
   const tbody = document.getElementById('ordersTableBody');
   document.getElementById('ordersCount').textContent = `(${orders.length})`;
-  
+
   if (!orders || orders.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -2449,139 +2568,415 @@ function renderOrdersTable(orders) {
     updateWeightSummary({ s1White: 0, s1Brown: 0, s2: 0, s3: 0, s4: 0, foil: 0 });
     return;
   }
-  
+
   // Sortiraj: linija → sort_order → broj narudžbe → stavka
   const lineOrder = { 'WH': 1, 'NLI': 2, '': 3, null: 3, undefined: 3 };
   orders.sort((a, b) => {
-    // Prvo sortiraj po liniji
     const lineA = lineOrder[a.production_line] || 3;
     const lineB = lineOrder[b.production_line] || 3;
     if (lineA !== lineB) return lineA - lineB;
 
-    // Zatim po sort_order (manji = viši prioritet, 0 = default ide na kraj)
     const sortA = a.sort_order || 99999;
     const sortB = b.sort_order || 99999;
     if (sortA !== sortB) return sortA - sortB;
 
-    // Zatim po broju narudžbe (novije prvo)
     if (a.order_number !== b.order_number) {
       return (b.order_number || '').localeCompare(a.order_number || '');
     }
 
-    // Na kraju po rednom broju stavke
     return (a.item_number || 1) - (b.item_number || 1);
   });
-  
-  // Agregati za sumu
+
+  // Grupiraj po order_number, održavajući redoslijed sortiranja
+  const groups = [];
+  const groupIndex = new Map();
+  orders.forEach(order => {
+    const key = order.order_number || '_ungrouped_' + order.id;
+    if (!groupIndex.has(key)) {
+      groupIndex.set(key, groups.length);
+      groups.push({
+        order_number: order.order_number || '',
+        customer_name: order.customer_name,
+        production_line: order.production_line,
+        articles: []
+      });
+    }
+    groups[groupIndex.get(key)].articles.push(order);
+  });
+
+  // Agregat težina (samo aktivnih, remaining>0 — ista pravila)
   let sums = { s1White: 0, s1Brown: 0, s2: 0, s3: 0, s4: 0, foil: 0 };
-  
-  let lastOrderNumber = '';
-  
-  tbody.innerHTML = orders.map((order, index) => {
-    const produced = order.quantity_produced || 0;
-    const ordered = order.quantity_ordered || 0;
-    // Koristi quantity_remaining iz baze, s fallbackom na izračun ako nije popunjeno
-    const remaining = order.quantity_remaining != null ? order.quantity_remaining : (ordered - produced);
-    
-    let statusClass = 'warning';
-    if (order.status === 'Završeno') statusClass = 'success';
-    else if (order.status === 'Otkazano') statusClass = 'secondary';
-    
-    const isChecked = selectedOrders.includes(order.id) ? 'checked' : '';
-    const isNewOrder = order.order_number !== lastOrderNumber;
-    lastOrderNumber = order.order_number;
-    
-    // RN Status
-    const hasGlavni = order.existing_glavni && order.existing_glavni.length > 0;
-    const hasTisak = order.existing_tisak && order.existing_tisak.length > 0;
-    const hasRezanje = order.existing_rezanje && order.existing_rezanje.length > 0;
-    const hasOnlyPrep = !hasGlavni && (hasTisak || hasRezanje);
-    
-    // Row coloring based on RN
-    let rowClass = '';
-    let rowBg = '';
-    if (hasGlavni) {
-      rowBg = 'background: linear-gradient(90deg, #fff9c4 0%, #fff59d 100%);'; // Žuta za glavni RN
-    } else if (hasOnlyPrep) {
-      rowBg = 'background: linear-gradient(90deg, #e8f4fc 0%, #d6ebf9 100%);'; // Svijetlo plava za samo prep (Tisak/Rezanje)
-    }
-    
-    // Vizualno grupiraj narudžbe
-    const rowStyle = (isNewOrder && index > 0 ? 'border-top: 3px solid var(--primary);' : '') + rowBg;
-    
-    // RN Indikatori
-    let rnIndicators = '';
-    if (hasGlavni) {
-      const glavniRNs = order.existing_glavni.map(g => g.wo_number).join(', ');
-      rnIndicators += `<span title="Glavni RN: ${glavniRNs}" style="background: #fff9c4; color: #f57f17; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">📦 ${order.existing_glavni.length}</span>`;
-    }
-    if (hasTisak) {
-      const tisakRNs = order.existing_tisak.map(t => t.wo_number).join(', ');
-      rnIndicators += `<span title="Tisak RN: ${tisakRNs}" style="background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">🖨️ ${order.existing_tisak.length}</span>`;
-    }
-    if (hasRezanje) {
-      const rezanjeRNs = order.existing_rezanje.map(r => r.wo_number).join(', ');
-      rnIndicators += `<span title="Rezanje RN: ${rezanjeRNs}" style="background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; cursor: help;">✂️ ${order.existing_rezanje.length}</span>`;
-    }
-    
-    // Izračunaj težine papira
-    const weights = calculatePaperWeights(order, remaining > 0 ? remaining : ordered);
-    
-    // Dodaj u sume (samo za aktivne narudžbe)
-    if (order.status === 'Aktivno' && remaining > 0) {
-      sums.s1White += weights.s1White || 0;
-      sums.s1Brown += weights.s1Brown || 0;
-      sums.s2 += weights.s2 || 0;
-      sums.s3 += weights.s3 || 0;
-      sums.s4 += weights.s4 || 0;
-      sums.foil += weights.foil || 0;
-    }
-    
-    return `
-      <tr style="${rowStyle}">
-        <td>${planiranjeReadOnly ? '' : `<input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked} onchange="updateSelectedOrders()">`}</td>
-        <td>
-          <strong>${isNewOrder ? order.order_number : ''}</strong>
+  let html = '';
+
+  groups.forEach(group => {
+    const orderNumber = group.order_number;
+    const orderNumEsc = orderNumber.replace(/'/g, "\\'");
+    const articleCount = group.articles.length;
+    const totalOrdered = group.articles.reduce((s, a) => s + Number(a.quantity_ordered || 0), 0);
+    const totalProduced = group.articles.reduce((s, a) => s + Number(a.quantity_produced || 0), 0);
+    const totalRemaining = group.articles.reduce((s, a) => {
+      const ord = Number(a.quantity_ordered || 0);
+      const prod = Number(a.quantity_produced || 0);
+      const rem = a.quantity_remaining != null ? Number(a.quantity_remaining) : (ord - prod);
+      return s + Math.max(0, rem);
+    }, 0);
+
+    // Koliko artikala ima BILO KAKAV RN (glavni ili prep)
+    const rnGenCount = group.articles.filter(a =>
+      (a.existing_glavni && a.existing_glavni.length > 0) ||
+      (a.existing_tisak && a.existing_tisak.length > 0) ||
+      (a.existing_rezanje && a.existing_rezanje.length > 0)
+    ).length;
+    const rnPct = articleCount > 0 ? Math.round(rnGenCount / articleCount * 100) : 0;
+    const prodPct = totalOrdered > 0 ? Math.round(totalProduced / totalOrdered * 100) : 0;
+
+    // Najraniji rok
+    const deadlines = group.articles.map(a => a.delivery_deadline).filter(Boolean).sort();
+    const earliestDeadline = deadlines[0] || null;
+
+    // Aggregate status: Završeno samo ako su SVI završeni; Otkazano ako su svi otkazani; inače Aktivno
+    const statuses = group.articles.map(a => a.status);
+    let groupStatus = 'Aktivno';
+    if (statuses.every(s => s === 'Završeno')) groupStatus = 'Završeno';
+    else if (statuses.every(s => s === 'Otkazano')) groupStatus = 'Otkazano';
+    const groupStatusClass = groupStatus === 'Završeno' ? 'success' : groupStatus === 'Otkazano' ? 'secondary' : 'warning';
+
+    // Zbroji privitke preko svih artikala narudžbe (counts su per item_id)
+    let attachCount = 0;
+    group.articles.forEach(a => {
+      if (window.orderAttachmentCounts && window.orderAttachmentCounts[a.id]) {
+        attachCount += Number(window.orderAttachmentCounts[a.id]) || 0;
+      }
+    });
+
+    const firstItem = group.articles[0];
+    const isExpanded = window.expandedOrderGroups.has(orderNumber);
+    const articleWord = articleCount === 1 ? 'artikl' : (articleCount >= 2 && articleCount <= 4 ? 'artikla' : 'artikala');
+
+    // Grupni red (uvijek vidljiv)
+    html += `
+      <tr class="order-group-row ${isExpanded ? 'expanded' : ''}" data-group="${orderNumber}" onclick="toggleOrderGroup('${orderNumEsc}', event)">
+        <td onclick="event.stopPropagation();">
+          ${planiranjeReadOnly ? '' : `<input type="checkbox" class="group-checkbox" data-group="${orderNumber}" onchange="toggleGroupSelection('${orderNumEsc}', this.checked)">`}
         </td>
-        <td>${isNewOrder ? order.customer_name : ''}</td>
-        <td>
-          ${order.article_name || '-'}
-          ${rnIndicators ? '<br>' + rnIndicators : ''}
+        <td><span class="group-chevron">▶</span><strong class="group-order-number">${orderNumber || '-'}</strong></td>
+        <td><span class="group-customer">${group.customer_name || '-'}</span></td>
+        <td><span class="group-article-count" title="Broj artikala u narudžbi">${articleCount} ${articleWord}</span></td>
+        <td colspan="4" style="color:#94a3b8; font-size:0.85em;">— cjelina narudžbe —</td>
+        <td colspan="6" class="group-progress-cell">
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:nowrap;">
+            <div title="Generirani RN: ${rnGenCount}/${articleCount} artikala" style="display:inline-flex;align-items:center;gap:4px;">
+              <span class="group-progress group-progress-rn"><span class="group-progress-fill" style="width:${rnPct}%"></span></span>
+              <span class="group-progress-label">RN ${rnPct}%</span>
+            </div>
+            <div title="Proizvedeno: ${formatBroj(totalProduced, 0)} / ${formatBroj(totalOrdered, 0)}" style="display:inline-flex;align-items:center;gap:4px;">
+              <span class="group-progress group-progress-prod"><span class="group-progress-fill" style="width:${prodPct}%"></span></span>
+              <span class="group-progress-label">Proiz. ${prodPct}%</span>
+            </div>
+          </div>
         </td>
-        <td><span class="badge badge-info">${order.article_code || '-'}</span></td>
-        <td>${order.article_id ? `<a href="#" onclick="openArticleModal('${order.article_id}'); return false;" style="color: #1976d2; text-decoration: underline; cursor: pointer;" title="Klikni za pregled artikla">${order.prod_articles?.article_id || order.article_id.substring(0,8)}</a>` : '-'}</td>
-        <td>${order.prod_articles?.valve_type || order.valve_type || '-'}</td>
-        <td>${order.prod_articles?.valve_position || '-'}</td>
-        ${renderWeightCell(weights.s1White, weights.s1Grammage, 'white', weights.isS1White, weights.s1Width)}
-        ${renderWeightCell(weights.s1Brown, weights.s1Grammage, 'brown', !weights.isS1White, weights.s1Width)}
-        ${renderWeightCell(weights.s2, weights.s2Grammage, 'brown', true, weights.s2Width)}
-        ${renderWeightCell(weights.s3, weights.s3Grammage, 'brown', true, weights.s3Width)}
-        ${renderWeightCell(weights.s4, weights.s4Grammage, 'brown', true, weights.s4Width)}
-        ${renderWeightCell(weights.foil, weights.foilMicrons, 'foil', true, weights.foilWidth)}
-        <td style="text-align: right;">${formatBroj(ordered, 0)}</td>
-        <td style="text-align: right;">${formatBroj(produced, 0)}</td>
-        <td style="text-align: right; font-weight: 600;">${formatBroj(remaining > 0 ? remaining : 0, 0)}</td>
-        <td><span class="badge badge-${order.production_line === 'NLI' ? 'primary' : order.production_line === 'WH' ? 'success' : 'secondary'}">${order.production_line || '-'}</span></td>
-        <td>${isNewOrder ? formatDatum(order.delivery_deadline) : ''}</td>
-        <td><span class="badge badge-${statusClass}">${order.status || '-'}</span></td>
-        <td style="white-space: nowrap;">
-          <button class="action-btn" onclick="window.openOrderAttachmentsModal('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}')" title="Privici (narudžbenica, test punjenja)" style="position:relative;">
-            📎${(window.orderAttachmentCounts && window.orderAttachmentCounts[order.id]) ? '<span style="position:absolute;top:-4px;right:-6px;background:#1976d2;color:white;border-radius:8px;min-width:14px;height:14px;padding:0 3px;font-size:9px;font-weight:bold;line-height:14px;">' + window.orderAttachmentCounts[order.id] + '</span>' : ''}
-          </button>
+        <td style="text-align:right;"><strong>${formatBroj(totalOrdered, 0)}</strong></td>
+        <td style="text-align:right;"><strong>${formatBroj(totalProduced, 0)}</strong></td>
+        <td style="text-align:right; font-weight:600;">${formatBroj(totalRemaining, 0)}</td>
+        <td><span class="badge badge-${group.production_line === 'NLI' ? 'primary' : group.production_line === 'WH' ? 'success' : 'secondary'}">${group.production_line || '-'}</span></td>
+        <td>${earliestDeadline ? formatDatum(earliestDeadline) : '-'}</td>
+        <td><span class="badge badge-${groupStatusClass}">${groupStatus}</span></td>
+        <td style="white-space:nowrap;" onclick="event.stopPropagation();">
+          <span class="attach-btn-wrap">
+            <button class="action-btn" onclick="window.openOrderAttachmentsModal('${firstItem.id}', '${orderNumEsc}')" title="Privici narudžbe (narudžbenica, test punjenja, ostalo)">📎</button>
+            <span class="attach-badge ${attachCount === 0 ? 'zero' : ''}">${attachCount}</span>
+          </span>
           ${planiranjeReadOnly ? '' : `
-          <button class="action-btn" onclick="window.moveOrder('${order.id}', -1)" title="Pomakni gore" style="padding:2px 4px;">↑</button>
-          <button class="action-btn" onclick="window.moveOrder('${order.id}', 1)" title="Pomakni dolje" style="padding:2px 4px;">↓</button>
-          <button class="action-btn edit" onclick="editOrder('${order.order_number}')" title="Uredi">✏️</button>
-          ${order.status === 'Aktivno' ? `<button class="action-btn" onclick="window.finishOrder('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}', '${(order.article_name || '').replace(/'/g, "\\'")}')" title="Zavrsi narudzbu" style="color: #2e7d32;">🏁</button>` : ''}
+            <button class="action-btn" onclick="moveOrderGroup('${orderNumEsc}', -1)" title="Pomakni narudžbu gore" style="padding:2px 4px;">↑</button>
+            <button class="action-btn" onclick="moveOrderGroup('${orderNumEsc}', 1)" title="Pomakni narudžbu dolje" style="padding:2px 4px;">↓</button>
+            <button class="action-btn edit" onclick="editOrder('${orderNumEsc}')" title="Uredi narudžbu">✏️</button>
           `}
         </td>
       </tr>
     `;
-  }).join('');
-  
-  // Ažuriraj agregat
+
+    // Artikl redovi (skriveni kad narudžba nije proširena)
+    group.articles.forEach((order, itemIdx) => {
+      const produced = order.quantity_produced || 0;
+      const ordered = order.quantity_ordered || 0;
+      const remaining = order.quantity_remaining != null ? order.quantity_remaining : (ordered - produced);
+
+      let itemStatusClass = 'warning';
+      if (order.status === 'Završeno') itemStatusClass = 'success';
+      else if (order.status === 'Otkazano') itemStatusClass = 'secondary';
+
+      const isChecked = selectedOrders.includes(order.id) ? 'checked' : '';
+
+      const hasGlavni = order.existing_glavni && order.existing_glavni.length > 0;
+      const hasTisak = order.existing_tisak && order.existing_tisak.length > 0;
+      const hasRezanje = order.existing_rezanje && order.existing_rezanje.length > 0;
+      const hasOnlyPrep = !hasGlavni && (hasTisak || hasRezanje);
+
+      let rowBg = '';
+      if (hasGlavni) rowBg = 'background: linear-gradient(90deg, #fff9c4 0%, #fff59d 100%);';
+      else if (hasOnlyPrep) rowBg = 'background: linear-gradient(90deg, #e8f4fc 0%, #d6ebf9 100%);';
+
+      let rnIndicators = '';
+      if (hasGlavni) {
+        const glavniRNs = order.existing_glavni.map(g => g.wo_number).join(', ');
+        rnIndicators += `<span title="Glavni RN: ${glavniRNs}" style="background: #fff9c4; color: #f57f17; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">📦 ${order.existing_glavni.length}</span>`;
+      }
+      if (hasTisak) {
+        const tisakRNs = order.existing_tisak.map(t => t.wo_number).join(', ');
+        rnIndicators += `<span title="Tisak RN: ${tisakRNs}" style="background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">🖨️ ${order.existing_tisak.length}</span>`;
+      }
+      if (hasRezanje) {
+        const rezanjeRNs = order.existing_rezanje.map(r => r.wo_number).join(', ');
+        rnIndicators += `<span title="Rezanje RN: ${rezanjeRNs}" style="background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; cursor: help;">✂️ ${order.existing_rezanje.length}</span>`;
+      }
+
+      const weights = calculatePaperWeights(order, remaining > 0 ? remaining : ordered);
+
+      if (order.status === 'Aktivno' && remaining > 0) {
+        sums.s1White += weights.s1White || 0;
+        sums.s1Brown += weights.s1Brown || 0;
+        sums.s2 += weights.s2 || 0;
+        sums.s3 += weights.s3 || 0;
+        sums.s4 += weights.s4 || 0;
+        sums.foil += weights.foil || 0;
+      }
+
+      const isFirstInGroup = itemIdx === 0;
+      const isLastInGroup = itemIdx === group.articles.length - 1;
+      const canMoveUp = !planiranjeReadOnly && !isFirstInGroup;
+      const canMoveDown = !planiranjeReadOnly && !isLastInGroup;
+
+      html += `
+        <tr class="order-article-row ${isExpanded ? '' : 'hidden'}" data-parent="${orderNumber}" data-article-id="${order.id}" style="${rowBg}">
+          <td>${planiranjeReadOnly ? '' : `<input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked} onchange="updateSelectedOrders()">`}</td>
+          <td style="color:#94a3b8; font-size:0.85em;">↳ ${order.item_number || ''}</td>
+          <td style="color:#94a3b8; font-size:0.85em;"></td>
+          <td>
+            ${order.article_name || '-'}
+            ${rnIndicators ? '<br>' + rnIndicators : ''}
+          </td>
+          <td><span class="badge badge-info">${order.article_code || '-'}</span></td>
+          <td>${order.article_id ? `<a href="#" onclick="openArticleModal('${order.article_id}'); return false;" style="color: #1976d2; text-decoration: underline; cursor: pointer;" title="Klikni za pregled artikla">${order.prod_articles?.article_id || order.article_id.substring(0,8)}</a>` : '-'}</td>
+          <td>${order.prod_articles?.valve_type || order.valve_type || '-'}</td>
+          <td>${order.prod_articles?.valve_position || '-'}</td>
+          ${renderWeightCell(weights.s1White, weights.s1Grammage, 'white', weights.isS1White, weights.s1Width)}
+          ${renderWeightCell(weights.s1Brown, weights.s1Grammage, 'brown', !weights.isS1White, weights.s1Width)}
+          ${renderWeightCell(weights.s2, weights.s2Grammage, 'brown', true, weights.s2Width)}
+          ${renderWeightCell(weights.s3, weights.s3Grammage, 'brown', true, weights.s3Width)}
+          ${renderWeightCell(weights.s4, weights.s4Grammage, 'brown', true, weights.s4Width)}
+          ${renderWeightCell(weights.foil, weights.foilMicrons, 'foil', true, weights.foilWidth)}
+          <td style="text-align: right;">${formatBroj(ordered, 0)}</td>
+          <td style="text-align: right;">${formatBroj(produced, 0)}</td>
+          <td style="text-align: right; font-weight: 600;">${formatBroj(remaining > 0 ? remaining : 0, 0)}</td>
+          <td><span class="badge badge-${order.production_line === 'NLI' ? 'primary' : order.production_line === 'WH' ? 'success' : 'secondary'}">${order.production_line || '-'}</span></td>
+          <td>${formatDatum(order.delivery_deadline)}</td>
+          <td><span class="badge badge-${itemStatusClass}">${order.status || '-'}</span></td>
+          <td style="white-space: nowrap;">
+            ${planiranjeReadOnly ? '' : `
+              ${canMoveUp ? `<button class="action-btn" onclick="moveOrderWithinGroup('${order.id}', -1)" title="Pomakni artikl gore (unutar narudžbe)" style="padding:2px 4px;">↑</button>` : ''}
+              ${canMoveDown ? `<button class="action-btn" onclick="moveOrderWithinGroup('${order.id}', 1)" title="Pomakni artikl dolje (unutar narudžbe)" style="padding:2px 4px;">↓</button>` : ''}
+              ${order.status === 'Aktivno' ? `<button class="action-btn" onclick="window.finishOrder('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}', '${(order.article_name || '').replace(/'/g, "\\'")}')" title="Završi artikl" style="color: #2e7d32;">🏁</button>` : ''}
+            `}
+          </td>
+        </tr>
+      `;
+    });
+  });
+
+  tbody.innerHTML = html;
   updateWeightSummary(sums);
 }
+
+// ============================================
+// GROUP EXPAND / COLLAPSE + GROUP ACTIONS
+// ============================================
+function toggleOrderGroup(orderNumber, event) {
+  // Ignoriraj klik ako je korisnik kliknuo na gumb ili link unutar reda
+  if (event && event.target) {
+    const tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'button' || tag === 'a' || tag === 'input' || event.target.closest('button, a, input')) return;
+  }
+  if (window.expandedOrderGroups.has(orderNumber)) {
+    window.expandedOrderGroups.delete(orderNumber);
+  } else {
+    window.expandedOrderGroups.add(orderNumber);
+  }
+  applyGroupVisibility();
+}
+
+function applyGroupVisibility() {
+  document.querySelectorAll('.order-group-row').forEach(row => {
+    const key = row.getAttribute('data-group');
+    const isOpen = window.expandedOrderGroups.has(key);
+    row.classList.toggle('expanded', isOpen);
+  });
+  document.querySelectorAll('.order-article-row').forEach(row => {
+    const key = row.getAttribute('data-parent');
+    const isOpen = window.expandedOrderGroups.has(key);
+    row.classList.toggle('hidden', !isOpen);
+  });
+}
+
+function expandAllOrderGroups() {
+  document.querySelectorAll('.order-group-row').forEach(row => {
+    const key = row.getAttribute('data-group');
+    if (key) window.expandedOrderGroups.add(key);
+  });
+  applyGroupVisibility();
+}
+
+function collapseAllOrderGroups() {
+  window.expandedOrderGroups.clear();
+  applyGroupVisibility();
+}
+
+function toggleGroupSelection(orderNumber, checked) {
+  // Kada korisnik klikne checkbox u grupnom redu, označi/odznači sve artikle unutar narudžbe
+  const articleRows = document.querySelectorAll(`.order-article-row[data-parent="${orderNumber}"]`);
+  articleRows.forEach(row => {
+    const cb = row.querySelector('.order-checkbox');
+    if (!cb) return;
+    if (cb.checked !== checked) {
+      cb.checked = checked;
+      cb.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+}
+
+// Pomakni cijelu narudžbu (sve artikle s istim order_number) gore/dolje
+async function moveOrderGroup(orderNumber, direction) {
+  if (!orderNumber) return;
+  // Skupi sve artikle s istim order_number
+  const groupArticles = allOrders.filter(o => o.order_number === orderNumber);
+  if (groupArticles.length === 0) return;
+
+  // Odredi susjednu narudžbu u istoj liniji
+  const refLine = groupArticles[0].production_line || '';
+  const lineOrder = { 'WH': 1, 'NLI': 2, '': 3, null: 3, undefined: 3 };
+
+  // Sve narudžbe u istoj liniji (po order_number grupirane, prikaže redoslijed)
+  const sameLine = allOrders
+    .filter(o => (o.production_line || '') === refLine)
+    .sort((a, b) => {
+      const sortA = a.sort_order || 99999;
+      const sortB = b.sort_order || 99999;
+      if (sortA !== sortB) return sortA - sortB;
+      if (a.order_number !== b.order_number) return (b.order_number || '').localeCompare(a.order_number || '');
+      return (a.item_number || 1) - (b.item_number || 1);
+    });
+
+  // Napravi listu distinct order_numbers u redoslijedu pojavljivanja
+  const seen = new Set();
+  const orderNumbersInOrder = [];
+  sameLine.forEach(o => {
+    if (!seen.has(o.order_number)) { seen.add(o.order_number); orderNumbersInOrder.push(o.order_number); }
+  });
+
+  const currentIdx = orderNumbersInOrder.indexOf(orderNumber);
+  const targetIdx = currentIdx + direction;
+  if (currentIdx < 0 || targetIdx < 0 || targetIdx >= orderNumbersInOrder.length) return;
+
+  // Alociraj sort_order blokove po narudžbi: 100, 200, 300... (10 po artiklu pa 100 margin između narudžbi)
+  // Swap-aj blokove current i target narudžbe
+  const targetOrderNumber = orderNumbersInOrder[targetIdx];
+
+  // Dohvati artikle target narudžbe
+  const targetArticles = sameLine.filter(o => o.order_number === targetOrderNumber);
+
+  // Renumeriraj: daj cijelim blokovima sort_order = blokIndex * 100, artiklima blokStart + (itemIdx * 10)
+  // Prvo konstruiraj novu listu order_numbers sa zamijenjenim pozicijama
+  const newOrderList = orderNumbersInOrder.slice();
+  newOrderList[currentIdx] = targetOrderNumber;
+  newOrderList[targetIdx] = orderNumber;
+
+  // Za svaku narudžbu u novom redoslijedu, daj artiklima sort_order unutar bloka
+  const updates = [];
+  newOrderList.forEach((oNum, groupIdx) => {
+    const block = sameLine.filter(o => o.order_number === oNum);
+    // Zadrži relativni redoslijed artikala unutar narudžbe
+    block.sort((a, b) => {
+      const sa = a.sort_order || 99999;
+      const sb = b.sort_order || 99999;
+      if (sa !== sb) return sa - sb;
+      return (a.item_number || 1) - (b.item_number || 1);
+    });
+    block.forEach((article, itemIdx) => {
+      const newSort = (groupIdx + 1) * 100 + itemIdx * 10;
+      if (article.sort_order !== newSort) {
+        article.sort_order = newSort;
+        updates.push(
+          initSupabase().from('prod_orders').update({ sort_order: newSort }).eq('id', article.id)
+        );
+      }
+    });
+  });
+
+  try {
+    if (updates.length > 0) await Promise.all(updates);
+    renderOrdersTable(allOrders);
+    showMessage('✅ Narudžba pomaknuta', 'success', 1500);
+  } catch (err) {
+    showMessage('❌ Greška pomicanja narudžbe: ' + err.message, 'error');
+  }
+}
+
+// Pomakni artikl unutar iste narudžbe (ne izvan)
+async function moveOrderWithinGroup(orderId, direction) {
+  const article = allOrders.find(o => o.id === orderId);
+  if (!article) return;
+  const orderNumber = article.order_number;
+
+  const siblings = allOrders
+    .filter(o => o.order_number === orderNumber)
+    .sort((a, b) => {
+      const sa = a.sort_order || 99999;
+      const sb = b.sort_order || 99999;
+      if (sa !== sb) return sa - sb;
+      return (a.item_number || 1) - (b.item_number || 1);
+    });
+
+  const currentIdx = siblings.findIndex(o => o.id === orderId);
+  const targetIdx = currentIdx + direction;
+  if (targetIdx < 0 || targetIdx >= siblings.length) return;  // blokiraj pomicanje izvan narudžbe
+
+  const targetArticle = siblings[targetIdx];
+
+  // Swap sort_order vrijednosti (zadrži postojeće brojeve ako su različiti, inače renumeriraj blok)
+  if ((article.sort_order || 0) === (targetArticle.sort_order || 0)) {
+    // Renumeriraj cijeli blok
+    const updates = siblings.map((a, i) => {
+      const newSort = (Math.floor((a.sort_order || 100) / 100) * 100) + (i * 10);
+      a.sort_order = newSort;
+      return initSupabase().from('prod_orders').update({ sort_order: newSort }).eq('id', a.id);
+    });
+    await Promise.all(updates);
+    // Sad swap-aj nove brojeve
+    [siblings[currentIdx].sort_order, siblings[targetIdx].sort_order] = [siblings[targetIdx].sort_order, siblings[currentIdx].sort_order];
+  }
+
+  const newCurrent = targetArticle.sort_order;
+  const newTarget = article.sort_order;
+
+  try {
+    await Promise.all([
+      initSupabase().from('prod_orders').update({ sort_order: newCurrent }).eq('id', article.id),
+      initSupabase().from('prod_orders').update({ sort_order: newTarget }).eq('id', targetArticle.id)
+    ]);
+    article.sort_order = newCurrent;
+    targetArticle.sort_order = newTarget;
+    renderOrdersTable(allOrders);
+  } catch (err) {
+    showMessage('❌ Greška pomicanja artikla: ' + err.message, 'error');
+  }
+}
+
+// Expose za HTML onclick handlere
+window.toggleOrderGroup = toggleOrderGroup;
+window.expandAllOrderGroups = expandAllOrderGroups;
+window.collapseAllOrderGroups = collapseAllOrderGroups;
+window.toggleGroupSelection = toggleGroupSelection;
+window.moveOrderGroup = moveOrderGroup;
+window.moveOrderWithinGroup = moveOrderWithinGroup;
 
 // Funkcija za izračun težine papira
 function calculatePaperWeights(order, quantity) {
