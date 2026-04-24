@@ -621,6 +621,58 @@
   cursor: pointer;
 }
 .btn-acknowledge:hover { background: #388e3c; }
+
+/* ========================================== */
+/* PREGLED PO RN — grupiranje po narudžbi     */
+/* ========================================== */
+.tisak-pregled-toolbar-btn {
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+.tisak-pregled-toolbar-btn:hover { background: #eef2f7; border-color: #94a3b8; }
+.tisak-pregled-toolbar-btn:active { background: #dde5ed; }
+
+.tisak-pregled-group-row {
+  background: linear-gradient(90deg, #eef4fa 0%, #e3ecf6 100%);
+  border-top: 2px solid #b6c7da;
+  border-bottom: 1px solid #b6c7da;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.tisak-pregled-group-row:hover { background: linear-gradient(90deg, #e2ecf7 0%, #d5e2f1 100%); }
+.tisak-pregled-group-row td { padding: 10px 8px !important; vertical-align: middle; }
+.tisak-pregled-group-row .group-chevron {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+  color: #2c3e50;
+  font-weight: bold;
+  user-select: none;
+}
+.tisak-pregled-group-row.expanded .group-chevron { transform: rotate(90deg); }
+.tisak-pregled-group-row .group-order-number { font-size: 1.05em; color: #1565c0; }
+.tisak-pregled-group-row .group-count {
+  display: inline-block;
+  background: #d5e2f1;
+  color: #1565c0;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.tisak-pregled-leaf-row { background: #fafbfc; }
+.tisak-pregled-leaf-row.hidden { display: none; }
+.tisak-pregled-leaf-row td:first-child { padding-left: 24px !important; }
 </style>
 
 <!-- ============================================ -->
@@ -1331,12 +1383,41 @@
     <h3 style="margin:0 0 15px 0; color:#333;">📊 Pregled proizvedenih metara i komada po RN</h3>
     <p style="color:#666; font-size:0.9em; margin-bottom:15px;">Podaci izvučeni iz smjenskih izvještaja.</p>
 
-    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
-      <button class="tisak-btn tisak-btn-secondary" onclick="tisakUcitajPregledRN()" style="padding:8px 16px;">🔄 Osvježi</button>
-      <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.85em;">
-        <input type="checkbox" id="tisakPregledSamoAktivni" checked onchange="tisakRenderPregledRN()"> Samo aktivni nalozi
-      </label>
-      <span id="tisakPregledInfo" style="color:#666; font-size:0.85em;"></span>
+    <!-- FILTERI Pregled RN -->
+    <div class="tisak-pregled-filters" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:15px; flex-wrap:wrap; background:#f8f9fa; padding:10px; border-radius:8px;">
+      <div style="flex:0 0 110px;">
+        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Status</label>
+        <select class="form-control form-control-sm" id="tisakPregledFilterStatus" onchange="tisakRenderPregledRN()">
+          <option value="Aktivni" selected>Aktivni (bez Završ.)</option>
+          <option value="">Svi</option>
+          <option value="Planiran">Planiran</option>
+          <option value="U tijeku">U tijeku</option>
+          <option value="Pauziran">Pauziran</option>
+          <option value="Završeno">Završeno</option>
+        </select>
+      </div>
+      <div style="flex:1; min-width:130px;">
+        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Kupac</label>
+        <select class="form-control form-control-sm" id="tisakPregledFilterKupac" onchange="tisakRenderPregledRN()">
+          <option value="">Svi kupci</option>
+        </select>
+      </div>
+      <div style="flex:1; min-width:130px;">
+        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Artikl</label>
+        <select class="form-control form-control-sm" id="tisakPregledFilterArtikl" onchange="tisakRenderPregledRN()">
+          <option value="">Svi artikli</option>
+        </select>
+      </div>
+      <div style="flex:1; min-width:140px;">
+        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Pretraži</label>
+        <input type="text" class="form-control form-control-sm" id="tisakPregledSearch" placeholder="Broj RN, narudžba..." oninput="tisakRenderPregledRN()">
+      </div>
+      <div style="flex:0 0 auto; display:flex; gap:4px;">
+        <button class="tisak-pregled-toolbar-btn" type="button" onclick="tisakExpandAllPregledGroups()" title="Proširi sve narudžbe">Proširi sve</button>
+        <button class="tisak-pregled-toolbar-btn" type="button" onclick="tisakCollapseAllPregledGroups()" title="Skupi sve narudžbe">Skupi sve</button>
+        <button class="tisak-btn tisak-btn-secondary" onclick="tisakUcitajPregledRN()" style="padding:7px 14px;">🔄</button>
+      </div>
+      <span id="tisakPregledInfo" style="color:#666; font-size:0.85em; width:100%;"></span>
     </div>
 
     <!-- Agregat -->
@@ -4472,15 +4553,19 @@ async function tisakUcitajPregledRN() {
       if (rn) {
         item.kupac = rn.customer_name || '';
         item.artikl = rn.article_name || '';
+        item.article_code = rn.article_code || '';
         item.naruceno = rn.quantity || 0;
         item.status = rn.status || '';
         item.printing_type = rn.printing_type || 'tijelo';
+        item.order_number = rn.order_number || '';
       } else {
         item.kupac = '';
         item.artikl = item.opis || '';
+        item.article_code = '';
         item.naruceno = 0;
         item.status = '?';
         item.printing_type = item.wo_number.startsWith('ETI') ? 'etiketa' : 'tijelo';
+        item.order_number = '';
       }
 
       return item;
@@ -4495,6 +4580,7 @@ async function tisakUcitajPregledRN() {
 
     document.getElementById('tisakPregledInfo').textContent = 'Učitano iz ' + izvjestaji.length + ' izvještaja';
 
+    tisakPopulatePregledFilters();
     tisakRenderPregledRN();
 
   } catch (e) {
@@ -4503,12 +4589,66 @@ async function tisakUcitajPregledRN() {
   }
 }
 
+// State: otvorene narudžba grupe u Pregled po RN tabu
+window.tisakPregledExpandedGroups = window.tisakPregledExpandedGroups || new Set();
+
+function _tisakPrimaryOrder(orderNumberStr) {
+  if (!orderNumberStr) return '(bez narudžbe)';
+  return String(orderNumberStr).split(',')[0].trim() || '(bez narudžbe)';
+}
+
+// Popuni Kupac i Artikl dropdown-ove iz trenutnih podataka
+function tisakPopulatePregledFilters() {
+  var kupci = new Set();
+  var artikli = new Set();
+  tisakPregledData.forEach(function(item) {
+    if (item.kupac) kupci.add(item.kupac);
+    if (item.artikl) artikli.add(item.artikl);
+  });
+
+  var kupacSel = document.getElementById('tisakPregledFilterKupac');
+  var artiklSel = document.getElementById('tisakPregledFilterArtikl');
+  if (!kupacSel || !artiklSel) return;
+
+  var prevKupac = kupacSel.value;
+  var prevArtikl = artiklSel.value;
+
+  kupacSel.innerHTML = '<option value="">Svi kupci</option>' +
+    [...kupci].sort().map(function(k) { return '<option value="' + k.replace(/"/g, '&quot;') + '">' + k + '</option>'; }).join('');
+  artiklSel.innerHTML = '<option value="">Svi artikli</option>' +
+    [...artikli].sort().map(function(a) { return '<option value="' + a.replace(/"/g, '&quot;') + '">' + a + '</option>'; }).join('');
+
+  if (prevKupac && kupci.has(prevKupac)) kupacSel.value = prevKupac;
+  if (prevArtikl && artikli.has(prevArtikl)) artiklSel.value = prevArtikl;
+}
+
 function tisakRenderPregledRN() {
   var tbody = document.getElementById('tisakPregledRNBody');
-  var samoAktivni = document.getElementById('tisakPregledSamoAktivni')?.checked ?? true;
+  var statusFilter = document.getElementById('tisakPregledFilterStatus')?.value ?? 'Aktivni';
+  var kupacFilter = document.getElementById('tisakPregledFilterKupac')?.value || '';
+  var artiklFilter = document.getElementById('tisakPregledFilterArtikl')?.value || '';
+  var search = (document.getElementById('tisakPregledSearch')?.value || '').toLowerCase();
 
+  // Filter
   var filtered = tisakPregledData.filter(function(item) {
-    if (samoAktivni && item.status === 'Završeno') return false;
+    // Status
+    if (statusFilter === 'Aktivni') {
+      if (item.status === 'Završeno') return false;
+    } else if (statusFilter) {
+      if (item.status !== statusFilter) return false;
+    }
+    // Kupac
+    if (kupacFilter && item.kupac !== kupacFilter) return false;
+    // Artikl
+    if (artiklFilter && item.artikl !== artiklFilter) return false;
+    // Pretraga (wo_number, order_number, kupac, artikl)
+    if (search) {
+      var match = (item.wo_number || '').toLowerCase().includes(search) ||
+                  (item.order_number || '').toLowerCase().includes(search) ||
+                  (item.kupac || '').toLowerCase().includes(search) ||
+                  (item.artikl || '').toLowerCase().includes(search);
+      if (!match) return false;
+    }
     return true;
   });
 
@@ -4520,41 +4660,112 @@ function tisakRenderPregledRN() {
     return;
   }
 
+  // Ako je aktivan search/filter (osim samo statusa), auto-expand grupe koje imaju match
+  var hasNarrowFilter = !!kupacFilter || !!artiklFilter || !!search;
+  if (hasNarrowFilter) {
+    filtered.forEach(function(it) {
+      var key = _tisakPrimaryOrder(it.order_number);
+      window.tisakPregledExpandedGroups.add(key);
+    });
+  }
+
+  // Grupiraj po primarnoj narudžbi
+  var groupsMap = new Map();
+  var groupOrder = [];
+  filtered.forEach(function(item) {
+    var key = _tisakPrimaryOrder(item.order_number);
+    if (!groupsMap.has(key)) {
+      groupsMap.set(key, { order_number: key, kupac: item.kupac || '-', items: [] });
+      groupOrder.push(key);
+    }
+    groupsMap.get(key).items.push(item);
+  });
+
   var ukupnoM = 0, ukupnoKom = 0;
   var html = '';
 
-  filtered.forEach(function(item) {
-    ukupnoM += item.metri;
-    ukupnoKom += item.kom;
+  groupOrder.forEach(function(key) {
+    var g = groupsMap.get(key);
+    // Sortiraj RN-ove unutar grupe: aktivni prvo, pa po wo_number
+    g.items.sort(function(a, b) {
+      if (a.status === 'Završeno' && b.status !== 'Završeno') return 1;
+      if (a.status !== 'Završeno' && b.status === 'Završeno') return -1;
+      return (a.wo_number || '').localeCompare(b.wo_number || '');
+    });
 
-    var postotak = '';
-    var postotakStyle = '';
-    if (item.naruceno > 0) {
-      var pct = (item.kom / item.naruceno * 100);
-      postotak = pct.toFixed(1) + '%';
-      if (pct >= 100) postotakStyle = 'color:#4caf50; font-weight:bold;';
-      else if (pct >= 50) postotakStyle = 'color:#ff9800;';
-      else postotakStyle = 'color:#f44336;';
+    var isExpanded = window.tisakPregledExpandedGroups.has(key);
+    var gNaruceno = g.items.reduce(function(s, i) { return s + (Number(i.naruceno) || 0); }, 0);
+    var gMetri = g.items.reduce(function(s, i) { return s + (Number(i.metri) || 0); }, 0);
+    var gKom = g.items.reduce(function(s, i) { return s + (Number(i.kom) || 0); }, 0);
+    var gPct = gNaruceno > 0 ? (gKom / gNaruceno * 100) : 0;
+    var gPctStyle = 'color:#666;';
+    if (gNaruceno > 0) {
+      if (gPct >= 100) gPctStyle = 'color:#4caf50; font-weight:bold;';
+      else if (gPct >= 50) gPctStyle = 'color:#ff9800;';
+      else gPctStyle = 'color:#f44336;';
     }
 
-    var statusClass = '';
-    if (item.status === 'Završeno') statusClass = 'background:#d4edda;';
-    else if (item.status === 'U tijeku') statusClass = 'background:#cce5ff;';
-    else if (item.status === 'Planiran') statusClass = 'background:#fff3cd;';
+    // Status breakdown
+    var byStatus = {};
+    g.items.forEach(function(i) { byStatus[i.status] = (byStatus[i.status] || 0) + 1; });
+    var statusParts = [];
+    if (byStatus['Planiran']) statusParts.push('<span style="background:#fff3cd;color:#856404;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Planiran'] + ' Plan.</span>');
+    if (byStatus['U tijeku']) statusParts.push('<span style="background:#cce5ff;color:#004085;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['U tijeku'] + ' U tij.</span>');
+    if (byStatus['Pauziran']) statusParts.push('<span style="background:#e2e3e5;color:#383d41;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Pauziran'] + ' Pauz.</span>');
+    if (byStatus['Završeno']) statusParts.push('<span style="background:#d4edda;color:#155724;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Završeno'] + ' Zav.</span>');
 
-    var tipBadge = item.printing_type === 'kila' ? '<span style="background:#4caf50;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">KILA</span>' : (item.printing_type === 'etiketa' ? '<span style="background:#ff9800;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">ETI</span>' : '');
+    var keyEsc = key.replace(/'/g, "\\'");
+    var countLabel = g.items.length + ' ' + (g.items.length === 1 ? 'nalog' : 'naloga');
 
-    html += '<tr style="' + statusClass + '">';
-    html += '<td><strong>' + item.wo_number + '</strong></td>';
-    html += '<td style="text-align:center;">' + tipBadge + '</td>';
-    html += '<td>' + item.kupac + '</td>';
-    html += '<td style="font-size:0.85em;">' + item.artikl + '</td>';
-    html += '<td style="text-align:right;">' + (item.naruceno > 0 ? formatBroj(item.naruceno) : '-') + '</td>';
-    html += '<td style="text-align:right; font-weight:600;">' + item.metri.toFixed(1) + '</td>';
-    html += '<td style="text-align:right; font-weight:600;">' + formatBroj(Math.round(item.kom)) + '</td>';
-    html += '<td style="text-align:right; ' + postotakStyle + '">' + postotak + '</td>';
-    html += '<td><span style="font-size:0.8em; padding:2px 8px; border-radius:10px; ' + statusClass + '">' + item.status + '</span></td>';
+    // Grupni red
+    html += '<tr class="tisak-pregled-group-row ' + (isExpanded ? 'expanded' : '') + '" data-pregled-group="' + key + '" onclick="tisakTogglePregledGroup(\'' + keyEsc + '\', event)">';
+    html += '<td colspan="3"><span class="group-chevron">▶</span><strong class="group-order-number">' + key + '</strong>&nbsp;·&nbsp;<span style="color:#2c3e50;">' + g.kupac + '</span>&nbsp;·&nbsp;<span class="group-count">' + countLabel + '</span></td>';
+    html += '<td></td>';  // Artikl
+    html += '<td style="text-align:right;"><strong>' + (gNaruceno > 0 ? formatBroj(gNaruceno) : '-') + '</strong></td>';
+    html += '<td style="text-align:right;"><strong>' + gMetri.toFixed(1) + '</strong></td>';
+    html += '<td style="text-align:right;"><strong>' + formatBroj(Math.round(gKom)) + '</strong></td>';
+    html += '<td style="text-align:right; ' + gPctStyle + '">' + (gNaruceno > 0 ? gPct.toFixed(1) + '%' : '') + '</td>';
+    html += '<td>' + (statusParts.join('') || '<span style="color:#94a3b8;font-size:0.8em;">—</span>') + '</td>';
     html += '</tr>';
+
+    // RN leaf redovi
+    g.items.forEach(function(item) {
+      ukupnoM += item.metri;
+      ukupnoKom += item.kom;
+
+      var postotak = '';
+      var postotakStyle = '';
+      if (item.naruceno > 0) {
+        var pct = (item.kom / item.naruceno * 100);
+        postotak = pct.toFixed(1) + '%';
+        if (pct >= 100) postotakStyle = 'color:#4caf50; font-weight:bold;';
+        else if (pct >= 50) postotakStyle = 'color:#ff9800;';
+        else postotakStyle = 'color:#f44336;';
+      }
+
+      var statusRowBg = '';
+      if (item.status === 'Završeno') statusRowBg = 'background:#d4edda;';
+      else if (item.status === 'U tijeku') statusRowBg = 'background:#cce5ff;';
+      else if (item.status === 'Planiran') statusRowBg = 'background:#fff3cd;';
+
+      var tipBadge = item.printing_type === 'kila'
+        ? '<span style="background:#4caf50;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">KILA</span>'
+        : (item.printing_type === 'etiketa'
+            ? '<span style="background:#ff9800;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">ETI</span>'
+            : '');
+
+      html += '<tr class="tisak-pregled-leaf-row ' + (isExpanded ? '' : 'hidden') + '" data-pregled-parent="' + key + '" style="' + statusRowBg + '">';
+      html += '<td><strong>' + item.wo_number + '</strong></td>';
+      html += '<td style="text-align:center;">' + tipBadge + '</td>';
+      html += '<td>' + item.kupac + '</td>';
+      html += '<td style="font-size:0.85em;">' + item.artikl + '</td>';
+      html += '<td style="text-align:right;">' + (item.naruceno > 0 ? formatBroj(item.naruceno) : '-') + '</td>';
+      html += '<td style="text-align:right; font-weight:600;">' + item.metri.toFixed(1) + '</td>';
+      html += '<td style="text-align:right; font-weight:600;">' + formatBroj(Math.round(item.kom)) + '</td>';
+      html += '<td style="text-align:right; ' + postotakStyle + '">' + postotak + '</td>';
+      html += '<td><span style="font-size:0.8em; padding:2px 8px; border-radius:10px; ' + statusRowBg + '">' + item.status + '</span></td>';
+      html += '</tr>';
+    });
   });
 
   tbody.innerHTML = html;
@@ -4564,6 +4775,51 @@ function tisakRenderPregledRN() {
   document.getElementById('tisakPregledUkupnoKom').textContent = formatBroj(Math.round(ukupnoKom));
   document.getElementById('tisakPregledBrojRN').textContent = filtered.length;
 }
+
+// ============================================
+// PREGLED PO RN — Expand/Collapse helpers
+// ============================================
+function tisakTogglePregledGroup(key, event) {
+  if (event && event.target) {
+    var tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'button' || tag === 'a' || tag === 'input') return;
+  }
+  if (window.tisakPregledExpandedGroups.has(key)) {
+    window.tisakPregledExpandedGroups.delete(key);
+  } else {
+    window.tisakPregledExpandedGroups.add(key);
+  }
+  _tisakApplyPregledVisibility();
+}
+
+function _tisakApplyPregledVisibility() {
+  document.querySelectorAll('.tisak-pregled-group-row').forEach(function(row) {
+    var key = row.getAttribute('data-pregled-group');
+    row.classList.toggle('expanded', window.tisakPregledExpandedGroups.has(key));
+  });
+  document.querySelectorAll('.tisak-pregled-leaf-row').forEach(function(row) {
+    var key = row.getAttribute('data-pregled-parent');
+    row.classList.toggle('hidden', !window.tisakPregledExpandedGroups.has(key));
+  });
+}
+
+function tisakExpandAllPregledGroups() {
+  document.querySelectorAll('.tisak-pregled-group-row').forEach(function(row) {
+    var key = row.getAttribute('data-pregled-group');
+    if (key) window.tisakPregledExpandedGroups.add(key);
+  });
+  _tisakApplyPregledVisibility();
+}
+
+function tisakCollapseAllPregledGroups() {
+  window.tisakPregledExpandedGroups.clear();
+  _tisakApplyPregledVisibility();
+}
+
+window.tisakTogglePregledGroup = tisakTogglePregledGroup;
+window.tisakExpandAllPregledGroups = tisakExpandAllPregledGroups;
+window.tisakCollapseAllPregledGroups = tisakCollapseAllPregledGroups;
+window.tisakPopulatePregledFilters = tisakPopulatePregledFilters;
 
 // Helper za formatiranje brojeva (1234 -> 1.234)
 function formatBroj(n) {
