@@ -475,6 +475,8 @@
         <input type="text" class="form-control form-control-sm" id="searchRN" placeholder="Broj RN, narudžba..." oninput="window.filterRN()">
       </div>
       <div class="form-group" style="align-self: flex-end; flex: 0 0 auto;">
+        <button class="group-toolbar-btn" type="button" onclick="expandAllRNGroups()" title="Proširi sve grupe">Proširi sve</button>
+        <button class="group-toolbar-btn" type="button" onclick="collapseAllRNGroups()" title="Skupi sve grupe">Skupi sve</button>
         <button class="btn btn-sm btn-secondary" onclick="window.loadRadniNalozi()">🔄</button>
       </div>
     </div>
@@ -3096,76 +3098,163 @@ function updateWeightSummary(sums) {
   document.getElementById('sumTotal').textContent = formatBroj(total, 1);
 }
 
+// State: koje su RN grupe otvorene
+window.expandedRNGroups = window.expandedRNGroups || new Set();
+
+// Sortiraj RN-ove unutar grupe: Planiran → U tijeku → Pauziran → Završeno, zatim wo_number desc
+function _sortRN(a, b) {
+  const statusOrder = { 'Planiran': 1, 'U tijeku': 2, 'Pauziran': 3, 'Završeno': 4 };
+  const statusDiff = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
+  if (statusDiff !== 0) return statusDiff;
+  return (b.wo_number || '').localeCompare(a.wo_number || '');
+}
+
 function renderRNTable(rn) {
   const tbody = document.getElementById('rnTableBody');
   const countDiv = document.getElementById('rnCount');
-  
+
   if (!rn || rn.length === 0) {
     tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Nema radnih naloga</td></tr>';
     if (countDiv) countDiv.textContent = 'Prikazano: 0';
     return;
   }
-  
-  // Sortiranje: Planiran prvo, pa U tijeku, pa ostali
-  const statusOrder = { 'Planiran': 1, 'U tijeku': 2, 'Pauziran': 3, 'Završeno': 4 };
-  rn.sort((a, b) => {
-    const statusDiff = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
-    if (statusDiff !== 0) return statusDiff;
-    return (b.wo_number || '').localeCompare(a.wo_number || '');
-  });
-  
-  tbody.innerHTML = rn.slice(0, 50).map(r => {
-    let statusClass = 'warning';
-    if (r.status === 'U tijeku') statusClass = 'primary';
-    else if (r.status === 'Završeno') statusClass = 'success';
-    else if (r.status === 'Pauziran') statusClass = 'secondary';
-    
-    let tipIcon = '📦';
-    let tipClass = 'badge-info';
-    if (r.tip === 'Tisak') { tipIcon = '🖨️'; tipClass = 'badge-primary'; }
-    else if (r.tip === 'Rezanje') { tipIcon = '✂️'; tipClass = 'badge-warning'; }
-    
-    // Akcije
-    const isPaused = r.status === 'Pauziran';
-    const isFinished = r.status === 'Završeno';
-    
-    // Escape vrijednosti za onclick
-    const safeId = r.id;
-    const safeTip = (r.tip || '').replace(/'/g, "\\'");
-    const safeWoNumber = (r.wo_number || '').replace(/'/g, "\\'");
-    
-    let actions = '';
-    if (!isFinished && !planiranjeReadOnly) {
-      actions += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">`;
-      actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: #1976d2; padding: 2px 4px;">📊</button>`;
-      if (isPaused) {
-        actions += `<button class="action-btn" onclick="window.openResumeRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Nastavi" style="padding: 2px 4px;">▶️</button>`;
-      } else {
-        actions += `<button class="action-btn" onclick="window.openPauseRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Pauziraj" style="padding: 2px 4px;">⏸️</button>`;
-      }
-      actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: #2e7d32; padding: 2px 4px;">🏁</button>`;
-      actions += `<button class="action-btn delete" onclick="window.openDeleteRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Obriši" style="padding: 2px 4px;">🗑️</button>`;
-      actions += `</div>`;
-    }
-    
-    return `
-      <tr ${isPaused ? 'style="opacity: 0.6; background: #f5f5f5;"' : ''}>
-        <td><strong>${r.wo_number || '-'}</strong></td>
-        <td><span class="badge ${tipClass}">${tipIcon} ${r.tip || '-'}</span></td>
-        <td>${r.order_number || '-'}</td>
-        <td>${r.customer_name || '-'}</td>
-        <td>${r.article_name || '-'}</td>
-        <td><span class="badge badge-info">${r.article_code || '-'}</span></td>
-        <td style="text-align: right;">${formatBroj(r.quantity, 0)}</td>
-        <td><span class="badge badge-${r.production_line === 'NLI' ? 'primary' : r.production_line === 'WH' ? 'success' : 'secondary'}">${r.production_line || '-'}</span></td>
-        <td><span class="badge badge-${statusClass}">${r.status || '-'}</span></td>
-        <td style="padding: 4px;">${actions}</td>
+
+  // Fiksne 3 grupe u ovom redoslijedu
+  const GROUPS = [
+    { tip: 'Glavni',  icon: '📦', label: 'Glavni RN',  tipClass: 'badge-info' },
+    { tip: 'Tisak',   icon: '🖨️', label: 'Tisak',      tipClass: 'badge-primary' },
+    { tip: 'Rezanje', icon: '✂️', label: 'Rezanje',    tipClass: 'badge-warning' }
+  ];
+
+  let html = '';
+  let totalDisplayed = 0;
+
+  GROUPS.forEach(g => {
+    const groupRN = rn.filter(r => r.tip === g.tip);
+    groupRN.sort(_sortRN);
+
+    const count = groupRN.length;
+    const isExpanded = window.expandedRNGroups.has(g.tip);
+
+    // Status breakdown
+    const byStatus = { Planiran: 0, 'U tijeku': 0, Pauziran: 0, Završeno: 0 };
+    groupRN.forEach(r => { if (byStatus[r.status] != null) byStatus[r.status]++; });
+    const totalQty = groupRN.reduce((s, r) => s + Number(r.quantity || 0), 0);
+
+    const statusBadges = [];
+    if (byStatus['Planiran']) statusBadges.push(`<span class="badge badge-warning" style="font-size:0.7em;margin-right:2px;">${byStatus['Planiran']} Planiran</span>`);
+    if (byStatus['U tijeku']) statusBadges.push(`<span class="badge badge-primary" style="font-size:0.7em;margin-right:2px;">${byStatus['U tijeku']} U tijeku</span>`);
+    if (byStatus['Pauziran']) statusBadges.push(`<span class="badge badge-secondary" style="font-size:0.7em;margin-right:2px;">${byStatus['Pauziran']} Pauziran</span>`);
+    if (byStatus['Završeno']) statusBadges.push(`<span class="badge badge-success" style="font-size:0.7em;margin-right:2px;">${byStatus['Završeno']} Završeno</span>`);
+
+    // Grupni red — uvijek vidljiv
+    html += `
+      <tr class="order-group-row ${isExpanded ? 'expanded' : ''}" data-rngroup="${g.tip}" onclick="toggleRNGroup('${g.tip}', event)" ${count === 0 ? 'style="opacity:0.55;"' : ''}>
+        <td colspan="3">
+          <span class="group-chevron">▶</span>
+          <span style="font-size:1.05em;"><span class="badge ${g.tipClass}">${g.icon} ${g.label}</span></span>
+          &nbsp;·&nbsp;
+          <span class="group-article-count" title="Broj radnih naloga u grupi">${count} ${count === 1 ? 'nalog' : (count >= 2 && count <= 4 ? 'naloga' : 'naloga')}</span>
+        </td>
+        <td colspan="2"></td>
+        <td colspan="1"></td>
+        <td style="text-align: right;"><strong>${formatBroj(totalQty, 0)}</strong></td>
+        <td colspan="2">${statusBadges.join('') || '<span style="color:#94a3b8;font-size:0.8em;">—</span>'}</td>
+        <td></td>
       </tr>
     `;
-  }).join('');
-  
-  if (countDiv) countDiv.textContent = `Prikazano: ${Math.min(rn.length, 50)} od ${allRN.length}`;
+
+    // RN redovi — skriveni kad grupa nije proširena
+    groupRN.forEach(r => {
+      totalDisplayed++;
+      let statusClass = 'warning';
+      if (r.status === 'U tijeku') statusClass = 'primary';
+      else if (r.status === 'Završeno') statusClass = 'success';
+      else if (r.status === 'Pauziran') statusClass = 'secondary';
+
+      const isPaused = r.status === 'Pauziran';
+      const isFinished = r.status === 'Završeno';
+
+      const safeId = r.id;
+      const safeTip = (r.tip || '').replace(/'/g, "\\'");
+      const safeWoNumber = (r.wo_number || '').replace(/'/g, "\\'");
+
+      let actions = '';
+      if (!isFinished && !planiranjeReadOnly) {
+        actions += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">`;
+        actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: #1976d2; padding: 2px 4px;">📊</button>`;
+        if (isPaused) {
+          actions += `<button class="action-btn" onclick="window.openResumeRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Nastavi" style="padding: 2px 4px;">▶️</button>`;
+        } else {
+          actions += `<button class="action-btn" onclick="window.openPauseRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Pauziraj" style="padding: 2px 4px;">⏸️</button>`;
+        }
+        actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: #2e7d32; padding: 2px 4px;">🏁</button>`;
+        actions += `<button class="action-btn delete" onclick="window.openDeleteRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Obriši" style="padding: 2px 4px;">🗑️</button>`;
+        actions += `</div>`;
+      }
+
+      const rowStyle = (isPaused ? 'opacity: 0.6; background: #f5f5f5;' : '');
+
+      html += `
+        <tr class="order-article-row ${isExpanded ? '' : 'hidden'}" data-rnparent="${g.tip}" style="${rowStyle}">
+          <td><strong>${r.wo_number || '-'}</strong></td>
+          <td><span class="badge ${g.tipClass}">${g.icon} ${r.tip || '-'}</span></td>
+          <td>${r.order_number || '-'}</td>
+          <td>${r.customer_name || '-'}</td>
+          <td>${r.article_name || '-'}</td>
+          <td><span class="badge badge-info">${r.article_code || '-'}</span></td>
+          <td style="text-align: right;">${formatBroj(r.quantity, 0)}</td>
+          <td><span class="badge badge-${r.production_line === 'NLI' ? 'primary' : r.production_line === 'WH' ? 'success' : 'secondary'}">${r.production_line || '-'}</span></td>
+          <td><span class="badge badge-${statusClass}">${r.status || '-'}</span></td>
+          <td style="padding: 4px;">${actions}</td>
+        </tr>
+      `;
+    });
+  });
+
+  tbody.innerHTML = html;
+  if (countDiv) countDiv.textContent = `Prikazano: ${totalDisplayed} od ${allRN.length}`;
 }
+
+// ============================================
+// RN GROUP EXPAND / COLLAPSE
+// ============================================
+function toggleRNGroup(tip, event) {
+  if (event && event.target) {
+    const tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'button' || tag === 'a' || tag === 'input' || event.target.closest('button, a, input')) return;
+  }
+  if (window.expandedRNGroups.has(tip)) window.expandedRNGroups.delete(tip);
+  else window.expandedRNGroups.add(tip);
+  applyRNGroupVisibility();
+}
+
+function applyRNGroupVisibility() {
+  document.querySelectorAll('.order-group-row[data-rngroup]').forEach(row => {
+    const tip = row.getAttribute('data-rngroup');
+    const isOpen = window.expandedRNGroups.has(tip);
+    row.classList.toggle('expanded', isOpen);
+  });
+  document.querySelectorAll('.order-article-row[data-rnparent]').forEach(row => {
+    const tip = row.getAttribute('data-rnparent');
+    const isOpen = window.expandedRNGroups.has(tip);
+    row.classList.toggle('hidden', !isOpen);
+  });
+}
+
+function expandAllRNGroups() {
+  ['Glavni', 'Tisak', 'Rezanje'].forEach(t => window.expandedRNGroups.add(t));
+  applyRNGroupVisibility();
+}
+
+function collapseAllRNGroups() {
+  window.expandedRNGroups.clear();
+  applyRNGroupVisibility();
+}
+
+window.toggleRNGroup = toggleRNGroup;
+window.expandAllRNGroups = expandAllRNGroups;
+window.collapseAllRNGroups = collapseAllRNGroups;
 
 // ============================================
 // FILTRIRANJE RN
@@ -3198,6 +3287,13 @@ function filterRN() {
     }
     return true;
   });
+
+  // Auto-expand grupe koje imaju match (kad je aktivan search ili tip/kupac/artikl filter)
+  const hasActiveFilter = !!search || !!tipFilter || !!kupacFilter || !!artiklFilter;
+  if (hasActiveFilter) {
+    const matchedTips = new Set(filtered.map(r => r.tip).filter(Boolean));
+    matchedTips.forEach(t => window.expandedRNGroups.add(t));
+  }
 
   renderRNTable(filtered);
 }
