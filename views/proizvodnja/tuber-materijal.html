@@ -2682,7 +2682,11 @@ async function fifoInit() {
     try {
       var r2 = await initSupabase().rpc('wo_has_printing', { p_wo_number: materijalKontekst.workOrderNumber });
       fifoState.hasPrinting = r2.data === true;
-    } catch (e) { fifoState.hasPrinting = false; }
+      console.log('[FIFO] wo_has_printing(' + materijalKontekst.workOrderNumber + ') =', r2.data, '→ hasPrinting=' + fifoState.hasPrinting);
+    } catch (e) {
+      console.warn('[FIFO] wo_has_printing greška:', e);
+      fifoState.hasPrinting = false;
+    }
 
     fifoState.popIds = materijalKontekst.popIds || [];
     fifoState.availableByLayer = { 1: [], 2: [], 3: [], 4: [] };
@@ -2723,6 +2727,7 @@ async function fifoFetchAvailableRolls() {
 
 // Printed role za artikl unutar iste narudžbe (uključujući role bez order_number ako ne znamo)
 async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
+  console.log('[FIFO] fifoFetchPrintedRollsForOrder articleId=' + articleId + ' orderNumber=' + orderNumber);
   var r = await initSupabase()
     .from('prod_inventory_printed')
     .select('*')
@@ -2730,8 +2735,12 @@ async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
     .gt('remaining_kg', 0)
     .order('entry_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true });
-  if (r.error) throw r.error;
+  if (r.error) {
+    console.error('[FIFO] printed query error:', r.error);
+    throw r.error;
+  }
   var rolls = r.data || [];
+  console.log('[FIFO] printed rolls za article (prije order filter): ' + rolls.length);
 
   if (orderNumber && rolls.length > 0) {
     var woNums = [...new Set(rolls.map(p => p.work_order_number).filter(Boolean))];
@@ -2742,12 +2751,14 @@ async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
         .in('wo_number', woNums);
       var mapWoToOrder = {};
       (r2.data || []).forEach(w => { mapWoToOrder[w.wo_number] = w.order_number; });
+      console.log('[FIFO] tisak RN → order_number map:', mapWoToOrder);
       // Zadrži role koje: a) pripadaju istoj narudžbi, ili b) nemaju povezan tisak RN (manualne)
       rolls = rolls.filter(p => {
         if (!p.work_order_number) return true;
         var ord = mapWoToOrder[p.work_order_number];
         return !ord || ord === orderNumber;
       });
+      console.log('[FIFO] printed rolls nakon order filter: ' + rolls.length);
     }
   }
 
@@ -2767,6 +2778,7 @@ async function fifoFetchPrintedRollsForOrder(articleId, orderNumber) {
 }
 
 // Stock role iz prod_inventory_rolls matchirane po paper_code (širina + gramatura + boja)
+// Lenient approach: probaj strict filter prvo, ako 0 → probaj broader po boji, pa po svemu
 async function fifoFetchStockRollsForLayer(article, layer) {
   var code = article['paper_s' + layer + '_code'];
   var width = article['paper_s' + layer + '_width'];
@@ -2775,29 +2787,53 @@ async function fifoFetchStockRollsForLayer(article, layer) {
   var firstChar = (code || '').charAt(0).toUpperCase();
   var color = firstChar === 'B' ? 'Bijeli' : (firstChar === 'S' ? 'Smeđi' : null);
 
-  var q = initSupabase()
-    .from('prod_inventory_rolls')
-    .select('*')
-    .gt('remaining_kg', 0)
-    .in('status', ['Na skladištu', 'Djelomično'])
-    .order('entry_date', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: true });
+  console.log('[FIFO] fifoFetchStockRollsForLayer sloj=' + layer + ' code=' + code + ' width=' + width + ' gram=' + gram + ' color=' + color);
 
-  if (width) q = q.eq('width_cm', Number(width));
-  if (gram) q = q.eq('grammage', String(gram));
-  if (color) q = q.eq('color', color);
-
-  var r = await q;
-  if (r.error) {
-    console.warn('fifoFetchStockRollsForLayer warning (' + layer + '):', r.error);
-    return [];
+  async function queryRolls(filters) {
+    var q = initSupabase()
+      .from('prod_inventory_rolls')
+      .select('*')
+      .gt('remaining_kg', 0)
+      .in('status', ['Na skladištu', 'Djelomično'])
+      .order('entry_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true });
+    if (filters.width) q = q.eq('width_cm', Number(filters.width));
+    if (filters.grammage) q = q.eq('grammage', filters.grammage);
+    if (filters.color) q = q.eq('color', filters.color);
+    var r = await q;
+    if (r.error) {
+      console.warn('[FIFO] query error:', r.error);
+      return [];
+    }
+    return r.data || [];
   }
 
-  return (r.data || []).map(r => ({
+  // 1) Strict: sve tri dimenzije (broj za grammage da matcha i string i number - pokušaj oba)
+  var data = await queryRolls({ width: width, grammage: gram != null ? String(gram) : null, color: color });
+  if (data.length === 0 && gram != null) {
+    // Pokušaj grammage kao broj
+    data = await queryRolls({ width: width, grammage: Number(gram), color: color });
+  }
+  // 2) Fallback: samo boja + širina
+  if (data.length === 0 && color) {
+    console.log('[FIFO] strict returned 0, fallback na boja+širina');
+    data = await queryRolls({ width: width, color: color });
+  }
+  // 3) Fallback: samo boja
+  if (data.length === 0 && color) {
+    console.log('[FIFO] boja+širina 0, fallback samo na boju');
+    data = await queryRolls({ color: color });
+  }
+
+  console.log('[FIFO] sloj ' + layer + ' stock rolls count: ' + data.length);
+
+  return data.map(r => ({
     source: 'rolls',
     id: r.id,
     code: r.roll_code,
-    label: r.roll_code + (r.manufacturer ? ' · ' + r.manufacturer : ''),
+    label: r.roll_code + (r.manufacturer ? ' · ' + r.manufacturer : '') +
+           (r.width_cm ? ' · ' + r.width_cm + 'cm' : '') +
+           (r.grammage ? ' · ' + r.grammage + 'g' : ''),
     weight_kg: r.initial_weight_kg,
     consumed_kg: r.consumed_kg || 0,
     remaining_kg: parseFloat(r.remaining_kg || 0),
@@ -2861,13 +2897,20 @@ function fifoRenderLayers() {
     // Lista dostupnih rola (list-picker)
     if (available.length === 0) {
       html += '<div style="background:#fff3e0;border:1px dashed #ffb74d;padding:10px;border-radius:4px;color:#e65100;font-size:13px;margin-bottom:10px;">';
-      html += '⚠️ Nema dostupnih rola za ovaj sloj.';
-      if (isPrinted) html += ' Otisak nije još proizveden ili su sve role potrošene.';
-      html += ' Možeš koristiti skeniranje/unos šifre ispod.';
+      html += '⚠️ Nema dostupnih rola za ovaj sloj u bazi (filtar: ' + bojaLabel + ', ' + gram + 'g, ' + width + 'cm). Skeniraj ili unesi šifru ispod.';
       html += '</div>';
     } else {
       html += '<div id="fifoListPicker_' + s + '" style="max-height:360px; overflow-y:auto; border:1px solid #eee; border-radius:4px; padding:4px;"></div>';
     }
+
+    // Scan / manual unos šifre — uvijek vidljiv kao fallback
+    html += '<div style="display:flex; gap:8px; margin-top:10px;">';
+    html += '<input type="text" placeholder="ili skeniraj/unesi šifru role" class="form-control" style="flex:1; font-size:13px;" id="fifoInput_' + s + '" onkeydown="if(event.key===\'Enter\') fifoManualAddRoll(' + s + ')">';
+    html += '<button class="btn btn-sm" style="background:#f5f5f5;" onclick="fifoManualAddRoll(' + s + ')">+ Dodaj</button>';
+    html += '</div>';
+
+    // Ručno dodane (manualne / scanned) role
+    html += '<div id="fifoManualList_' + s + '" style="margin-top:8px;"></div>';
 
     html += '</div>';
   }
@@ -2875,6 +2918,7 @@ function fifoRenderLayers() {
 
   for (var si = 1; si <= 4; si++) {
     fifoRenderListPicker(si);
+    fifoRenderManualList(si);
   }
 }
 
@@ -2950,6 +2994,122 @@ window.fifoSetListRollKg = function(layer, rollId, val) {
   if (isNaN(kg) || kg < 0) return;
   if (kg > sel.data.remaining_kg) kg = sel.data.remaining_kg;
   sel.kg = kg;
+};
+
+// ========================================================
+// RUČNI unos šifre (fallback kad rola nije u list-pickeru)
+// ========================================================
+fifoState.manualByLayer = fifoState.manualByLayer || { 1: [], 2: [], 3: [], 4: [] };
+
+window.fifoManualAddRoll = async function(layer) {
+  var input = document.getElementById('fifoInput_' + layer);
+  var code = (input.value || '').trim();
+  if (!code) return;
+  input.value = '';
+
+  // Prvo pokušaj pronaći u prod_inventory_rolls po roll_code
+  var rollRes = await initSupabase()
+    .from('prod_inventory_rolls')
+    .select('*')
+    .eq('roll_code', code)
+    .limit(1);
+
+  var rollData = null;
+  var sourceTable = null;
+
+  if (rollRes.data && rollRes.data.length > 0) {
+    var r = rollRes.data[0];
+    rollData = {
+      source: 'rolls', id: r.id, code: r.roll_code,
+      label: r.roll_code + (r.manufacturer ? ' · ' + r.manufacturer : ''),
+      weight_kg: r.initial_weight_kg, consumed_kg: r.consumed_kg || 0,
+      remaining_kg: parseFloat(r.remaining_kg || 0), status: r.status,
+      manufacturer: r.manufacturer, width_cm: r.width_cm, grammage: r.grammage, color: r.color,
+      _raw: r
+    };
+    sourceTable = 'prod_inventory_rolls';
+  } else {
+    // Pokušaj u prod_inventory_printed
+    var printedRes = await initSupabase()
+      .from('prod_inventory_printed')
+      .select('*')
+      .eq('printed_roll_code', code)
+      .limit(1);
+    if (printedRes.data && printedRes.data.length > 0) {
+      var p = printedRes.data[0];
+      rollData = {
+        source: 'printed', id: p.id, code: p.printed_roll_code,
+        label: p.printed_roll_code + (p.parent_roll_code ? ' (iz ' + p.parent_roll_code + ')' : ''),
+        weight_kg: p.weight_kg, consumed_kg: p.consumed_kg || 0,
+        remaining_kg: parseFloat(p.remaining_kg || 0), status: p.status,
+        work_order_number: p.work_order_number,
+        _raw: p
+      };
+      sourceTable = 'prod_inventory_printed';
+    }
+  }
+
+  if (!rollData) {
+    showMessage('Rola sa šifrom "' + code + '" nije pronađena u bazi', 'warning');
+    return;
+  }
+  if (rollData.remaining_kg <= 0) {
+    showMessage('Rola "' + code + '" nema preostalog papira (' + rollData.remaining_kg + ' kg)', 'warning');
+    return;
+  }
+
+  // Dodaj u selectedByLayer direktno (kao da je operater kliknuo u list-pickeru)
+  var selected = fifoState.selectedByLayer[layer] || (fifoState.selectedByLayer[layer] = {});
+  if (selected[rollData.id]) {
+    showMessage('Rola "' + code + '" je već odabrana', 'info');
+    return;
+  }
+  selected[rollData.id] = { kg: rollData.remaining_kg, fullyConsumed: true, source: rollData.source, data: rollData };
+
+  // Dodaj u manualByLayer liste za vizualno razlikovanje
+  if (!fifoState.manualByLayer[layer]) fifoState.manualByLayer[layer] = [];
+  fifoState.manualByLayer[layer].push(rollData);
+
+  fifoRenderManualList(layer);
+  showMessage('✅ Rola "' + code + '" dodana (' + rollData.remaining_kg.toFixed(1) + ' kg preostalo)', 'success');
+};
+
+function fifoRenderManualList(layer) {
+  var container = document.getElementById('fifoManualList_' + layer);
+  if (!container) return;
+  var manual = fifoState.manualByLayer[layer] || [];
+  if (manual.length === 0) { container.innerHTML = ''; return; }
+
+  var selected = fifoState.selectedByLayer[layer] || {};
+  var html = '<div style="font-size:12px; color:#666; margin-bottom:4px;">Ručno dodane role:</div>';
+  manual.forEach(function(r) {
+    var sel = selected[r.id];
+    if (!sel) return;
+    var fully = sel.fullyConsumed !== false;
+    var kg = sel.kg != null ? sel.kg : r.remaining_kg;
+    html += '<div style="display:grid; grid-template-columns: 28px 1fr 110px 120px 130px 30px; gap:8px; align-items:center; padding:6px 8px; border-bottom:1px dashed #eee; background:' + (fully ? '#e8f5e9' : '#fff8e1') + ';">';
+    html += '<div style="color:#1976d2;font-size:16px;">✓</div>';
+    html += '<div><strong>' + r.code + '</strong> <span style="font-size:11px;color:#888;">(' + r.source + ')</span></div>';
+    html += '<div style="text-align:right;">' + r.remaining_kg.toFixed(1) + ' kg</div>';
+    html += '<div style="display:flex;align-items:center;gap:4px;">';
+    html += '<input type="number" step="0.1" min="0" value="' + Number(kg).toFixed(2) + '" ' +
+            (fully ? 'disabled' : '') + ' onchange="fifoSetListRollKg(' + layer + ', \'' + r.id + '\', this.value)" ' +
+            'style="width:75px; font-size:13px; padding:3px 5px;' + (fully ? 'background:#eee;' : '') + '"> kg';
+    html += '</div>';
+    html += '<label style="font-size:12px;display:flex;align-items:center;gap:3px;cursor:pointer;">';
+    html += '<input type="checkbox" ' + (fully ? 'checked' : '') + ' onchange="fifoToggleListRollFull(' + layer + ', \'' + r.id + '\')"> potpuno';
+    html += '</label>';
+    html += '<button onclick="fifoManualRemoveRoll(' + layer + ', \'' + r.id + '\')" style="background:none;border:none;cursor:pointer;color:#d32f2f;font-size:14px;" title="Ukloni">✕</button>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+window.fifoManualRemoveRoll = function(layer, rollId) {
+  var sel = fifoState.selectedByLayer[layer] || {};
+  delete sel[rollId];
+  fifoState.manualByLayer[layer] = (fifoState.manualByLayer[layer] || []).filter(function(r) { return String(r.id) !== String(rollId); });
+  fifoRenderManualList(layer);
 };
 
 function fifoRenderList(layer) {
