@@ -1,6 +1,6 @@
 # CARTA-ERP - AI Razvojni Vodič
 
-> **Verzija:** 1.4 | **Zadnje ažuriranje:** 14. Travnja 2026 (sesija 2)
+> **Verzija:** 1.5 | **Zadnje ažuriranje:** 27. Travnja 2026 (sesija 3)
 
 ---
 
@@ -272,7 +272,7 @@ UVIJEK provjeri get_counter_status PRIJE start_machine_counter!
 
 ---
 
-## ⚡ 23 Zlatna Pravila Razvoja
+## ⚡ 25 Zlatna Pravila Razvoja
 
 ### Pravilo 1: Baza prije koda
 ```
@@ -511,6 +511,57 @@ prod_counters sadrži tipove brojača:
 | Kvar          | KV     | -                          | KV{br}/{god}    |
 | MaintOrder    | MO     | -                          | MO{br}/{god}    |
 ```
+
+### Pravilo 25: Ne pisati inline `<svg>` tagove u view fragmentima ⭐ KRITIČNO
+
+**Problem:** VSCode Live Server (Ritwick Dey ekstenzija) ima regex
+`/(<\/body>|<\/svg>)/i` i ubacuje WebSocket auto-reload `<script>`
+**ispred svakog `</svg>` taga**. Pošto su svi view-ovi HTML fragmenti
+(bez `</body>`), Live Server pada na fallback i injektira u SVAKI SVG.
+Dashboard s 30 ikona = 30 injekcija = razbijen DOM. Browser baca:
+
+```
+Uncaught SyntaxError: Failed to execute 'replaceChild' on 'Node':
+Invalid or unexpected token
+  at router.js:162 (ili gdje god script bude inserted)
+```
+
+**Symptom:** stranica učita HTML, ali router-ov script tag ne izvršava,
+podaci ne dolaze (KPI ostaju "-"), funkcije nedefinirane. Node/jsdom
+parsiraju fajl ispravno → debug težak.
+
+**❌ POGREŠNO:**
+```html
+<svg xmlns="..." viewBox="..."><path d="..."/></svg>
+```
+```js
+return '<svg ...>' + ... + '</svg>';   // SVG kao JS string
+```
+
+**✅ ISPRAVNO:** URL-encoded SVG kao CSS background:
+```css
+.dash-icon-users {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' ...%3E...%3C/svg%3E");
+  width: 24px; height: 24px;
+}
+```
+```html
+<span class="dash-icon dash-icon-users"></span>
+```
+
+Ključ: zamijeni `<` s `%3C`, `>` s `%3E`, `/` s `%2F` u data URL-u.
+Live Server-ov regex ne matcha URL-encoded sadržaj jer literal `</svg>`
+ne postoji u source-u.
+
+**Alternative:** CSS-only ikone (border/transform), Unicode dingbats
+(⚙ ⚠ ✓ ◉), eksterni `<img src="/icons/x.svg">`, `createElementNS` DOM API.
+
+**Vidi:** [views/dashboard.html](views/dashboard.html) `.dash-icon-*` klase
+(17 ikona) + memory `feedback_no_svg_in_js_strings.md`.
+
+**Debug:** Browser DevTools → Network → klik view.html → Response tab.
+Ako vidiš `<!-- Code injected by live-server -->\n<script>...</script>`
+unutar HTML strukture (ne na kraju), problem je Live Server.
 
 ---
 
@@ -1022,6 +1073,69 @@ Za detaljnije informacije, pogledaj:
 
 ## 📅 Changelog & Najnovija Ažuriranja
 
+### 27. Travnja 2026 - Sesija 3: UI refactor + FIFO finalizacija + Live Server bug ⭐⭐
+
+**🔥 KRITIČNI BUG OTKRIVEN: Live Server + inline `<svg>`**
+- VSCode Live Server ima regex `/(<\/body>|<\/svg>)/i` i injektira auto-reload `<script>` ispred SVAKOG `</svg>` taga
+- Dashboard s 30 ikona = 30 injekcija unutar SVG elementa = razbijen DOM
+- Symptom: `Uncaught SyntaxError: replaceChild Invalid token`, podaci ne dolaze, KPI "-"
+- **Pravilo 25 dodano**: ne pisati inline `<svg>` u view fragmentima
+- Rješenje: URL-encoded SVG kao CSS background-image (`%3Csvg...%3C%2Fsvg%3E`)
+
+**Krediti modul (kompletna implementacija):**
+- ⭐ **Plan otplate UI** — list-picker rata iz `prod_loan_payment_schedule`, status pilovi (Plaćeno/Prekoračeno/Uskoro), filteri, modal za markiranje plaćanja
+- ⭐ **EU PROJEKT 79 dodatnih rata** (rows 101-180, 2028-05 do 2034-12) — `sql/loan_payment_schedule_eu_projekt_full.sql`
+- ⭐ **4 nove KPI kartice** za payment tracking (Preostalo / Sljedećih 30 dana / Prekoračene / Plaćeno)
+- ⭐ **Profesionalni UI**: SVG ikone (CSS klase), tamni table header, hover states
+- ⭐ **Router defenzivni try/catch** za script re-execution
+
+**Planiranje — grupiranje po narudžbi:**
+- ⭐ **2-razinsko grupiranje** glavne tablice: Narudžba → Artikli (collapsible)
+- ⭐ Grupni red: kupac, broj artikala, RN%, Proizv%, ukupno naručeno/proizvedeno, najraniji rok, status, privici
+- ⭐ Auto-expand na search match, "Proširi sve / Skupi sve" gumbi
+- ⭐ Sort_order ↑↓ unutar narudžbe + grupno pomicanje cijele narudžbe
+
+**Planiranje — RN tablica grupiranje (3-razinsko):**
+- ⭐ **Tip → Narudžba → RN** hijerarhija (Glavni / Tisak / Rezanje)
+- ⭐ Status breakdown po grupama, ukupne količine
+- ⭐ Reuse `.order-group-row` CSS pattern
+
+**Tisak — Pregled po RN:**
+- ⭐ Checkbox "Samo aktivni" → puni filter red (Status, Kupac, Artikl, Pretraga)
+- ⭐ Grupiranje po narudžbi (kao u planiranju)
+
+**Skladište — 2 nova taba:**
+- ⭐ **📊 Rola po RN** — pregled potrošenih i djelomično potrošenih rola iz `prod_inventory_consumed_rolls` grupirano po RN
+- ⭐ **🧹 Zaostali POP** (admin only) — cleanup tool za POP-ove na stanju kojima je RN već završen na bottomeru (ESP32 desync mitigation)
+
+**Bottomer (voditelj + slagač):**
+- ⭐ **Auto-prompt zaostali POP** — nakon `complete_bottomer_phase`, ako ima POP-ova na stanju za taj RN, modal pita treba li ih označiti kao Utrošeno (Pravilo 18 idempotency, going forward)
+
+**Tuber — POP "Prikaži sve" toggle:**
+- ⭐ Zbirni Pregled po RN: default 10 najnovijih (po `MAX(created_at)`), gumb za prikaz svih
+- ⭐ Pojedinačni POP zapisi: isto, default 10, sortirano po `created_at` DESC
+
+**Tuber-Materijal — FIFO je sada JEDINI mode** (toggle uklonjen, legacy section sakrivena):
+- ⭐ **List-picker za sve slojeve** (S1-S4 osim folije) — checkbox po roli + kg input + "potpuno" toggle
+- ⭐ **S1 + tisak**: lista otiskanih rola **filtrirana po `article_id`** (ne više po `work_order_number`)
+- ⭐ **Stripes support** za slojeve 2-4 (`prod_inventory_strips`) — uz stock role
+- ⭐ **Manualni unos role** modal (rola koja fizički postoji ali nije u bazi)
+- ⭐ **Filter po proizvođaču** dropdown (auto-detect ako sloj ima 2+ proizvođača)
+- ⭐ **Kalkulacija sekcija** — Potrebno (formula) vs Označeno (kg) po sloju, color-coded status, validacija prije save
+- ⭐ **POP idempotency check** (Pravilo 18) — banner ako su neki POP-ovi već imali skidanje, blokirano ako svi
+- ⭐ **Direct save** umjesto `TuberFifo.executePlan()` — piše direktno u `prod_inventory_consumed_rolls` + update source tablice (rolls/printed/strips/manual)
+
+**Dashboard refactor (Pregled):**
+- ⭐ **Sekcija kamere uklonjena** — fleksibilnija "Proizvodnja danas/jučer" preuzima cijelu širinu
+- ⭐ **Sve emojiji zamijenjeni** SVG ikonama (URL-encoded CSS data URLs nakon Live Server bug-a)
+- ⭐ **Animacije**: KPI count-up (0→target easeOutCubic), OEE conic-gradient donut, progress bar fill, pulse dot
+- ⭐ **Defenzivni count-up** — postavi vrijednost odmah, animacija povratno (failsafe ako RAF ne fire-a)
+- ⭐ **Profesionalni stil**: accent bar 4px po KPI kartici, hover lift, stagger fade-in
+
+**Git stanje (sesija 3):**
+- ⭐ ~25 commitova lokalno, **nije push-ano** (čeka final test)
+- ⭐ Memory rule (`feedback_no_svg_in_js_strings.md`) ažuriran s root cause-om
+
 ### 14. Travnja 2026 - Sesija 2 finale: Tuber FIFO sustav ⭐
 
 **Novi opcijski FIFO flow za Tuber (beta, toggle mode):**
@@ -1157,10 +1271,10 @@ Za detaljnije informacije, pogledaj:
 
 ---
 
-**Verzija dokumenta:** 1.4
-**Zadnje ažuriranje:** 14. Travnja 2026 (sesija 2)
+**Verzija dokumenta:** 1.5
+**Zadnje ažuriranje:** 27. Travnja 2026 (sesija 3)
 **Autor:** AI Assistant (Claude)
 
 ---
 
-💡 **Savjet:** Prije pisanja koda, UVIJEK prvo pročitaj **20 Zlatnih Pravila Razvoja** i **Kritični Bugovi** sekcije!
+💡 **Savjet:** Prije pisanja koda, UVIJEK prvo pročitaj **25 Zlatnih Pravila Razvoja** i **Kritični Bugovi** sekcije!
