@@ -1,5 +1,5 @@
 <h1 style="margin-bottom: 30px; color: var(--primary); display:flex; align-items:center; gap:12px;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/></svg>
+  <span class="dash-icon dash-icon-lg dash-icon-bar-chart"></span>
   <span>Pregled</span>
 </h1>
 
@@ -7,28 +7,28 @@
 <div class="status-grid dash-kpi-row" id="sectionKpiCards">
   <a href="#artikli" class="status-card" style="text-decoration: none; cursor: pointer;">
     <div class="status-card-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="dash-icon dash-icon-lg dash-icon-users"></span>
     </div>
     <div class="status-card-value" id="kpiCustomers">-</div>
     <div class="status-card-label">Kupci</div>
   </a>
   <a href="#artikli" class="status-card info" style="text-decoration: none; cursor: pointer;">
     <div class="status-card-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
+      <span class="dash-icon dash-icon-lg dash-icon-package"></span>
     </div>
     <div class="status-card-value" id="kpiArticles">-</div>
     <div class="status-card-label">Artikli</div>
   </a>
   <a href="#maintenance" class="status-card success" style="text-decoration: none; cursor: pointer;">
     <div class="status-card-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+      <span class="dash-icon dash-icon-lg dash-icon-factory"></span>
     </div>
     <div class="status-card-value" id="kpiMachines">-</div>
     <div class="status-card-label">Strojevi</div>
   </a>
   <a href="#planiranje" class="status-card warning" style="text-decoration: none; cursor: pointer;">
     <div class="status-card-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+      <span class="dash-icon dash-icon-lg dash-icon-clipboard"></span>
     </div>
     <div class="status-card-value" id="kpiOrders">-</div>
     <div class="status-card-label">Aktivne narudžbe</div>
@@ -39,7 +39,7 @@
 <div class="card" style="margin-bottom: 20px;">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <span style="display:inline-flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-search"></span>
       Sljedivost palete — upis broja palete za punu povijest (kupac, RN, POP tuljci, role papira)
     </span>
   </div>
@@ -57,7 +57,7 @@
   <div class="modal-content" style="max-width: 720px;">
     <div class="modal-header">
       <h3 id="traceModalTitle" style="display:inline-flex; align-items:center; gap:8px; margin:0;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-search"></span>
         Sljedivost
       </h3>
       <span class="modal-close" onclick="closeModal('traceModal')">&times;</span>
@@ -73,7 +73,7 @@
 <div style="margin-bottom: 20px;">
   <div class="card">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-bar-chart"></span>
       <span>Proizvodnja</span>
     </div>
     <div class="card-body" style="padding: 16px;">
@@ -118,7 +118,7 @@
   <!-- Role papira s detaljima -->
   <div class="card" style="flex: 1;" id="sectionRolePapira">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-package"></span>
       <span>Role papira</span>
     </div>
     <div class="card-body">
@@ -150,7 +150,7 @@
   <!-- Aktivni radni nalozi po linijama -->
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
       <span>Aktivni radni nalozi</span>
     </div>
     <div class="card-body">
@@ -178,13 +178,13 @@
   <!-- Trake i zaposlenici -->
   <div class="card" style="flex: 1;" id="sectionResursi">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-bar-chart"></span>
       <span>Resursi</span>
     </div>
     <div class="card-body">
       <div style="display: flex; flex-direction: column; gap: 15px;">
         <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
+          <span class="dash-icon dash-icon-md dash-icon-grid" style="width:22px; height:22px;"></span>
           <div style="flex: 1;">
             <div style="font-size: 0.85em; color: #666;">Trake</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiBelts">-</div>
@@ -192,7 +192,7 @@
           <div style="font-size: 0.85em; color: #888;">pozicija</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M2 18a5 5 0 0 1 10 0"/><circle cx="7" cy="7" r="3"/><path d="M14 8a4 4 0 1 0 0-8"/><path d="M22 18a3 3 0 0 0-2-2.82"/></svg>
+          <span class="dash-icon dash-icon-md dash-icon-people" style="width:22px; height:22px;"></span>
           <div style="flex: 1;">
             <div style="font-size: 0.85em; color: #666;">Zaposlenici</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiEmployees">-</div>
@@ -200,7 +200,7 @@
           <div style="font-size: 0.85em; color: #888;">aktivnih</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="dash-icon dash-icon-md dash-icon-file"></span>
           <div style="flex: 1;">
             <div style="font-size: 0.85em; color: #666;">POP na čekanju</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiPOP">-</div>
@@ -217,7 +217,7 @@
   <div class="card" style="flex: 2;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-clipboard"></span>
         Aktivni radni nalozi - Proizvodnja
       </span>
       <a href="#planiranje" class="btn btn-sm btn-outline">Svi nalozi →</a>
@@ -246,7 +246,7 @@
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-printer"></span>
         Aktivni nalozi - Tisak
       </span>
     </div>
@@ -291,7 +291,7 @@
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%); color: white;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-zap"></span>
         OEE po liniji i stroju (zadnjih 30 dana)
       </span>
       <a href="#oee" style="color: white; text-decoration: none; font-size: 0.85em; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 4px;">Detaljno →</a>
@@ -309,7 +309,7 @@
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%); color: white;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-alert"></span>
         Problematični završeni nalozi (proizvedeno &lt; 90% planiranog, zadnjih 30 dana)
       </span>
       <span class="badge" id="varianceBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
@@ -344,7 +344,7 @@
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); color: white;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
         Aktivne prijave kvarova
       </span>
       <span class="badge" id="kvaroviBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
@@ -374,7 +374,7 @@
   <div class="card" style="flex: 1;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); color: white;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-check"></span>
         Kontrole vreća (jučer + danas)
       </span>
       <span class="badge" id="kontroleBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
@@ -405,33 +405,33 @@
 <!-- Brzi pristup -->
 <div class="card" id="sectionBrziPristup">
   <div class="card-header" style="display:flex; align-items:center; gap:8px;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <span class="dash-icon dash-icon-md dash-icon-zap"></span>
     <span>Brzi pristup</span>
   </div>
   <div class="card-body">
     <div class="btn-group dash-quick-access" style="flex-wrap: wrap; gap: 8px;">
       <a href="#planiranje" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-clipboard"></span>
         Planiranje
       </a>
       <a href="#artikli" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-package"></span>
         Artikli
       </a>
       <a href="#skladiste" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-factory"></span>
         Skladište
       </a>
       <a href="#tuber" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+        <span class="dash-icon dash-icon-sm dash-icon-target" style="width:16px; height:16px;"></span>
         Tuber
       </a>
       <a href="#bottomer-slagac" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" x2="7.01" y1="7" y2="7"/></svg>
+        <span class="dash-icon dash-icon-sm dash-icon-tag" style="width:16px; height:16px;"></span>
         Bottomer
       </a>
       <a href="#maintenance" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
         Održavanje
       </a>
     </div>
@@ -442,7 +442,7 @@
 <div class="card" style="margin-top: 20px;" id="sectionSmjenskaIzvjesca">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <span style="display:inline-flex; align-items:center; gap:8px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span class="dash-icon dash-icon-md dash-icon-file"></span>
       Smjenska izvješća
     </span>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -478,11 +478,11 @@
         </select>
       </div>
       <button class="btn btn-sm btn-primary" onclick="ucitajSmjenskaIzvjesca()" style="display:inline-flex; align-items:center; gap:5px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span class="dash-icon dash-icon-sm dash-icon-search"></span>
         Traži
       </button>
       <button class="btn btn-sm btn-outline" onclick="resetIzvjescaFilter()" style="display:inline-flex; align-items:center; gap:5px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span class="dash-icon dash-icon-sm dash-icon-rotate"></span>
         Reset
       </button>
     </div>
@@ -517,7 +517,7 @@
   <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
     <div class="modal-header" style="background: linear-gradient(135deg, #c62828 0%, #e53935 100%); color: white;">
       <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
         Detalji prijave kvara
       </h3>
       <button class="modal-close" onclick="zatvoriKvarModal()">&times;</button>
@@ -533,7 +533,7 @@
   <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
     <div class="modal-header" style="background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); color: white;">
       <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-check"></span>
         Detalji kontrole vreće
       </h3>
       <button class="modal-close" onclick="zatvoriKontrolaModal()">&times;</button>
@@ -549,7 +549,7 @@
   <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
     <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white;">
       <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+        <span class="dash-icon dash-icon-md dash-icon-file"></span>
         Detalji smjenskog izvješća
       </h3>
       <button class="modal-close" onclick="zatvoriIzvjesceModal()">&times;</button>
@@ -865,6 +865,79 @@
 /* Quick access gumbi sa SVG-om — finiji hover */
 .dash-quick-access .btn { transition: all 0.18s ease; }
 .dash-quick-access .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+/* ============================================
+   ICON CLASSES — URL-encoded SVG kao background
+   Razlog: VSCode Live Server inject-a auto-reload script ispred svakog
+   closing svg taga (regex matcha /body i /svg) — encoding kao data URL
+   sa %3C/%3E umjesto literal angle brackets zaobilazi to.
+   Vidi: memory/feedback_no_svg_in_js_strings.md
+   ============================================ */
+.dash-icon {
+  display: inline-block;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  flex-shrink: 0;
+  color: currentColor;
+}
+.dash-icon-sm { width: 18px; height: 18px; }
+.dash-icon-md { width: 24px; height: 24px; }
+.dash-icon-lg { width: 28px; height: 28px; }
+
+/* Lucide-style ikone (URL-encoded — encoded form ne lomi Live Server) */
+.dash-icon-bar-chart {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='M7 16V9'/%3E%3Cpath d='M12 16V5'/%3E%3Cpath d='M17 16v-4'/%3E%3C/svg%3E");
+}
+.dash-icon-users {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
+}
+.dash-icon-package {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='M3.3 7 12 12l8.7-5'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E");
+}
+.dash-icon-factory {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/%3E%3C/svg%3E");
+}
+.dash-icon-clipboard {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='8' height='4' x='8' y='2' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3C/svg%3E");
+}
+.dash-icon-search {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+}
+.dash-icon-printer {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 6 2 18 2 18 9'/%3E%3Cpath d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'/%3E%3Crect width='12' height='8' x='6' y='14'/%3E%3C/svg%3E");
+}
+.dash-icon-wrench {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/svg%3E");
+}
+.dash-icon-zap {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E");
+}
+.dash-icon-alert {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+}
+.dash-icon-check {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
+}
+.dash-icon-file {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3C/svg%3E");
+}
+.dash-icon-rotate {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8'/%3E%3Cpath d='M3 3v5h5'/%3E%3C/svg%3E");
+}
+.dash-icon-grid {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Cpath d='M7 3v18'/%3E%3Cpath d='M3 12h18'/%3E%3C/svg%3E");
+}
+.dash-icon-people {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 18a5 5 0 0 1 10 0'/%3E%3Ccircle cx='7' cy='7' r='3'/%3E%3Cpath d='M14 8a4 4 0 1 0 0-8'/%3E%3Cpath d='M22 18a3 3 0 0 0-2-2.82'/%3E%3C/svg%3E");
+}
+.dash-icon-target {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3C/svg%3E");
+}
+.dash-icon-tag {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Cline x1='7' x2='7.01' y1='7' y2='7'/%3E%3C/svg%3E");
+}
 
 /* Subtle fade-in za cijeli dashboard pri loadu */
 @keyframes dashFadeIn {
