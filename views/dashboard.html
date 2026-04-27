@@ -751,9 +751,178 @@
   font-weight: 600;
   font-size: 1.1em;
 }
+
+/* ============================================
+   DASHBOARD ANIMACIJE + PROFESIONALNI STIL
+   ============================================ */
+
+/* KPI kartice — accent bar + hover lift */
+.dash-kpi-row .status-card {
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  padding: 18px 20px;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.dash-kpi-row .status-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--primary);
+  transition: width 0.18s ease;
+}
+.dash-kpi-row .status-card.warning::before { background: var(--warning); }
+.dash-kpi-row .status-card.info::before { background: var(--info); }
+.dash-kpi-row .status-card.success::before { background: var(--success); }
+.dash-kpi-row .status-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.dash-kpi-row .status-card:hover::before { width: 6px; }
+.dash-kpi-row .status-card-icon {
+  margin-bottom: 10px;
+  color: var(--primary);
+  opacity: 0.85;
+}
+.dash-kpi-row .status-card.warning .status-card-icon { color: var(--warning); }
+.dash-kpi-row .status-card.info .status-card-icon { color: var(--info); }
+.dash-kpi-row .status-card.success .status-card-icon { color: var(--success); }
+.dash-kpi-row .status-card-value {
+  font-size: 2em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.dash-kpi-row .status-card-label {
+  font-size: 0.78em;
+  color: #555;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+
+/* Pulse dot za live indikator (Live brojači) */
+@keyframes dashPulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,82,82,0.7); transform: scale(1); }
+  50%      { box-shadow: 0 0 0 8px rgba(255,82,82,0); transform: scale(1.15); }
+}
+.live-dot { animation: dashPulseDot 1.5s ease-in-out infinite; }
+
+/* Animirani progress bar fill (KPI / Active RN / Live counters) */
+@keyframes dashBarFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.dash-bar-fill {
+  transform-origin: left center;
+  animation: dashBarFill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* OEE donut SVG animation */
+@keyframes dashDonutFill {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: var(--donut-offset, 0); }
+}
+.dash-donut-progress {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  stroke-dasharray: 100;
+  animation: dashDonutFill 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Sparkline draw animacija */
+@keyframes dashSparkDraw {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+.dash-sparkline-path {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: dashSparkDraw 1.4s ease-out forwards;
+}
+
+/* Card header iconize */
+.card-header svg { flex-shrink: 0; }
+
+/* Quick access gumbi sa SVG-om — finiji hover */
+.dash-quick-access .btn { transition: all 0.18s ease; }
+.dash-quick-access .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+/* Subtle fade-in za cijeli dashboard pri loadu */
+@keyframes dashFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.dash-kpi-row .status-card,
+#sectionRolePapira,
+#sectionLiveCounters,
+#sectionOee,
+#sectionVariance {
+  animation: dashFadeIn 0.4s ease-out backwards;
+}
+.dash-kpi-row .status-card:nth-child(1) { animation-delay: 0.0s; }
+.dash-kpi-row .status-card:nth-child(2) { animation-delay: 0.05s; }
+.dash-kpi-row .status-card:nth-child(3) { animation-delay: 0.1s; }
+.dash-kpi-row .status-card:nth-child(4) { animation-delay: 0.15s; }
 </style>
 
 <script>
+// ============================================
+// ANIMATION HELPERS
+// ============================================
+
+// Count-up animacija za KPI brojke (0 → target preko duration ms s easeOutCubic)
+function dashAnimateCount(elementId, targetValue, duration) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  duration = duration || 800;
+  var start = performance.now();
+  var startVal = 0;
+  function tick(now) {
+    var t = Math.min(1, (now - start) / duration);
+    var eased = 1 - Math.pow(1 - t, 3);  // easeOutCubic
+    var val = Math.round(startVal + (targetValue - startVal) * eased);
+    el.textContent = (val).toLocaleString('hr-HR');
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = targetValue.toLocaleString('hr-HR');
+  }
+  requestAnimationFrame(tick);
+}
+
+// Count-up za decimalne brojeve (npr. tone, OEE %)
+function dashAnimateDecimal(elementId, targetValue, duration, decimals) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  duration = duration || 800;
+  decimals = decimals != null ? decimals : 1;
+  var start = performance.now();
+  function tick(now) {
+    var t = Math.min(1, (now - start) / duration);
+    var eased = 1 - Math.pow(1 - t, 3);
+    var val = (targetValue * eased).toFixed(decimals);
+    el.textContent = val;
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = targetValue.toFixed(decimals);
+  }
+  requestAnimationFrame(tick);
+}
+
+// Generira SVG donut chart za OEE % vrijednosti
+function dashOeeDonut(percent, color, label) {
+  percent = Math.max(0, Math.min(100, Number(percent) || 0));
+  color = color || '#2e7d32';
+  label = label || (percent.toFixed(0) + '%');
+  return '<svg viewBox="0 0 36 36" style="width:78px;height:78px;display:block;">' +
+    '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="#eef2f7" stroke-width="3"/>' +
+    '<circle cx="18" cy="18" r="15.9155" class="dash-donut-progress" stroke="' + color + '" ' +
+      'stroke-dasharray="' + percent.toFixed(2) + ' 100" ' +
+      'style="--donut-offset: ' + (100 - percent).toFixed(2) + ';"/>' +
+    '<text x="18" y="20.5" text-anchor="middle" font-size="9" font-weight="700" fill="#333" style="transform:none;">' + label + '</text>' +
+    '</svg>';
+}
+
 async function initDashboardView() {
   console.log('Dashboard init...');
   
@@ -793,31 +962,30 @@ async function initDashboardView() {
       Employees.getAll()
     ]);
     
-    document.getElementById('kpiCustomers').textContent = r[0] ? r[0].length : 0;
-    document.getElementById('kpiArticles').textContent = r[1] ? r[1].length : 0;
-    document.getElementById('kpiMachines').textContent = r[2] ? r[2].length : 0;
-    document.getElementById('kpiRolls').textContent = r[3] ? r[3].length : 0;
-    document.getElementById('kpiBelts').textContent = r[4] ? r[4].length : 0;
-    document.getElementById('kpiEmployees').textContent = r[5] ? r[5].length : 0;
-    
+    dashAnimateCount('kpiCustomers', r[0] ? r[0].length : 0);
+    dashAnimateCount('kpiArticles', r[1] ? r[1].length : 0);
+    dashAnimateCount('kpiMachines', r[2] ? r[2].length : 0);
+    dashAnimateCount('kpiRolls', r[3] ? r[3].length : 0);
+    dashAnimateCount('kpiBelts', r[4] ? r[4].length : 0);
+    dashAnimateCount('kpiEmployees', r[5] ? r[5].length : 0);
+
     // Aktivne narudžbe
     var ord = await initSupabase().from('prod_orders').select('id').eq('status', 'Aktivno');
-    document.getElementById('kpiOrders').textContent = ord.data ? ord.data.length : 0;
-    
+    dashAnimateCount('kpiOrders', ord.data ? ord.data.length : 0);
+
     // Izračunaj bijeli/smeđi papir u tonama
     if (r[3] && r[3].length) {
       var bijeliKg = 0, smedjKg = 0;
       r[3].forEach(function(roll) {
         var kg = parseFloat(roll.remaining_kg) || 0;
-        // color = 'B' za bijeli, 'S' ili 'K' za smeđi/kraft
         if (roll.color === 'B') {
           bijeliKg += kg;
         } else {
           smedjKg += kg;
         }
       });
-      document.getElementById('kpiWhiteTons').textContent = (bijeliKg / 1000).toFixed(1);
-      document.getElementById('kpiBrownTons').textContent = (smedjKg / 1000).toFixed(1);
+      dashAnimateDecimal('kpiWhiteTons', bijeliKg / 1000, 800, 1);
+      dashAnimateDecimal('kpiBrownTons', smedjKg / 1000, 800, 1);
     }
     
     // Učitaj ostale statistike
@@ -1480,7 +1648,7 @@ async function loadLiveCounters() {
         '<div style="font-size:0.85em;color:#666;margin-bottom:6px;">' + (c.work_order_number || '(nema aktivnog RN)') + '</div>' +
         '<div style="font-size:1.4em;font-weight:700;margin-bottom:4px;">' + formatBroj(c.count || 0) + ' <span style="font-size:0.6em;color:#999;font-weight:400;">/ ' + formatBroj(c.target_quantity || 0) + '</span></div>' +
         '<div style="background:#eee;border-radius:3px;height:6px;overflow:hidden;margin-bottom:4px;">' +
-        '<div style="width:' + pctClamped + '%;background:' + barColor + ';height:100%;transition:width 0.5s;"></div></div>' +
+        '<div class="dash-bar-fill" style="width:' + pctClamped + '%;background:' + barColor + ';height:100%;transition:width 0.5s;"></div></div>' +
         '<div style="font-size:0.8em;color:#666;text-align:right;">' + pct.toFixed(1) + '%</div>' +
         '</div>';
     }).join('');
@@ -1572,18 +1740,17 @@ async function loadOeeSummary() {
       // OEE world-class: 85%, good: 70%, OK: 50%
       var oeeColor = oee >= 70 ? '#2e7d32' : (oee >= 50 ? '#f57c00' : '#d32f2f');
       var linijaColor = g.line === 'WH' ? '#2e7d32' : '#e65100';
-      var stroj = (g.machine || '').toLowerCase();
-      var strojIcon = stroj === 'tuber' ? '🧻' : (stroj === 'bottomer' ? '🏷️' : '⚙️');
 
       return '<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; background: #fff;">' +
-        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
-        '<span style="font-weight: 600; font-size: 0.95em;">' + strojIcon + ' ' + g.machine +
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">' +
+        '<span style="font-weight: 600; font-size: 0.95em;">' + g.machine +
         ' <span style="background: ' + linijaColor + '; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 6px;">' + g.line + '</span></span>' +
         '<span style="font-size: 0.8em; color: #999;">' + g.count + ' smj.</span>' +
         '</div>' +
-        '<div style="text-align: center; margin-bottom: 10px;">' +
-        '<div style="font-size: 2.2em; font-weight: 700; color: ' + oeeColor + '; line-height: 1;">' + oee.toFixed(1) + '%</div>' +
-        '<div style="font-size: 0.75em; color: #999; letter-spacing: 1px;">OEE</div>' +
+        '<div style="display:flex; align-items:center; gap:14px; margin-bottom: 12px;">' +
+        dashOeeDonut(oee, oeeColor, oee.toFixed(1) + '%') +
+        '<div style="flex:1;"><div style="font-size: 0.7em; color: #999; letter-spacing: 1px; text-transform:uppercase; margin-bottom:4px;">OEE</div>' +
+        '<div style="font-size: 1.6em; font-weight: 700; color: ' + oeeColor + '; line-height: 1.1;">' + oee.toFixed(1) + '%</div></div>' +
         '</div>' +
         '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.8em;">' +
         '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
@@ -1699,7 +1866,7 @@ async function loadActiveRN() {
           '<div style="font-size: 0.82em; color: #555; margin-bottom: 2px;">' +
           formatBroj(proizvedeno) + ' / ' + formatBroj(planirano) + ' <strong>(' + pct.toFixed(0) + '%)</strong></div>' +
           '<div style="background: #eee; border-radius: 3px; height: 6px; overflow: hidden;">' +
-          '<div style="width: ' + pctClamped + '%; background: ' + barColor + '; height: 100%;"></div></div></div>';
+          '<div class="dash-bar-fill" style="width: ' + pctClamped + '%; background: ' + barColor + '; height: 100%;"></div></div></div>';
 
         tableHtml += '<tr>' +
           '<td><strong>' + (rn.wo_number || '-') + '</strong></td>' +
