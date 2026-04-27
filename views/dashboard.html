@@ -899,39 +899,61 @@
 // ============================================
 
 // Count-up animacija za KPI brojke (0 → target preko duration ms s easeOutCubic)
+// DEFENSIVE: prvo postavi finalnu vrijednost odmah (failsafe), pa onda animiraj povratno.
+// Ovaj redoslijed garantira da podaci budu vidljivi i ako RAF dropa (background tab,
+// hidden element, browser bug, itd.).
 function dashAnimateCount(elementId, targetValue, duration) {
   var el = document.getElementById(elementId);
   if (!el) return;
+  var target = Number(targetValue) || 0;
+
+  // FAILSAFE: postavi konačnu vrijednost odmah
+  el.textContent = target.toLocaleString('hr-HR');
+
+  // Pokušaj animaciju — ako uspije, finalno se setIra na kraju
   duration = duration || 800;
-  var start = performance.now();
-  var startVal = 0;
-  function tick(now) {
-    var t = Math.min(1, (now - start) / duration);
-    var eased = 1 - Math.pow(1 - t, 3);  // easeOutCubic
-    var val = Math.round(startVal + (targetValue - startVal) * eased);
-    el.textContent = (val).toLocaleString('hr-HR');
-    if (t < 1) requestAnimationFrame(tick);
-    else el.textContent = targetValue.toLocaleString('hr-HR');
+  try {
+    var start = performance.now();
+    function tick(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      var val = Math.round(target * eased);
+      el.textContent = val.toLocaleString('hr-HR');
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString('hr-HR');
+    }
+    requestAnimationFrame(tick);
+  } catch (e) {
+    // Already set above — no-op
+    el.textContent = target.toLocaleString('hr-HR');
   }
-  requestAnimationFrame(tick);
 }
 
 // Count-up za decimalne brojeve (npr. tone, OEE %)
 function dashAnimateDecimal(elementId, targetValue, duration, decimals) {
   var el = document.getElementById(elementId);
   if (!el) return;
-  duration = duration || 800;
+  var target = Number(targetValue) || 0;
   decimals = decimals != null ? decimals : 1;
-  var start = performance.now();
-  function tick(now) {
-    var t = Math.min(1, (now - start) / duration);
-    var eased = 1 - Math.pow(1 - t, 3);
-    var val = (targetValue * eased).toFixed(decimals);
-    el.textContent = val;
-    if (t < 1) requestAnimationFrame(tick);
-    else el.textContent = targetValue.toFixed(decimals);
+
+  // FAILSAFE: postavi konačnu vrijednost odmah
+  el.textContent = target.toFixed(decimals);
+
+  duration = duration || 800;
+  try {
+    var start = performance.now();
+    function tick(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      var val = (target * eased).toFixed(decimals);
+      el.textContent = val;
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toFixed(decimals);
+    }
+    requestAnimationFrame(tick);
+  } catch (e) {
+    el.textContent = target.toFixed(decimals);
   }
-  requestAnimationFrame(tick);
 }
 
 // Generira CSS conic-gradient donut za OEE %
