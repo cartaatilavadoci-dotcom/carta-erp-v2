@@ -2155,9 +2155,8 @@ window.adminDodajPaletu = async function() {
         operator_name: postavaStr + ' (Admin)',
         status: noviStatus
       };
-      var result = await initSupabase().from('prod_inventory_gop').insert(gopData).select().single();
+      var result = await initSupabase().from('prod_inventory_gop').insert(gopData);
       if (result.error) throw result.error;
-      var adminGopId = result.data && result.data.id;
 
       // Skini praznu paletu sa stanja
       if (skiniPaletu) {
@@ -2200,9 +2199,9 @@ window.adminDodajPaletu = async function() {
       await window.updateOrderProduced(nalog.order_number, nalog.article_id, kolicina);
     }
 
-    // Skini POP sa stanja (gop_id za traceability)
+    // Skini POP sa stanja
     if (skiniPOP) {
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, adminGopId);
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
     }
 
@@ -3489,9 +3488,9 @@ window.dodajPaletu = async function() {
       
       // Zapamti broj palete za evidenciju
       window.zadnjiBrojPalete = nedovrsenaPaleta.pallet_number;
-
-      // Skini POP i paletu (gop_id za traceability)
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, nedovrsenaPaleta.id);
+      
+      // Skini POP i paletu
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
       
       // Skini trake
@@ -3526,10 +3525,9 @@ window.dodajPaletu = async function() {
         operator_name: postavaStr,
         status: noviStatus
       };
-      var result = await initSupabase().from('prod_inventory_gop').insert(gopData).select().single();
+      var result = await initSupabase().from('prod_inventory_gop').insert(gopData);
       if (result.error) throw result.error;
-      var novaGopId = result.data && result.data.id;
-
+      
       // *** SPREMI DETALJ SMJENE - nova paleta ***
       var detaljRez = await window.spremiSmjenaDetalj(brojPalete, kolicina, nalog);
       if (!detaljRez.success && confirm('Detalj smjene NIJE spremljen! Pokušati ponovno?')) {
@@ -3541,8 +3539,8 @@ window.dodajPaletu = async function() {
       
       // Zapamti broj palete za evidenciju
       window.zadnjiBrojPalete = brojPalete;
-
-      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog, novaGopId);
+      
+      var popRez = await window.skiniPOPSaStanja(nalog.wo_number, kolicina, nalog);
       if (popRez.upozorenje) showMessage(popRez.upozorenje, 'warning');
       var palRez = await window.skiniPaletuSaStanja(dimenzija);
       if (palRez.upozorenje) showMessage('⚠️ ' + palRez.upozorenje, 'warning');
@@ -3655,9 +3653,8 @@ window.updateOrderProduced = async function(orderNumber, articleId, quantity) {
 
 // ============================================
 // SKIDANJE POP SA STANJA (s evidencijom u prod_pop_consumption)
-// Ako je proslijeđen gopId, upisuje i u prod_gop_pop_link (traceability)
 // ============================================
-window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData, gopId) {
+window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData) {
   try {
     // Dohvati kontekst ako nije proslijeđen
     var nalog = nalogData || window.trenutniRNData || {};
@@ -3806,30 +3803,7 @@ window.skiniPOPSaStanja = async function(woNumber, kolicina, nalogData, gopId) {
     } else {
       console.log('📝 Evidentirano skidanje POP:', ukupnoSkinuto, '/', kolicina, 'status:', status);
     }
-
-    // 4b. TRACEABILITY: upisi vezu GOP ↔ POP (ako imamo gopId)
-    // Ne prekidaj tok ako upis padne - traceability je "nice to have"
-    if (gopId && consumptionLog.length > 0) {
-      try {
-        var linkRows = consumptionLog.map(function(c) {
-          return {
-            gop_id: gopId,
-            pop_id: c.pop_id,
-            quantity_used: c.quantity,
-            created_by: operater
-          };
-        });
-        var linkRes = await initSupabase().from('prod_gop_pop_link').insert(linkRows);
-        if (linkRes.error) {
-          console.warn('⚠️ Traceability link (gop_pop) nije upisan:', linkRes.error.message);
-        } else {
-          console.log('🔗 Traceability:', linkRows.length, 'POP↔GOP veza upisano');
-        }
-      } catch (e) {
-        console.warn('⚠️ Traceability iznimka:', e);
-      }
-    }
-
+    
     // 5. Vrati rezultat
     if (preostalo > 0) {
       if (ukupnoSkinuto === 0) {
@@ -4556,12 +4530,53 @@ window.zavrsiRN = async function() {
     } else {
       showMessage('✅ Slagač završio nalog ' + rn.wo_number + '. Čeka se voditelj.', 'success');
     }
-  } catch (e) { 
+
+    // Provjeri ima li zaostalih POP-ova za ovaj RN (klasičan ESP32 desync slučaj)
+    try {
+      await checkOrphanPOPsAfterFinish(window.trenutniRN, rn.wo_number);
+    } catch (e) {
+      console.warn('checkOrphanPOPsAfterFinish:', e);
+    }
+  } catch (e) {
     console.error('Greška pri završavanju:', e);
-    showMessage('❌ Greška: ' + e.message, 'error'); 
+    showMessage('❌ Greška: ' + e.message, 'error');
   }
   finally { hideLoading(); }
 };
+
+// ============================================
+// PROVJERA ZAOSTALIH POP-OVA (ESP32 desync mitigation)
+// ============================================
+async function checkOrphanPOPsAfterFinish(workOrderId, woNumber) {
+  if (!workOrderId) return;
+  var r = await initSupabase()
+    .from('prod_inventory_pop')
+    .select('id, pop_code, quantity')
+    .eq('work_order_id', workOrderId)
+    .eq('status', 'Na skladištu');
+  if (r.error || !r.data || r.data.length === 0) return;
+
+  var pops = r.data;
+  var totalKom = pops.reduce(function(s, p) { return s + Number(p.quantity || 0); }, 0);
+
+  var msg = '⚠️ Nalog ' + (woNumber || '') + ' ima ' + pops.length + ' POP' +
+            (pops.length === 1 ? '' : (pops.length >= 2 && pops.length <= 4 ? '-a' : '-ova')) +
+            ' na stanju (' + totalKom.toLocaleString('hr-HR') + ' kom).\n\n' +
+            'Bottomer je završen — vjerojatno su već fizički potrošeni.\n' +
+            'Označi ih kao Utrošeno?';
+  if (!confirm(msg)) return;
+
+  var ids = pops.map(function(p) { return p.id; });
+  var upd = await initSupabase()
+    .from('prod_inventory_pop')
+    .update({ status: 'Utrošeno' })
+    .in('id', ids);
+  if (upd.error) {
+    showMessage('Greška označavanja POP-ova: ' + upd.error.message, 'error');
+    return;
+  }
+  showMessage('✅ ' + ids.length + ' POP-ova označeno kao Utrošeno', 'success');
+}
 
 window.formatBroj = function(num) { return Number(num || 0).toLocaleString('hr-HR'); };
 window.openModal = function(id) { document.getElementById(id).classList.add('active'); };

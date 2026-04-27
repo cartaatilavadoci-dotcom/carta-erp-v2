@@ -2341,6 +2341,13 @@ window.zavrsiAktivniNalog = async function() {
     } else {
       showMessage('✅ Voditelj završio nalog ' + rn.wo_number + '. Čeka se slagač.', 'success');
     }
+
+    // 7. Provjeri ima li zaostalih POP-ova za ovaj RN (klasičan ESP32 desync slučaj)
+    try {
+      await checkOrphanPOPsAfterFinish(rn.id, rn.wo_number);
+    } catch (e) {
+      console.warn('checkOrphanPOPsAfterFinish:', e);
+    }
     
   } catch(e) {
     console.error('Greška pri završavanju naloga:', e);
@@ -2349,6 +2356,41 @@ window.zavrsiAktivniNalog = async function() {
     hideLoading();
   }
 };
+
+// ============================================
+// PROVJERA ZAOSTALIH POP-OVA (ESP32 desync mitigation)
+// Pomaže kad operater završi bottomer ali POP-ovi još nisu evidentirani
+// ============================================
+async function checkOrphanPOPsAfterFinish(workOrderId, woNumber) {
+  if (!workOrderId) return;
+  var r = await initSupabase()
+    .from('prod_inventory_pop')
+    .select('id, pop_code, quantity')
+    .eq('work_order_id', workOrderId)
+    .eq('status', 'Na skladištu');
+  if (r.error || !r.data || r.data.length === 0) return;
+
+  var pops = r.data;
+  var totalKom = pops.reduce(function(s, p) { return s + Number(p.quantity || 0); }, 0);
+
+  var msg = '⚠️ Nalog ' + (woNumber || '') + ' ima ' + pops.length + ' POP' +
+            (pops.length === 1 ? '' : (pops.length >= 2 && pops.length <= 4 ? '-a' : '-ova')) +
+            ' na stanju (' + totalKom.toLocaleString('hr-HR') + ' kom).\n\n' +
+            'Bottomer je završen — vjerojatno su već fizički potrošeni.\n' +
+            'Označi ih kao Utrošeno?';
+  if (!confirm(msg)) return;
+
+  var ids = pops.map(function(p) { return p.id; });
+  var upd = await initSupabase()
+    .from('prod_inventory_pop')
+    .update({ status: 'Utrošeno' })
+    .in('id', ids);
+  if (upd.error) {
+    showMessage('Greška označavanja POP-ova: ' + upd.error.message, 'error');
+    return;
+  }
+  showMessage('✅ ' + ids.length + ' POP-ova označeno kao Utrošeno', 'success');
+}
 
 // ============================================
 // UKLONI AKTIVNI NALOG (bez promjene statusa)

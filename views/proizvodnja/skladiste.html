@@ -153,6 +153,7 @@
   <button class="tab-btn" onclick="showTab('korekcije')" style="background: #fff3e0; color: #e65100;">🔧 Korekcije rola</button>
   <button class="tab-btn" onclick="showTab('neuskladjeno')" style="background: #ffebee; color: #c62828;">⚠️ Neusklađeno</button>
   <button class="tab-btn" onclick="showTab('rolePoRN')" style="background: #e8f5e9; color: #2e7d32;">📊 Rola po RN</button>
+  <button class="tab-btn" id="tabBtnZaostaliPOP" onclick="showTab('zaostaliPOP')" style="background: #fce4ec; color: #ad1457; display: none;">🧹 Zaostali POP</button>
 </div>
 
 <!-- ==================== TAB: ROLE PAPIRA ==================== -->
@@ -884,6 +885,76 @@
   </div>
 </div>
 
+<!-- ==================== TAB: ZAOSTALI POP-OVI (admin only cleanup) ==================== -->
+<div class="tab-content" id="zaostaliPOP">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #fce4ec, #f8bbd0); border-left: 4px solid #ad1457;">
+    <div class="card-body">
+      <h4 style="color: #ad1457; margin-bottom: 6px;">🧹 Zaostali POP-ovi (cleanup)</h4>
+      <p style="color: #2c3e50; margin: 0; font-size: 0.92em;">
+        POP-ovi koji su <strong>na stanju</strong> a njihov RN je već <strong>završen na bottomer-u</strong>.
+        To znači da su fizički već potrošeni ali nisu evidentirani (ESP32 desync ili manualni kasni unos).
+        <br><strong>Klikom na "Skini sve"</strong> bulk-update u status='Utrošeno' za odabrane RN-ove.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filteri -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end; gap: 10px;">
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: #666;">Radni nalog (RN)</label>
+          <input type="text" id="zopFilterRN" class="form-control form-control-sm" placeholder="npr. RN1234/26" oninput="zopApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 0 0 120px;">
+          <label style="font-size: 12px; color: #666;">Linija</label>
+          <select id="zopFilterLinija" class="form-control form-control-sm" onchange="zopApplyFilters()">
+            <option value="">Sve</option>
+            <option value="WH">W&H</option>
+            <option value="NLI">NLI</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: #666;">Artikl / kupac</label>
+          <input type="text" id="zopFilterSearch" class="form-control form-control-sm" placeholder="Pretraga..." oninput="zopApplyFilters()">
+        </div>
+        <div class="form-group" style="flex: 0 0 auto; display: flex; gap: 6px;">
+          <button class="rpr-toolbar-btn" type="button" onclick="zopExpandAll()">Proširi sve</button>
+          <button class="rpr-toolbar-btn" type="button" onclick="zopCollapseAll()">Skupi sve</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadZaostaliPOP()">🔄 Osvježi</button>
+          <button class="btn btn-sm btn-danger" onclick="zopBulkClearAll()" id="zopBulkBtn" disabled>🧹 Skini sve označene</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablica -->
+  <div class="card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 Zaostali POP-ovi po RN <span id="zopInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 30px;"><input type="checkbox" id="zopSelectAll" onchange="zopToggleAllSelected(this.checked)"></th>
+            <th>RN / POP</th>
+            <th>Artikl</th>
+            <th>Kupac</th>
+            <th style="text-align:right;">Količina (kom)</th>
+            <th>Linija</th>
+            <th>Završeno</th>
+            <th style="width:120px;">Akcija</th>
+          </tr>
+        </thead>
+        <tbody id="zaostaliPOPTableBody">
+          <tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Otvori tab da učitaš podatke</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== MODAL: KOREKCIJA POTROŠNJE ==================== -->
 <div id="korekcijaModal" class="modal">
   <div class="modal-content" style="max-width: 600px;">
@@ -1506,7 +1577,22 @@ function showTab(tabId) {
   if (tabId === 'palete') loadPalete();
   if (tabId === 'neuskladjeno') loadNeuskladjeno();
   if (tabId === 'rolePoRN') loadRolePoRN();
+  if (tabId === 'zaostaliPOP') loadZaostaliPOP();
 }
+
+// Pokaži 'Zaostali POP' tab samo ako je user admin/superadmin
+(function() {
+  function applyAdminGuard() {
+    if (typeof Auth === 'undefined' || !Auth.isAdmin) return;
+    var btn = document.getElementById('tabBtnZaostaliPOP');
+    if (btn) btn.style.display = Auth.isAdmin() ? 'inline-block' : 'none';
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyAdminGuard);
+  } else {
+    applyAdminGuard();
+  }
+})();
 
 // ============================================
 // TOGGLE SEKCIJE
@@ -4101,5 +4187,268 @@ window.rprApplyFilters = rprApplyFilters;
 window.rprToggleGroup = rprToggleGroup;
 window.rprExpandAll = rprExpandAll;
 window.rprCollapseAll = rprCollapseAll;
+
+// ============================================
+// ZAOSTALI POP-OVI — admin cleanup tool
+// ============================================
+var zopData = [];   // POP-ovi na stanju za završene RN-ove
+window.zopExpandedGroups = window.zopExpandedGroups || new Set();
+window.zopSelectedPopIds = window.zopSelectedPopIds || new Set();
+
+async function loadZaostaliPOP() {
+  if (typeof Auth !== 'undefined' && Auth.isAdmin && !Auth.isAdmin()) {
+    document.getElementById('zaostaliPOPTableBody').innerHTML =
+      '<tr><td colspan="8" style="text-align:center; color:#c62828; padding:40px;">⛔ Pristup samo za admin korisnike</td></tr>';
+    return;
+  }
+
+  var tbody = document.getElementById('zaostaliPOPTableBody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">Učitavanje...</td></tr>';
+
+  try {
+    // Dohvati POP-ove na stanju
+    var popRes = await initSupabase()
+      .from('prod_inventory_pop')
+      .select('id, pop_code, work_order_id, work_order_number, article_name, customer_name, quantity, production_line, status, created_at, updated_at')
+      .eq('status', 'Na skladištu')
+      .order('work_order_number', { ascending: false })
+      .limit(5000);
+    if (popRes.error) throw popRes.error;
+    var allPops = popRes.data || [];
+
+    if (allPops.length === 0) {
+      zopData = [];
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Nema POP-ova na stanju. ✅</td></tr>';
+      return;
+    }
+
+    // Dohvati statuse za sve work_order_id-eve
+    var woIds = [...new Set(allPops.map(p => p.work_order_id).filter(Boolean))];
+    var statusByWoId = {};
+    if (woIds.length > 0) {
+      var woRes = await initSupabase()
+        .from('prod_work_orders')
+        .select('id, status, bottomer_voditelj_status, bottomer_slagac_status, tuber_status, updated_at')
+        .in('id', woIds);
+      if (!woRes.error && woRes.data) {
+        woRes.data.forEach(function(w) { statusByWoId[w.id] = w; });
+      }
+    }
+
+    // Filtriraj POP-ove gdje je RN završen
+    zopData = allPops.filter(function(p) {
+      if (!p.work_order_id) return false;
+      var w = statusByWoId[p.work_order_id];
+      if (!w) return false;
+      return w.status === 'Završeno' ||
+             w.bottomer_voditelj_status === 'Završeno' ||
+             w.bottomer_slagac_status === 'Završeno';
+    }).map(function(p) {
+      p._wo = statusByWoId[p.work_order_id] || {};
+      return p;
+    });
+
+    window.zopSelectedPopIds.clear();
+    zopApplyFilters();
+  } catch (e) {
+    console.error('loadZaostaliPOP error:', e);
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red; padding:30px;">Greška: ' + (e.message || e) + '</td></tr>';
+  }
+}
+
+function zopApplyFilters() {
+  var rnFilter = (document.getElementById('zopFilterRN').value || '').toLowerCase().trim();
+  var linijaFilter = document.getElementById('zopFilterLinija').value;
+  var search = (document.getElementById('zopFilterSearch').value || '').toLowerCase().trim();
+
+  var filtered = zopData.filter(function(p) {
+    if (rnFilter && !(p.work_order_number || '').toLowerCase().includes(rnFilter)) return false;
+    if (linijaFilter && p.production_line !== linijaFilter) return false;
+    if (search) {
+      var match = (p.article_name || '').toLowerCase().includes(search) ||
+                  (p.customer_name || '').toLowerCase().includes(search) ||
+                  (p.pop_code || '').toLowerCase().includes(search);
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  zopRenderTable(filtered);
+}
+
+function zopRenderTable(data) {
+  var tbody = document.getElementById('zaostaliPOPTableBody');
+  var info = document.getElementById('zopInfo');
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Nema zaostalih POP-ova za zadane filtere</td></tr>';
+    if (info) info.textContent = '';
+    zopUpdateBulkBtn();
+    return;
+  }
+
+  // Grupiraj po RN
+  var groupsMap = new Map();
+  var groupOrder = [];
+  data.forEach(function(p) {
+    var key = p.work_order_number || '(bez RN)';
+    if (!groupsMap.has(key)) {
+      groupsMap.set(key, { rn: key, pops: [], wo: p._wo });
+      groupOrder.push(key);
+    }
+    groupsMap.get(key).pops.push(p);
+  });
+
+  // Sort grupa po updated_at WO desc (novije završene prvo)
+  groupOrder.sort(function(a, b) {
+    var ga = groupsMap.get(a).wo.updated_at || '';
+    var gb = groupsMap.get(b).wo.updated_at || '';
+    return gb.localeCompare(ga);
+  });
+
+  var html = '';
+  var totalKom = 0;
+
+  groupOrder.forEach(function(key) {
+    var g = groupsMap.get(key);
+    var isExpanded = window.zopExpandedGroups.has(key);
+    var keyEsc = key.replace(/'/g, "\\'");
+    var groupKom = g.pops.reduce(function(s, p) { return s + Number(p.quantity || 0); }, 0);
+    var artikli = [...new Set(g.pops.map(p => p.article_name).filter(Boolean))].slice(0, 2).join(', ');
+    var kupci = [...new Set(g.pops.map(p => p.customer_name).filter(Boolean))].slice(0, 1).join(', ');
+    var linije = [...new Set(g.pops.map(p => p.production_line).filter(Boolean))].join(', ');
+    var zavrsenoDatum = g.wo.updated_at ? String(g.wo.updated_at).slice(0, 10) : '-';
+
+    totalKom += groupKom;
+
+    // Group row (svi POP-ovi kolektivno)
+    var allSelected = g.pops.every(p => window.zopSelectedPopIds.has(p.id));
+    var someSelected = !allSelected && g.pops.some(p => window.zopSelectedPopIds.has(p.id));
+
+    html += '<tr class="rpr-group-row ' + (isExpanded ? 'expanded' : '') + '" data-zop-group="' + key + '">';
+    html += '<td onclick="event.stopPropagation();"><input type="checkbox" ' + (allSelected ? 'checked' : '') + ' ' + (someSelected ? 'data-indeterminate="1"' : '') + ' onchange="zopToggleGroupSelection(\'' + keyEsc + '\', this.checked)"></td>';
+    html += '<td onclick="zopToggleGroup(\'' + keyEsc + '\', event)"><span class="group-chevron">▶</span><strong style="color:#ad1457;">' + key + '</strong> <span style="color:#888;font-size:11px;">(' + g.pops.length + ' POP)</span></td>';
+    html += '<td>' + (artikli || '-') + (g.pops.length > 1 && [...new Set(g.pops.map(p => p.article_name))].length > 2 ? ' +' + ([...new Set(g.pops.map(p => p.article_name))].length - 2) : '') + '</td>';
+    html += '<td>' + (kupci || '-') + '</td>';
+    html += '<td style="text-align:right;font-weight:600;">' + formatBroj(groupKom, 0) + '</td>';
+    html += '<td>' + linije + '</td>';
+    html += '<td>' + zavrsenoDatum + '</td>';
+    html += '<td><button class="btn btn-sm btn-danger" onclick="zopClearGroup(\'' + keyEsc + '\')" style="padding:3px 10px;font-size:11px;">🧹 Skini sve</button></td>';
+    html += '</tr>';
+
+    // Leaf rows
+    g.pops.forEach(function(p) {
+      var isChecked = window.zopSelectedPopIds.has(p.id);
+      html += '<tr class="rpr-leaf-row ' + (isExpanded ? '' : 'hidden') + '" data-zop-parent="' + key + '">';
+      html += '<td><input type="checkbox" ' + (isChecked ? 'checked' : '') + ' onchange="zopToggleSelected(\'' + p.id + '\', this.checked)"></td>';
+      html += '<td style="font-size:0.88em;"><strong>' + (p.pop_code || '-') + '</strong></td>';
+      html += '<td>' + (p.article_name || '-') + '</td>';
+      html += '<td>' + (p.customer_name || '-') + '</td>';
+      html += '<td style="text-align:right;">' + formatBroj(p.quantity, 0) + '</td>';
+      html += '<td>' + (p.production_line || '-') + '</td>';
+      html += '<td>-</td>';
+      html += '<td><button class="btn btn-sm" style="background:#fff3e0;color:#e65100;padding:2px 8px;font-size:11px;" onclick="zopClearOne(\'' + p.id + '\')">Skini</button></td>';
+      html += '</tr>';
+    });
+  });
+
+  tbody.innerHTML = html;
+  if (info) info.textContent = '(' + groupsMap.size + ' RN-ova, ' + data.length + ' POP-ova, ' + formatBroj(totalKom, 0) + ' kom ukupno)';
+  zopUpdateBulkBtn();
+}
+
+function zopUpdateBulkBtn() {
+  var btn = document.getElementById('zopBulkBtn');
+  if (!btn) return;
+  var n = window.zopSelectedPopIds.size;
+  btn.disabled = n === 0;
+  btn.textContent = '🧹 Skini označene' + (n > 0 ? ' (' + n + ')' : '');
+}
+
+window.zopToggleGroup = function(key, event) {
+  if (event && event.target) {
+    var tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'button' || tag === 'input') return;
+  }
+  if (window.zopExpandedGroups.has(key)) window.zopExpandedGroups.delete(key);
+  else window.zopExpandedGroups.add(key);
+  zopApplyFilters();
+};
+
+window.zopExpandAll = function() {
+  document.querySelectorAll('.rpr-group-row[data-zop-group]').forEach(function(row) {
+    var key = row.getAttribute('data-zop-group');
+    if (key) window.zopExpandedGroups.add(key);
+  });
+  zopApplyFilters();
+};
+
+window.zopCollapseAll = function() {
+  window.zopExpandedGroups.clear();
+  zopApplyFilters();
+};
+
+window.zopToggleSelected = function(popId, checked) {
+  if (checked) window.zopSelectedPopIds.add(popId);
+  else window.zopSelectedPopIds.delete(popId);
+  zopUpdateBulkBtn();
+};
+
+window.zopToggleGroupSelection = function(key, checked) {
+  zopData.filter(p => (p.work_order_number || '(bez RN)') === key).forEach(function(p) {
+    if (checked) window.zopSelectedPopIds.add(p.id);
+    else window.zopSelectedPopIds.delete(p.id);
+  });
+  zopApplyFilters();
+};
+
+window.zopToggleAllSelected = function(checked) {
+  if (checked) zopData.forEach(p => window.zopSelectedPopIds.add(p.id));
+  else window.zopSelectedPopIds.clear();
+  zopApplyFilters();
+};
+
+async function _zopClearPopIds(popIds, contextLabel) {
+  if (typeof Auth !== 'undefined' && Auth.isAdmin && !Auth.isAdmin()) {
+    showMessage('⛔ Samo admin može skidati zaostale POP-ove', 'error');
+    return;
+  }
+  if (popIds.length === 0) return;
+  if (!confirm('Označiti ' + popIds.length + ' POP-ova kao Utrošeno' + (contextLabel ? ' (' + contextLabel + ')' : '') + '?')) return;
+
+  try {
+    showLoading('Skidanje ' + popIds.length + ' POP-ova...');
+    var r = await initSupabase()
+      .from('prod_inventory_pop')
+      .update({ status: 'Utrošeno' })
+      .in('id', popIds);
+    hideLoading();
+    if (r.error) throw r.error;
+    showMessage('✅ Skinuto ' + popIds.length + ' POP-ova', 'success');
+    popIds.forEach(id => window.zopSelectedPopIds.delete(id));
+    await loadZaostaliPOP();
+  } catch (e) {
+    hideLoading();
+    console.error('zopClear error:', e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+window.zopClearOne = function(popId) {
+  _zopClearPopIds([popId], '');
+};
+
+window.zopClearGroup = function(key) {
+  var ids = zopData.filter(p => (p.work_order_number || '(bez RN)') === key).map(p => p.id);
+  _zopClearPopIds(ids, 'RN ' + key);
+};
+
+window.zopBulkClearAll = function() {
+  var ids = [...window.zopSelectedPopIds];
+  _zopClearPopIds(ids, 'odabrane');
+};
+
+window.loadZaostaliPOP = loadZaostaliPOP;
+window.zopApplyFilters = zopApplyFilters;
 
 </script>
