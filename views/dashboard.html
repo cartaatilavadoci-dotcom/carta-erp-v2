@@ -818,15 +818,6 @@
 }
 
 /* OEE donut — CSS conic-gradient (no SVG-in-JS) */
-@property --donut-pct {
-  syntax: '<number>';
-  initial-value: 0;
-  inherits: true;
-}
-@keyframes dashDonutFill {
-  from { --donut-pct: 0; }
-  to   { --donut-pct: var(--donut-pct-target, 0); }
-}
 .dash-donut {
   --donut-pct: 0;
   --donut-color: #2e7d32;
