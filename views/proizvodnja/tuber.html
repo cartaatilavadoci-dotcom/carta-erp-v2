@@ -444,14 +444,8 @@
   .graficka-preview iframe { width: 100%; height: 700px; border: none; border-radius: 8px; }
   .no-graficka { color: #999; font-size: 1.1em; }
 
-  /* SMJENSKI IZVJEŠTAJ */
-  .izvjestaj-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-  .izvjestaj-table th, .izvjestaj-table td { border: 1px solid #333; padding: 8px; text-align: center; }
-  .izvjestaj-table th { background: #1a237e; color: white; font-weight: 600; }
-  .izvjestaj-table .kolicina-col { background: #fff3e0; }
-  .izvjestaj-input-vrijeme { width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
-  .izvjestaj-input-kom { width: 100px; text-align: center; padding: 8px; border: 2px solid #e65100; border-radius: 4px; background: #fff8e1; font-weight: bold; }
-  .izvjestaj-input-header { border: none; border-bottom: 1px solid #333; background: transparent; padding: 5px; width: 200px; }
+  /* SMJENSKI IZVJEŠTAJ — duplikati uklonjeni 2026-05-03,
+     naslijeđuju iz globalnog css/styles.css (.izvjestaj-table/-input-*). */
 
   /* ZAVRŠI SMJENU */
   .zavrsi-smjenu-section { background: linear-gradient(135deg, #37474f, #455a64); color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; }
@@ -801,7 +795,7 @@
     📝 Napomene
     <span class="tab-badge" id="notesBadge" style="display: none;">0</span>
   </button>
-  <button class="module-tab" onclick="switchModuleTab('upute')" id="tabUpute" style="margin-left: auto; background: #e3f2fd;">
+  <button class="module-tab" onclick="switchModuleTab('upute')" id="tabUpute" style="margin-left: auto; background: var(--remap-info-bg);">
     📖 Upute
   </button>
 </div>
@@ -1157,7 +1151,7 @@
     🏁 Završetak smjene / naloga
   </div>
   <div style="padding: 20px;">
-    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
+    <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--warning);">
       <strong>📋 Upute:</strong> Na kraju smjene ili naloga evidentirajte potrošene materijale. 
       Sustav podržava i role bez barkoda (neusklađena potrošnja).
     </div>
@@ -1179,7 +1173,7 @@
 <div style="padding: 15px;">
   <h2 style="margin-bottom: 20px; color: #00838f;">🖼️ Grafička priprema</h2>
   
-  <div id="grafickaPripremaNema" style="text-align: center; padding: 40px; color: #999;">
+  <div id="grafickaPripremaNema" style="text-align: center; padding: 40px; color: var(--text-lo);">
     <p style="font-size: 1.2em;">Odaberite radni nalog za prikaz grafičke pripreme</p>
   </div>
   
@@ -1203,8 +1197,8 @@
     </div>
     
     <!-- PDF Viewer -->
-    <div id="grafickaPdfContainer" style="background: #f5f5f5; border-radius: 8px; padding: 20px; min-height: 400px;">
-      <div id="grafickaPdfNema" style="text-align: center; padding: 40px; color: #999;">
+    <div id="grafickaPdfContainer" style="background: var(--remap-grey-bg); border-radius: 8px; padding: 20px; min-height: 400px;">
+      <div id="grafickaPdfNema" style="text-align: center; padding: 40px; color: var(--text-lo);">
         <p>📄 Nema PDF grafičke pripreme za ovaj artikl</p>
       </div>
       <iframe id="grafickaPdfFrame" style="width: 100%; height: 600px; border: none; border-radius: 8px; display: none;"></iframe>
@@ -1223,26 +1217,26 @@
 <div style="padding: 15px;">
   <div style="text-align: center; margin-bottom: 20px;">
     <h2 style="margin: 0; color: #00838f;">SMJENSKI IZVJEŠTAJ - TUBER</h2>
-    <div style="font-size: 1.1em; color: #666; margin-top: 5px;" id="izvjestajLinija">-</div>
+    <div style="font-size: 1.1em; color: var(--text-mid); margin-top: 5px;" id="izvjestajLinija">-</div>
   </div>
   
   <!-- Header info -->
-  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background: var(--remap-grey-bg); border-radius: 8px;">
     <div>
-      <label style="font-size: 0.85em; color: #666;">Strojar:</label>
-      <div style="border-bottom: 1px solid #999; padding: 5px 0; min-height: 25px;" id="izvjestajStrojar">-</div>
+      <label style="font-size: 0.85em; color: var(--text-mid);">Strojar:</label>
+      <div style="border-bottom: 1px solid var(--text-lo); padding: 5px 0; min-height: 25px;" id="izvjestajStrojar">-</div>
     </div>
     <div>
-      <label style="font-size: 0.85em; color: #666;">Pomoćnici:</label>
-      <div style="border-bottom: 1px solid #999; padding: 5px 0; min-height: 25px;" id="izvjestajPomocnici">-</div>
+      <label style="font-size: 0.85em; color: var(--text-mid);">Pomoćnici:</label>
+      <div style="border-bottom: 1px solid var(--text-lo); padding: 5px 0; min-height: 25px;" id="izvjestajPomocnici">-</div>
     </div>
     <div>
-      <label style="font-size: 0.85em; color: #666;">Smjena:</label>
-      <div style="border-bottom: 1px solid #999; padding: 5px 0; min-height: 25px;" id="izvjestajSmjena">-</div>
+      <label style="font-size: 0.85em; color: var(--text-mid);">Smjena:</label>
+      <div style="border-bottom: 1px solid var(--text-lo); padding: 5px 0; min-height: 25px;" id="izvjestajSmjena">-</div>
     </div>
     <div>
-      <label style="font-size: 0.85em; color: #666;">Datum:</label>
-      <div style="border-bottom: 1px solid #999; padding: 5px 0; min-height: 25px;" id="izvjestajDatum">-</div>
+      <label style="font-size: 0.85em; color: var(--text-mid);">Datum:</label>
+      <div style="border-bottom: 1px solid var(--text-lo); padding: 5px 0; min-height: 25px;" id="izvjestajDatum">-</div>
     </div>
   </div>
   
@@ -1255,9 +1249,11 @@
           <th style="padding: 10px; text-align: left;">Opis</th>
           <th style="padding: 10px; text-align: center; background: #e65100;">Količina (kom)</th>
           <th style="padding: 10px; text-align: center;">Škart (kg)</th>
+          <th style="padding: 10px; text-align: center;">Škart (kom)</th>
           <th colspan="7" style="padding: 10px; text-align: center;">Vrijeme / h</th>
         </tr>
         <tr style="background: #283593; color: white;">
+          <th></th>
           <th></th>
           <th></th>
           <th></th>
@@ -1274,11 +1270,12 @@
       <tbody id="izvjestajBody">
         <!-- Dinamički generirano -->
       </tbody>
-      <tfoot style="background: #e8eaf6; font-weight: bold;">
+      <tfoot style="background: var(--remap-info-bg); font-weight: bold;">
         <tr>
           <td colspan="2" style="padding: 10px; text-align: right;">UKUPNO:</td>
           <td style="padding: 10px; text-align: center;" id="izvUkupnoKom">0</td>
           <td style="padding: 10px; text-align: center;" id="izvUkupnoSkart">0.0</td>
+          <td style="padding: 10px; text-align: center;" id="izvUkupnoSkartKom">0</td>
           <td style="padding: 10px; text-align: center;" id="izvUkupnoPrestel">0.0</td>
           <td style="padding: 10px; text-align: center;" id="izvUkupnoRad">0.0</td>
           <td style="padding: 10px; text-align: center;" id="izvUkupnoKvar">0.0</td>
@@ -1344,7 +1341,7 @@
         📋 Napomena za sljedeću smjenu
       </button>
     </div>
-    <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+    <p style="margin-top: 15px; color: var(--text-mid); font-size: 0.9em;">
       <strong>Napomena o artiklu:</strong> Problem s klišejom, maziljkom, grafičkom pripremom...<br>
       <strong>Napomena o smjeni:</strong> Opće informacije za sljedeću smjenu
     </p>
@@ -1511,7 +1508,7 @@
       <span class="modal-close" onclick="closeModal('urediUputeModal')">&times;</span>
     </div>
     <div class="modal-body" style="height: calc(100% - 130px); display: flex; flex-direction: column;">
-      <p style="margin-bottom: 10px; color: #666;">
+      <p style="margin-bottom: 10px; color: var(--text-mid);">
         Koristite HTML tagove za formatiranje. Dostupne klase: 
         <code>upute-section</code>, <code>upute-napomena</code>, <code>upute-formula</code>
       </p>
@@ -1660,7 +1657,7 @@
         </div>
         <div class="section-print full-width">
           <div class="section-header-print"><span>💬</span> Napomena</div>
-          <div style="background:#f5f5f5; padding:12px; border-radius:5px;" id="tuber_p_napomena">-</div>
+          <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;" id="tuber_p_napomena">-</div>
         </div>
       </div>
     </div>
@@ -2416,7 +2413,7 @@ function tuberPrikaziRadneNaloge() {
       <td>${rn.order_number || '-'}</td>
       <td>${rn.customer_name || '-'}</td>
       <td>${rn.article_name || '-'}</td>
-      <td style="font-size:0.85em; color:#666;">${rn.article_code || '-'}</td>
+      <td style="font-size:0.85em; color:var(--text-mid);">${rn.article_code || '-'}</td>
       <td>${formatBroj(rn.quantity || 0, 0)}</td>
       <td>${formatBroj(proizvedeno, 0)}</td>
       <td><span class="badge badge-info">${rn.production_line || '-'}</span></td>
@@ -3294,7 +3291,7 @@ async function tuberOtvoriPregled(id) {
           rezValue = bagLength + bagBottom + 4;
           rezFormula = `${bagLength} + ${bagBottom} + 4`;
         }
-        document.getElementById('tuber_p_rez').innerHTML = `<strong>${rezValue}</strong> <span style="font-size:0.85em; color:#666;">(${rezFormula})</span>`;
+        document.getElementById('tuber_p_rez').innerHTML = `<strong>${rezValue}</strong> <span style="font-size:0.85em; color:var(--text-mid);">(${rezFormula})</span>`;
         
         document.getElementById('tuber_p_boja').textContent = artikl.bag_color || '-';
         
@@ -4300,7 +4297,7 @@ async function izracunajSmjenaSkidanje() {
       html += '<div style="font-size: 0.8em; opacity: 0.8; margin-bottom: 5px;">Sloj ' + r.sloj + ': ' + (r.naziv || 'Rola') + ' ' + r.sifra + '</div>';
       html += '<div style="font-size: 1.5em; font-weight: bold;">' + formatBroj(skidanje, 2) + ' kg</div>';
       if (r.potrosena || novoPreostalo <= 0) {
-        html += '<div style="font-size: 0.75em; color: #ff9800; margin-top: 5px;">🔴 Potpuno potrošena</div>';
+        html += '<div style="font-size: 0.75em; color: var(--warning); margin-top: 5px;">🔴 Potpuno potrošena</div>';
       } else {
         html += '<div style="font-size: 0.75em; opacity: 0.7; margin-top: 5px;">Ostaje: ' + formatBroj(novoPreostalo, 1) + ' kg</div>';
       }
@@ -4448,7 +4445,7 @@ function dodajSmjenaRolu(sloj) {
   window.smjenaRolaBrojac++;
   var id = window.smjenaRolaBrojac;
   
-  var html = '<div class="smjena-rola-item" id="smjenaRolaItem' + id + '" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 10px;">';
+  var html = '<div class="smjena-rola-item" id="smjenaRolaItem' + id + '" style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 10px;">';
   html += '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">';
   html += '<select class="smjena-rola-sloj form-control" style="width: 100px;">';
   html += '<option value="1"' + (sloj === 1 ? ' selected' : '') + '>Sloj 1</option>';
@@ -4462,7 +4459,7 @@ function dodajSmjenaRolu(sloj) {
   html += '</label>';
   html += '<button type="button" class="btn btn-sm btn-danger" onclick="ukloniSmjenaRolu(' + id + ')" style="padding: 5px 10px;">✕</button>';
   html += '</div>';
-  html += '<div class="smjena-rola-info" style="font-size: 0.85em; color: #666; margin-top: 8px;"></div>';
+  html += '<div class="smjena-rola-info" style="font-size: 0.85em; color: var(--text-mid); margin-top: 8px;"></div>';
   html += '</div>';
   
   document.getElementById('smjenaRoleList').insertAdjacentHTML('beforeend', html);
@@ -4663,15 +4660,16 @@ async function generirajTuberIzvjestaj() {
       var rowHtml = '<tr>';
       rowHtml += '<td style="padding: 8px;"><input type="text" class="izvRN" value="' + rn + '" readonly style="background:' + bgColor + '; border:1px solid #4caf50; padding:5px; width:100%;"></td>';
       rowHtml += '<td style="padding: 8px;"><input type="text" class="izvOpis" value="' + opis + '" readonly style="background:' + bgColor + '; border:1px solid #4caf50; padding:5px; width:100%;"></td>';
-      rowHtml += '<td style="padding: 8px; background: #fff3e0;"><input type="number" class="izvKom" value="' + (podaci.kom || '') + '" oninput="izracunajTuberUkupno()" style="border:1px solid #e65100; padding:5px; width:80px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvSkart" value="' + (podaci.skart || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvPrestel" value="' + (podaci.prestelavanje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvRad" value="' + (podaci.rad || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:90px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvKvar" value="' + (podaci.kvar || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:90px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCekanjeTuljke" value="' + (podaci.cekanjeTuljke || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvVanStroja" value="' + (podaci.vanStroja || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCekanje" value="' + (podaci.cekanje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCiscenje" value="' + (podaci.ciscenje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px; background: var(--remap-warning-bg);"><input type="number" class="izvKom" value="' + (podaci.kom || '') + '" oninput="izracunajTuberUkupno()" style="border:1px solid #e65100; padding:5px; width:80px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvSkart" value="' + (podaci.skart || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvSkartKom" value="' + (podaci.skartKom != null ? podaci.skartKom : '') + '" min="0" oninput="izracunajTuberUkupno()" title="Škart u komadima (za OEE Quality)" style="border:1px solid var(--border); padding:5px; width:70px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvPrestel" value="' + (podaci.prestelavanje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvRad" value="' + (podaci.rad || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:90px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvKvar" value="' + (podaci.kvar || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:90px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCekanjeTuljke" value="' + (podaci.cekanjeTuljke || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvVanStroja" value="' + (podaci.vanStroja || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCekanje" value="' + (podaci.cekanje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      rowHtml += '<td style="padding: 8px;"><input type="number" class="izvCiscenje" value="' + (podaci.ciscenje || '') + '" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
       rowHtml += '</tr>';
       return rowHtml;
     }
@@ -4691,6 +4689,7 @@ async function generirajTuberIzvjestaj() {
         podaci = {
           kom: kolicinaPoRN[rn],  // UVIJEK iz proizvodnje
           skart: saved.skart || '',
+          skartKom: (saved.skartKom != null ? saved.skartKom : ''),
           prestelavanje: saved.prestelavanje || '',
           rad: saved.rad || '',
           kvar: saved.kvar || '',
@@ -4705,6 +4704,7 @@ async function generirajTuberIzvjestaj() {
         podaci = {
           kom: kolicinaPoRN[rn],
           skart: '',
+          skartKom: '',
           prestelavanje: '',
           rad: '',
           kvar: '',
@@ -4723,17 +4723,18 @@ async function generirajTuberIzvjestaj() {
     // Dodaj prazne retke do minimalno 5
     while (rowIndex < 5) {
       html += '<tr>';
-      html += '<td style="padding: 8px;"><input type="text" class="izvRN" style="border:1px solid #ddd; padding:5px; width:100%;"></td>';
-      html += '<td style="padding: 8px;"><input type="text" class="izvOpis" style="border:1px solid #ddd; padding:5px; width:100%;"></td>';
-      html += '<td style="padding: 8px; background: #fff3e0;"><input type="number" class="izvKom" oninput="izracunajTuberUkupno()" style="border:1px solid #e65100; padding:5px; width:80px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvSkart" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvPrestel" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvRad" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:90px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvKvar" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:90px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvCekanjeTuljke" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvVanStroja" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvCekanje" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
-      html += '<td style="padding: 8px;"><input type="number" class="izvCiscenje" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid #ddd; padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="text" class="izvRN" style="border:1px solid var(--border); padding:5px; width:100%;"></td>';
+      html += '<td style="padding: 8px;"><input type="text" class="izvOpis" style="border:1px solid var(--border); padding:5px; width:100%;"></td>';
+      html += '<td style="padding: 8px; background: var(--remap-warning-bg);"><input type="number" class="izvKom" oninput="izracunajTuberUkupno()" style="border:1px solid #e65100; padding:5px; width:80px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvSkart" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvSkartKom" min="0" oninput="izracunajTuberUkupno()" title="Škart u komadima (za OEE Quality)" style="border:1px solid var(--border); padding:5px; width:70px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvPrestel" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvRad" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:90px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvKvar" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:90px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvCekanjeTuljke" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvVanStroja" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvCekanje" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
+      html += '<td style="padding: 8px;"><input type="number" class="izvCiscenje" step="0.1" oninput="izracunajTuberUkupno()" style="border:1px solid var(--border); padding:5px; width:60px; text-align:center;"></td>';
       html += '</tr>';
       rowIndex++;
     }
@@ -4747,11 +4748,12 @@ async function generirajTuberIzvjestaj() {
 }
 
 function izracunajTuberUkupno() {
-  var ukupnoKom = 0, ukupnoSkart = 0, ukupnoPrestel = 0, ukupnoRad = 0;
+  var ukupnoKom = 0, ukupnoSkart = 0, ukupnoSkartKom = 0, ukupnoPrestel = 0, ukupnoRad = 0;
   var ukupnoKvar = 0, ukupnoCekanjeTuljke = 0, ukupnoVanStroja = 0, ukupnoCekanje = 0, ukupnoCiscenje = 0;
-  
+
   document.querySelectorAll('.izvKom').forEach(function(el) { ukupnoKom += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvSkart').forEach(function(el) { ukupnoSkart += parseFloat(el.value) || 0; });
+  document.querySelectorAll('.izvSkartKom').forEach(function(el) { ukupnoSkartKom += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvPrestel').forEach(function(el) { ukupnoPrestel += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvRad').forEach(function(el) { ukupnoRad += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvKvar').forEach(function(el) { ukupnoKvar += parseFloat(el.value) || 0; });
@@ -4759,9 +4761,10 @@ function izracunajTuberUkupno() {
   document.querySelectorAll('.izvVanStroja').forEach(function(el) { ukupnoVanStroja += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvCekanje').forEach(function(el) { ukupnoCekanje += parseFloat(el.value) || 0; });
   document.querySelectorAll('.izvCiscenje').forEach(function(el) { ukupnoCiscenje += parseFloat(el.value) || 0; });
-  
+
   document.getElementById('izvUkupnoKom').textContent = formatBroj(ukupnoKom, 0);
   document.getElementById('izvUkupnoSkart').textContent = ukupnoSkart.toFixed(1);
+  document.getElementById('izvUkupnoSkartKom').textContent = formatBroj(ukupnoSkartKom, 0);
   document.getElementById('izvUkupnoPrestel').textContent = ukupnoPrestel.toFixed(1);
   document.getElementById('izvUkupnoRad').textContent = ukupnoRad.toFixed(1);
   document.getElementById('izvUkupnoKvar').textContent = ukupnoKvar.toFixed(1);
@@ -4792,6 +4795,7 @@ async function spremiTuberIzvjestaj() {
       var opisInput = row.querySelector('.izvOpis');
       var komInput = row.querySelector('.izvKom');
       var skartInput = row.querySelector('.izvSkart');
+      var skartKomInput = row.querySelector('.izvSkartKom');
       var prestelInput = row.querySelector('.izvPrestel');
       var radInput = row.querySelector('.izvRad');
       var kvarInput = row.querySelector('.izvKvar');
@@ -4806,11 +4810,13 @@ async function spremiTuberIzvjestaj() {
       // Preskoči prazne retke
       if (!rn && kom === 0) return;
       
+      var skartKomVal = (skartKomInput && skartKomInput.value !== '') ? parseFloat(skartKomInput.value) : null;
       workOrders.push({
         wo_number: rn,
         opis: opisInput ? opisInput.value.trim() : '',
         kom: kom,
         skart: skartInput ? parseFloat(skartInput.value) || 0 : 0,
+        skartKom: skartKomVal,
         prestelavanje: prestelInput ? parseFloat(prestelInput.value) || 0 : 0,
         rad: radInput ? parseFloat(radInput.value) || 0 : 0,
         kvar: kvarInput ? parseFloat(kvarInput.value) || 0 : 0,
@@ -4822,12 +4828,17 @@ async function spremiTuberIzvjestaj() {
     });
     
     // Izračunaj ukupne vrijednosti
-    var ukupnoKom = 0, ukupnoSkart = 0, ukupnoPrestel = 0, ukupnoRad = 0;
+    var ukupnoKom = 0, ukupnoSkart = 0, ukupnoSkartKom = 0, ukupnoPrestel = 0, ukupnoRad = 0;
     var ukupnoKvar = 0, ukupnoCekanjeTuljke = 0, ukupnoVanStroja = 0, ukupnoCekanje = 0, ukupnoCiscenje = 0;
-    
+    var anySkartKomEntered = false;
+
     workOrders.forEach(function(wo) {
       ukupnoKom += wo.kom;
       ukupnoSkart += wo.skart;
+      if (wo.skartKom !== null && wo.skartKom !== undefined) {
+        ukupnoSkartKom += wo.skartKom;
+        anySkartKomEntered = true;
+      }
       ukupnoPrestel += wo.prestelavanje;
       ukupnoRad += wo.rad;
       ukupnoKvar += wo.kvar;
@@ -4836,12 +4847,13 @@ async function spremiTuberIzvjestaj() {
       ukupnoCekanje += wo.cekanje;
       ukupnoCiscenje += wo.ciscenje;
     });
-    
+
     var reportData = {
       work_orders: workOrders,
       ukupno: {
         kom: ukupnoKom,
         skart: ukupnoSkart,
+        skartKom: anySkartKomEntered ? ukupnoSkartKom : null,
         prestelavanje: ukupnoPrestel,
         rad: ukupnoRad,
         kvar: ukupnoKvar,
@@ -5310,13 +5322,13 @@ async function uputeVratiDefault() {
       <span class="modal-close" onclick="closeModal('zamjeneModal')" style="color:white;">&times;</span>
     </div>
     <div class="modal-body">
-      <div style="background:#e8eaf6; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9em;">
+      <div style="background:var(--remap-info-bg); padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9em;">
         <strong>ℹ️</strong> Zamjene vrijede samo za današnju smjenu.<br>
-        <span style="color:#d32f2f;">🏥 Odsutan</span> = bolovanje bez zamjene (član se uklanja iz postave za ovu smjenu)
+        <span style="color:var(--danger);">🏥 Odsutan</span> = bolovanje bez zamjene (član se uklanja iz postave za ovu smjenu)
       </div>
       <table style="width:100%; border-collapse:collapse;">
         <thead>
-          <tr style="background:#f5f5f5;">
+          <tr style="background:var(--remap-grey-bg);">
             <th style="padding:10px; text-align:left;">Član</th>
             <th style="padding:10px; text-align:left;">Zamjena</th>
             <th style="padding:10px; text-align:center; width:60px;">🏥</th>
@@ -5347,7 +5359,7 @@ async function uputeVratiDefault() {
         <option value="WH">🟢 W&H</option>
         <option value="NLI">🟠 NLI</option>
       </select>
-      <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+      <p style="margin-top: 15px; color: var(--text-mid); font-size: 0.9em;">
         ⚠️ Promjenom linije izgubit ćete trenutni kontekst (aktivni nalog).
       </p>
     </div>

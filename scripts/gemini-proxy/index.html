@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <title>CARTA-ERP AI Proxy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 60px auto; padding: 20px; color: #333; }
+    code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+    pre { background: #f5f5f5; padding: 14px; border-radius: 6px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🤖 CARTA-ERP AI Proxy</h1>
+  <p>Cloudflare Pages Function koja proxy-a pozive iz CARTA-ERP browsera prema Google Gemini API-ju za ISO 9001 modul.</p>
+
+  <h2>Endpoint</h2>
+  <p><code>POST /api/iso/gemini</code></p>
+
+  <h2>Request</h2>
+<pre>{
+  "feature": "audit_checklist",
+  "context": { ... },
+  "audit_id": "uuid (opcionalno)"
+}</pre>
+
+  <h2>Status</h2>
+  <p>Ako vidiš ovu stranicu — Cloudflare Pages je deployed ispravno. Test endpoint-a:</p>
+<pre>curl -X POST https://YOUR-PROJECT.pages.dev/api/iso/gemini \
+  -H "Content-Type: application/json" \
+  -d '{"feature":"audit_checklist","context":{"audit_year":2026,"scope_processes":["1.2 Vodjenje"],"nc_total":14,"capa_open":0,"documents_published":37}}'</pre>
+
+  <h2>Setup</h2>
+  <p>Vidi <a href="https://github.com/cartaatilavadoci-dotcom/carta-erp-v2/blob/master/scripts/gemini-proxy/README.md">README.md</a> u repo-u.</p>
+</body>
+</html>

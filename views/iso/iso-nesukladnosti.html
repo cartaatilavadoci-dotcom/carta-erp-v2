@@ -1,0 +1,607 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span>
+  Nesukladnosti
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Centralni log nesukladnosti. Auto-generiran iz proizvodnje (otpisi rola, kvarovi) ili ručno unesen.
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="ncKpiOpen">-</div>
+    <div class="status-card-label">Otvorenih</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="ncKpiMajor">-</div>
+    <div class="status-card-label">Major (otvoreni)</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-bot svg-icon-lg"></span></div>
+    <div class="status-card-value" id="ncKpiAutoReview">-</div>
+    <div class="status-card-label">Auto čeka pregled</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="ncKpiClosed30">-</div>
+    <div class="status-card-label">Zatvoreno (30d)</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="ncFilterSearch" placeholder="Pretraga po NC broju, opisu, dobavljaču..." class="doc-input">
+    <select id="ncFilterStatus" class="doc-input">
+      <option value="">Svi statusi</option>
+      <option value="open" selected>Otvoreno + U obradi + Cekanje</option>
+      <option value="Otvoreno">Otvoreno</option>
+      <option value="U_obradi">U obradi</option>
+      <option value="Cekanje">Cekanje</option>
+      <option value="Zatvoreno">Zatvoreno</option>
+      <option value="Otkazano">Otkazano</option>
+    </select>
+    <select id="ncFilterSeverity" class="doc-input">
+      <option value="">Sve severity</option>
+      <option value="major">Major</option>
+      <option value="minor">Minor</option>
+      <option value="observation">Observation</option>
+    </select>
+    <select id="ncFilterSource" class="doc-input">
+      <option value="">Svi izvori</option>
+      <option value="rola_otpis">Rola otpis</option>
+      <option value="stroj_kvar">Kvar stroja</option>
+      <option value="reklamacija_kupca">Reklamacija kupca</option>
+      <option value="interni_audit">Interni audit</option>
+      <option value="smjenski_skart">Smjenski škart</option>
+      <option value="rucno">Ručno</option>
+      <option value="dobavljac">Dobavljač</option>
+    </select>
+    <select id="ncFilterAuto" class="doc-input">
+      <option value="">Sve (auto + ručno)</option>
+      <option value="auto">Samo auto-generirano</option>
+      <option value="auto-pending">Auto + nepregledano</option>
+      <option value="manual">Samo ručno</option>
+    </select>
+  </div>
+  <button class="btn-primary doc-btn-add" onclick="ncOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi NC
+  </button>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>NC br.</th>
+        <th>Datum</th>
+        <th>Izvor</th>
+        <th>Sev.</th>
+        <th>Kategorija</th>
+        <th>Subjekt</th>
+        <th>Opis</th>
+        <th>Status</th>
+        <th>CAPA</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="ncTableBody">
+      <tr><td colspan="10" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="ncModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="ncModalTitle">Novi NC (ručni unos)</h3>
+      <button class="doc-modal-close" onclick="ncCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="ncFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Datum događaja *</label>
+          <input type="datetime-local" id="ncFOccurredAt" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Izvor *</label>
+          <select id="ncFSourceType" class="doc-input">
+            <option value="rucno" selected>Ručno</option>
+            <option value="reklamacija_kupca">Reklamacija kupca</option>
+            <option value="dobavljac">Dobavljač</option>
+            <option value="smjenski_skart">Smjenski škart</option>
+            <option value="rola_otpis">Rola otpis</option>
+            <option value="stroj_kvar">Kvar stroja</option>
+            <option value="interni_audit">Interni audit</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Severity *</label>
+          <select id="ncFSeverity" class="doc-input">
+            <option value="minor" selected>Minor</option>
+            <option value="major">Major</option>
+            <option value="observation">Observation</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Kategorija</label>
+          <select id="ncFCategory" class="doc-input">
+            <option value="">— odaberi —</option>
+            <option value="repromaterijal">Repromaterijal</option>
+            <option value="usluga">Usluga trećih lica</option>
+            <option value="gotov_proizvod">Gotov proizvod</option>
+            <option value="u_proizvodnji">U proizvodnji</option>
+            <option value="skladiste">Skladište</option>
+            <option value="administracija">Administracija</option>
+            <option value="odrzavanje">Održavanje</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Status</label>
+          <select id="ncFStatus" class="doc-input">
+            <option value="Otvoreno" selected>Otvoreno</option>
+            <option value="U_obradi">U obradi</option>
+            <option value="Cekanje">Cekanje</option>
+            <option value="Zatvoreno">Zatvoreno</option>
+            <option value="Otkazano">Otkazano</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Dobavljač (ako primjenjivo)</label>
+          <input type="text" id="ncFSupplier" placeholder="Plastex, Mondi, ..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Kupac (ako primjenjivo)</label>
+          <input type="text" id="ncFCustomer" placeholder="Naziv kupca" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Broj radnog naloga</label>
+          <input type="text" id="ncFWoNumber" placeholder="RN664/25" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis nesukladnosti *</label>
+        <textarea id="ncFDescription" rows="3" class="doc-input" placeholder="Što se dogodilo? Kada, gdje, što je primijećeno..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Trenutna mjera (immediate action)</label>
+        <textarea id="ncFImmediate" rows="2" class="doc-input" placeholder="Što je odmah poduzeto da se zaustavi šteta..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Korijenski uzrok (ako poznat)</label>
+        <textarea id="ncFRootCause" rows="2" class="doc-input" placeholder="Zašto se to dogodilo (5-Why, Ishikawa)..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Procijenjeni trošak (EUR)</label>
+        <input type="number" id="ncFCost" step="0.01" min="0" class="doc-input">
+      </div>
+      <div id="ncModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="ncCloseModal()">Odustani</button>
+      <button class="btn-primary" id="ncSaveBtn" onclick="ncSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="ncDetailOverlay" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-detail-panel">
+    <div class="doc-modal-header">
+      <h3 id="ncDetailTitle">—</h3>
+      <button class="doc-modal-close" onclick="ncCloseDetail()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body" id="ncDetailBody">
+      <div style="text-align:center; padding: 40px; color: var(--text-lo);">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.nc-source-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-source-pill .svg-icon { width: 12px; height: 12px; }
+.nc-src-rola_otpis { background: #f3e5f5; color: #6a1b9a; }
+.nc-src-stroj_kvar { background: #fbe9e7; color: #d84315; }
+.nc-src-reklamacija_kupca { background: #fce4ec; color: #ad1457; }
+.nc-src-interni_audit { background: #e3f2fd; color: #1565c0; }
+.nc-src-smjenski_skart { background: #fff8e1; color: #f57f17; }
+.nc-src-rucno { background: #eceff1; color: #455a64; }
+.nc-src-dobavljac { background: #ede7f6; color: #5e35b1; }
+
+.nc-sev-major { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.nc-sev-minor { background: #fff8e1; color: #f57f17; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-sev-observation { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.nc-status-Otvoreno { background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-status-U_obradi { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-status-Cekanje { background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-status-Zatvoreno { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.nc-status-Otkazano { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.nc-auto-flag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 6px; border-radius: 8px; background: #f3e5f5; color: #7b1fa2; }
+.nc-auto-flag.pending { background: #fff8e1; color: #ef6c00; }
+.nc-auto-flag .svg-icon { width: 12px; height: 12px; }
+</style>
+
+<script>
+(async function initIsoNesukladnostiView() {
+  console.log('[iso-nesukladnosti] init');
+  let allNcs = [];
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function fmtDateTime(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('hr-HR') + ' ' + dt.toLocaleTimeString('hr-HR', { hour:'2-digit', minute:'2-digit' });
+  }
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function sourcePill(src) {
+    const map = {
+      'rola_otpis':       { icon:'file-text',      txt:'Rola otpis' },
+      'stroj_kvar':       { icon:'wrench',         txt:'Kvar' },
+      'reklamacija_kupca':{ icon:'mail-warning',   txt:'Reklamacija' },
+      'interni_audit':    { icon:'search',         txt:'Audit' },
+      'smjenski_skart':   { icon:'alert-triangle', txt:'Škart' },
+      'rucno':            { icon:'pencil',         txt:'Ručno' },
+      'dobavljac':        { icon:'building-2',     txt:'Dobavljač' }
+    };
+    const m = map[src] || { icon:'tag', txt: src || '—' };
+    return `<span class="nc-source-pill nc-src-${src}"><span class="svg-icon svg-icon-${m.icon}"></span>${m.txt}</span>`;
+  }
+  function severityPill(s) {
+    return `<span class="nc-sev-${s || 'minor'}">${s || 'minor'}</span>`;
+  }
+  function statusPill(s) {
+    const cls = (s || '').replace(/[ -]/g, '_');
+    return `<span class="nc-status-${cls}">${s || '—'}</span>`;
+  }
+
+  // ========== KPI ==========
+  async function loadKpi() {
+    try {
+      const open = await SB.select('iso_nonconformities', { neq: { status: 'Zatvoreno' }, columns: 'id, severity, status, auto_generated, reviewed_at, closed_at', silent: true })
+        .catch(async ()=> {
+          // neq missing in opts? use SQL via select all then filter
+          return await SB.select('iso_nonconformities', { columns: 'id, severity, status, auto_generated, reviewed_at, closed_at', silent: true });
+        });
+      const openOnly = open.filter(n => n.status !== 'Zatvoreno' && n.status !== 'Otkazano');
+      document.getElementById('ncKpiOpen').textContent = openOnly.length;
+      document.getElementById('ncKpiMajor').textContent = openOnly.filter(n => n.severity === 'major').length;
+      document.getElementById('ncKpiAutoReview').textContent = openOnly.filter(n => n.auto_generated && !n.reviewed_at).length;
+      // closed in last 30d — separate query
+      const since = new Date(); since.setDate(since.getDate() - 30);
+      const closed = open.filter(n => n.status === 'Zatvoreno' && n.closed_at && new Date(n.closed_at) >= since);
+      document.getElementById('ncKpiClosed30').textContent = closed.length;
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== LIST ==========
+  function applyFilters() {
+    const q = document.getElementById('ncFilterSearch').value.trim().toLowerCase();
+    const status = document.getElementById('ncFilterStatus').value;
+    const sev = document.getElementById('ncFilterSeverity').value;
+    const src = document.getElementById('ncFilterSource').value;
+    const auto = document.getElementById('ncFilterAuto').value;
+
+    return allNcs.filter(n => {
+      if (q) {
+        const blob = (n.nc_number + ' ' + (n.description||'') + ' ' + (n.supplier_name||'') + ' ' + (n.customer_name||'') + ' ' + (n.work_order_number||'')).toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      if (status === 'open') {
+        if (n.status === 'Zatvoreno' || n.status === 'Otkazano') return false;
+      } else if (status && n.status !== status) return false;
+      if (sev && n.severity !== sev) return false;
+      if (src && n.source_type !== src) return false;
+      if (auto === 'auto' && !n.auto_generated) return false;
+      if (auto === 'auto-pending' && (!n.auto_generated || n.reviewed_at)) return false;
+      if (auto === 'manual' && n.auto_generated) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('ncTableBody');
+    const filtered = applyFilters();
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--text-lo); padding:30px;">Nema NC po filteru.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(n => {
+      const subject = n.supplier_name || n.customer_name || n.work_order_number || '—';
+      const autoFlag = n.auto_generated
+        ? (n.reviewed_at
+            ? '<span class="nc-auto-flag"><span class="svg-icon svg-icon-bot"></span>auto</span>'
+            : '<span class="nc-auto-flag pending" title="Treba pregled"><span class="svg-icon svg-icon-bot"></span>auto !</span>')
+        : '<span style="font-size:11px; color:var(--text-lo);"><span class="svg-icon svg-icon-user" style="width:11px;height:11px;vertical-align:middle"></span> ručno</span>';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(n.nc_number)}</strong><br>${autoFlag}</td>
+          <td style="font-size:12px;">${fmtDate(n.occurred_at)}</td>
+          <td>${sourcePill(n.source_type)}</td>
+          <td>${severityPill(n.severity)}</td>
+          <td style="font-size:12px; color:var(--text-mid);">${n.category || '—'}</td>
+          <td style="font-size:12px;">${escapeHtml(subject)}</td>
+          <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(n.description)}">${escapeHtml(n.description)}</td>
+          <td>${statusPill(n.status)}</td>
+          <td style="font-size:12px;">—</td>
+          <td>
+            <button class="doc-action-btn" onclick="ncOpenDetail('${n.id}')" title="Detalj">
+              <span class="svg-icon svg-icon-eye"></span>
+            </button>
+            <button class="doc-action-btn" onclick="ncOpenEdit('${n.id}')" title="Uredi">
+              <span class="svg-icon svg-icon-pencil"></span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadNcs() {
+    try {
+      allNcs = await SB.select('iso_nonconformities', {
+        order: { occurred_at: 'desc' },
+        silent: true
+      });
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('ncTableBody').innerHTML =
+        `<tr><td colspan="10" style="text-align:center; color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['ncFilterSearch','ncFilterStatus','ncFilterSeverity','ncFilterSource','ncFilterAuto'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTable);
+  });
+
+  // ========== ADD / EDIT MODAL ==========
+  window.ncOpenAddModal = function() {
+    document.getElementById('ncModalTitle').textContent = 'Novi NC (ručni unos)';
+    document.getElementById('ncFId').value = '';
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    document.getElementById('ncFOccurredAt').value = new Date(now - tzOffset).toISOString().slice(0, 16);
+    document.getElementById('ncFSourceType').value = 'rucno';
+    document.getElementById('ncFSeverity').value = 'minor';
+    document.getElementById('ncFCategory').value = '';
+    document.getElementById('ncFStatus').value = 'Otvoreno';
+    ['ncFSupplier','ncFCustomer','ncFWoNumber','ncFDescription','ncFImmediate','ncFRootCause','ncFCost']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ncModalError').style.display = 'none';
+    document.getElementById('ncModal').style.display = 'flex';
+  };
+
+  window.ncOpenEdit = function(id) {
+    const n = allNcs.find(x => x.id === id);
+    if (!n) return;
+    document.getElementById('ncModalTitle').textContent = `Uredi ${n.nc_number}`;
+    document.getElementById('ncFId').value = id;
+    if (n.occurred_at) {
+      const dt = new Date(n.occurred_at);
+      const tzOffset = dt.getTimezoneOffset() * 60000;
+      document.getElementById('ncFOccurredAt').value = new Date(dt - tzOffset).toISOString().slice(0, 16);
+    }
+    document.getElementById('ncFSourceType').value = n.source_type || 'rucno';
+    document.getElementById('ncFSeverity').value = n.severity || 'minor';
+    document.getElementById('ncFCategory').value = n.category || '';
+    document.getElementById('ncFStatus').value = n.status || 'Otvoreno';
+    document.getElementById('ncFSupplier').value = n.supplier_name || '';
+    document.getElementById('ncFCustomer').value = n.customer_name || '';
+    document.getElementById('ncFWoNumber').value = n.work_order_number || '';
+    document.getElementById('ncFDescription').value = n.description || '';
+    document.getElementById('ncFImmediate').value = n.immediate_action || '';
+    document.getElementById('ncFRootCause').value = n.root_cause || '';
+    document.getElementById('ncFCost').value = n.cost_estimated_eur || '';
+    document.getElementById('ncModalError').style.display = 'none';
+    document.getElementById('ncModal').style.display = 'flex';
+  };
+
+  window.ncCloseModal = function() {
+    document.getElementById('ncModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('ncModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.ncSave = async function() {
+    const btn = document.getElementById('ncSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const id = document.getElementById('ncFId').value;
+      const desc = document.getElementById('ncFDescription').value.trim();
+      if (!desc) throw new Error('Opis je obavezan');
+      const occurredRaw = document.getElementById('ncFOccurredAt').value;
+      if (!occurredRaw) throw new Error('Datum događaja je obavezan');
+
+      const data = {
+        occurred_at: new Date(occurredRaw).toISOString(),
+        source_type: document.getElementById('ncFSourceType').value,
+        severity: document.getElementById('ncFSeverity').value,
+        category: document.getElementById('ncFCategory').value || null,
+        status: document.getElementById('ncFStatus').value,
+        supplier_name: document.getElementById('ncFSupplier').value.trim() || null,
+        customer_name: document.getElementById('ncFCustomer').value.trim() || null,
+        work_order_number: document.getElementById('ncFWoNumber').value.trim() || null,
+        description: desc,
+        immediate_action: document.getElementById('ncFImmediate').value.trim() || null,
+        root_cause: document.getElementById('ncFRootCause').value.trim() || null,
+        cost_estimated_eur: parseFloat(document.getElementById('ncFCost').value) || null
+      };
+
+      if (id) {
+        // Update
+        const updates = { ...data, updated_at: new Date().toISOString() };
+        if (data.status === 'Zatvoreno') {
+          updates.closed_at = new Date().toISOString();
+        }
+        await SB.update('iso_nonconformities', updates, { id });
+      } else {
+        // Insert — backend ne generira nc_number, koristimo RPC funkciju
+        // RPC iso_next_nc_number() vraća string, ali Supabase ne ide direktno, idemo preko query
+        const { data: numData, error: numErr } = await initSupabase().rpc('iso_next_nc_number');
+        if (numErr) throw new Error('Generiranje NC broja: ' + numErr.message);
+        data.nc_number = numData;
+        data.auto_generated = false;
+        await SB.insert('iso_nonconformities', data);
+      }
+
+      ncCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'NC ažuriran' : 'NC dodan', 'success');
+      await Promise.all([loadNcs(), loadKpi()]);
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== DETAIL ==========
+  window.ncOpenDetail = async function(id) {
+    document.getElementById('ncDetailOverlay').style.display = 'flex';
+    const body = document.getElementById('ncDetailBody');
+    body.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>';
+    try {
+      const n = allNcs.find(x => x.id === id);
+      if (!n) throw new Error('NC nije pronađen');
+      document.getElementById('ncDetailTitle').textContent = n.nc_number;
+
+      const subject = n.supplier_name || n.customer_name || n.work_order_number || '—';
+      let html = `
+        <div class="doc-detail-meta">
+          <div><strong>Datum:</strong> ${fmtDateTime(n.occurred_at)}</div>
+          <div><strong>Status:</strong> ${statusPill(n.status)}</div>
+          <div><strong>Izvor:</strong> ${sourcePill(n.source_type)}</div>
+          <div><strong>Severity:</strong> ${severityPill(n.severity)}</div>
+          <div><strong>Kategorija:</strong> ${n.category || '—'}</div>
+          <div><strong>Subjekt:</strong> ${escapeHtml(subject)}</div>
+          ${n.work_order_number ? `<div><strong>RN:</strong> ${escapeHtml(n.work_order_number)}</div>` : ''}
+          ${n.cost_estimated_eur ? `<div><strong>Trošak:</strong> ${Number(n.cost_estimated_eur).toFixed(2)} €</div>` : ''}
+        </div>
+
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-file-text svg-icon-sm"></span> Opis
+        </div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:6px; font-size:13px; line-height:1.5; white-space:pre-wrap;">${escapeHtml(n.description)}</div>
+
+        ${n.immediate_action ? `
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-zap svg-icon-sm"></span> Trenutna mjera
+        </div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:6px; font-size:13px; line-height:1.5; white-space:pre-wrap;">${escapeHtml(n.immediate_action)}</div>
+        ` : ''}
+
+        ${n.root_cause ? `
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-target svg-icon-sm"></span> Korijenski uzrok
+        </div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:6px; font-size:13px; line-height:1.5; white-space:pre-wrap;">${escapeHtml(n.root_cause)}</div>
+        ` : ''}
+
+        ${n.auto_generated ? `
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-bot svg-icon-sm"></span> Auto-generirano
+        </div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:6px; font-size:13px;">
+          Sustav je automatski otvorio ovaj NC iz tablice <strong>${n.source_table || '?'}</strong>.
+          ${n.reviewed_at
+            ? `<br>✓ Pregledano ${fmtDateTime(n.reviewed_at)}`
+            : '<br><button class="btn-primary" style="margin-top:8px;" onclick="ncMarkReviewed(\''+n.id+'\')"><span class="svg-icon svg-icon-check svg-icon-sm"></span> Označi kao pregledano</button>'}
+        </div>
+        ` : ''}
+
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="ncOpenEdit('${n.id}')">
+            <span class="svg-icon svg-icon-pencil svg-icon-sm"></span> Uredi
+          </button>
+          ${n.status !== 'Zatvoreno' ? `
+          <button class="btn-secondary" onclick="ncQuickClose('${n.id}')">
+            <span class="svg-icon svg-icon-check svg-icon-sm"></span> Brzo zatvori
+          </button>` : ''}
+          <button class="btn-primary" onclick="ncOpenCapa('${n.id}')" style="background:#5e35b1;">
+            <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Otvori CAPA iz ovog NC
+          </button>
+        </div>
+      `;
+      body.innerHTML = html;
+    } catch (e) {
+      body.innerHTML = `<div style="color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+    }
+  };
+
+  window.ncCloseDetail = function() {
+    document.getElementById('ncDetailOverlay').style.display = 'none';
+  };
+
+  window.ncMarkReviewed = async function(id) {
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      await SB.update('iso_nonconformities', {
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user && user.id || null
+      }, { id });
+      if (typeof showMessage === 'function') showMessage('Označeno kao pregledano', 'success');
+      await Promise.all([loadNcs(), loadKpi()]);
+      ncOpenDetail(id);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  window.ncQuickClose = async function(id) {
+    if (!confirm('Označiti kao Zatvoreno bez detaljne CAPA evidencije?')) return;
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      await SB.update('iso_nonconformities', {
+        status: 'Zatvoreno',
+        closed_at: new Date().toISOString(),
+        closed_by: user && user.id || null,
+        updated_at: new Date().toISOString()
+      }, { id });
+      if (typeof showMessage === 'function') showMessage('NC zatvoren', 'success');
+      ncCloseDetail();
+      await Promise.all([loadNcs(), loadKpi()]);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  // Otvori CAPA modul s pre-popunjenim NC ID-em (deep link)
+  window.ncOpenCapa = function(ncId) {
+    window.location.hash = `iso-capa?prefill_nc=${ncId}`;
+  };
+
+  document.getElementById('ncModal').addEventListener('click', e => {
+    if (e.target.id === 'ncModal') ncCloseModal();
+  });
+  document.getElementById('ncDetailOverlay').addEventListener('click', e => {
+    if (e.target.id === 'ncDetailOverlay') ncCloseDetail();
+  });
+
+  await Promise.all([loadNcs(), loadKpi()]);
+  console.log('[iso-nesukladnosti] ready');
+})();
+</script>

@@ -54,37 +54,8 @@
   border-bottom: 2px solid #e0e0e0;
 }
 
-.tab-btn {
-  padding: 12px 24px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: 500;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  color: #1976d2;
-  background: #e3f2fd;
-}
-
-.tab-btn.active {
-  color: #1976d2;
-  border-bottom-color: #1976d2;
-}
-
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-  animation: fadeIn 0.3s;
-}
+/* .tab-btn / .tab-content — naslijeđuju iz globalnog css/styles.css.
+   Lokalna duplikat-definicija uklonjena 2026-05-03. */
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -252,38 +223,7 @@
   align-items: center;
 }
 
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95em;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.btn-primary { background: #1976d2; color: white; }
-.btn-primary:hover { background: #1565c0; }
-
-.btn-success { background: #4caf50; color: white; }
-.btn-success:hover { background: #43a047; }
-
-.btn-warning { background: #ff9800; color: white; }
-.btn-warning:hover { background: #f57c00; }
-
-.btn-secondary { background: #e0e0e0; color: #333; }
-.btn-secondary:hover { background: #d0d0d0; }
-
-.btn-danger { background: #f44336; color: white; }
-.btn-danger:hover { background: #e53935; }
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* .btn / .btn-* — naslijeđuju iz globalnog css/styles.css. */
 
 /* Team filter */
 .team-filter {
@@ -413,48 +353,14 @@
 }
 
 /* Loading */
-.loading-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.9);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
 
 .loading-overlay.active { display: flex; }
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 /* Toast */
-.toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10000;
-}
-
-.toast {
-  padding: 15px 20px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  animation: slideIn 0.3s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
 
 .toast.success { background: #4caf50; }
 .toast.error { background: #f44336; }
@@ -466,58 +372,8 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9998;
-}
-
+/* .modal / .modal-content / .modal-* — naslijeđuju iz globalnog css/styles.css. */
 .modal.active { display: flex; }
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 700px;
-  width: 95%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.3em;
-}
-
-.modal-close {
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #666;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-footer {
-  padding: 15px 20px;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
 
 /* Payslip preview */
 .payslip {
@@ -705,7 +561,7 @@
         </tr>
       </thead>
       <tbody id="hoursTableBody">
-        <tr><td colspan="16" style="text-align:center;padding:40px;color:#999;">Učitavanje...</td></tr>
+        <tr><td colspan="16" style="text-align:center;padding:40px;color:var(--text-lo);">Učitavanje...</td></tr>
       </tbody>
       <tfoot id="hoursTableFoot">
         <tr>
@@ -747,7 +603,7 @@
   </div>
   
   <div id="obracunResults">
-    <p style="text-align:center;padding:40px;color:#999;">Kliknite "Izračunaj sve" za generiranje obračuna</p>
+    <p style="text-align:center;padding:40px;color:var(--text-lo);">Kliknite "Izračunaj sve" za generiranje obračuna</p>
   </div>
 </div>
 
@@ -766,7 +622,7 @@
   </div>
   
   <div id="teamResults">
-    <p style="text-align:center;padding:40px;color:#999;">Odaberite postavu za pregled</p>
+    <p style="text-align:center;padding:40px;color:var(--text-lo);">Odaberite postavu za pregled</p>
   </div>
 </div>
 
@@ -962,7 +818,7 @@ function renderHoursTable() {
   const fondSati = monthlyHours[`${year}-${month}`] || settings.FOND_SATI_DEFAULT || 176;
   
   if (employees.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:40px;color:#999;">Nema aktivnih djelatnika</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:40px;color:var(--text-lo);">Nema aktivnih djelatnika</td></tr>';
     return;
   }
   
@@ -1351,7 +1207,7 @@ function renderObracunResults(results) {
   const container = document.getElementById('obracunResults');
   
   if (results.length === 0) {
-    container.innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Nema rezultata</p>';
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-lo);">Nema rezultata</p>';
     return;
   }
   
@@ -1435,7 +1291,7 @@ async function filterByTeam() {
   const teamEmployees = employees.filter(e => e.team_name === teamName);
   
   if (teamEmployees.length === 0) {
-    container.innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Nema djelatnika u ovoj postavi</p>';
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-lo);">Nema djelatnika u ovoj postavi</p>';
     return;
   }
   
@@ -1496,7 +1352,7 @@ function renderAllTeams() {
     `;
   }
   
-  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:#999;">Nema podataka</p>';
+  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:var(--text-lo);">Nema podataka</p>';
 }
 
 function renderTeamSection(teamName, teamEmployees, teamPayroll, container) {
@@ -1544,7 +1400,7 @@ function renderTeamTable(teamName, teamEmployees, teamPayroll) {
               <td>
                 <div class="employee-info">
                   <span class="name">${emp.first_name} ${emp.last_name}</span>
-                  <span class="job">${emp.position || '-'}${emp.linija ? ` <small style="color:#1976d2;">(${emp.linija}${emp.stroj_tip ? ' - ' + emp.stroj_tip : ''})</small>` : ''}</span>
+                  <span class="job">${emp.position || '-'}${emp.linija ? ` <small style="color:var(--primary);">(${emp.linija}${emp.stroj_tip ? ' - ' + emp.stroj_tip : ''})</small>` : ''}</span>
                 </div>
               </td>
               <td class="right">${(p.net_salary || 0).toFixed(2)} €</td>
@@ -1773,7 +1629,7 @@ function printPayslip() {
     <head>
       <title>Platna lista</title>
       <style>
-        body { font-family: Arial; padding: 20px; }
+        
         .payslip { border: 1px solid #ddd; }
         .payslip-header { background: #1e3a5f; color: white; padding: 15px; text-align: center; }
         .payslip-section { padding: 15px; border-bottom: 1px solid #eee; }

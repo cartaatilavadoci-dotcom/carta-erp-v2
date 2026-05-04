@@ -8,420 +8,11 @@
 <!-- ============================================ -->
 
 <style>
-  /* TABOVI */
-  .raspored-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 0;
-    border-bottom: 2px solid #5d4037;
-  }
-  
-  .raspored-tab {
-    padding: 12px 24px;
-    background: #efebe9;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    color: #5d4037;
-    border-radius: 8px 8px 0 0;
-    margin-right: 4px;
-    transition: all 0.2s;
-  }
-  
-  .raspored-tab:hover {
-    background: #d7ccc8;
-  }
-  
-  .raspored-tab.active {
-    background: #5d4037;
-    color: white;
-  }
-  
-  .raspored-tab.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .tab-content {
-    display: none;
-    padding: 20px 0;
-  }
-  
-  .tab-content.active {
-    display: block;
-  }
-  
-  /* ADMIN BADGE */
-  .admin-badge {
-    display: inline-block;
-    background: #ff5722;
-    color: white;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-
-  /* KONTROLE */
-  .raspored-controls {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    padding: 20px;
-    background: linear-gradient(135deg, #5d4037 0%, #6d4c41 100%);
-    border-radius: 10px;
-  }
-  
-  .raspored-controls .form-group { margin-bottom: 0; }
-  
-  .raspored-controls label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.9);
-    font-size: 0.85em;
-  }
-  
-  .raspored-controls input[type="date"],
-  .raspored-controls select {
-    padding: 10px 15px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 6px;
-    font-size: 14px;
-    background: rgba(255,255,255,0.95);
-  }
-  
-  .raspored-controls .btn { padding: 10px 18px; }
-
-  .raspored-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  
-  .raspored-table th {
-    background: #5d4037;
-    color: white;
-    padding: 12px 8px;
-    text-align: center;
-    font-weight: 600;
-    border: 1px solid #3e2723;
-  }
-  
-  .raspored-table td {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #e0e0e0;
-    vertical-align: top;
-  }
-
-  .p1 { background: #1976d2; }
-  .p2 { background: #388e3c; }
-  .p3 { background: #f57c00; }
-  .p4 { background: #c2185b; }
-  .p5 { background: #7b1fa2; }
-  
-  .postava-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 11px;
-    margin-bottom: 4px;
-    color: white;
-  }
-  
-  .smjena-cell { min-width: 160px; padding: 6px !important; }
-  .smjena-cell.bg-p1 { background: #e3f2fd; border-left: 3px solid #1976d2; }
-  .smjena-cell.bg-p2 { background: #e8f5e9; border-left: 3px solid #388e3c; }
-  .smjena-cell.bg-p3 { background: #fff3e0; border-left: 3px solid #f57c00; }
-  .smjena-cell.bg-p4 { background: #fce4ec; border-left: 3px solid #c2185b; }
-  .smjena-cell.bg-p5 { background: #f3e5f5; border-left: 3px solid #7b1fa2; }
-  
-  .djelatnik-lista {
-    font-size: 10px;
-    color: #333;
-    line-height: 1.4;
-    text-align: left;
-    margin-top: 4px;
-  }
-  
-  .djelatnik-lista .bottomer { color: #1565c0; }
-  .djelatnik-lista .tuber { color: #2e7d32; }
-  
-  .subota-row { background: #fffde7 !important; }
-  .nedjelja-row { background: #ffebee !important; }
-  .nedjelja-row td, .subota-row td { color: #999; }
-  .subota-row.radna-subota { background: #fff3e0 !important; }
-  .subota-row.radna-subota td { color: #333; }
-  .today-row { background: rgba(76, 175, 80, 0.12) !important; }
-  .slobodni-cell { background: #f5f5f5; color: #999; font-style: italic; font-size: 11px; }
-
-  .week-info {
-    display: flex;
-    gap: 25px;
-    flex-wrap: wrap;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #5d4037 0%, #6d4c41 100%);
-    border-radius: 8px;
-    margin-bottom: 15px;
-    color: white;
-  }
-  
-  .week-info-item { display: flex; align-items: center; gap: 8px; }
-  .week-info-item .label { color: rgba(255,255,255,0.7); font-size: 0.85em; }
-  .week-info-item .value { font-weight: 600; }
-  
-  .week-badge { padding: 4px 12px; border-radius: 15px; font-weight: 700; font-size: 0.85em; }
-  .week-a { background: #c2185b; }
-  .week-b { background: #7b1fa2; }
-
-  .legenda {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-  }
-  
-  .legenda-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-  .legenda-color { width: 16px; height: 16px; border-radius: 4px; }
-
-  .info-box {
-    background: #efebe9;
-    border-left: 4px solid #5d4037;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    font-size: 13px;
-  }
-
-  /* UREĐIVANJE SEKCIJA */
-  .edit-section {
-    background: #fff8e1;
-    border: 2px solid #ffc107;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .edit-section h3 {
-    margin: 0 0 15px 0;
-    color: #f57f17;
-    font-size: 16px;
-  }
-  
-  .edit-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-  }
-  
-  .edit-field label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: #333;
-    font-size: 13px;
-  }
-  
-  .edit-field input,
-  .edit-field select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-
-  .postave-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-    padding: 15px 0;
-  }
-  
-  .postava-card {
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    background: white;
-  }
-  
-  .postava-card-header {
-    padding: 10px 15px;
-    font-weight: 600;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .postava-card-body { padding: 12px; }
-  
-  .stroj-sekcija { margin-bottom: 12px; }
-  .stroj-sekcija:last-child { margin-bottom: 0; }
-  
-  .stroj-naziv {
-    font-size: 11px;
-    color: #666;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-  
-  .clanovi-lista { display: flex; flex-wrap: wrap; gap: 5px; }
-  
-  .clan-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-  }
-  
-  .clan-badge .ukloni {
-    cursor: pointer;
-    color: #c00;
-    font-weight: bold;
-    font-size: 12px;
-  }
-  
-  .clan-badge .ukloni:hover { color: #f00; }
-  
-  .dodaj-btn {
-    background: #e8f5e9;
-    border: 1px dashed #4caf50;
-    color: #2e7d32;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    cursor: pointer;
-  }
-  
-  .dodaj-btn:hover { background: #c8e6c9; }
-
-  /* RADNE SUBOTE SEKCIJA */
-  .subote-section {
-    background: #fff3e0;
-    border: 2px solid #ff9800;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .subote-section h3 {
-    margin: 0 0 15px 0;
-    color: #e65100;
-    font-size: 16px;
-  }
-  
-  .subote-form {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: rgba(255,255,255,0.7);
-    border-radius: 8px;
-  }
-  
-  .subote-form .form-group {
-    margin-bottom: 0;
-  }
-  
-  .subote-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: #333;
-    font-size: 12px;
-  }
-  
-  .subote-form input,
-  .subote-form select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-  
-  .subote-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .subote-table th {
-    background: #ff9800;
-    color: white;
-    padding: 10px;
-    text-align: left;
-    font-weight: 600;
-  }
-  
-  .subote-table td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .subote-table tr:hover {
-    background: #fff8e1;
-  }
-  
-  .subote-table .btn-delete {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  
-  .subote-table .btn-delete:hover {
-    background: #d32f2f;
-  }
-  
-  .no-subote {
-    text-align: center;
-    padding: 20px;
-    color: #999;
-    font-style: italic;
-  }
-  
-  .radna-subota-badge {
-    display: inline-block;
-    background: #ff9800;
-    color: white;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 8px;
-    margin-left: 5px;
-    font-weight: 600;
-  }
-
-  @media print {
-    .raspored-controls, .legenda, .btn, .card:last-child, .week-info, .info-box, .raspored-tabs, .edit-section, .subote-section { display: none !important; }
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  }
+  /* RASPORED stilovi — uklonjeni duplikati 2026-05-04, naslijeđuju iz globalnog
+     css/styles.css (.raspored-*, .smjena-*, .legenda-*, .postava-*, .week-*,
+     .subota-row/.nedjelja-row/.today-row/.slobodni-cell/.radna-subota,
+     .clan-badge/.dodaj-btn, .p1-.p5 + .bg-p1-.bg-p5 koriste --postava-* tokene per-tema,
+     .edit-section, .subote-*, .info-box, .raspored-tabs/.tab). Print mode globalni. */
 </style>
 
 <div class="card">
@@ -486,9 +77,9 @@
       <div class="legenda-item"><div class="legenda-color p3"></div> Postava 3</div>
       <div class="legenda-item"><div class="legenda-color p4"></div> Postava 4</div>
       <div class="legenda-item"><div class="legenda-color p5"></div> Postava 5</div>
-      <div class="legenda-item"><div class="legenda-color" style="background:#fff3e0; border:1px solid #ff9800;"></div> Radna subota</div>
-      <div class="legenda-item"><div class="legenda-color" style="background:#fffde7; border:1px solid #ddd;"></div> Subota (slob.)</div>
-      <div class="legenda-item"><div class="legenda-color" style="background:#ffebee; border:1px solid #ddd;"></div> Nedjelja (slob.)</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:var(--remap-warning-bg); border:1px solid var(--warning);"></div> Radna subota</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:var(--remap-warning-bg); border:1px solid var(--border);"></div> Subota (slob.)</div>
+      <div class="legenda-item"><div class="legenda-color" style="background:var(--remap-danger-bg); border:1px solid var(--border);"></div> Nedjelja (slob.)</div>
     </div>
     
     <!-- TABLICA -->
@@ -503,7 +94,7 @@
           </tr>
         </thead>
         <tbody id="rasporedTableBody">
-          <tr><td colspan="4" style="text-align:center; padding:30px; color:#999;">Odaberite datume i kliknite "Generiraj"</td></tr>
+          <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-lo);">Odaberite datume i kliknite "Generiraj"</td></tr>
         </tbody>
       </table>
     </div>
@@ -530,12 +121,12 @@
           </select>
         </div>
         <div class="edit-field" style="display:flex; align-items:flex-end;">
-          <button class="btn btn-success" onclick="spremiPostavke()" style="background:#4CAF50;">
+          <button class="btn btn-success" onclick="spremiPostavke()" style="background:var(--success);">
             💾 Spremi postavke
           </button>
         </div>
       </div>
-      <p style="margin-top:10px; font-size:12px; color:#666;">
+      <p style="margin-top:10px; font-size:12px; color:var(--text-mid);">
         <strong>Napomena:</strong> Referentni datum služi kao početak rotacije. 
         Npr. ako postavite 06.01.2025. s Postavom 4, tada taj ponedjeljak Postava 4 radi 1. smjenu.
       </p>
@@ -594,15 +185,15 @@
     <h3 style="margin:20px 0 15px;">👥 Članovi postava</h3>
     
     <div class="postave-grid" id="postaveContainer">
-      <div style="text-align:center; padding:30px; color:#999;">Učitavam postave...</div>
+      <div style="text-align:center; padding:30px; color:var(--text-lo);">Učitavam postave...</div>
     </div>
     
     <!-- SPREMI U BAZU -->
-    <div style="margin-top:20px; padding:15px; background:#e8f5e9; border-radius:8px;">
-      <button class="btn btn-success" onclick="spremiRaspored()" style="background:#4CAF50;">
+    <div style="margin-top:20px; padding:15px; background:var(--remap-success-bg); border-radius:8px;">
+      <button class="btn btn-success" onclick="spremiRaspored()" style="background:var(--success);">
         📅 Spremi raspored u bazu (za odabrani period)
       </button>
-      <span style="margin-left:15px; color:#666; font-size:12px;">
+      <span style="margin-left:15px; color:var(--text-mid); font-size:12px;">
         Spremanje generira zapise u prod_schedules tablicu (uključuje radne subote)
       </span>
     </div>
@@ -617,7 +208,7 @@
       <span class="close-btn" onclick="closeModal('dodajClanaModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <p id="dodajClanaInfo" style="color:#666; margin-bottom:15px;">Tim</p>
+      <p id="dodajClanaInfo" style="color:var(--text-mid); margin-bottom:15px;">Tim</p>
       <input type="hidden" id="dodajClanaTeamId">
       <div class="form-group">
         <label>Ime djelatnika:</label>
@@ -973,8 +564,8 @@ function renderRadneSubote() {
     
     html += '<tr>';
     html += '<td><strong>' + formatDate(d) + '</strong></td>';
-    html += '<td>' + (s.smjena1 ? '<span class="postava-badge p' + s.smjena1 + '">Postava ' + s.smjena1 + '</span>' : '<span style="color:#999;">-</span>') + '</td>';
-    html += '<td>' + (s.smjena2 ? '<span class="postava-badge p' + s.smjena2 + '">Postava ' + s.smjena2 + '</span>' : '<span style="color:#999;">-</span>') + '</td>';
+    html += '<td>' + (s.smjena1 ? '<span class="postava-badge p' + s.smjena1 + '">Postava ' + s.smjena1 + '</span>' : '<span style="color:var(--text-lo);">-</span>') + '</td>';
+    html += '<td>' + (s.smjena2 ? '<span class="postava-badge p' + s.smjena2 + '">Postava ' + s.smjena2 + '</span>' : '<span style="color:var(--text-lo);">-</span>') + '</td>';
     html += '<td><button class="btn-delete" onclick="obrisiRadnuSubotu(\'' + datum + '\')">Obriši</button></td>';
     html += '</tr>';
   });
@@ -1113,7 +704,7 @@ function renderPostaveCards() {
         html += '</div></div>';
       });
     } else {
-      html += '<p style="color:#999; font-style:italic;">Nema definiranih timova</p>';
+      html += '<p style="color:var(--text-lo); font-style:italic;">Nema definiranih timova</p>';
     }
     
     html += '</div></div>';

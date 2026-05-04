@@ -150,10 +150,12 @@
   <button class="tab-btn" onclick="showTab('pop')">🧻 POP</button>
   <button class="tab-btn" onclick="showTab('gop')">🛍️ GOP</button>
   <button class="tab-btn" onclick="showTab('palete')">🏗️ Prazne palete</button>
-  <button class="tab-btn" onclick="showTab('korekcije')" style="background: #fff3e0; color: #e65100;">🔧 Korekcije rola</button>
-  <button class="tab-btn" onclick="showTab('neuskladjeno')" style="background: #ffebee; color: #c62828;">⚠️ Neusklađeno</button>
-  <button class="tab-btn" onclick="showTab('rolePoRN')" style="background: #e8f5e9; color: #2e7d32;">📊 Rola po RN</button>
-  <button class="tab-btn" id="tabBtnZaostaliPOP" onclick="showTab('zaostaliPOP')" style="background: #fce4ec; color: #ad1457; display: none;">🧹 Zaostali POP</button>
+  <button class="tab-btn" onclick="showTab('korekcije')" style="background: var(--remap-warning-bg); color: #e65100;">🔧 Korekcije rola</button>
+  <button class="tab-btn" onclick="showTab('neuskladjeno')" style="background: var(--remap-danger-bg); color: var(--danger);">⚠️ Neusklađeno</button>
+  <button class="tab-btn" onclick="showTab('rolePoRN')" style="background: var(--remap-success-bg); color: var(--success);">📊 Rola po RN</button>
+  <button class="tab-btn" onclick="showTab('bilancaPapira')" style="background: var(--remap-info-bg); color: var(--primary);">📊 Bilanca papira</button>
+  <button class="tab-btn" id="tabBtnDiscrepancy" onclick="showTab('discrepancyLog')" style="background: var(--remap-danger-bg); color: var(--danger); display: none;">⚠️ Discrepancy log</button>
+  <button class="tab-btn" id="tabBtnZaostaliPOP" onclick="showTab('zaostaliPOP')" style="background: var(--remap-danger-bg); color: #ad1457; display: none;">🧹 Zaostali POP</button>
 </div>
 
 <!-- ==================== TAB: ROLE PAPIRA ==================== -->
@@ -175,34 +177,34 @@
       </div>
       
       <!-- FILTERI -->
-      <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+      <div style="padding: 15px; background: var(--remap-grey-bg); border-bottom: 1px solid var(--border);">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Boja</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Boja</label>
             <select class="form-control" id="filterBoja" onchange="applyRoleFilteri()">
               <option value="">Sve</option>
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Gramatura</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Gramatura</label>
             <select class="form-control" id="filterGramatura" onchange="applyRoleFilteri()">
               <option value="">Sve</option>
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Proizvođač</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Proizvođač</label>
             <select class="form-control" id="filterProizvodac" onchange="applyRoleFilteri()">
               <option value="">Svi</option>
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Tip papira</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Tip papira</label>
             <select class="form-control" id="filterTipPapira" onchange="applyRoleFilteri()">
               <option value="">Svi</option>
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Status</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Status</label>
             <select class="form-control" id="filterStatus" onchange="applyRoleFilteri()">
               <option value="" selected>Svi</option>
               <option value="Na skladištu">Na skladištu</option>
@@ -211,18 +213,18 @@
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Širina (cm)</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Širina (cm)</label>
             <div style="display: flex; gap: 5px;">
               <input type="number" class="form-control" id="filterSirinaMin" placeholder="Od" onchange="applyRoleFilteri()" style="width: 50%;">
               <input type="number" class="form-control" id="filterSirinaMax" placeholder="Do" onchange="applyRoleFilteri()" style="width: 50%;">
             </div>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Min. količina (kg)</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Min. količina (kg)</label>
             <input type="number" class="form-control" id="filterMinKolicina" placeholder="Min kg" onchange="applyRoleFilteri()">
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 12px; color: #666; margin-bottom: 4px;">Pretraži</label>
+            <label style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">Pretraži</label>
             <input type="text" class="form-control" id="searchRolls" placeholder="Šifra..." oninput="applyRoleFilteri()">
           </div>
         </div>
@@ -271,10 +273,10 @@
     </div>
     
     <!-- Filteri za trake -->
-    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+    <div style="padding: 15px; background: var(--remap-grey-bg); border-bottom: 1px solid var(--border);">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Status</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Status</label>
           <select class="form-control" id="filterTrakeStatus" onchange="loadStrips()">
             <option value="" selected>Svi</option>
             <option value="Na skladištu">Na skladištu</option>
@@ -283,7 +285,7 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraži</label>
           <input type="text" class="form-control" id="searchStrips" placeholder="Šifra trake ili role..." oninput="loadStrips()">
         </div>
       </div>
@@ -323,10 +325,10 @@
     </div>
     
     <!-- Filteri -->
-    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+    <div style="padding: 15px; background: var(--remap-grey-bg); border-bottom: 1px solid var(--border);">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Status</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Status</label>
           <select class="form-control" id="filterPrintedStatus" onchange="loadPrinted()">
             <option value="" selected>Svi</option>
             <option value="Na skladištu">Na skladištu</option>
@@ -334,7 +336,7 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraži</label>
           <input type="text" class="form-control" id="searchPrinted" placeholder="Šifra, artikl, kupac..." oninput="loadPrinted()">
         </div>
       </div>
@@ -420,10 +422,10 @@
     </div>
     
     <!-- Filteri -->
-    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+    <div style="padding: 15px; background: var(--remap-grey-bg); border-bottom: 1px solid var(--border);">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Status</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Status</label>
           <select class="form-control" id="filterPOPStatus" onchange="loadPOP()">
             <option value="" selected>Svi</option>
             <option value="Na skladištu">Na skladištu</option>
@@ -431,7 +433,7 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraži</label>
           <input type="text" class="form-control" id="searchPOP" placeholder="Šifra, artikl, RN..." oninput="loadPOP()">
         </div>
       </div>
@@ -483,36 +485,36 @@
     </div>
 
     <!-- Filteri -->
-    <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+    <div style="padding: 15px; background: var(--remap-grey-bg); border-bottom: 1px solid var(--border);">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Radni Nalog</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Radni Nalog</label>
           <select class="form-control" id="filterGOPRN" onchange="loadGOP()">
             <option value="">Svi</option>
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Kupac</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Kupac</label>
           <select class="form-control" id="filterGOPKupac" onchange="loadGOP()">
             <option value="">Svi</option>
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Artikl</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Artikl</label>
           <select class="form-control" id="filterGOPArtikl" onchange="loadGOP()">
             <option value="">Svi</option>
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Datum od</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Datum od</label>
           <input type="date" class="form-control" id="filterGOPDatumOd" onchange="loadGOP()">
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Datum do</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Datum do</label>
           <input type="date" class="form-control" id="filterGOPDatumDo" onchange="loadGOP()">
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Smjena</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Smjena</label>
           <select class="form-control" id="filterGOPSmjena" onchange="loadGOP()">
             <option value="">Sve</option>
             <option value="1">1. smjena</option>
@@ -521,7 +523,7 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Status</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Status</label>
           <select class="form-control" id="filterGOPStatus" onchange="loadGOP()">
             <option value="" selected>Svi</option>
             <option value="Na skladištu">Na skladištu</option>
@@ -530,7 +532,7 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label style="font-size: 12px; color: #666;">Pretraži</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraži</label>
           <input type="text" class="form-control" id="searchGOP" placeholder="Br. palete..." oninput="loadGOP()">
         </div>
       </div>
@@ -589,12 +591,12 @@
     <div style="padding: 15px; background: linear-gradient(135deg, #ecf0f1, #bdc3c7); border-bottom: 2px solid #7f8c8d; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
       <div style="display: flex; gap: 30px;">
         <div>
-          <div style="font-weight: 600; color: #555;">🏗️ Ukupno paleta:</div>
-          <div style="font-size: 24px; font-weight: bold; color: #333;" id="agregatPalete">0 kom</div>
+          <div style="font-weight: 600; color: var(--text-mid);">🏗️ Ukupno paleta:</div>
+          <div style="font-size: 24px; font-weight: bold; color: var(--text-hi);" id="agregatPalete">0 kom</div>
         </div>
         <div>
-          <div style="font-weight: 600; color: #555;">🔲 Poklopci (stanje / rez. / dost.):</div>
-          <div style="font-size: 24px; font-weight: bold; color: #333;" id="agregatPoklopci">0 / 0 / 0</div>
+          <div style="font-weight: 600; color: var(--text-mid);">🔲 Poklopci (stanje / rez. / dost.):</div>
+          <div style="font-size: 24px; font-weight: bold; color: var(--text-hi);" id="agregatPoklopci">0 / 0 / 0</div>
         </div>
       </div>
     </div>
@@ -626,10 +628,10 @@
 
 <!-- ==================== TAB: KOREKCIJE POTROŠENIH ROLA ==================== -->
 <div class="tab-content" id="korekcije">
-  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ff9800;">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid var(--warning);">
     <div class="card-body">
       <h4 style="color: #e65100; margin-bottom: 10px;">🔧 Korekcije Potrošenih Rola</h4>
-      <p style="color: #666; margin: 0;">
+      <p style="color: var(--text-mid); margin: 0;">
         Ovdje možete pregledati sve evidentirane potrošnje rola na Tuberu i napraviti korekcije ako je došlo do greške.<br>
         <strong>Napomena:</strong> Korekcija će ažurirati stanje na originalnoj roli u skladištu.
       </p>
@@ -680,7 +682,7 @@
     <div class="card-body" style="padding: 0; overflow-x: auto;">
       <table style="width: 100%; min-width: 1000px;">
         <thead>
-          <tr style="background: #f5f5f5;">
+          <tr style="background: var(--remap-grey-bg);">
             <th style="width: 40px;">
               <input type="checkbox" id="korSelectAll" onchange="toggleKorSelectAll()">
             </th>
@@ -700,7 +702,7 @@
           </tr>
         </thead>
         <tbody id="korekcijeTableBody">
-          <tr><td colspan="14" style="text-align: center; padding: 40px; color: #999;">
+          <tr><td colspan="14" style="text-align: center; padding: 40px; color: var(--text-lo);">
             Kliknite "Osvježi" za učitavanje podataka
           </td></tr>
         </tbody>
@@ -709,7 +711,7 @@
   </div>
   
   <!-- Skupne akcije -->
-  <div id="korSkupneAkcije" style="display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+  <div id="korSkupneAkcije" style="display: none; margin-top: 15px; padding: 15px; background: var(--remap-info-bg); border-radius: 8px;">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <span id="korOdabranoInfo" style="font-weight: 600;">Odabrano: 0</span>
       <div style="display: flex; gap: 10px;">
@@ -721,10 +723,10 @@
 
 <!-- ==================== TAB: NEUSKLAĐENA POTROŠNJA ==================== -->
 <div class="tab-content" id="neuskladjeno">
-  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ffebee, #ffcdd2); border: 2px solid #c62828;">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ffebee, #ffcdd2); border: 2px solid var(--danger);">
     <div class="card-body">
-      <h4 style="color: #c62828; margin-bottom: 10px;">⚠️ Neusklađena Potrošnja</h4>
-      <p style="color: #666; margin: 0;">
+      <h4 style="color: var(--danger); margin-bottom: 10px;">⚠️ Neusklađena Potrošnja</h4>
+      <p style="color: var(--text-mid); margin: 0;">
         Ovdje se prikazuju materijali evidentirani <strong>bez šifre</strong> na Tuberu.<br>
         Stanje skladišta NIJE promijenjeno za ove zapise. Administrator može povezati s pravom rolom ili označiti kao usklađeno.
       </p>
@@ -775,7 +777,7 @@
     <div class="card-body" style="padding: 0; overflow-x: auto;">
       <table style="width: 100%; min-width: 900px;">
         <thead>
-          <tr style="background: #f5f5f5;">
+          <tr style="background: var(--remap-grey-bg);">
             <th>Datum</th>
             <th>Sloj</th>
             <th>Boja</th>
@@ -791,7 +793,7 @@
           </tr>
         </thead>
         <tbody id="neuskladjenoTableBody">
-          <tr><td colspan="12" style="text-align: center; padding: 40px; color: #999;">
+          <tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-lo);">
             Kliknite "Osvježi" za učitavanje podataka
           </td></tr>
         </tbody>
@@ -800,7 +802,7 @@
   </div>
   
   <!-- Info -->
-  <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 0.9em;">
+  <div style="margin-top: 15px; padding: 15px; background: var(--remap-info-bg); border-radius: 8px; font-size: 0.9em;">
     <strong>💡 Opcije za usklađivanje:</strong>
     <ul style="margin: 10px 0 0 20px;">
       <li><strong>Poveži s rolom</strong> - Pronađi pravu rolu i skini količinu s nje</li>
@@ -811,9 +813,9 @@
 
 <!-- ==================== TAB: ROLA PO RN ==================== -->
 <div class="tab-content" id="rolePoRN">
-  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-left: 4px solid #2e7d32;">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-left: 4px solid var(--success);">
     <div class="card-body">
-      <h4 style="color: #2e7d32; margin-bottom: 6px;">📊 Potrošnja rola po radnom nalogu</h4>
+      <h4 style="color: var(--success); margin-bottom: 6px;">📊 Potrošnja rola po radnom nalogu</h4>
       <p style="color: #2c3e50; margin: 0; font-size: 0.92em;">
         Prikaz potrošenih i djelomično potrošenih rola grupiranih po RN-u. Klikni narudžbu za detalje — koje role, s kojom težinom su utrošene.
       </p>
@@ -825,11 +827,11 @@
     <div class="card-body">
       <div class="form-row" style="align-items: flex-end; gap: 10px;">
         <div class="form-group" style="flex: 1; min-width: 150px;">
-          <label style="font-size: 12px; color: #666;">Radni nalog (RN)</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Radni nalog (RN)</label>
           <input type="text" id="rprFilterRN" class="form-control form-control-sm" placeholder="npr. RN1001/26" oninput="rprApplyFilters()">
         </div>
         <div class="form-group" style="flex: 0 0 120px;">
-          <label style="font-size: 12px; color: #666;">Linija</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Linija</label>
           <select id="rprFilterLinija" class="form-control form-control-sm" onchange="rprApplyFilters()">
             <option value="">Sve</option>
             <option value="WH">W&H</option>
@@ -837,15 +839,15 @@
           </select>
         </div>
         <div class="form-group" style="flex: 0 0 130px;">
-          <label style="font-size: 12px; color: #666;">Datum od</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Datum od</label>
           <input type="date" id="rprFilterDatumOd" class="form-control form-control-sm" onchange="rprApplyFilters()">
         </div>
         <div class="form-group" style="flex: 0 0 130px;">
-          <label style="font-size: 12px; color: #666;">Datum do</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Datum do</label>
           <input type="date" id="rprFilterDatumDo" class="form-control form-control-sm" onchange="rprApplyFilters()">
         </div>
         <div class="form-group" style="flex: 1; min-width: 150px;">
-          <label style="font-size: 12px; color: #666;">Šifra role / artikl</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Šifra role / artikl</label>
           <input type="text" id="rprFilterSearch" class="form-control form-control-sm" placeholder="Pretraga..." oninput="rprApplyFilters()">
         </div>
         <div class="form-group" style="flex: 0 0 auto; display: flex; gap: 4px;">
@@ -878,7 +880,7 @@
           </tr>
         </thead>
         <tbody id="rolePoRNTableBody">
-          <tr><td colspan="9" style="text-align:center; color:#999; padding:40px;">Kliknite tab da učitate podatke</td></tr>
+          <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:40px;">Kliknite tab da učitate podatke</td></tr>
         </tbody>
       </table>
     </div>
@@ -903,11 +905,11 @@
     <div class="card-body">
       <div class="form-row" style="align-items: flex-end; gap: 10px;">
         <div class="form-group" style="flex: 1; min-width: 150px;">
-          <label style="font-size: 12px; color: #666;">Radni nalog (RN)</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Radni nalog (RN)</label>
           <input type="text" id="zopFilterRN" class="form-control form-control-sm" placeholder="npr. RN1234/26" oninput="zopApplyFilters()">
         </div>
         <div class="form-group" style="flex: 0 0 120px;">
-          <label style="font-size: 12px; color: #666;">Linija</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Linija</label>
           <select id="zopFilterLinija" class="form-control form-control-sm" onchange="zopApplyFilters()">
             <option value="">Sve</option>
             <option value="WH">W&H</option>
@@ -915,7 +917,7 @@
           </select>
         </div>
         <div class="form-group" style="flex: 1; min-width: 150px;">
-          <label style="font-size: 12px; color: #666;">Artikl / kupac</label>
+          <label style="font-size: 12px; color: var(--text-mid);">Artikl / kupac</label>
           <input type="text" id="zopFilterSearch" class="form-control form-control-sm" placeholder="Pretraga..." oninput="zopApplyFilters()">
         </div>
         <div class="form-group" style="flex: 0 0 auto; display: flex; gap: 6px;">
@@ -948,7 +950,168 @@
           </tr>
         </thead>
         <tbody id="zaostaliPOPTableBody">
-          <tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Otvori tab da učitaš podatke</td></tr>
+          <tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:40px;">Otvori tab da učitaš podatke</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: BILANCA PAPIRA PO INTERNAL_ID ==================== -->
+<div class="tab-content" id="bilancaPapira">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-left: 4px solid var(--primary);">
+    <div class="card-body">
+      <h4 style="color: var(--primary); margin-bottom: 6px;">📊 Bilanca papira po vrsti (internal_id)</h4>
+      <p style="color: #2c3e50; margin: 0; font-size: 0.92em;">
+        Pregled stanja papira <strong>po vrsti</strong> (npr. <code>S70-106-SE</code>: smeđi 70g 106cm semi-extensible)
+        umjesto po pojedinačnoj šifri role. Korisno za planiranje nabave i kontrolu — interni ID
+        je ono što se troši, šifra role je samo trag.
+      </p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end; gap: 10px;">
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraga (interni ID)</label>
+          <input type="text" id="bpFilterSearch" class="form-control form-control-sm" placeholder="npr. S70 ili 106" oninput="bpRender()">
+        </div>
+        <div class="form-group" style="flex: 0 0 120px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Boja</label>
+          <select id="bpFilterColor" class="form-control form-control-sm" onchange="bpRender()">
+            <option value="">Sve</option>
+            <option value="S">S (smeđi)</option>
+            <option value="B">B (bijeli)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 0 0 auto;">
+          <label style="font-size: 12px; color: var(--text-mid);">&nbsp;</label>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="loadBilancaPapira()">🔄 Osvježi</button>
+          </div>
+        </div>
+      </div>
+      <div id="bpTotals" style="margin-top: 10px; font-size: 13px; color: var(--text-mid);"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 Po vrsti papira <span id="bpInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Interni ID</th>
+            <th>Boja</th>
+            <th style="text-align:right;">Aktivne role</th>
+            <th style="text-align:right;">Preostalo (kg)</th>
+            <th style="text-align:right;">Inicijalno (kg)</th>
+            <th style="text-align:right;">Potrošeno (kg)</th>
+            <th style="text-align:right;">⚠️ Overdraft</th>
+            <th style="text-align:right;">⚠️ Bez init kg</th>
+            <th style="text-align:right;">⚠️ Unverified</th>
+          </tr>
+        </thead>
+        <tbody id="bilancaPapiraTableBody">
+          <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:40px;">Otvori tab da učitaš podatke</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: DISCREPANCY LOG (admin only) ==================== -->
+<div class="tab-content" id="discrepancyLog">
+  <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ffebee, #ffcdd2); border-left: 4px solid var(--danger);">
+    <div class="card-body">
+      <h4 style="color: var(--danger); margin-bottom: 6px;">⚠️ Discrepancy log (skidanja s odstupanjima)</h4>
+      <p style="color: #2c3e50; margin: 0; font-size: 0.92em;">
+        Slučajevi kad je operater skinuo <strong>više nego što je rola imala</strong>, skenirao
+        <strong>nepoznatu šifru</strong>, ili rola ima <strong>NULL inicijalnu težinu</strong>.
+        Sustav <em>nije blokirao save</em> — sljedivost je sačuvana — ali admin treba pregledati i markirati kao "reviewed".
+      </p>
+    </div>
+  </div>
+
+  <!-- Filteri -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <div class="form-row" style="align-items: flex-end; gap: 10px;">
+        <div class="form-group" style="flex: 0 0 130px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Razlog</label>
+          <select id="dlFilterReason" class="form-control form-control-sm" onchange="dlRender()">
+            <option value="">Sve</option>
+            <option value="overdraft">Overdraft</option>
+            <option value="under_marked">Under-marked (phantom)</option>
+            <option value="unknown_roll_existing">Nepoznata (postojeća)</option>
+            <option value="unknown_roll_new">Nepoznata (nova)</option>
+            <option value="null_initial_weight">NULL initial</option>
+            <option value="legacy_overdraft">Legacy overdraft</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 0 0 120px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Stroj</label>
+          <select id="dlFilterMachine" class="form-control form-control-sm" onchange="dlRender()">
+            <option value="">Svi</option>
+            <option value="tuber">Tuber</option>
+            <option value="tisak">Tisak</option>
+            <option value="rezac">Rezač</option>
+            <option value="legacy">Legacy</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 0 0 130px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Status</label>
+          <select id="dlFilterStatus" class="form-control form-control-sm" onchange="dlRender()">
+            <option value="unreviewed">Neriješeno</option>
+            <option value="reviewed">Riješeno</option>
+            <option value="all">Sve</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label style="font-size: 12px; color: var(--text-mid);">Pretraga (RN / šifra)</label>
+          <input type="text" id="dlFilterSearch" class="form-control form-control-sm" placeholder="npr. RN045 ili B70-9123" oninput="dlRender()">
+        </div>
+        <div class="form-group" style="flex: 0 0 auto;">
+          <button class="btn btn-sm btn-secondary" onclick="loadDiscrepancyLog()">🔄 Osvježi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sažetak -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-body">
+      <div id="dlSummary" style="font-size: 13px; color: var(--text-mid);">Učitavanje sažetka...</div>
+    </div>
+  </div>
+
+  <!-- Tablica -->
+  <div class="card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 Discrepance <span id="dlInfo" style="font-weight:normal; color:var(--text-secondary); font-size:0.85em; margin-left:6px;"></span></span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Stroj</th>
+            <th>RN</th>
+            <th>Šifra</th>
+            <th>Razlog</th>
+            <th style="text-align:right;">Deklarirano</th>
+            <th style="text-align:right;">Dostupno</th>
+            <th style="text-align:right;">Δ</th>
+            <th>Operater</th>
+            <th>Status</th>
+            <th style="width:100px;">Akcija</th>
+          </tr>
+        </thead>
+        <tbody id="discrepancyLogTableBody">
+          <tr><td colspan="11" style="text-align:center; color:var(--text-lo); padding:40px;">Otvori tab da učitaš podatke</td></tr>
         </tbody>
       </table>
     </div>
@@ -966,7 +1129,7 @@
     <input type="hidden" id="korOriginalConsumed">
     
     <!-- Info o roli -->
-    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div><strong>Šifra:</strong> <span id="korInfoSifra">-</span></div>
         <div><strong>Datum:</strong> <span id="korInfoDatum">-</span></div>
@@ -981,22 +1144,22 @@
     <div class="form-row">
       <div class="form-group">
         <label>Originalno skinuto (kg)</label>
-        <input type="number" id="korOriginalno" class="form-control" readonly style="background: #e0e0e0;">
+        <input type="number" id="korOriginalno" class="form-control" readonly style="background: var(--border);">
       </div>
       <div class="form-group">
         <label style="color: #e65100;">Nova vrijednost (kg) *</label>
         <input type="number" id="korNovaVrijednost" class="form-control" step="0.001" min="0" required 
-               style="border-color: #ff9800; font-size: 18px; font-weight: bold;" oninput="izracunajRazliku()">
+               style="border-color: var(--warning); font-size: 18px; font-weight: bold;" oninput="izracunajRazliku()">
       </div>
     </div>
     
     <!-- Razlika -->
-    <div id="korRazlikaInfo" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none;">
+    <div id="korRazlikaInfo" style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span>Razlika:</span>
         <strong id="korRazlika" style="font-size: 20px;">0 kg</strong>
       </div>
-      <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+      <div style="margin-top: 10px; font-size: 0.9em; color: var(--text-mid);">
         <span id="korEfekt">-</span>
       </div>
     </div>
@@ -1017,9 +1180,9 @@
 <div id="skidanjeInventuraModal" class="modal">
   <div class="modal-content" style="max-width: 700px;">
     <span class="modal-close" onclick="closeModal('skidanjeInventuraModal')">&times;</span>
-    <h2 style="margin-bottom: 20px; color: #c62828;">🗑️ Skidanje Rola s Inventure</h2>
+    <h2 style="margin-bottom: 20px; color: var(--danger);">🗑️ Skidanje Rola s Inventure</h2>
     
-    <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+    <div style="background: var(--remap-danger-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--danger);">
       <strong>⚠️ Upozorenje:</strong> Ova funkcija trajno označava role kao potrošene i evidentira ih u sustavu.
       Koristite samo za korekcije nakon inventure!
     </div>
@@ -1038,12 +1201,12 @@
     <!-- Lista rola za skidanje -->
     <div style="margin-top: 20px;">
       <h4 style="margin-bottom: 10px;">📋 Role za skidanje:</h4>
-      <div id="invRoleListaEmpty" style="text-align: center; padding: 30px; color: #999; background: #f5f5f5; border-radius: 8px;">
+      <div id="invRoleListaEmpty" style="text-align: center; padding: 30px; color: var(--text-lo); background: var(--remap-grey-bg); border-radius: 8px;">
         Dodajte role skeniranjem ili unosom šifre
       </div>
       <table id="invRoleTable" style="width: 100%; display: none;">
         <thead>
-          <tr style="background: #f5f5f5;">
+          <tr style="background: var(--remap-grey-bg);">
             <th>Šifra</th>
             <th>Širina</th>
             <th>Gram.</th>
@@ -1053,7 +1216,7 @@
           </tr>
         </thead>
         <tbody id="invRoleTableBody"></tbody>
-        <tfoot style="background: #ffebee;">
+        <tfoot style="background: var(--remap-danger-bg);">
           <tr>
             <td colspan="4" style="text-align: right; font-weight: bold;">UKUPNO ZA SKIDANJE:</td>
             <td style="font-weight: bold; font-size: 1.2em;" id="invUkupnoKg">0 kg</td>
@@ -1065,7 +1228,7 @@
     
     <!-- Razlog -->
     <div class="form-group" style="margin-top: 20px;">
-      <label style="color: #c62828;">Razlog skidanja *</label>
+      <label style="color: var(--danger);">Razlog skidanja *</label>
       <select id="invRazlogSelect" class="form-control" onchange="invToggleCustomRazlog()">
         <option value="">-- Odaberi razlog --</option>
         <option value="Inventura - rola ne postoji">Inventura - rola ne postoji</option>
@@ -1089,20 +1252,20 @@
 <div id="uskladiModal" class="modal">
   <div class="modal-content" style="max-width: 600px;">
     <span class="modal-close" onclick="closeModal('uskladiModal')">&times;</span>
-    <h2 style="margin-bottom: 20px; color: #1565c0;">🔗 Poveži s Rolom</h2>
+    <h2 style="margin-bottom: 20px; color: var(--primary);">🔗 Poveži s Rolom</h2>
     
     <input type="hidden" id="uskladiId">
     <input type="hidden" id="uskladiKg">
     
     <!-- Info o zapisu -->
-    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
       <h4 style="margin: 0 0 10px 0;">Podaci iz evidencije:</h4>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95em;">
         <div><strong>Sloj:</strong> <span id="uskladiInfoSloj">-</span></div>
         <div><strong>Boja:</strong> <span id="uskladiInfoBoja">-</span></div>
         <div><strong>Širina:</strong> <span id="uskladiInfoSirina">-</span> cm</div>
         <div><strong>Gramatura:</strong> <span id="uskladiInfoGram">-</span> g/m²</div>
-        <div><strong>Skinuto:</strong> <span id="uskladiInfoKg" style="color: #c62828; font-weight: bold;">-</span> kg</div>
+        <div><strong>Skinuto:</strong> <span id="uskladiInfoKg" style="color: var(--danger); font-weight: bold;">-</span> kg</div>
         <div><strong>Datum:</strong> <span id="uskladiInfoDatum">-</span></div>
       </div>
     </div>
@@ -1117,14 +1280,14 @@
     
     <!-- Rezultati pretrage -->
     <div id="uskladiSearchResults" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
-      <div style="text-align: center; padding: 20px; color: #999;">
+      <div style="text-align: center; padding: 20px; color: var(--text-lo);">
         Upiši šifru za pretragu
       </div>
     </div>
     
     <!-- Odabrana rola -->
-    <div id="uskladiOdabranaRola" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-      <h4 style="margin: 0 0 10px 0; color: #2e7d32;">✓ Odabrana rola:</h4>
+    <div id="uskladiOdabranaRola" style="display: none; background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <h4 style="margin: 0 0 10px 0; color: var(--success);">✓ Odabrana rola:</h4>
       <div id="uskladiOdabranaInfo"></div>
       <input type="hidden" id="uskladiOdabranaId">
     </div>
@@ -1313,7 +1476,7 @@
       </div>
       
       <!-- Palete -->
-      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
         <h4 style="margin: 0 0 10px 0; color: #7f8c8d;">🏗️ Palete</h4>
         <div class="form-row">
           <div class="form-group" style="margin: 0;">
@@ -1330,7 +1493,7 @@
       <!-- Poklopci -->
       <div style="background: #f9f6f2; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #5d4e37;">
         <h4 style="margin: 0 0 10px 0; color: #5d4e37;">🔲 Poklopci (stanje na skladištu)</h4>
-        <p style="font-size: 0.85em; color: #666; margin: 0 0 10px 0;">Rezervirano se automatski dodaje kad Bottomer napravi paletu</p>
+        <p style="font-size: 0.85em; color: var(--text-mid); margin: 0 0 10px 0;">Rezervirano se automatski dodaje kad Bottomer napravi paletu</p>
         <div class="form-row">
           <div class="form-group" style="margin: 0;">
             <label>Stanje</label>
@@ -1406,7 +1569,7 @@
       <div class="form-group">
         <label>Broj Palete *</label>
         <input type="text" id="gopBrojPalete" class="form-control" required placeholder="npr. P0001">
-        <small style="color: #666;">Format: P0001, P0002, itd.</small>
+        <small style="color: var(--text-mid);">Format: P0001, P0002, itd.</small>
       </div>
 
       <!-- Datum i Smjena -->
@@ -1464,7 +1627,7 @@
       <input type="hidden" id="editGOPPaletaNumber">
 
       <!-- Informacija o paleti -->
-      <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+      <div style="background: var(--remap-warning-bg); padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid var(--warning);">
         <strong>Paleta:</strong> <span id="editGOPPaletaInfo"></span>
       </div>
 
@@ -1536,7 +1699,7 @@
       <div class="form-group">
         <label>Razlog korekcije *</label>
         <textarea id="editGOPRazlog" class="form-control" rows="2" required placeholder="Opišite razlog korekcije..."></textarea>
-        <small style="color: #666;">OBAVEZNO unesite razlog korekcije za audit trail</small>
+        <small style="color: var(--text-mid);">OBAVEZNO unesite razlog korekcije za audit trail</small>
       </div>
 
       <div class="modal-actions">
@@ -1578,14 +1741,19 @@ function showTab(tabId) {
   if (tabId === 'neuskladjeno') loadNeuskladjeno();
   if (tabId === 'rolePoRN') loadRolePoRN();
   if (tabId === 'zaostaliPOP') loadZaostaliPOP();
+  if (tabId === 'bilancaPapira') loadBilancaPapira();
+  if (tabId === 'discrepancyLog') loadDiscrepancyLog();
 }
 
-// Pokaži 'Zaostali POP' tab samo ako je user admin/superadmin
+// Pokaži 'Zaostali POP' i 'Discrepancy log' tabove samo ako je user admin/superadmin
 (function() {
   function applyAdminGuard() {
     if (typeof Auth === 'undefined' || !Auth.isAdmin) return;
+    var isAdm = Auth.isAdmin();
     var btn = document.getElementById('tabBtnZaostaliPOP');
-    if (btn) btn.style.display = Auth.isAdmin() ? 'inline-block' : 'none';
+    if (btn) btn.style.display = isAdm ? 'inline-block' : 'none';
+    var btn2 = document.getElementById('tabBtnDiscrepancy');
+    if (btn2) btn2.style.display = isAdm ? 'inline-block' : 'none';
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyAdminGuard);
@@ -1593,6 +1761,227 @@ function showTab(tabId) {
     applyAdminGuard();
   }
 })();
+
+// ============================================
+// BILANCA PAPIRA PO INTERNAL_ID
+// ============================================
+var bpData = [];
+
+async function loadBilancaPapira() {
+  var tbody = document.getElementById('bilancaPapiraTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:20px;">Učitavanje...</td></tr>';
+  try {
+    var rows = await SB.select('v_paper_balance_by_internal_id', {
+      order: { total_remaining_kg: 'desc' },
+      limit: 5000,
+      silent: true
+    });
+    bpData = rows || [];
+    bpRender();
+  } catch (e) {
+    console.error('loadBilancaPapira error:', e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--danger); padding:20px;">Greška: ' + (e.message || e) + '</td></tr>';
+  }
+}
+
+function bpRender() {
+  var tbody = document.getElementById('bilancaPapiraTableBody');
+  var info = document.getElementById('bpInfo');
+  var totals = document.getElementById('bpTotals');
+  if (!tbody) return;
+
+  var search = (document.getElementById('bpFilterSearch')?.value || '').toLowerCase().trim();
+  var color = document.getElementById('bpFilterColor')?.value || '';
+
+  var filtered = bpData.filter(function(r) {
+    if (color && (r.color || '').toUpperCase() !== color) return false;
+    if (search && (r.internal_id || '').toLowerCase().indexOf(search) === -1) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema podataka.</td></tr>';
+    if (info) info.textContent = '(0)';
+    if (totals) totals.innerHTML = '';
+    return;
+  }
+
+  var html = filtered.map(function(r) {
+    var hasIssue = (r.rolls_with_overdraft > 0) || (r.rolls_with_null_initial > 0) || (r.unverified_rolls > 0);
+    var bg = hasIssue ? '#fff8e1' : 'transparent';
+    return '<tr style="background:' + bg + ';">' +
+      '<td><strong>' + escapeHtml(r.internal_id || '') + '</strong></td>' +
+      '<td>' + escapeHtml(r.color || '?') + '</td>' +
+      '<td style="text-align:right;">' + (r.roll_count_active || 0) + ' / ' + (r.roll_count_total || 0) + '</td>' +
+      '<td style="text-align:right; font-weight:600; color:var(--primary);">' + (Number(r.total_remaining_kg) || 0).toFixed(1) + '</td>' +
+      '<td style="text-align:right; color:var(--text-mid);">' + (Number(r.total_initial_kg) || 0).toFixed(1) + '</td>' +
+      '<td style="text-align:right; color:var(--text-mid);">' + (Number(r.total_consumed_kg) || 0).toFixed(1) + '</td>' +
+      '<td style="text-align:right;' + (r.rolls_with_overdraft > 0 ? ' color:#c62828; font-weight:600;' : ' color:#aaa;') + '">' + (r.rolls_with_overdraft || 0) + '</td>' +
+      '<td style="text-align:right;' + (r.rolls_with_null_initial > 0 ? ' color:#e65100; font-weight:600;' : ' color:#aaa;') + '">' + (r.rolls_with_null_initial || 0) + '</td>' +
+      '<td style="text-align:right;' + (r.unverified_rolls > 0 ? ' color:#7b1fa2; font-weight:600;' : ' color:#aaa;') + '">' + (r.unverified_rolls || 0) + '</td>' +
+      '</tr>';
+  }).join('');
+  tbody.innerHTML = html;
+  if (info) info.textContent = '(' + filtered.length + ' vrsta)';
+
+  if (totals) {
+    var totRemaining = filtered.reduce(function(a, r) { return a + (Number(r.total_remaining_kg) || 0); }, 0);
+    var totRolls = filtered.reduce(function(a, r) { return a + (r.roll_count_active || 0); }, 0);
+    var totOverdraft = filtered.reduce(function(a, r) { return a + (r.rolls_with_overdraft || 0); }, 0);
+    totals.innerHTML = '<strong>Ukupno:</strong> ' + totRolls + ' aktivnih rola, ' +
+                      '<strong>' + totRemaining.toFixed(1) + ' kg</strong> preostalo' +
+                      (totOverdraft > 0 ? ', <span style="color:var(--danger);">' + totOverdraft + ' s overdraft-om</span>' : '');
+  }
+}
+
+// ============================================
+// DISCREPANCY LOG (admin only)
+// ============================================
+var dlData = [];
+
+async function loadDiscrepancyLog() {
+  var tbody = document.getElementById('discrepancyLogTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text-lo); padding:20px;">Učitavanje...</td></tr>';
+  try {
+    var rows = await SB.select('prod_consumption_discrepancy_log', {
+      order: { created_at: 'desc' },
+      limit: 1000,
+      silent: true
+    });
+    dlData = rows || [];
+
+    // Učitaj sažetak
+    try {
+      var summary = await SB.select('v_consumption_discrepancies', { limit: 100, silent: true });
+      var sumDiv = document.getElementById('dlSummary');
+      if (sumDiv && summary) {
+        if (summary.length === 0) {
+          sumDiv.innerHTML = '<span style="color:var(--success);">✓ Nema discrepanci.</span>';
+        } else {
+          var totUnreviewed = summary.reduce(function(a, s) { return a + (s.unreviewed_count || 0); }, 0);
+          var totDelta = summary.reduce(function(a, s) { return a + (Number(s.total_abs_delta_kg) || 0); }, 0);
+          sumDiv.innerHTML = '<strong>Sažetak:</strong> ' +
+            summary.map(function(s) {
+              return s.machine + '/' + s.reason + ': <strong>' + s.unreviewed_count + '</strong> neriješeno (Δ ' + (Number(s.total_abs_delta_kg) || 0).toFixed(1) + ' kg)';
+            }).join(' · ') +
+            ' &nbsp;&nbsp;<strong>Ukupno neriješeno:</strong> ' + totUnreviewed + ' (' + totDelta.toFixed(1) + ' kg)';
+        }
+      }
+    } catch (e) { console.warn('summary load:', e); }
+
+    dlRender();
+  } catch (e) {
+    console.error('loadDiscrepancyLog error:', e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--danger); padding:20px;">Greška: ' + (e.message || e) + '</td></tr>';
+  }
+}
+
+function dlRender() {
+  var tbody = document.getElementById('discrepancyLogTableBody');
+  var info = document.getElementById('dlInfo');
+  if (!tbody) return;
+
+  var fReason = document.getElementById('dlFilterReason')?.value || '';
+  var fMachine = document.getElementById('dlFilterMachine')?.value || '';
+  var fStatus = document.getElementById('dlFilterStatus')?.value || 'unreviewed';
+  var fSearch = (document.getElementById('dlFilterSearch')?.value || '').toLowerCase().trim();
+
+  var filtered = dlData.filter(function(r) {
+    if (fReason && r.reason !== fReason) return false;
+    if (fMachine && r.machine !== fMachine) return false;
+    if (fStatus === 'unreviewed' && r.reviewed_at) return false;
+    if (fStatus === 'reviewed' && !r.reviewed_at) return false;
+    if (fSearch) {
+      var hay = (r.work_order_number || '') + ' ' + (r.scanned_code || '');
+      if (hay.toLowerCase().indexOf(fSearch) === -1) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text-lo); padding:30px;">Nema discrepanci za odabrane filtere.</td></tr>';
+    if (info) info.textContent = '(0)';
+    return;
+  }
+
+  var reasonLabels = {
+    'overdraft': 'Overdraft',
+    'under_marked': 'Under-marked (phantom)',
+    'unknown_roll_existing': 'Nepoznata (postojeća)',
+    'unknown_roll_new': 'Nepoznata (nova)',
+    'null_initial_weight': 'NULL init',
+    'legacy_overdraft': 'Legacy overdraft',
+    'manual_entry': 'Manualni unos'
+  };
+
+  var html = filtered.map(function(r) {
+    var dt = r.created_at ? new Date(r.created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+    var deltaKg = Number(r.delta_kg);
+    var deltaStr = isFinite(deltaKg) ? (deltaKg >= 0 ? '+' : '') + deltaKg.toFixed(1) : '-';
+    var deltaColor = isFinite(deltaKg) ? (deltaKg < 0 ? '#c62828' : '#666') : '#666';
+    var statusBadge = r.reviewed_at
+      ? '<span style="background:var(--remap-success-bg); color:var(--success); padding:2px 8px; border-radius:10px; font-size:11px;">✓ ' + (r.reviewed_by || 'Riješeno') + '</span>'
+      : '<span style="background:var(--remap-warning-bg); color:#e65100; padding:2px 8px; border-radius:10px; font-size:11px;">⚠️ Neriješeno</span>';
+    var actBtn = r.reviewed_at
+      ? '<button class="btn btn-sm btn-secondary" onclick="dlUnmarkReviewed(\'' + r.id + '\')">↩️ Otvori</button>'
+      : '<button class="btn btn-sm btn-success" onclick="dlMarkReviewed(\'' + r.id + '\')">✓ Riješi</button>';
+
+    return '<tr>' +
+      '<td>' + dt + '</td>' +
+      '<td>' + escapeHtml(r.machine || '') + '</td>' +
+      '<td>' + escapeHtml(r.work_order_number || '-') + '</td>' +
+      '<td><code>' + escapeHtml(r.scanned_code || '') + '</code></td>' +
+      '<td>' + (reasonLabels[r.reason] || r.reason) + '</td>' +
+      '<td style="text-align:right;">' + (Number(r.declared_kg) || 0).toFixed(1) + '</td>' +
+      '<td style="text-align:right;">' + (r.available_kg !== null && r.available_kg !== undefined ? Number(r.available_kg).toFixed(1) : '-') + '</td>' +
+      '<td style="text-align:right; color:' + deltaColor + '; font-weight:600;">' + deltaStr + '</td>' +
+      '<td>' + escapeHtml(r.operator_name || '-') + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td>' + actBtn + '</td>' +
+      '</tr>';
+  }).join('');
+  tbody.innerHTML = html;
+  if (info) info.textContent = '(' + filtered.length + ')';
+}
+
+async function dlMarkReviewed(id) {
+  var note = prompt('Razlog/bilješka (opcijski):', '');
+  if (note === null) return;
+  try {
+    var user = (typeof Auth !== 'undefined' && Auth.getUser) ? (Auth.getUser()?.name || 'Admin') : 'Admin';
+    await SB.update('prod_consumption_discrepancy_log',
+      { reviewed_at: new Date().toISOString(), reviewed_by: user, resolution_note: note || null },
+      { id: id });
+    showMessage('Označeno kao riješeno', 'success');
+    loadDiscrepancyLog();
+  } catch (e) {
+    console.error('dlMarkReviewed:', e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+async function dlUnmarkReviewed(id) {
+  if (!confirm('Vratiti u status "neriješeno"?')) return;
+  try {
+    await SB.update('prod_consumption_discrepancy_log',
+      { reviewed_at: null, reviewed_by: null, resolution_note: null },
+      { id: id });
+    showMessage('Vraćeno u neriješeno', 'success');
+    loadDiscrepancyLog();
+  } catch (e) {
+    console.error('dlUnmarkReviewed:', e);
+    showMessage('Greška: ' + (e.message || e), 'error');
+  }
+}
+
+// Lokalni helper (može već postojati globalno; ovaj je defenzivan)
+if (typeof escapeHtml !== 'function') {
+  window.escapeHtml = function(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  };
+}
 
 // ============================================
 // TOGGLE SEKCIJE
@@ -1879,7 +2268,7 @@ function renderRollsTable(rolls) {
     return `
       <tr>
         <td>${roll.internal_id || '-'}</td>
-        <td><code style="font-size: 0.85em; background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${roll.roll_code || '-'}</code></td>
+        <td><code style="font-size: 0.85em; background: var(--remap-grey-bg); padding: 2px 6px; border-radius: 3px;">${roll.roll_code || '-'}</code></td>
         <td>${roll.manufacturer || '-'}</td>
         <td>${datumUnosa}</td>
         <td>${roll.width_cm || '-'} cm</td>
@@ -1888,7 +2277,7 @@ function renderRollsTable(rolls) {
         <td>${roll.paper_type || '-'}</td>
         <td style="text-align: right;">
           <strong>${formatBroj(remaining, 1)} kg</strong>
-          <div style="background: #e0e0e0; height: 4px; border-radius: 2px; margin-top: 4px;">
+          <div style="background: var(--border); height: 4px; border-radius: 2px; margin-top: 4px;">
             <div style="background: var(--${statusClass}); height: 100%; width: ${percent}%; border-radius: 2px;"></div>
           </div>
         </td>
@@ -2088,7 +2477,7 @@ async function loadStrips() {
     
     tbody.innerHTML = filtered.map(s => `
       <tr>
-        <td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${s.strip_code || '-'}</code></td>
+        <td><code style="background: var(--remap-grey-bg); padding: 2px 6px; border-radius: 3px;">${s.strip_code || '-'}</code></td>
         <td>${s.parent_roll_code || '-'}</td>
         <td>${s.strip_number || '-'}</td>
         <td>${s.pass_number || '-'}</td>
@@ -2800,7 +3189,7 @@ function renderKorekcijeTable(data) {
   countEl.textContent = data.length + ' zapisa';
   
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 40px; color: #999;">Nema podataka za prikaz</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 40px; color: var(--text-lo);">Nema podataka za prikaz</td></tr>';
     return;
   }
   
@@ -2815,7 +3204,7 @@ function renderKorekcijeTable(data) {
       statusText = '✏️ Korigirano';
     }
     
-    html += '<tr' + (r.is_corrected ? ' style="background: #fff3e0;"' : '') + '>';
+    html += '<tr' + (r.is_corrected ? ' style="background: var(--remap-warning-bg);"' : '') + '>';
     html += '<td><input type="checkbox" class="korCheckbox" value="' + r.id + '" onchange="updateKorSelection()"></td>';
     html += '<td>' + datum + '</td>';
     html += '<td><strong>' + escapeHtml(r.roll_code || '-') + '</strong></td>';
@@ -2834,7 +3223,7 @@ function renderKorekcijeTable(data) {
       html += '<button class="btn btn-sm btn-warning" onclick="otvoriKorekciju(\'' + r.id + '\')" title="Korigiraj">✏️</button> ';
       html += '<button class="btn btn-sm btn-danger" onclick="ponistiKorekciju(\'' + r.id + '\')" title="Poništi">❌</button>';
     } else {
-      html += '<span style="color: #999; font-size: 0.8em;">Poništeno</span>';
+      html += '<span style="color: var(--text-lo); font-size: 0.8em;">Poništeno</span>';
     }
     html += '</td>';
     html += '</tr>';
@@ -3234,7 +3623,7 @@ function invOsvjeziTablicu() {
     html += '<td>' + (r.width_cm || '-') + ' cm</td>';
     html += '<td>' + (r.grammage || '-') + ' g/m²</td>';
     html += '<td>' + (r.manufacturer || '-') + '</td>';
-    html += '<td style="font-weight: bold; color: #c62828;">' + formatBroj(r.preostalo, 2) + ' kg</td>';
+    html += '<td style="font-weight: bold; color: var(--danger);">' + formatBroj(r.preostalo, 2) + ' kg</td>';
     html += '<td><button class="btn btn-sm btn-secondary" onclick="invUkloniRolu(' + idx + ')">✕</button></td>';
     html += '</tr>';
   });
@@ -3393,7 +3782,7 @@ function renderNeuskladjenoTable(data) {
   countEl.textContent = '(' + data.length + ' zapisa)';
   
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #999;">Nema neusklađenih zapisa</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-lo);">Nema neusklađenih zapisa</td></tr>';
     return;
   }
   
@@ -3408,7 +3797,7 @@ function renderNeuskladjenoTable(data) {
     html += '<td>' + (r.color === 'S' ? '🟤' : r.color === 'B' ? '⚪' : r.color || '-') + '</td>';
     html += '<td>' + (r.width_cm || '-') + ' cm</td>';
     html += '<td>' + (r.grammage || '-') + '</td>';
-    html += '<td style="font-weight: bold; color: #c62828;">' + formatBroj(r.consumed_kg, 2) + ' kg</td>';
+    html += '<td style="font-weight: bold; color: var(--danger);">' + formatBroj(r.consumed_kg, 2) + ' kg</td>';
     html += '<td>' + (r.work_order_number || '-') + '</td>';
     html += '<td>' + (r.article_name || '-') + '</td>';
     html += '<td>' + (r.production_line || '-') + '</td>';
@@ -3441,7 +3830,7 @@ function otvoriUskladiModal(id) {
   document.getElementById('uskladiInfoDatum').textContent = record.shift_date || '-';
   
   document.getElementById('uskladiSearchInput').value = '';
-  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Upiši šifru za pretragu</div>';
+  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-lo);">Upiši šifru za pretragu</div>';
   document.getElementById('uskladiOdabranaRola').style.display = 'none';
   document.getElementById('uskladiOdabranaId').value = '';
   
@@ -3453,7 +3842,7 @@ async function uskladiSearchRola() {
   var resultsDiv = document.getElementById('uskladiSearchResults');
   
   if (search.length < 2) {
-    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Upiši barem 2 znaka za pretragu</div>';
+    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-lo);">Upiši barem 2 znaka za pretragu</div>';
     return;
   }
   
@@ -3466,25 +3855,25 @@ async function uskladiSearchRola() {
       .limit(10);
     
     if (!result.data || result.data.length === 0) {
-      resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Nema rezultata</div>';
+      resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-lo);">Nema rezultata</div>';
       return;
     }
     
     var html = '';
     result.data.forEach(function(r) {
       var preostalo = (r.initial_weight_kg || 0) - (r.consumed_kg || 0);
-      html += '<div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;" ';
+      html += '<div style="padding: 10px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;" ';
       html += 'onmouseover="this.style.background=\'#e3f2fd\'" onmouseout="this.style.background=\'white\'" ';
       html += 'onclick="uskladiOdaberiRolu(\'' + r.id + '\', \'' + r.roll_code + '\', ' + r.width_cm + ', ' + r.grammage + ', ' + preostalo + ')">';
       html += '<strong>' + r.roll_code + '</strong><br>';
-      html += '<span style="font-size: 0.9em; color: #666;">' + r.width_cm + ' cm | ' + r.grammage + ' g/m² | Preostalo: ' + formatBroj(preostalo, 1) + ' kg</span>';
+      html += '<span style="font-size: 0.9em; color: var(--text-mid);">' + r.width_cm + ' cm | ' + r.grammage + ' g/m² | Preostalo: ' + formatBroj(preostalo, 1) + ' kg</span>';
       html += '</div>';
     });
     
     resultsDiv.innerHTML = html;
     
   } catch (e) {
-    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #c62828;">Greška pretrage</div>';
+    resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--danger);">Greška pretrage</div>';
   }
 }
 
@@ -3493,7 +3882,7 @@ function uskladiOdaberiRolu(id, code, width, gram, preostalo) {
   document.getElementById('uskladiOdabranaInfo').innerHTML = 
     '<strong>' + code + '</strong> | ' + width + ' cm | ' + gram + ' g/m² | Preostalo: ' + formatBroj(preostalo, 1) + ' kg';
   document.getElementById('uskladiOdabranaRola').style.display = 'block';
-  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 10px; color: #2e7d32;">Rola odabrana ✓</div>';
+  document.getElementById('uskladiSearchResults').innerHTML = '<div style="text-align: center; padding: 10px; color: var(--success);">Rola odabrana ✓</div>';
 }
 
 async function uskladiSpremi() {
@@ -4055,7 +4444,7 @@ function rprRenderTable(data) {
   var info = document.getElementById('rprInfo');
 
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#999; padding:40px;">Nema zapisa za zadane filtere</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:40px;">Nema zapisa za zadane filtere</td></tr>';
     if (info) info.textContent = '';
     return;
   }
@@ -4116,7 +4505,7 @@ function rprRenderTable(data) {
     html += '<tr class="rpr-group-row ' + (isExpanded ? 'expanded' : '') + '" data-rpr-group="' + key + '" onclick="rprToggleGroup(\'' + keyEsc + '\', event)">';
     html += '<td><span class="group-chevron">▶</span><strong class="rpr-rn-num">' + key + '</strong></td>';
     html += '<td>' + (articlesLabel || '-') + '</td>';
-    html += '<td colspan="3" style="color:#94a3b8; font-size:0.85em;">— ' + g.items.length + ' ' + (g.items.length === 1 ? 'rola' : 'rola') + ' —</td>';
+    html += '<td colspan="3" style="color:var(--text-mid); font-size:0.85em;">— ' + g.items.length + ' ' + (g.items.length === 1 ? 'rola' : 'rola') + ' —</td>';
     html += '<td style="text-align:right;"><strong>' + groupKg.toFixed(2) + '</strong></td>';
     html += '<td colspan="2"><span class="rpr-count">' + g.items.length + ' ' + (g.items.length === 1 ? 'zapis' : 'zapisa') + '</span></td>';
     html += '<td><span class="badge badge-' + (linijaLabel === 'WH' ? 'success' : linijaLabel === 'NLI' ? 'warning' : 'secondary') + '">' + linijaLabel + '</span></td>';
@@ -4198,7 +4587,7 @@ window.zopSelectedPopIds = window.zopSelectedPopIds || new Set();
 async function loadZaostaliPOP() {
   if (typeof Auth !== 'undefined' && Auth.isAdmin && !Auth.isAdmin()) {
     document.getElementById('zaostaliPOPTableBody').innerHTML =
-      '<tr><td colspan="8" style="text-align:center; color:#c62828; padding:40px;">⛔ Pristup samo za admin korisnike</td></tr>';
+      '<tr><td colspan="8" style="text-align:center; color:var(--danger); padding:40px;">⛔ Pristup samo za admin korisnike</td></tr>';
     return;
   }
 
@@ -4218,7 +4607,7 @@ async function loadZaostaliPOP() {
 
     if (allPops.length === 0) {
       zopData = [];
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Nema POP-ova na stanju. ✅</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:40px;">Nema POP-ova na stanju. ✅</td></tr>';
       return;
     }
 
@@ -4281,7 +4670,7 @@ function zopRenderTable(data) {
   var info = document.getElementById('zopInfo');
 
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">Nema zaostalih POP-ova za zadane filtere</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:40px;">Nema zaostalih POP-ova za zadane filtere</td></tr>';
     if (info) info.textContent = '';
     zopUpdateBulkBtn();
     return;
@@ -4327,7 +4716,7 @@ function zopRenderTable(data) {
 
     html += '<tr class="rpr-group-row ' + (isExpanded ? 'expanded' : '') + '" data-zop-group="' + key + '">';
     html += '<td onclick="event.stopPropagation();"><input type="checkbox" ' + (allSelected ? 'checked' : '') + ' ' + (someSelected ? 'data-indeterminate="1"' : '') + ' onchange="zopToggleGroupSelection(\'' + keyEsc + '\', this.checked)"></td>';
-    html += '<td onclick="zopToggleGroup(\'' + keyEsc + '\', event)"><span class="group-chevron">▶</span><strong style="color:#ad1457;">' + key + '</strong> <span style="color:#888;font-size:11px;">(' + g.pops.length + ' POP)</span></td>';
+    html += '<td onclick="zopToggleGroup(\'' + keyEsc + '\', event)"><span class="group-chevron">▶</span><strong style="color:#ad1457;">' + key + '</strong> <span style="color:var(--text-lo);font-size:11px;">(' + g.pops.length + ' POP)</span></td>';
     html += '<td>' + (artikli || '-') + (g.pops.length > 1 && [...new Set(g.pops.map(p => p.article_name))].length > 2 ? ' +' + ([...new Set(g.pops.map(p => p.article_name))].length - 2) : '') + '</td>';
     html += '<td>' + (kupci || '-') + '</td>';
     html += '<td style="text-align:right;font-weight:600;">' + formatBroj(groupKom, 0) + '</td>';
@@ -4347,7 +4736,7 @@ function zopRenderTable(data) {
       html += '<td style="text-align:right;">' + formatBroj(p.quantity, 0) + '</td>';
       html += '<td>' + (p.production_line || '-') + '</td>';
       html += '<td>-</td>';
-      html += '<td><button class="btn btn-sm" style="background:#fff3e0;color:#e65100;padding:2px 8px;font-size:11px;" onclick="zopClearOne(\'' + p.id + '\')">Skini</button></td>';
+      html += '<td><button class="btn btn-sm" style="background:var(--remap-warning-bg);color:#e65100;padding:2px 8px;font-size:11px;" onclick="zopClearOne(\'' + p.id + '\')">Skini</button></td>';
       html += '</tr>';
     });
   });

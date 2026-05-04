@@ -1,0 +1,649 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-target svg-icon-lg"></span>
+  Ciljevi kvalitete (OB_06)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  KPI ciljevi (mjerni, s targetom — auto-praćenje) i projektni ciljevi (datum + status — ručno ažuriranje).
+  Tip cilja se odabire pri kreiranju.
+</div>
+
+<!-- YEAR SWITCHER -->
+<div style="display: flex; gap: 6px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;">
+  <span style="font-size: 13px; color: var(--text-mid);">Godina:</span>
+  <div id="objYearTabs" style="display: flex; gap: 4px;"></div>
+  <button class="btn-secondary" style="margin-left: auto; font-size: 12px;" onclick="objCopyFromPrev()">
+    <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Kopiraj projektne ciljeve iz prošle godine
+  </button>
+  <button class="btn-primary" onclick="objOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi cilj
+  </button>
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-target svg-icon-lg"></span></div>
+    <div class="status-card-value" id="objKpiTotal">-</div>
+    <div class="status-card-label">Ukupno ciljeva</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="objKpiAchieved">-</div>
+    <div class="status-card-label">KPI zadovoljava</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-trending-up svg-icon-lg"></span></div>
+    <div class="status-card-value" id="objKpiProgress">-</div>
+    <div class="status-card-label">Projektni u tijeku</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-zap svg-icon-lg"></span></div>
+    <div class="status-card-value" id="objKpiRealized">-</div>
+    <div class="status-card-label">Projektni realizirano</div>
+  </div>
+</div>
+
+<!-- KPI CILJEVI -->
+<h2 class="iso-section-title-h2">
+  <span class="svg-icon svg-icon-bar-chart-2"></span> KPI ciljevi (auto-praćeni)
+</h2>
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Naziv</th>
+        <th>Frekvencija</th>
+        <th>Target</th>
+        <th>Smjer</th>
+        <th>Zadnja vrijednost</th>
+        <th>Status</th>
+        <th>Trend (zadnjih 6)</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="objKpiTable">
+      <tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PROJEKTNI CILJEVI -->
+<h2 class="iso-section-title-h2" style="margin-top: 30px;">
+  <span class="svg-icon svg-icon-clipboard-list"></span> Projektni ciljevi (ručno ažuriranje)
+</h2>
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th style="width: 30px;">#</th>
+        <th>Cilj</th>
+        <th>Mjere</th>
+        <th>Odgovoran</th>
+        <th>Rok</th>
+        <th>Status</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="objProjTable">
+      <tr><td colspan="7" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="objModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="objModalTitle">Novi cilj</h3>
+      <button class="doc-modal-close" onclick="objCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="objFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Tip cilja *</label>
+          <select id="objFType" class="doc-input" onchange="objToggleType()">
+            <option value="KPI" selected>KPI (mjerni s targetom)</option>
+            <option value="Projektni">Projektni (datum + status)</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Godina *</label>
+          <input type="number" id="objFYear" min="2020" max="2030" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Naziv cilja *</label>
+        <input type="text" id="objFName" placeholder="Postotak isporuka u roku / Modernizacija razvoda ljepila" class="doc-input">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis (opcionalno)</label>
+        <textarea id="objFDescription" rows="2" class="doc-input"></textarea>
+      </div>
+
+      <!-- KPI fields -->
+      <div id="objKpiFields">
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-target svg-icon-sm"></span> KPI parametri
+        </div>
+        <div class="doc-field-grid">
+          <div class="doc-field">
+            <label>Target (vrijednost)</label>
+            <input type="number" id="objFTarget" step="0.01" class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Mjerna jedinica</label>
+            <input type="text" id="objFUnit" placeholder="%, kom, EUR, sati, kg" class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Smjer</label>
+            <select id="objFDirection" class="doc-input">
+              <option value="higher_better" selected>Više = bolje (↑)</option>
+              <option value="lower_better">Manje = bolje (↓)</option>
+              <option value="target">Točno target (=)</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Frekvencija mjerenja</label>
+            <select id="objFFrequency" class="doc-input">
+              <option value="daily">Dnevno</option>
+              <option value="weekly">Tjedno</option>
+              <option value="monthly" selected>Mjesečno</option>
+              <option value="quarterly">Kvartalno</option>
+              <option value="yearly">Godišnje</option>
+            </select>
+          </div>
+        </div>
+        <div class="doc-field" style="margin-top: 10px;">
+          <label>KPI query name (SQL view ili funkcija — opcionalno)</label>
+          <input type="text" id="objFKpiQuery" placeholder="kpi_isporuka_u_roku_pct" class="doc-input">
+          <div style="font-size:11px; color:var(--text-lo); margin-top:3px;">
+            Ime SQL funkcije/view-a koja vraća trenutnu vrijednost. Cron job (06:30) je poziva i sprema rezultat.
+          </div>
+        </div>
+      </div>
+
+      <!-- Project fields -->
+      <div id="objProjFields" style="display:none;">
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-clipboard-list svg-icon-sm"></span> Projektni parametri
+        </div>
+        <div class="doc-field-grid">
+          <div class="doc-field">
+            <label>Odgovorna uloga</label>
+            <input type="text" id="objFResponsibleRole" placeholder="Uprava, Voditelj proizvodnje..." class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Odgovorni zaposlenik</label>
+            <select id="objFResponsibleEmp" class="doc-input">
+              <option value="">— bez konkretne osobe —</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Rok realizacije</label>
+            <input type="date" id="objFDeadline" class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Status</label>
+            <select id="objFProjStatus" class="doc-input">
+              <option value="Planirano" selected>Planirano</option>
+              <option value="U_tijeku">U tijeku</option>
+              <option value="Realizirano">Realizirano</option>
+              <option value="Pomjereno">Pomjereno</option>
+              <option value="Otkazano">Otkazano</option>
+            </select>
+          </div>
+        </div>
+        <div class="doc-field" style="margin-top: 10px;">
+          <label>Mjere za dostizanje cilja</label>
+          <textarea id="objFMeasures" rows="3" class="doc-input" placeholder="Konkretni koraci kako će se cilj postići..."></textarea>
+        </div>
+      </div>
+
+      <div id="objModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="objCloseModal()">Odustani</button>
+      <button class="btn-primary" id="objSaveBtn" onclick="objSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.iso-section-title-h2 { color: var(--primary); margin: 30px 0 12px; font-size: 1.1em; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; gap: 10px; }
+
+.obj-year-tab { padding: 6px 14px; border: 1px solid #d0d0d0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; }
+.obj-year-tab:hover { background: #f0f4f8; }
+.obj-year-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.obj-status-Planirano { background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.obj-status-U_tijeku { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.obj-status-Realizirano { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.obj-status-Pomjereno { background: #fff8e1; color: #f57f17; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.obj-status-Otkazano { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.obj-spark { display: inline-flex; align-items: end; gap: 2px; height: 24px; }
+.obj-spark-bar { width: 6px; background: #1565c0; border-radius: 1px; min-height: 2px; opacity: 0.7; }
+.obj-spark-bar.miss { background: #c62828; }
+</style>
+
+<script>
+(async function initIsoCiljeviView() {
+  console.log('[iso-ciljevi] init');
+
+  const NOW_YEAR = new Date().getFullYear();
+  let currentYear = NOW_YEAR;
+  let allObjs = [];
+  let allResults = {};
+  let allEmployees = [];
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function dirIcon(d) {
+    if (d === 'higher_better') return '↑';
+    if (d === 'lower_better') return '↓';
+    return '=';
+  }
+
+  // ========== YEAR TABS ==========
+  function renderYearTabs() {
+    const years = [NOW_YEAR + 1, NOW_YEAR, NOW_YEAR - 1, NOW_YEAR - 2, NOW_YEAR - 3];
+    const wrap = document.getElementById('objYearTabs');
+    wrap.innerHTML = years.map(y =>
+      `<button class="obj-year-tab ${y === currentYear ? 'active' : ''}" onclick="objSetYear(${y})">${y}</button>`
+    ).join('');
+  }
+  window.objSetYear = function(y) {
+    currentYear = y;
+    renderYearTabs();
+    loadAndRender();
+  };
+
+  // ========== EMPLOYEES ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true },
+        columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' },
+        silent: true
+      });
+      const sel = document.getElementById('objFResponsibleEmp');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== LOAD ==========
+  async function loadAndRender() {
+    try {
+      allObjs = await SB.select('iso_quality_objectives', {
+        eq: { year: currentYear },
+        order: { name: 'asc' },
+        silent: true
+      });
+      const ids = allObjs.map(o => o.id);
+      allResults = {};
+      if (ids.length > 0) {
+        const res = await SB.select('iso_quality_objective_results', {
+          in: { objective_id: ids },
+          order: { period_end: 'desc' },
+          silent: true
+        });
+        res.forEach(r => {
+          if (!allResults[r.objective_id]) allResults[r.objective_id] = [];
+          allResults[r.objective_id].push(r);
+        });
+      }
+      computeKpi();
+      renderKpiTable();
+      renderProjTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('objKpiTable').innerHTML = `<tr><td colspan="8" style="color:var(--danger); padding:20px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  function computeKpi() {
+    const kpis = allObjs.filter(o => o.objective_type === 'KPI');
+    const projs = allObjs.filter(o => o.objective_type === 'Projektni');
+    document.getElementById('objKpiTotal').textContent = allObjs.length;
+    let achieved = 0;
+    kpis.forEach(o => {
+      const last = (allResults[o.id] || [])[0];
+      if (last && last.achieved) achieved++;
+    });
+    document.getElementById('objKpiAchieved').textContent = achieved + '/' + kpis.length;
+    document.getElementById('objKpiProgress').textContent = projs.filter(p => p.project_status === 'U_tijeku' || p.project_status === 'Planirano').length;
+    document.getElementById('objKpiRealized').textContent = projs.filter(p => p.project_status === 'Realizirano').length;
+  }
+
+  function renderKpiTable() {
+    const tbody = document.getElementById('objKpiTable');
+    const kpis = allObjs.filter(o => o.objective_type === 'KPI' && o.active);
+    if (kpis.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Nema KPI ciljeva za ' + currentYear + '. Klikni "Novi cilj".</td></tr>';
+      return;
+    }
+    tbody.innerHTML = kpis.map(o => {
+      const results = (allResults[o.id] || []).slice(0, 6).reverse();
+      const last = results[results.length - 1];
+      const lastVal = last ? Number(last.measured_value).toFixed(1) : '—';
+      const status = last
+        ? (last.achieved
+            ? '<span class="obj-status-Realizirano">✓ Zadovoljava</span>'
+            : '<span class="nc-sev-major">✗ Ispod</span>')
+        : '<span class="obj-status-Planirano">Čeka cron</span>';
+      const spark = results.length > 0
+        ? '<div class="obj-spark">' + results.map(r => {
+            const v = Number(r.measured_value);
+            const t = Number(o.target_value);
+            const ok = (o.target_direction === 'higher_better') ? v >= t :
+                       (o.target_direction === 'lower_better') ? v <= t :
+                       Math.abs(v - t) <= 0.05 * t;
+            const max = Math.max(v, t) || 1;
+            const h = Math.max(2, (v / max) * 22);
+            return `<div class="obj-spark-bar ${ok ? '' : 'miss'}" style="height:${h}px" title="${r.period_end}: ${v}"></div>`;
+          }).join('') + '</div>'
+        : '<span style="color:var(--text-lo);">nema podataka</span>';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(o.name)}</strong><br><span style="font-size:11px; color:var(--text-lo);">${escapeHtml(o.description || '')}</span></td>
+          <td style="font-size:12px;">${o.measurement_frequency || '—'}</td>
+          <td><strong>${o.target_value} ${o.target_unit || ''}</strong></td>
+          <td>${dirIcon(o.target_direction)}</td>
+          <td><strong>${lastVal}</strong> ${o.target_unit || ''}</td>
+          <td>${status}</td>
+          <td>${spark}</td>
+          <td>
+            <button class="doc-action-btn" onclick="objOpenEdit('${o.id}')" title="Uredi">
+              <span class="svg-icon svg-icon-pencil"></span>
+            </button>
+            <button class="doc-action-btn" onclick="objAddResult('${o.id}')" title="Dodaj ručno mjerenje">
+              <span class="svg-icon svg-icon-plus"></span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderProjTable() {
+    const tbody = document.getElementById('objProjTable');
+    const projs = allObjs.filter(o => o.objective_type === 'Projektni' && o.active);
+    if (projs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-lo); padding:30px;">Nema projektnih ciljeva za ' + currentYear + '.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = projs.map((o, i) => {
+      const emp = allEmployees.find(e => e.id === o.responsible_employee_id);
+      const empName = emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : (o.responsible_role || '—');
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${escapeHtml(o.name)}</strong></td>
+          <td style="font-size:12px; max-width: 320px;">${escapeHtml(o.measures || '—')}</td>
+          <td style="font-size:12px;">${escapeHtml(empName)}</td>
+          <td style="font-size:12px;">${fmtDate(o.deadline_date)}</td>
+          <td><span class="obj-status-${o.project_status || 'Planirano'}">${(o.project_status || 'Planirano').replace('_', ' ')}</span></td>
+          <td>
+            <button class="doc-action-btn" onclick="objOpenEdit('${o.id}')" title="Uredi">
+              <span class="svg-icon svg-icon-pencil"></span>
+            </button>
+            <button class="doc-action-btn" onclick="objQuickStatus('${o.id}')" title="Brzo ažuriraj status">
+              <span class="svg-icon svg-icon-refresh-cw"></span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ========== MODAL ==========
+  window.objToggleType = function() {
+    const t = document.getElementById('objFType').value;
+    document.getElementById('objKpiFields').style.display = t === 'KPI' ? 'block' : 'none';
+    document.getElementById('objProjFields').style.display = t === 'Projektni' ? 'block' : 'none';
+  };
+
+  window.objOpenAddModal = function() {
+    document.getElementById('objModalTitle').textContent = 'Novi cilj';
+    document.getElementById('objFId').value = '';
+    document.getElementById('objFType').value = 'KPI';
+    document.getElementById('objFYear').value = currentYear;
+    document.getElementById('objFName').value = '';
+    document.getElementById('objFDescription').value = '';
+    document.getElementById('objFTarget').value = '';
+    document.getElementById('objFUnit').value = '%';
+    document.getElementById('objFDirection').value = 'higher_better';
+    document.getElementById('objFFrequency').value = 'monthly';
+    document.getElementById('objFKpiQuery').value = '';
+    document.getElementById('objFResponsibleRole').value = '';
+    document.getElementById('objFResponsibleEmp').value = '';
+    document.getElementById('objFDeadline').value = '';
+    document.getElementById('objFProjStatus').value = 'Planirano';
+    document.getElementById('objFMeasures').value = '';
+    document.getElementById('objModalError').style.display = 'none';
+    objToggleType();
+    document.getElementById('objModal').style.display = 'flex';
+  };
+
+  window.objOpenEdit = function(id) {
+    const o = allObjs.find(x => x.id === id);
+    if (!o) return;
+    document.getElementById('objModalTitle').textContent = `Uredi: ${o.name}`;
+    document.getElementById('objFId').value = id;
+    document.getElementById('objFType').value = o.objective_type || 'KPI';
+    document.getElementById('objFYear').value = o.year;
+    document.getElementById('objFName').value = o.name || '';
+    document.getElementById('objFDescription').value = o.description || '';
+    document.getElementById('objFTarget').value = o.target_value || '';
+    document.getElementById('objFUnit').value = o.target_unit || '';
+    document.getElementById('objFDirection').value = o.target_direction || 'higher_better';
+    document.getElementById('objFFrequency').value = o.measurement_frequency || 'monthly';
+    document.getElementById('objFKpiQuery').value = o.kpi_query_name || '';
+    document.getElementById('objFResponsibleRole').value = o.responsible_role || '';
+    document.getElementById('objFResponsibleEmp').value = o.responsible_employee_id || '';
+    document.getElementById('objFDeadline').value = o.deadline_date || '';
+    document.getElementById('objFProjStatus').value = o.project_status || 'Planirano';
+    document.getElementById('objFMeasures').value = o.measures || '';
+    document.getElementById('objModalError').style.display = 'none';
+    objToggleType();
+    document.getElementById('objModal').style.display = 'flex';
+  };
+
+  window.objCloseModal = function() {
+    document.getElementById('objModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('objModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.objSave = async function() {
+    const btn = document.getElementById('objSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const name = document.getElementById('objFName').value.trim();
+      if (!name) throw new Error('Naziv je obavezan');
+      const type = document.getElementById('objFType').value;
+      const year = parseInt(document.getElementById('objFYear').value);
+      if (!year) throw new Error('Godina je obavezna');
+
+      const data = {
+        objective_type: type,
+        year,
+        name,
+        description: document.getElementById('objFDescription').value.trim() || null,
+        active: true,
+        updated_at: new Date().toISOString()
+      };
+
+      if (type === 'KPI') {
+        data.target_value = parseFloat(document.getElementById('objFTarget').value) || null;
+        data.target_unit = document.getElementById('objFUnit').value.trim() || null;
+        data.target_direction = document.getElementById('objFDirection').value;
+        data.measurement_frequency = document.getElementById('objFFrequency').value;
+        data.kpi_query_name = document.getElementById('objFKpiQuery').value.trim() || null;
+        // clear projektni fields
+        data.responsible_role = null;
+        data.responsible_employee_id = null;
+        data.deadline_date = null;
+        data.project_status = null;
+        data.measures = null;
+      } else {
+        data.responsible_role = document.getElementById('objFResponsibleRole').value.trim() || null;
+        data.responsible_employee_id = document.getElementById('objFResponsibleEmp').value || null;
+        data.deadline_date = document.getElementById('objFDeadline').value || null;
+        data.project_status = document.getElementById('objFProjStatus').value;
+        data.measures = document.getElementById('objFMeasures').value.trim() || null;
+        data.target_value = null;
+        data.target_unit = null;
+        data.kpi_query_name = null;
+      }
+
+      const id = document.getElementById('objFId').value;
+      if (id) {
+        await SB.update('iso_quality_objectives', data, { id });
+      } else {
+        await SB.insert('iso_quality_objectives', data);
+      }
+      objCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Cilj ažuriran' : 'Cilj dodan', 'success');
+      await loadAndRender();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  window.objAddResult = async function(id) {
+    const o = allObjs.find(x => x.id === id);
+    if (!o) return;
+    const valStr = prompt(`Ručno mjerenje za "${o.name}".\nUnesi vrijednost (${o.target_unit || ''}):`);
+    if (valStr === null) return;
+    const val = parseFloat(valStr);
+    if (isNaN(val)) { alert('Nevažeća vrijednost'); return; }
+
+    const today = new Date();
+    const periodStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
+    const periodEnd = new Date(today.getFullYear(), today.getMonth()+1, 0).toISOString().slice(0,10);
+
+    const achieved = (o.target_direction === 'higher_better') ? val >= o.target_value :
+                     (o.target_direction === 'lower_better')  ? val <= o.target_value :
+                     Math.abs(val - o.target_value) <= 0.05 * (o.target_value || 1);
+
+    try {
+      await SB.upsert('iso_quality_objective_results', {
+        objective_id: id,
+        period_start: periodStart,
+        period_end: periodEnd,
+        measured_value: val,
+        target_at_time: o.target_value,
+        achieved,
+        computed_by: 'manual'
+      }, { silent: true }).catch(async () => {
+        // upsert ako SB nema, fallback insert + update
+        const existing = await SB.select('iso_quality_objective_results', {
+          eq: { objective_id: id, period_start: periodStart, period_end: periodEnd },
+          maybeSingle: true, silent: true
+        });
+        if (existing) {
+          await SB.update('iso_quality_objective_results',
+            { measured_value: val, achieved, target_at_time: o.target_value, computed_by: 'manual' },
+            { id: existing.id });
+        } else {
+          await SB.insert('iso_quality_objective_results', {
+            objective_id: id, period_start: periodStart, period_end: periodEnd,
+            measured_value: val, achieved, target_at_time: o.target_value, computed_by: 'manual'
+          });
+        }
+      });
+      if (typeof showMessage === 'function') showMessage('Mjerenje dodano', 'success');
+      await loadAndRender();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  window.objQuickStatus = async function(id) {
+    const o = allObjs.find(x => x.id === id);
+    if (!o) return;
+    const opts = ['Planirano', 'U_tijeku', 'Realizirano', 'Pomjereno', 'Otkazano'];
+    const choice = prompt(`Status za "${o.name}":\n` + opts.map((s, i) => `${i+1}. ${s.replace('_',' ')}`).join('\n') + '\n\nUnesi broj:');
+    const idx = parseInt(choice) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= opts.length) return;
+    try {
+      await SB.update('iso_quality_objectives',
+        { project_status: opts[idx], updated_at: new Date().toISOString() }, { id });
+      if (typeof showMessage === 'function') showMessage('Status ažuriran', 'success');
+      await loadAndRender();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  window.objCopyFromPrev = async function() {
+    const prevYear = currentYear - 1;
+    if (!confirm(`Kopirati nedovršene projektne ciljeve iz ${prevYear}. u ${currentYear}?\n(Realizirani ciljevi se preskaču.)`)) return;
+    try {
+      const prev = await SB.select('iso_quality_objectives', {
+        eq: { year: prevYear, objective_type: 'Projektni', active: true },
+        silent: true
+      });
+      const candidates = prev.filter(p => p.project_status !== 'Realizirano' && p.project_status !== 'Otkazano');
+      if (candidates.length === 0) {
+        if (typeof showMessage === 'function') showMessage('Nema nerealiziranih projektnih ciljeva za kopirat', 'info');
+        return;
+      }
+      for (const p of candidates) {
+        await SB.insert('iso_quality_objectives', {
+          objective_type: 'Projektni',
+          year: currentYear,
+          name: p.name,
+          description: p.description,
+          responsible_role: p.responsible_role,
+          responsible_employee_id: p.responsible_employee_id,
+          measures: p.measures,
+          deadline_date: p.deadline_date,
+          project_status: p.project_status === 'Realizirano' ? 'Realizirano' : 'Pomjereno',
+          notes: `Pomjereno iz ${prevYear} (originalan rok: ${p.deadline_date || 'nije bio postavljen'})`,
+          active: true
+        });
+      }
+      if (typeof showMessage === 'function') showMessage(`${candidates.length} ciljeva kopirano`, 'success');
+      await loadAndRender();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  document.getElementById('objModal').addEventListener('click', e => {
+    if (e.target.id === 'objModal') objCloseModal();
+  });
+
+  renderYearTabs();
+  await loadEmployees();
+  await loadAndRender();
+  console.log('[iso-ciljevi] ready');
+})();
+</script>

@@ -1,0 +1,531 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-mail-warning svg-icon-lg"></span>
+  Reklamacije kupaca
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Workflow: zaprimanje → tehnički posjet (po potrebi) → rješenje → zatvaranje. Opcijski auto-otvaranje NC i CAPA.
+  Postojeća Moravacem reklamacija (Drive) može se uvesti ručno preko "+ Nova reklamacija".
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-mail-warning svg-icon-lg"></span></div>
+    <div class="status-card-value" id="rekKpiOpen">-</div>
+    <div class="status-card-label">Otvorene</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="rekKpiMajor">-</div>
+    <div class="status-card-label">Major (otvorene)</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="rekKpiNew7">-</div>
+    <div class="status-card-label">Nove (7d)</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="rekKpiClosed30">-</div>
+    <div class="status-card-label">Zatvorene (30d)</div>
+  </div>
+</div>
+
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="rekFilterSearch" placeholder="Pretraga po broju, kupcu, opisu..." class="doc-input">
+    <select id="rekFilterStatus" class="doc-input">
+      <option value="open" selected>Otvorene + u obradi</option>
+      <option value="">Sve</option>
+      <option value="Zaprimljena">Zaprimljena</option>
+      <option value="U_obradi">U obradi</option>
+      <option value="Posjeta_planirana">Posjeta planirana</option>
+      <option value="Cekanje_kupca">Čekanje kupca</option>
+      <option value="Rijesena">Riješena</option>
+      <option value="Zatvorena">Zatvorena</option>
+      <option value="Otkazana">Otkazana</option>
+    </select>
+    <select id="rekFilterSeverity" class="doc-input">
+      <option value="">Sve severity</option>
+      <option value="major">Major</option>
+      <option value="minor">Minor</option>
+      <option value="observation">Observation</option>
+    </select>
+    <select id="rekFilterCustomer" class="doc-input">
+      <option value="">Svi kupci</option>
+    </select>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button class="btn-secondary" onclick="rekImportFromDrive()" title="Import iz Google Drive (Moravacem)">
+      <span class="svg-icon svg-icon-download svg-icon-sm"></span> Import iz Drive
+    </button>
+    <button class="btn-primary doc-btn-add" onclick="rekOpenAddModal()">
+      <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova reklamacija
+    </button>
+  </div>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Br.</th>
+        <th>Datum</th>
+        <th>Kupac</th>
+        <th>RN / Otprema</th>
+        <th>Kategorija</th>
+        <th>Sev.</th>
+        <th>Opis</th>
+        <th>Status</th>
+        <th>NC / CAPA</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="rekTableBody">
+      <tr><td colspan="10" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="rekModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="rekModalTitle">Nova reklamacija</h3>
+      <button class="doc-modal-close" onclick="rekCloseModal()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="rekFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Datum reklamacije *</label>
+          <input type="date" id="rekFDate" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Severity *</label>
+          <select id="rekFSeverity" class="doc-input">
+            <option value="minor" selected>Minor</option>
+            <option value="major">Major</option>
+            <option value="observation">Observation</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Kupac (postojeći) *</label>
+          <select id="rekFCustomer" class="doc-input">
+            <option value="">— odaberi —</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Ili upiši kupca (ako nije u listi)</label>
+          <input type="text" id="rekFCustomerName" class="doc-input" placeholder="Npr. Moravacem d.o.o.">
+        </div>
+        <div class="doc-field">
+          <label>Kontakt osoba</label>
+          <input type="text" id="rekFContact" class="doc-input" placeholder="Npr. Urošević Dušan">
+        </div>
+        <div class="doc-field">
+          <label>Email kontakt</label>
+          <input type="email" id="rekFEmail" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Broj radnog naloga</label>
+          <input type="text" id="rekFWoNumber" class="doc-input" placeholder="RN: 664/25">
+        </div>
+        <div class="doc-field">
+          <label>Broj otpremnice</label>
+          <input type="text" id="rekFDispatchNumber" class="doc-input" placeholder="25-350-000310">
+        </div>
+        <div class="doc-field">
+          <label>Artikl</label>
+          <input type="text" id="rekFArticleName" class="doc-input" placeholder="Ventil vreće MultiCem 50 kg">
+        </div>
+        <div class="doc-field">
+          <label>Datum isporuke kupcu</label>
+          <input type="date" id="rekFDeliveryDate" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Pogođena količina (kom)</label>
+          <input type="number" id="rekFAffectedQty" class="doc-input" min="0">
+        </div>
+        <div class="doc-field">
+          <label>Kategorija</label>
+          <select id="rekFCategory" class="doc-input">
+            <option value="">— odaberi —</option>
+            <option value="kvaliteta">Kvaliteta</option>
+            <option value="pucanje">Pucanje vreća</option>
+            <option value="kasnjenje">Kašnjenje</option>
+            <option value="ostecenje">Oštećenje</option>
+            <option value="dimenzije">Dimenzije</option>
+            <option value="tisak">Tisak</option>
+            <option value="drugo">Drugo</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis reklamacije *</label>
+        <textarea id="rekFDescription" rows="3" class="doc-input" placeholder="Što kupac prijavljuje..."></textarea>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Status</label>
+          <select id="rekFStatus" class="doc-input">
+            <option value="Zaprimljena" selected>Zaprimljena</option>
+            <option value="U_obradi">U obradi</option>
+            <option value="Posjeta_planirana">Posjeta planirana</option>
+            <option value="Cekanje_kupca">Čekanje kupca</option>
+            <option value="Rijesena">Riješena</option>
+            <option value="Zatvorena">Zatvorena</option>
+            <option value="Otkazana">Otkazana</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Datum tehničkog posjeta</label>
+          <input type="date" id="rekFTechVisit" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Procijenjeni trošak (EUR)</label>
+          <input type="number" id="rekFCostEst" class="doc-input" step="0.01" min="0">
+        </div>
+        <div class="doc-field">
+          <label>Stvarni trošak (EUR)</label>
+          <input type="number" id="rekFCostActual" class="doc-input" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Rješenje</label>
+        <textarea id="rekFResolution" rows="2" class="doc-input" placeholder="Što je dogovoreno / poduzeto..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Izvor reklamacije</label>
+        <select id="rekFSource" class="doc-input">
+          <option value="rucno" selected>Ručni unos</option>
+          <option value="email">Email</option>
+          <option value="telefon">Telefon</option>
+          <option value="drive_import">Import iz Drive</option>
+        </select>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>
+          <input type="checkbox" id="rekFAutoOpenNc"> Auto-otvori NC iz ove reklamacije (preporučeno za major)
+        </label>
+      </div>
+      <div id="rekModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="rekCloseModal()">Odustani</button>
+      <button class="btn-primary" id="rekSaveBtn" onclick="rekSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.rek-status-Zaprimljena { background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-U_obradi { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-Posjeta_planirana { background: #ede7f6; color: #5e35b1; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-Cekanje_kupca { background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-Rijesena { background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-Zatvorena { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.rek-status-Otkazana { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+</style>
+
+<script>
+(async function initIsoReklamacijeView() {
+  console.log('[iso-reklamacije] init');
+  let allReks = [], allCustomers = [];
+
+  function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+
+  function statusPill(s) { return `<span class="rek-status-${(s||'Zaprimljena').replace(/[ -]/g,'_')}">${(s||'Zaprimljena').replace('_',' ')}</span>`; }
+  function severityPill(s) {
+    const cls = s === 'major' ? 'nc-sev-major' : s === 'observation' ? 'nc-sev-observation' : 'nc-sev-minor';
+    return `<span class="${cls}">${s || 'minor'}</span>`;
+  }
+
+  // ========== KPI ==========
+  function computeKpi() {
+    const open = allReks.filter(r => !['Zatvorena','Otkazana','Rijesena'].includes(r.status));
+    document.getElementById('rekKpiOpen').textContent = open.length;
+    document.getElementById('rekKpiMajor').textContent = open.filter(r => r.severity === 'major').length;
+    const since7 = new Date(); since7.setDate(since7.getDate() - 7);
+    document.getElementById('rekKpiNew7').textContent = allReks.filter(r => r.complaint_date && new Date(r.complaint_date) >= since7).length;
+    const since30 = new Date(); since30.setDate(since30.getDate() - 30);
+    document.getElementById('rekKpiClosed30').textContent = allReks.filter(r => r.status === 'Zatvorena' && r.closed_at && new Date(r.closed_at) >= since30).length;
+  }
+
+  // ========== CUSTOMERS ==========
+  async function loadCustomers() {
+    try {
+      allCustomers = await SB.select('prod_customers', {
+        eq: { active: true }, columns: 'id, name, customer_code, country',
+        order: { name: 'asc' }, silent: true
+      });
+      ['rekFCustomer','rekFilterCustomer'].forEach(id => {
+        const sel = document.getElementById(id);
+        allCustomers.forEach(c => {
+          const opt = document.createElement('option'); opt.value = c.id;
+          opt.textContent = c.name + (c.country ? ` (${c.country})` : '');
+          sel.appendChild(opt);
+        });
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== TABLE ==========
+  function applyFilters() {
+    const q = document.getElementById('rekFilterSearch').value.trim().toLowerCase();
+    const status = document.getElementById('rekFilterStatus').value;
+    const sev = document.getElementById('rekFilterSeverity').value;
+    const cust = document.getElementById('rekFilterCustomer').value;
+    return allReks.filter(r => {
+      if (q) {
+        const blob = (r.complaint_number + ' ' + (r.customer_name||'') + ' ' + (r.description||'') + ' ' + (r.work_order_number||'')).toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      if (status === 'open') {
+        if (['Zatvorena','Otkazana','Rijesena'].includes(r.status)) return false;
+      } else if (status && r.status !== status) return false;
+      if (sev && r.severity !== sev) return false;
+      if (cust && r.customer_id !== cust) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('rekTableBody');
+    const filtered = applyFilters();
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--text-lo); padding:30px;">Nema reklamacija po filteru.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(r => `
+      <tr>
+        <td><strong>${r.complaint_number}</strong></td>
+        <td style="font-size:12px;">${fmtDate(r.complaint_date)}</td>
+        <td><strong>${escapeHtml(r.customer_name)}</strong>${r.contact_person ? '<br><span style="font-size:11px; color:var(--text-lo);">' + escapeHtml(r.contact_person) + '</span>' : ''}</td>
+        <td style="font-size:12px;">${r.work_order_number || '—'}${r.dispatch_number ? '<br>' + r.dispatch_number : ''}</td>
+        <td style="font-size:12px;">${r.category || '—'}</td>
+        <td>${severityPill(r.severity)}</td>
+        <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.description)}">${escapeHtml(r.description)}</td>
+        <td>${statusPill(r.status)}</td>
+        <td style="font-size:11px;">
+          ${r.nc_id ? '<span style="color:#5e35b1;">NC ✓</span>' : '<span style="color:var(--text-lo);">—</span>'}
+          ${r.capa_id ? '<br><span style="color:var(--primary);">CAPA ✓</span>' : ''}
+        </td>
+        <td>
+          <button class="doc-action-btn" onclick="rekOpenEdit('${r.id}')" title="Uredi"><span class="svg-icon svg-icon-pencil"></span></button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadReks() {
+    try {
+      allReks = await SB.select('iso_customer_complaints', { order: { complaint_date: 'desc' }, silent: true });
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('rekTableBody').innerHTML = `<tr><td colspan="10" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['rekFilterSearch','rekFilterStatus','rekFilterSeverity','rekFilterCustomer'].forEach(id =>
+    document.getElementById(id).addEventListener('input', renderTable)
+  );
+
+  // ========== MODAL ==========
+  window.rekOpenAddModal = function(prefill) {
+    document.getElementById('rekModalTitle').textContent = 'Nova reklamacija';
+    document.getElementById('rekFId').value = '';
+    document.getElementById('rekFDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('rekFSeverity').value = 'minor';
+    document.getElementById('rekFCustomer').value = '';
+    document.getElementById('rekFCustomerName').value = '';
+    document.getElementById('rekFContact').value = '';
+    document.getElementById('rekFEmail').value = '';
+    document.getElementById('rekFWoNumber').value = '';
+    document.getElementById('rekFDispatchNumber').value = '';
+    document.getElementById('rekFArticleName').value = '';
+    document.getElementById('rekFDeliveryDate').value = '';
+    document.getElementById('rekFAffectedQty').value = '';
+    document.getElementById('rekFCategory').value = '';
+    document.getElementById('rekFDescription').value = '';
+    document.getElementById('rekFStatus').value = 'Zaprimljena';
+    document.getElementById('rekFTechVisit').value = '';
+    document.getElementById('rekFCostEst').value = '';
+    document.getElementById('rekFCostActual').value = '';
+    document.getElementById('rekFResolution').value = '';
+    document.getElementById('rekFSource').value = 'rucno';
+    document.getElementById('rekFAutoOpenNc').checked = false;
+
+    // Apply prefill (npr. iz Drive imp ort)
+    if (prefill) {
+      Object.entries(prefill).forEach(([k, v]) => {
+        const el = document.getElementById('rekF' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (el) el.value = v;
+      });
+    }
+    document.getElementById('rekModalError').style.display = 'none';
+    document.getElementById('rekModal').style.display = 'flex';
+  };
+
+  window.rekOpenEdit = function(id) {
+    const r = allReks.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('rekModalTitle').textContent = `Uredi: ${r.complaint_number}`;
+    document.getElementById('rekFId').value = id;
+    document.getElementById('rekFDate').value = r.complaint_date || '';
+    document.getElementById('rekFSeverity').value = r.severity || 'minor';
+    document.getElementById('rekFCustomer').value = r.customer_id || '';
+    document.getElementById('rekFCustomerName').value = r.customer_id ? '' : (r.customer_name || '');
+    document.getElementById('rekFContact').value = r.contact_person || '';
+    document.getElementById('rekFEmail').value = r.contact_email || '';
+    document.getElementById('rekFWoNumber').value = r.work_order_number || '';
+    document.getElementById('rekFDispatchNumber').value = r.dispatch_number || '';
+    document.getElementById('rekFArticleName').value = r.article_name || '';
+    document.getElementById('rekFDeliveryDate').value = r.delivery_date || '';
+    document.getElementById('rekFAffectedQty').value = r.affected_quantity || '';
+    document.getElementById('rekFCategory').value = r.category || '';
+    document.getElementById('rekFDescription').value = r.description || '';
+    document.getElementById('rekFStatus').value = r.status || 'Zaprimljena';
+    document.getElementById('rekFTechVisit').value = r.technical_visit_date || '';
+    document.getElementById('rekFCostEst').value = r.cost_estimated_eur || '';
+    document.getElementById('rekFCostActual').value = r.cost_actual_eur || '';
+    document.getElementById('rekFResolution').value = r.resolution || '';
+    document.getElementById('rekFSource').value = r.source || 'rucno';
+    document.getElementById('rekFAutoOpenNc').checked = false;
+    document.getElementById('rekModalError').style.display = 'none';
+    document.getElementById('rekModal').style.display = 'flex';
+  };
+
+  window.rekCloseModal = function() { document.getElementById('rekModal').style.display = 'none'; };
+
+  function showError(msg) { const el = document.getElementById('rekModalError'); el.textContent = msg; el.style.display = 'block'; }
+
+  window.rekSave = async function() {
+    const btn = document.getElementById('rekSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const date = document.getElementById('rekFDate').value;
+      const desc = document.getElementById('rekFDescription').value.trim();
+      const customerId = document.getElementById('rekFCustomer').value;
+      const customerName = document.getElementById('rekFCustomerName').value.trim();
+      if (!date) throw new Error('Datum reklamacije je obavezan');
+      if (!desc) throw new Error('Opis je obavezan');
+
+      const finalCustName = customerId
+        ? (allCustomers.find(c => c.id === customerId) || {}).name
+        : customerName;
+      if (!finalCustName) throw new Error('Kupac je obavezan (odaberi iz liste ili upiši ime)');
+
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+
+      const data = {
+        complaint_date: date,
+        customer_id: customerId || null,
+        customer_name: finalCustName,
+        contact_person: document.getElementById('rekFContact').value.trim() || null,
+        contact_email: document.getElementById('rekFEmail').value.trim() || null,
+        work_order_number: document.getElementById('rekFWoNumber').value.trim() || null,
+        dispatch_number: document.getElementById('rekFDispatchNumber').value.trim() || null,
+        article_name: document.getElementById('rekFArticleName').value.trim() || null,
+        delivery_date: document.getElementById('rekFDeliveryDate').value || null,
+        affected_quantity: parseInt(document.getElementById('rekFAffectedQty').value) || null,
+        category: document.getElementById('rekFCategory').value || null,
+        severity: document.getElementById('rekFSeverity').value,
+        description: desc,
+        status: document.getElementById('rekFStatus').value,
+        technical_visit_date: document.getElementById('rekFTechVisit').value || null,
+        cost_estimated_eur: parseFloat(document.getElementById('rekFCostEst').value) || null,
+        cost_actual_eur: parseFloat(document.getElementById('rekFCostActual').value) || null,
+        resolution: document.getElementById('rekFResolution').value.trim() || null,
+        source: document.getElementById('rekFSource').value,
+        updated_at: new Date().toISOString()
+      };
+      if (data.status === 'Zatvorena') {
+        data.closed_at = new Date().toISOString();
+        data.closed_by = user && user.id || null;
+      }
+
+      const id = document.getElementById('rekFId').value;
+      let savedRek;
+      if (id) {
+        savedRek = (await SB.update('iso_customer_complaints', data, { id }))[0];
+      } else {
+        const { data: numData, error: numErr } = await initSupabase().rpc('iso_next_complaint_number');
+        if (numErr) throw new Error('Generiranje broja: ' + numErr.message);
+        data.complaint_number = numData;
+        data.opened_by = user && user.id || null;
+        savedRek = (await SB.insert('iso_customer_complaints', data))[0];
+      }
+
+      // Auto-create NC ako je čekirano
+      if (document.getElementById('rekFAutoOpenNc').checked && !id) {
+        try {
+          const { data: ncNum } = await initSupabase().rpc('iso_next_nc_number');
+          const ncRow = (await SB.insert('iso_nonconformities', {
+            nc_number: ncNum,
+            occurred_at: new Date(date).toISOString(),
+            source_type: 'reklamacija_kupca',
+            source_table: 'iso_customer_complaints',
+            source_id: savedRek.id,
+            category: 'gotov_proizvod',
+            severity: data.severity,
+            customer_id: data.customer_id,
+            customer_name: data.customer_name,
+            work_order_number: data.work_order_number,
+            description: `Reklamacija ${savedRek.complaint_number}: ${desc}`,
+            status: 'Otvoreno',
+            auto_generated: false,
+            opened_by: user && user.id || null
+          }))[0];
+          await SB.update('iso_customer_complaints', { nc_id: ncRow.id }, { id: savedRek.id });
+          if (typeof showMessage === 'function') showMessage(`Reklamacija + NC ${ncNum} kreirano`, 'success');
+        } catch (ncErr) {
+          if (typeof showMessage === 'function') showMessage('Reklamacija OK, NC nije kreiran: ' + ncErr.message, 'warning');
+        }
+      } else {
+        if (typeof showMessage === 'function') showMessage(id ? 'Reklamacija ažurirana' : 'Reklamacija dodana', 'success');
+      }
+
+      rekCloseModal();
+      await loadReks();
+    } catch (e) { showError(e.message); }
+    finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== IMPORT FROM DRIVE (Moravacem helper) ==========
+  window.rekImportFromDrive = function() {
+    // Pre-popuni s podacima iz Moravacem reklamacije s Drive-a
+    rekOpenAddModal({
+      Date: '2026-02-27',
+      Severity: 'major',
+      CustomerName: 'Moravacem d.o.o.',
+      Contact: 'Urošević Dušan (Procurement Specialist)',
+      WoNumber: 'RN: 664/25',
+      DispatchNumber: '25-350-000310',
+      ArticleName: 'Ventil vreće — MultiCem 50 kg (2-slojne, 520×600x130 mm)',
+      DeliveryDate: '2025-11-13',
+      AffectedQty: 3000,
+      Category: 'pucanje',
+      Description: 'Pucanje ventil vreća pri punjenju u tvornici Moravacem (Popovac, Srbija). Tehnički posjet 23.03.2026 utvrdio 3 nesukladnosti: (1) abrazijska oštećenja vreća pri transportu, (2) migracija ljepila — zalijepljeno ventil dno za tijelo vreće, (3) istiskivanje ventila pri punjenju. Inicijalna pretpostavka o lošoj kvaliteti papira nije potvrđena.',
+      TechVisit: '2026-03-23',
+      Source: 'drive_import',
+      Resolution: 'Korektivne mjere na proizvodnji: dorada poklopca palete, kontrola adhezije ljepila, korekcija dimenzija ventila.'
+    });
+  };
+
+  document.getElementById('rekModal').addEventListener('click', e => { if (e.target.id === 'rekModal') rekCloseModal(); });
+
+  await loadCustomers();
+  await loadReks();
+  console.log('[iso-reklamacije] ready');
+})();
+</script>

@@ -22,7 +22,7 @@
     </div>
     <div class="form-group" style="flex:2;">
       <label>Fond sati: <strong id="displayFondSati">176</strong>h</label>
-      <div style="font-size: 12px; color: #666; margin-top: 5px;">
+      <div style="font-size: 12px; color: var(--text-mid); margin-top: 5px;">
         Min. plaća: <strong>970 €</strong>
       </div>
     </div>
@@ -161,7 +161,7 @@
           <tbody id="payrollTableBody">
             <tr><td colspan="10" class="empty-state">Učitavanje...</td></tr>
           </tbody>
-          <tfoot id="payrollTableFoot" style="background: #f8f9fa; font-weight: bold;"></tfoot>
+          <tfoot id="payrollTableFoot" style="background: var(--remap-grey-bg); font-weight: bold;"></tfoot>
         </table>
       </div>
     </div>
@@ -226,7 +226,7 @@
   background: var(--primary);
   color: white;
 }
-.tab-content { display: none; }
+
 .tab-content.active { display: block; }
 
 /* Hours table */
@@ -400,8 +400,6 @@
 }
 .mini-payslip-footer span:first-child { font-size: 10px; color: #666; }
 .total-amount { color: #2e7d32; font-size: 14px; }
-
-.btn-sm { padding: 6px 12px; font-size: 12px; }
 
 @media (max-width: 768px) {
   .tabs { flex-wrap: wrap; }
@@ -862,13 +860,13 @@ function renderPayrollTable() {
     return `
       <tr>
         <td><strong>${e.last_name} ${e.first_name}</strong></td>
-        <td>${e.team_name || '-'}${e.linija ? ` <small style="color:#666;">(${e.linija})</small>` : ''}</td>
+        <td>${e.team_name || '-'}${e.linija ? ` <small style="color:var(--text-mid);">(${e.linija})</small>` : ''}</td>
         <td style="text-align:center;">${e.coefficient || 1}</td>
         <td style="text-align:center;">${totalHours}h</td>
         <td style="text-align:right;">${bruto.toFixed(2)} €</td>
         <td style="text-align:right;">${neto.toFixed(2)} €</td>
         <td style="text-align:right;">${dodaci.toFixed(2)} €</td>
-        <td style="text-align:right;font-weight:bold;color:#2e7d32;">${isplata.toFixed(2)} €</td>
+        <td style="text-align:right;font-weight:bold;color:var(--success);">${isplata.toFixed(2)} €</td>
         <td>${statusBadge}</td>
         <td>
           <button class="btn btn-secondary btn-sm" onclick="calculateOne('${e.id}')" title="Izračunaj">🧮</button>
@@ -884,7 +882,7 @@ function renderPayrollTable() {
       <td style="text-align:right;">${sumBruto.toFixed(2)} €</td>
       <td style="text-align:right;">${sumNeto.toFixed(2)} €</td>
       <td></td>
-      <td style="text-align:right;color:#2e7d32;">${sumIsplata.toFixed(2)} €</td>
+      <td style="text-align:right;color:var(--success);">${sumIsplata.toFixed(2)} €</td>
       <td colspan="2"></td>
     </tr>
   `;
@@ -1176,7 +1174,7 @@ function renderPostaveTab() {
     }
   }
   
-  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:#999;">Nema podataka za prikaz</p>';
+  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:var(--text-lo);">Nema podataka za prikaz</p>';
 }
 
 function filterByPostava() {
@@ -1230,7 +1228,7 @@ function showPayslip(empId) {
       <div class="payslip-row"><span>Prijevoz</span><span>${transport.toFixed(2)} €</span></div>
       <div class="payslip-row"><span>DVRV (${payroll.dolasci_van_rv || 0}×)</span><span>${iznosDVRV.toFixed(2)} €</span></div>
       <div class="payslip-row"><span>Bonus produktivnosti</span><span>${prodBonus.toFixed(2)} €</span></div>
-      <div class="payslip-row total" style="background:#c8e6c9;"><span>UKUPNO ZA ISPLATU</span><span>${(payroll.total_payment || 0).toFixed(2)} €</span></div>
+      <div class="payslip-row total" style="background:var(--remap-success-bg);"><span>UKUPNO ZA ISPLATU</span><span>${(payroll.total_payment || 0).toFixed(2)} €</span></div>
     </div>
   `;
   

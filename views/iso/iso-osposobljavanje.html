@@ -1,0 +1,583 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-graduation-cap svg-icon-lg"></span>
+  Osposobljavanja (OB_07/08)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Training matrix po pozicijama + alerti za isteke. Auditor traži dokaz da svi zaposlenici imaju važeća osposobljavanja prema svom radnom mjestu.
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-graduation-cap svg-icon-lg"></span></div>
+    <div class="status-card-value" id="trKpiTotal">-</div>
+    <div class="status-card-label">Ukupno evidencija</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="trKpiSoon">-</div>
+    <div class="status-card-label">Isteci (≤60d)</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="trKpiExpired">-</div>
+    <div class="status-card-label">Istekli</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-users svg-icon-lg"></span></div>
+    <div class="status-card-value" id="trKpiEmployees">-</div>
+    <div class="status-card-label">Osposobljeni djelatnici</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div style="display:flex; gap:6px; margin: 18px 0; border-bottom: 2px solid var(--border);">
+  <button class="tr-tab active" id="tabBtnTrainings" onclick="trSwitchTab('trainings')">
+    <span class="svg-icon svg-icon-clipboard-list svg-icon-sm"></span> Evidencija osposobljavanja
+  </button>
+  <button class="tr-tab" id="tabBtnRequirements" onclick="trSwitchTab('requirements')">
+    <span class="svg-icon svg-icon-target svg-icon-sm"></span> Plan / zahtjevi
+  </button>
+</div>
+
+<!-- TAB: EVIDENCIJA OSPOSOBLJAVANJA -->
+<div id="tabTrainings" class="tr-tab-content active">
+  <div class="doc-toolbar">
+    <div class="doc-filters">
+      <input type="text" id="trFilterSearch" placeholder="Pretraga po imenu / nazivu osposobljavanja..." class="doc-input">
+      <select id="trFilterEmployee" class="doc-input">
+        <option value="">Svi djelatnici</option>
+      </select>
+      <select id="trFilterValidity" class="doc-input">
+        <option value="">Sve</option>
+        <option value="expired">Istekle</option>
+        <option value="soon60">Ističu ≤60d</option>
+        <option value="ok">Vrijede</option>
+      </select>
+    </div>
+    <button class="btn-primary doc-btn-add" onclick="trOpenAddModal()">
+      <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova evidencija
+    </button>
+  </div>
+
+  <div class="iso-card" style="padding: 0; overflow: hidden;">
+    <table class="iso-table">
+      <thead>
+        <tr>
+          <th>Djelatnik</th>
+          <th>Osposobljavanje</th>
+          <th>Datum</th>
+          <th>Vrijedi do</th>
+          <th>Trener / izdavatelj</th>
+          <th>Br. uvjerenja</th>
+          <th style="width: 90px;">Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="trTableBody">
+        <tr><td colspan="7" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB: ZAHTJEVI -->
+<div id="tabRequirements" class="tr-tab-content" style="display:none;">
+  <div class="doc-toolbar">
+    <div class="doc-filters" style="flex:1;">
+      <span style="font-size:13px; color:var(--text-mid);">Što sve zaposlenici moraju imati prema poziciji</span>
+    </div>
+    <button class="btn-primary doc-btn-add" onclick="trOpenReqModal()">
+      <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi zahtjev
+    </button>
+  </div>
+
+  <div class="iso-card" style="padding: 0; overflow: hidden;">
+    <table class="iso-table">
+      <thead>
+        <tr>
+          <th>Šifra</th>
+          <th>Naziv osposobljavanja</th>
+          <th>Pravni temelj</th>
+          <th>Pozicije / strojevi</th>
+          <th>Vrijedi (mj)</th>
+          <th>Pružatelj</th>
+          <th>Trošak (EUR)</th>
+          <th style="width: 70px;">Aktivan</th>
+        </tr>
+      </thead>
+      <tbody id="trReqTableBody">
+        <tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD/EDIT EVIDENCIJA MODAL -->
+<div id="trModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="trModalTitle">Nova evidencija osposobljavanja</h3>
+      <button class="doc-modal-close" onclick="trCloseModal()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="trFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Djelatnik *</label>
+          <select id="trFEmployee" class="doc-input">
+            <option value="">— odaberi —</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Vezani zahtjev (template)</label>
+          <select id="trFRequirement" class="doc-input" onchange="trPrefillFromReq()">
+            <option value="">— ručni unos —</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Naziv osposobljavanja *</label>
+        <input type="text" id="trFName" class="doc-input" placeholder="ZNR osnovno, Rad na visini, Vatrogasni aparat...">
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Datum završetka *</label>
+          <input type="date" id="trFCompleted" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Vrijedi do (auto izračun)</label>
+          <input type="date" id="trFValid" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Trener / Izdavatelj</label>
+          <input type="text" id="trFTrainer" class="doc-input" placeholder="ZIRS, Zavod za sigurnost...">
+        </div>
+        <div class="doc-field">
+          <label>Broj uvjerenja</label>
+          <input type="text" id="trFCertNum" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Bilješke</label>
+        <textarea id="trFNotes" rows="2" class="doc-input"></textarea>
+      </div>
+      <div id="trModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="trCloseModal()">Odustani</button>
+      <button class="btn-primary" id="trSaveBtn" onclick="trSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT REQUIREMENT MODAL -->
+<div id="trReqModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="trReqModalTitle">Novi zahtjev osposobljavanja</h3>
+      <button class="doc-modal-close" onclick="trReqCloseModal()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="trReqFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Šifra</label>
+          <input type="text" id="trReqFCode" class="doc-input" placeholder="ZNR-01, RV-01, VATA-01...">
+        </div>
+        <div class="doc-field">
+          <label>Vrijedi (mjeseci) *</label>
+          <input type="number" id="trReqFValidity" class="doc-input" value="24" min="1" max="120">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Naziv *</label>
+        <input type="text" id="trReqFName" class="doc-input" placeholder="ZNR osnovno osposobljavanje">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis</label>
+        <textarea id="trReqFDescription" rows="2" class="doc-input"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Pravni temelj</label>
+        <input type="text" id="trReqFLegal" class="doc-input" placeholder="ZNR čl. 27, Pravilnik o vatrogastvu...">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Primjenjive pozicije (zarez odvojeno)</label>
+        <input type="text" id="trReqFPositions" class="doc-input" placeholder="Strojar, Voditelj smjene, Skladištar">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Primjenjivi tipovi strojeva (zarez odvojeno)</label>
+        <input type="text" id="trReqFMachines" class="doc-input" placeholder="Tuber, Bottomer, Viličar">
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Pružatelj</label>
+          <input type="text" id="trReqFProvider" class="doc-input" placeholder="ZIRS, ZSZN...">
+        </div>
+        <div class="doc-field">
+          <label>Procijenjeni trošak (EUR)</label>
+          <input type="number" id="trReqFCost" class="doc-input" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>
+          <input type="checkbox" id="trReqFActive" checked> Aktivan
+        </label>
+      </div>
+      <div id="trReqModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="trReqCloseModal()">Odustani</button>
+      <button class="btn-primary" id="trReqSaveBtn" onclick="trReqSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.tr-tab { padding: 10px 16px; border: none; background: #f5f5f5; color: #666; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px 6px 0 0; display: inline-flex; align-items: center; gap: 6px; border-bottom: 3px solid transparent; }
+.tr-tab.active { background: white; color: var(--primary); border-bottom-color: var(--primary); }
+.tr-tab-content { display: none; }
+.tr-tab-content.active { display: block; }
+
+.tr-valid-expired { color: #c62828; font-weight: 700; }
+.tr-valid-soon { color: #f57f17; font-weight: 600; }
+.tr-valid-ok { color: #2e7d32; }
+</style>
+
+<script>
+(async function initIsoOsposobljavanjeView() {
+  console.log('[iso-osposobljavanje] init');
+  let allTr = [], allReqs = [], allEmployees = [];
+
+  function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+  function findEmp(id) { return allEmployees.find(e => e.id === id); }
+  function empName(emp) { return emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '—'; }
+
+  function validBadge(d) {
+    if (!d) return '<span style="color:var(--text-lo);">—</span>';
+    const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+    let cls = 'tr-valid-ok';
+    let txt = `${fmtDate(d)} (${days}d)`;
+    if (days < 0) { cls = 'tr-valid-expired'; txt = `${fmtDate(d)} (isteklo ${-days}d)`; }
+    else if (days <= 60) { cls = 'tr-valid-soon'; txt = `${fmtDate(d)} (za ${days}d)`; }
+    return `<span class="${cls}">${txt}</span>`;
+  }
+
+  // ========== TABS ==========
+  window.trSwitchTab = function(tab) {
+    document.querySelectorAll('.tr-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tr-tab-content').forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
+    document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+    const content = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    content.classList.add('active'); content.style.display = 'block';
+  };
+
+  // ========== KPI ==========
+  function computeKpi() {
+    document.getElementById('trKpiTotal').textContent = allTr.length;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in60 = new Date(today.getTime() + 60 * 86400000);
+    document.getElementById('trKpiSoon').textContent = allTr.filter(t => t.valid_until && new Date(t.valid_until) > today && new Date(t.valid_until) <= in60).length;
+    document.getElementById('trKpiExpired').textContent = allTr.filter(t => t.valid_until && new Date(t.valid_until) <= today).length;
+    document.getElementById('trKpiEmployees').textContent = new Set(allTr.map(t => t.employee_id)).size;
+  }
+
+  // ========== EMPLOYEES ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true }, columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' }, silent: true
+      });
+      ['trFEmployee','trFilterEmployee'].forEach(id => {
+        const sel = document.getElementById(id);
+        allEmployees.forEach(e => {
+          const opt = document.createElement('option'); opt.value = e.id;
+          opt.textContent = empName(e) + (e.position ? ` (${e.position})` : '');
+          sel.appendChild(opt);
+        });
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== REQUIREMENTS ==========
+  async function loadReqs() {
+    try {
+      allReqs = await SB.select('iso_training_requirements', { order: { name: 'asc' }, silent: true });
+      const sel = document.getElementById('trFRequirement');
+      allReqs.filter(r => r.active).forEach(r => {
+        const opt = document.createElement('option'); opt.value = r.id;
+        opt.textContent = `${r.code ? r.code + ' — ' : ''}${r.name} (vrijedi ${r.validity_months}mj)`;
+        sel.appendChild(opt);
+      });
+      renderReqTable();
+    } catch (e) { console.warn(e); }
+  }
+
+  function renderReqTable() {
+    const tbody = document.getElementById('trReqTableBody');
+    if (allReqs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Nema definiranih zahtjeva. Kreirajte prvi (npr. "ZNR osnovno", "Rad na visini").</td></tr>';
+      return;
+    }
+    tbody.innerHTML = allReqs.map(r => `
+      <tr ${r.active ? '' : 'style="opacity:0.5"'}>
+        <td><strong>${escapeHtml(r.code || '—')}</strong></td>
+        <td>${escapeHtml(r.name)}<br><span style="font-size:11px; color:var(--text-lo);">${escapeHtml(r.description || '')}</span></td>
+        <td style="font-size:12px;">${escapeHtml(r.legal_reference || '—')}</td>
+        <td style="font-size:12px;">${(r.applicable_positions || []).join(', ') || '—'}<br>${(r.applicable_machine_types || []).join(', ') || ''}</td>
+        <td style="text-align:center;"><strong>${r.validity_months}</strong></td>
+        <td style="font-size:12px;">${escapeHtml(r.training_provider || '—')}</td>
+        <td style="text-align:right;">${r.estimated_cost_eur != null ? Number(r.estimated_cost_eur).toFixed(0) + ' €' : '—'}</td>
+        <td style="text-align:center;">${r.active ? '✓' : '×'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ========== EVIDENCIJA TABLE ==========
+  function applyTrFilters() {
+    const q = document.getElementById('trFilterSearch').value.trim().toLowerCase();
+    const emp = document.getElementById('trFilterEmployee').value;
+    const validity = document.getElementById('trFilterValidity').value;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in60 = new Date(today.getTime() + 60 * 86400000);
+    return allTr.filter(t => {
+      if (emp && t.employee_id !== emp) return false;
+      if (q) {
+        const e = findEmp(t.employee_id);
+        const blob = ((t.training_name || '') + ' ' + empName(e) + ' ' + (t.trainer || '')).toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      if (validity === 'expired' && (!t.valid_until || new Date(t.valid_until) > today)) return false;
+      if (validity === 'soon60' && (!t.valid_until || new Date(t.valid_until) <= today || new Date(t.valid_until) > in60)) return false;
+      if (validity === 'ok' && (!t.valid_until || new Date(t.valid_until) <= in60)) return false;
+      return true;
+    });
+  }
+
+  function renderTrTable() {
+    const tbody = document.getElementById('trTableBody');
+    const filtered = applyTrFilters().sort((a, b) => {
+      // istekli prvi (najgore zelene gore — auditor friendly)
+      const dA = a.valid_until ? new Date(a.valid_until) : null;
+      const dB = b.valid_until ? new Date(b.valid_until) : null;
+      if (!dA) return 1; if (!dB) return -1;
+      return dA - dB;
+    });
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-lo); padding:30px;">Nema osposobljavanja po filteru.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(t => {
+      const e = findEmp(t.employee_id);
+      return `
+        <tr>
+          <td><strong>${escapeHtml(empName(e))}</strong>${e && e.position ? '<br><span style="font-size:11px; color:var(--text-lo);">' + escapeHtml(e.position) + '</span>' : ''}</td>
+          <td>${escapeHtml(t.training_name)}</td>
+          <td style="font-size:12px;">${fmtDate(t.completed_date)}</td>
+          <td style="font-size:12px;">${validBadge(t.valid_until)}</td>
+          <td style="font-size:12px;">${escapeHtml(t.trainer || '—')}</td>
+          <td style="font-size:12px;">${escapeHtml(t.certificate_number || '—')}</td>
+          <td>
+            <button class="doc-action-btn" onclick="trOpenEdit('${t.id}')" title="Uredi"><span class="svg-icon svg-icon-pencil"></span></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadTr() {
+    try {
+      allTr = await SB.select('iso_employee_trainings', { order: { completed_date: 'desc' }, silent: true });
+      computeKpi();
+      renderTrTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('trTableBody').innerHTML = `<tr><td colspan="7" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['trFilterSearch','trFilterEmployee','trFilterValidity'].forEach(id =>
+    document.getElementById(id).addEventListener('input', renderTrTable)
+  );
+
+  // ========== EVIDENCIJA MODAL ==========
+  window.trOpenAddModal = function() {
+    document.getElementById('trModalTitle').textContent = 'Nova evidencija osposobljavanja';
+    document.getElementById('trFId').value = '';
+    ['trFEmployee','trFRequirement','trFName','trFCompleted','trFValid','trFTrainer','trFCertNum','trFNotes']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('trModalError').style.display = 'none';
+    document.getElementById('trModal').style.display = 'flex';
+  };
+
+  window.trOpenEdit = function(id) {
+    const t = allTr.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('trModalTitle').textContent = `Uredi: ${t.training_name}`;
+    document.getElementById('trFId').value = id;
+    document.getElementById('trFEmployee').value = t.employee_id || '';
+    document.getElementById('trFRequirement').value = t.training_requirement_id || '';
+    document.getElementById('trFName').value = t.training_name || '';
+    document.getElementById('trFCompleted').value = t.completed_date || '';
+    document.getElementById('trFValid').value = t.valid_until || '';
+    document.getElementById('trFTrainer').value = t.trainer || '';
+    document.getElementById('trFCertNum').value = t.certificate_number || '';
+    document.getElementById('trFNotes').value = t.notes || '';
+    document.getElementById('trModalError').style.display = 'none';
+    document.getElementById('trModal').style.display = 'flex';
+  };
+
+  window.trCloseModal = function() { document.getElementById('trModal').style.display = 'none'; };
+
+  // Auto pre-fill iz odabranog requirement-a
+  window.trPrefillFromReq = function() {
+    const reqId = document.getElementById('trFRequirement').value;
+    if (!reqId) return;
+    const r = allReqs.find(x => x.id === reqId);
+    if (!r) return;
+    if (!document.getElementById('trFName').value) document.getElementById('trFName').value = r.name;
+    if (!document.getElementById('trFTrainer').value && r.training_provider) document.getElementById('trFTrainer').value = r.training_provider;
+    // auto izračun valid_until ako je completed_date popunjen
+    const cd = document.getElementById('trFCompleted').value;
+    if (cd && r.validity_months) {
+      const v = new Date(cd); v.setMonth(v.getMonth() + r.validity_months);
+      document.getElementById('trFValid').value = v.toISOString().slice(0, 10);
+    }
+  };
+
+  document.getElementById('trFCompleted').addEventListener('change', () => {
+    const reqId = document.getElementById('trFRequirement').value;
+    if (!reqId) return;
+    const r = allReqs.find(x => x.id === reqId);
+    if (!r || !r.validity_months) return;
+    const cd = document.getElementById('trFCompleted').value;
+    if (cd) {
+      const v = new Date(cd); v.setMonth(v.getMonth() + r.validity_months);
+      document.getElementById('trFValid').value = v.toISOString().slice(0, 10);
+    }
+  });
+
+  function showTrError(msg) { const el = document.getElementById('trModalError'); el.textContent = msg; el.style.display = 'block'; }
+
+  window.trSave = async function() {
+    const btn = document.getElementById('trSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const empId = document.getElementById('trFEmployee').value;
+      const name = document.getElementById('trFName').value.trim();
+      const completed = document.getElementById('trFCompleted').value;
+      if (!empId) throw new Error('Djelatnik je obavezan');
+      if (!name) throw new Error('Naziv je obavezan');
+      if (!completed) throw new Error('Datum završetka je obavezan');
+
+      const data = {
+        employee_id: empId,
+        training_requirement_id: document.getElementById('trFRequirement').value || null,
+        training_name: name,
+        completed_date: completed,
+        valid_until: document.getElementById('trFValid').value || null,
+        trainer: document.getElementById('trFTrainer').value.trim() || null,
+        certificate_number: document.getElementById('trFCertNum').value.trim() || null,
+        notes: document.getElementById('trFNotes').value.trim() || null
+      };
+
+      const id = document.getElementById('trFId').value;
+      if (id) await SB.update('iso_employee_trainings', data, { id });
+      else await SB.insert('iso_employee_trainings', data);
+
+      trCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Evidencija ažurirana' : 'Evidencija dodana', 'success');
+      await loadTr();
+    } catch (e) { showTrError(e.message); }
+    finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== REQUIREMENT MODAL ==========
+  window.trOpenReqModal = function() {
+    document.getElementById('trReqModalTitle').textContent = 'Novi zahtjev osposobljavanja';
+    document.getElementById('trReqFId').value = '';
+    ['trReqFCode','trReqFName','trReqFDescription','trReqFLegal','trReqFPositions','trReqFMachines','trReqFProvider','trReqFCost']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('trReqFValidity').value = '24';
+    document.getElementById('trReqFActive').checked = true;
+    document.getElementById('trReqModalError').style.display = 'none';
+    document.getElementById('trReqModal').style.display = 'flex';
+  };
+
+  window.trReqOpenEdit = function(id) {
+    const r = allReqs.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('trReqModalTitle').textContent = `Uredi: ${r.name}`;
+    document.getElementById('trReqFId').value = id;
+    document.getElementById('trReqFCode').value = r.code || '';
+    document.getElementById('trReqFValidity').value = r.validity_months || 24;
+    document.getElementById('trReqFName').value = r.name || '';
+    document.getElementById('trReqFDescription').value = r.description || '';
+    document.getElementById('trReqFLegal').value = r.legal_reference || '';
+    document.getElementById('trReqFPositions').value = (r.applicable_positions || []).join(', ');
+    document.getElementById('trReqFMachines').value = (r.applicable_machine_types || []).join(', ');
+    document.getElementById('trReqFProvider').value = r.training_provider || '';
+    document.getElementById('trReqFCost').value = r.estimated_cost_eur || '';
+    document.getElementById('trReqFActive').checked = r.active !== false;
+    document.getElementById('trReqModalError').style.display = 'none';
+    document.getElementById('trReqModal').style.display = 'flex';
+  };
+
+  window.trReqCloseModal = function() { document.getElementById('trReqModal').style.display = 'none'; };
+
+  function showTrReqError(msg) { const el = document.getElementById('trReqModalError'); el.textContent = msg; el.style.display = 'block'; }
+
+  window.trReqSave = async function() {
+    const btn = document.getElementById('trReqSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const name = document.getElementById('trReqFName').value.trim();
+      if (!name) throw new Error('Naziv je obavezan');
+      const data = {
+        code: document.getElementById('trReqFCode').value.trim() || null,
+        name,
+        description: document.getElementById('trReqFDescription').value.trim() || null,
+        legal_reference: document.getElementById('trReqFLegal').value.trim() || null,
+        validity_months: parseInt(document.getElementById('trReqFValidity').value) || 24,
+        training_provider: document.getElementById('trReqFProvider').value.trim() || null,
+        estimated_cost_eur: parseFloat(document.getElementById('trReqFCost').value) || null,
+        applicable_positions: document.getElementById('trReqFPositions').value.trim()
+          ? document.getElementById('trReqFPositions').value.split(',').map(s => s.trim()).filter(Boolean) : null,
+        applicable_machine_types: document.getElementById('trReqFMachines').value.trim()
+          ? document.getElementById('trReqFMachines').value.split(',').map(s => s.trim()).filter(Boolean) : null,
+        active: document.getElementById('trReqFActive').checked
+      };
+      const id = document.getElementById('trReqFId').value;
+      if (id) await SB.update('iso_training_requirements', data, { id });
+      else await SB.insert('iso_training_requirements', data);
+      trReqCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Zahtjev ažuriran' : 'Zahtjev dodan', 'success');
+      await loadReqs();
+    } catch (e) { showTrReqError(e.message); }
+    finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  document.getElementById('trModal').addEventListener('click', e => { if (e.target.id === 'trModal') trCloseModal(); });
+  document.getElementById('trReqModal').addEventListener('click', e => { if (e.target.id === 'trReqModal') trReqCloseModal(); });
+
+  await loadEmployees();
+  await Promise.all([loadReqs(), loadTr()]);
+  console.log('[iso-osposobljavanje] ready');
+})();
+</script>

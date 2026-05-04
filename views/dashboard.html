@@ -4,39 +4,43 @@
 </h1>
 
 <!-- KPI Cards -->
-<div class="status-grid dash-kpi-row" id="sectionKpiCards">
-  <a href="#artikli" class="status-card" style="text-decoration: none; cursor: pointer;">
-    <div class="status-card-icon">
-      <span class="dash-icon dash-icon-lg dash-icon-users"></span>
+<div class="dash-kpi-row" id="sectionKpiCards">
+  <a href="#artikli" class="status-card kpi-card-v2 info">
+    <div class="kpi-head">
+      <span class="kpi-icon"><span class="dash-icon dash-icon-md dash-icon-users"></span></span>
+      <span class="kpi-label">Ukupni kupci</span>
     </div>
-    <div class="status-card-value" id="kpiCustomers">-</div>
-    <div class="status-card-label">Kupci</div>
+    <div class="kpi-value" id="kpiCustomers">-</div>
+    <div class="kpi-delta" id="kpiCustomersDelta">&nbsp;</div>
   </a>
-  <a href="#artikli" class="status-card info" style="text-decoration: none; cursor: pointer;">
-    <div class="status-card-icon">
-      <span class="dash-icon dash-icon-lg dash-icon-package"></span>
+  <a href="#artikli" class="status-card kpi-card-v2 info">
+    <div class="kpi-head">
+      <span class="kpi-icon"><span class="dash-icon dash-icon-md dash-icon-package"></span></span>
+      <span class="kpi-label">Artikli u katalogu</span>
     </div>
-    <div class="status-card-value" id="kpiArticles">-</div>
-    <div class="status-card-label">Artikli</div>
+    <div class="kpi-value" id="kpiArticles">-</div>
+    <div class="kpi-delta" id="kpiArticlesDelta">&nbsp;</div>
   </a>
-  <a href="#maintenance" class="status-card success" style="text-decoration: none; cursor: pointer;">
-    <div class="status-card-icon">
-      <span class="dash-icon dash-icon-lg dash-icon-factory"></span>
+  <a href="#maintenance" class="status-card kpi-card-v2 success">
+    <div class="kpi-head">
+      <span class="kpi-icon"><span class="dash-icon dash-icon-md dash-icon-factory"></span></span>
+      <span class="kpi-label">Aktivni strojevi</span>
     </div>
-    <div class="status-card-value" id="kpiMachines">-</div>
-    <div class="status-card-label">Strojevi</div>
+    <div class="kpi-value" id="kpiMachines">-</div>
+    <div class="kpi-delta" id="kpiMachinesDelta">&nbsp;</div>
   </a>
-  <a href="#planiranje" class="status-card warning" style="text-decoration: none; cursor: pointer;">
-    <div class="status-card-icon">
-      <span class="dash-icon dash-icon-lg dash-icon-clipboard"></span>
+  <a href="#planiranje" class="status-card kpi-card-v2 warning">
+    <div class="kpi-head">
+      <span class="kpi-icon"><span class="dash-icon dash-icon-md dash-icon-clipboard"></span></span>
+      <span class="kpi-label">Aktivne narudžbe</span>
     </div>
-    <div class="status-card-value" id="kpiOrders">-</div>
-    <div class="status-card-label">Aktivne narudžbe</div>
+    <div class="kpi-value" id="kpiOrders">-</div>
+    <div class="kpi-delta" id="kpiOrdersDelta">&nbsp;</div>
   </a>
 </div>
 
 <!-- Sljedivost palete (customer recall tool) -->
-<div class="card" style="margin-bottom: 20px;">
+<div class="card" style="margin-bottom: 14px;">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <span style="display:inline-flex; align-items:center; gap:8px;">
       <span class="dash-icon dash-icon-md dash-icon-search"></span>
@@ -47,7 +51,7 @@
     <div style="display: flex; gap: 10px; align-items: center;">
       <input type="text" id="traceInput" class="form-control" placeholder="RN broj (RN171/26) ili paleta (P0004)" style="flex: 1; max-width: 320px;" onkeydown="if(event.key==='Enter') traceSearch()">
       <button class="btn btn-primary" onclick="traceSearch()">Pretraži</button>
-      <span id="traceStatus" style="font-size: 0.85em; color: #666;"></span>
+      <span id="traceStatus" style="font-size: 0.85em; color: var(--text-mid);"></span>
     </div>
   </div>
 </div>
@@ -70,41 +74,41 @@
 </div>
 
 <!-- Proizvodnja danas/jučer -->
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 14px;">
   <div class="card">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
       <span class="dash-icon dash-icon-md dash-icon-bar-chart"></span>
       <span>Proizvodnja</span>
     </div>
     <div class="card-body" style="padding: 16px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
         <!-- Danas -->
-        <div style="padding: 14px 16px; background: linear-gradient(135deg, #f6faff 0%, #e8f1fb 100%); border-radius: 8px; border-left: 4px solid var(--primary);">
-          <div style="font-size: 0.78em; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;">Danas</div>
-          <div id="kpiTodayProduced" style="font-size: 2em; font-weight: 700; color: var(--primary); line-height: 1.1;">-</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-            <div style="background: #fff3e0; padding: 8px; border-radius: 6px; text-align: center;">
-              <div style="font-weight: 700; color: #e65100;" id="kpiTodayNLI">-</div>
-              <div style="font-size: 0.75em; color: #666;">NLI</div>
+        <div style="padding: 12px 14px; background: var(--remap-info-bg); border-radius: 8px; border-left: 3px solid var(--primary);">
+          <div style="font-size: 0.75em; color: var(--text-mid); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;">Danas</div>
+          <div id="kpiTodayProduced" style="font-size: 1.7em; font-weight: 700; color: var(--primary); line-height: 1.1;">-</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+            <div style="background: var(--remap-warning-bg); padding: 6px; border-radius: 6px; text-align: center;">
+              <div style="font-weight: 700; color: var(--warning);" id="kpiTodayNLI">-</div>
+              <div style="font-size: 0.7em; color: var(--text-mid);">NLI</div>
             </div>
-            <div style="background: #e8f5e9; padding: 8px; border-radius: 6px; text-align: center;">
-              <div style="font-weight: 700; color: #2e7d32;" id="kpiTodayWH">-</div>
-              <div style="font-size: 0.75em; color: #666;">W&H</div>
+            <div style="background: var(--remap-success-bg); padding: 6px; border-radius: 6px; text-align: center;">
+              <div style="font-weight: 700; color: var(--success);" id="kpiTodayWH">-</div>
+              <div style="font-size: 0.7em; color: var(--text-mid);">W&H</div>
             </div>
           </div>
         </div>
         <!-- Jučer -->
-        <div style="padding: 14px 16px; background: #fafbfc; border-radius: 8px; border-left: 4px solid #9e9e9e;">
-          <div style="font-size: 0.78em; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;">Jučer</div>
-          <div id="kpiYesterdayProduced" style="font-size: 1.7em; font-weight: 700; color: #555; line-height: 1.1;">-</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-            <div style="background: #fafafa; padding: 8px; border-radius: 6px; text-align: center;">
-              <div style="font-weight: 600; color: #e65100;" id="kpiYesterdayNLI">-</div>
-              <div style="font-size: 0.75em; color: #666;">NLI</div>
+        <div style="padding: 12px 14px; background: var(--remap-grey-bg); border-radius: 8px; border-left: 3px solid var(--text-lo);">
+          <div style="font-size: 0.75em; color: var(--text-mid); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;">Jučer</div>
+          <div id="kpiYesterdayProduced" style="font-size: 1.5em; font-weight: 700; color: var(--text-mid); line-height: 1.1;">-</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+            <div style="background: var(--bg-card); padding: 6px; border-radius: 6px; text-align: center; border: 1px solid var(--glass-border);">
+              <div style="font-weight: 600; color: var(--warning);" id="kpiYesterdayNLI">-</div>
+              <div style="font-size: 0.7em; color: var(--text-mid);">NLI</div>
             </div>
-            <div style="background: #fafafa; padding: 8px; border-radius: 6px; text-align: center;">
-              <div style="font-weight: 600; color: #2e7d32;" id="kpiYesterdayWH">-</div>
-              <div style="font-size: 0.75em; color: #666;">W&H</div>
+            <div style="background: var(--bg-card); padding: 6px; border-radius: 6px; text-align: center; border: 1px solid var(--glass-border);">
+              <div style="font-weight: 600; color: var(--success);" id="kpiYesterdayWH">-</div>
+              <div style="font-size: 0.7em; color: var(--text-mid);">W&H</div>
             </div>
           </div>
         </div>
@@ -114,7 +118,7 @@
 </div>
 
 <!-- Role papira (bijeli/smeđi) + Aktivni RN -->
-<div class="form-row" style="margin-bottom: 20px;">
+<div class="form-row" style="margin-bottom: 14px;">
   <!-- Role papira s detaljima -->
   <div class="card" style="flex: 1;" id="sectionRolePapira">
     <div class="card-header" style="display:flex; align-items:center; gap:8px;">
@@ -127,23 +131,31 @@
         <div style="color: var(--text-secondary);">rola<br>na skladištu</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #9e9e9e;">
-          <div style="font-size: 0.8em; color: #666; display:flex; align-items:center; gap:6px;">
-            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#fff; border:1px solid #9e9e9e;"></span>
+        <div style="background: var(--remap-grey-bg); padding: 12px; border-radius: 8px; border-left: 4px solid var(--text-lo);">
+          <div style="font-size: 0.8em; color: var(--text-mid); display:flex; align-items:center; gap:6px;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#fff; border:1px solid var(--text-lo);"></span>
             <span>Bijeli papir</span>
           </div>
           <div style="font-size: 1.4em; font-weight: 700;" id="kpiWhiteTons">-</div>
-          <div style="font-size: 0.75em; color: #888;">tona</div>
+          <div style="font-size: 0.75em; color: var(--text-lo);">tona</div>
         </div>
-        <div style="background: #efebe9; padding: 12px; border-radius: 8px; border-left: 4px solid #795548;">
-          <div style="font-size: 0.8em; color: #666; display:flex; align-items:center; gap:6px;">
+        <div style="background: var(--remap-grey-bg); padding: 12px; border-radius: 8px; border-left: 4px solid #795548;">
+          <div style="font-size: 0.8em; color: var(--text-mid); display:flex; align-items:center; gap:6px;">
             <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#795548;"></span>
             <span>Smeđi papir</span>
           </div>
           <div style="font-size: 1.4em; font-weight: 700;" id="kpiBrownTons">-</div>
-          <div style="font-size: 0.75em; color: #888;">tona</div>
+          <div style="font-size: 0.75em; color: var(--text-lo);">tona</div>
         </div>
       </div>
+      <a href="https://docs.google.com/spreadsheets/d/1yN_PamIg8lXlI8c3sNXET_u4UJ8iYqFRD7BL2b1StrM/edit?gid=0#gid=0"
+         target="_blank" rel="noopener noreferrer"
+         style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px; padding:10px 12px; background:var(--remap-success-bg); border:1px solid var(--remap-success-bg); border-left:4px solid var(--success); border-radius:8px; text-decoration:none; color:var(--success); font-size:0.85em; font-weight:600; transition:background 0.15s;"
+         onmouseover="this.style.background='#dcedc8'" onmouseout="this.style.background='#e8f5e9'"
+         title="Otvori paralelnu evidenciju u Google Sheets — ručno se vodi dok sustav ne bude 100% točan">
+        <span>📋 Stanje papira (Google Sheets)</span>
+        <span style="font-size:0.9em; opacity:0.7;">↗</span>
+      </a>
     </div>
   </div>
 
@@ -155,21 +167,21 @@
     </div>
     <div class="card-body">
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 2em; font-weight: 700; color: #2e7d32;" id="kpiRnWH">-</div>
-          <div style="font-size: 0.85em; color: #666;">W&H</div>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 2em; font-weight: 700; color: var(--success);" id="kpiRnWH">-</div>
+          <div style="font-size: 0.85em; color: var(--text-mid);">W&H</div>
         </div>
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+        <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; text-align: center;">
           <div style="font-size: 2em; font-weight: 700; color: #e65100;" id="kpiRnNLI">-</div>
-          <div style="font-size: 0.85em; color: #666;">NLI</div>
+          <div style="font-size: 0.85em; color: var(--text-mid);">NLI</div>
         </div>
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 2em; font-weight: 700; color: #1565c0;" id="kpiRnTisak">-</div>
-          <div style="font-size: 0.85em; color: #666;">Tisak</div>
+        <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 2em; font-weight: 700; color: var(--primary);" id="kpiRnTisak">-</div>
+          <div style="font-size: 0.85em; color: var(--text-mid);">Tisak</div>
         </div>
       </div>
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #666;">Ukupno aktivnih:</span>
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: var(--text-mid);">Ukupno aktivnih:</span>
         <span style="font-size: 1.5em; font-weight: 700; color: var(--primary);" id="kpiRnTotal">-</span>
       </div>
     </div>
@@ -183,29 +195,29 @@
     </div>
     <div class="card-body">
       <div style="display: flex; flex-direction: column; gap: 15px;">
-        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: var(--remap-grey-bg); border-radius: 8px;">
           <span class="dash-icon dash-icon-md dash-icon-grid" style="width:22px; height:22px;"></span>
           <div style="flex: 1;">
-            <div style="font-size: 0.85em; color: #666;">Trake</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Trake</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiBelts">-</div>
           </div>
-          <div style="font-size: 0.85em; color: #888;">pozicija</div>
+          <div style="font-size: 0.85em; color: var(--text-lo);">pozicija</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: var(--remap-grey-bg); border-radius: 8px;">
           <span class="dash-icon dash-icon-md dash-icon-people" style="width:22px; height:22px;"></span>
           <div style="flex: 1;">
-            <div style="font-size: 0.85em; color: #666;">Zaposlenici</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Zaposlenici</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiEmployees">-</div>
           </div>
-          <div style="font-size: 0.85em; color: #888;">aktivnih</div>
+          <div style="font-size: 0.85em; color: var(--text-lo);">aktivnih</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #fafafa; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 15px; padding: 10px; background: var(--remap-grey-bg); border-radius: 8px;">
           <span class="dash-icon dash-icon-md dash-icon-file"></span>
           <div style="flex: 1;">
-            <div style="font-size: 0.85em; color: #666;">POP na čekanju</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">POP na čekanju</div>
             <div style="font-size: 1.3em; font-weight: 700;" id="kpiPOP">-</div>
           </div>
-          <div style="font-size: 0.85em; color: #888;">kom</div>
+          <div style="font-size: 0.85em; color: var(--text-lo);">kom</div>
         </div>
       </div>
     </div>
@@ -213,7 +225,7 @@
 </div>
 
 <!-- Lista aktivnih radnih naloga -->
-<div class="form-row" style="margin-bottom: 20px;">
+<div class="form-row" style="margin-bottom: 14px;">
   <div class="card" style="flex: 2;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
@@ -225,7 +237,7 @@
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 300px; overflow-y: auto;">
         <table>
-          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+          <thead style="position: sticky; top: 0; background: var(--remap-grey-bg);">
             <tr>
               <th>RN</th>
               <th>Kupac</th>
@@ -253,7 +265,7 @@
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 300px; overflow-y: auto;">
         <table>
-          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+          <thead style="position: sticky; top: 0; background: var(--remap-grey-bg);">
             <tr>
               <th>RN</th>
               <th>Artikl</th>
@@ -270,54 +282,54 @@
 </div>
 
 <!-- Live brojači strojeva (realtime iz prod_machine_counters) -->
-<div class="card" style="margin-bottom: 20px;" id="sectionLiveCounters">
-  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #d84315 0%, #ff7043 100%); color: white;">
+<div class="card" style="margin-bottom: 14px;" id="sectionLiveCounters">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <span style="display:inline-flex; align-items:center; gap:10px;">
-      <span class="live-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ff5252; box-shadow:0 0 0 0 rgba(255,82,82,0.6);"></span>
+      <span class="live-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--danger); box-shadow:0 0 0 0 rgba(176,126,138,0.5);"></span>
       Live brojači strojeva
-      <span id="liveCountersStatus" style="font-size: 0.75em; opacity: 0.85;">●</span>
+      <span id="liveCountersStatus" style="font-size: 0.75em; color: var(--text-lo);">●</span>
     </span>
-    <span id="liveCountersMeta" style="font-size: 0.8em; opacity: 0.9;"></span>
+    <span id="liveCountersMeta" style="font-size: 0.8em; color: var(--text-lo);"></span>
   </div>
   <div class="card-body">
     <div id="liveCountersGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-      <div style="padding: 20px; text-align: center; color: #999;">Učitavanje...</div>
+      <div style="padding: 20px; text-align: center; color: var(--text-lo);">Učitavanje...</div>
     </div>
   </div>
 </div>
 
 <!-- OEE sažetak (iz v_oee_dashboard, zadnjih 30 dana) -->
-<div class="form-row" style="margin-bottom: 20px;" id="sectionOee">
+<div class="form-row" style="margin-bottom: 14px;" id="sectionOee">
   <div class="card" style="flex: 1;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%); color: white;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-zap"></span>
+        <span class="dash-icon dash-icon-md dash-icon-zap" style="color: var(--primary);"></span>
         OEE po liniji i stroju (zadnjih 30 dana)
       </span>
-      <a href="#oee" style="color: white; text-decoration: none; font-size: 0.85em; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 4px;">Detaljno →</a>
+      <a href="#oee" style="color: var(--primary); text-decoration: none; font-size: 0.85em; padding: 3px 10px; background: var(--remap-info-bg); border-radius: 4px; border: 1px solid var(--glass-border);">Detaljno →</a>
     </div>
     <div class="card-body">
-      <div id="oeeSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
-        <div style="padding: 20px; text-align: center; color: #999;">Učitavanje...</div>
+      <div id="oeeSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
+        <div style="padding: 20px; text-align: center; color: var(--text-lo);">Učitavanje...</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Pod-proizvedeni završeni RN (variance flag iz A2) -->
-<div class="form-row" style="margin-bottom: 20px;" id="sectionVariance">
-  <div class="card" style="flex: 1;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%); color: white;">
+<div class="form-row" style="margin-bottom: 14px;" id="sectionVariance">
+  <div class="card" style="flex: 1; border-left: 3px solid var(--warning);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-alert"></span>
+        <span class="dash-icon dash-icon-md dash-icon-alert" style="color: var(--warning);"></span>
         Problematični završeni nalozi (proizvedeno &lt; 90% planiranog, zadnjih 30 dana)
       </span>
-      <span class="badge" id="varianceBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
+      <span class="badge" id="varianceBadge" style="background: var(--remap-warning-bg); color: var(--warning); padding: 3px 10px; border-radius: 12px; font-size: 0.85em; border: 1px solid var(--warning);">0</span>
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 250px; overflow-y: auto;">
         <table>
-          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+          <thead style="position: sticky; top: 0; background: var(--remap-grey-bg);">
             <tr>
               <th style="padding: 8px;">RN</th>
               <th style="padding: 8px;">Kupac</th>
@@ -330,7 +342,7 @@
             </tr>
           </thead>
           <tbody id="varianceTableBody">
-            <tr><td colspan="8" style="text-align: center; padding: 20px; color: #666;">Učitavanje...</td></tr>
+            <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-mid);">Učitavanje...</td></tr>
           </tbody>
         </table>
       </div>
@@ -339,20 +351,20 @@
 </div>
 
 <!-- Kvarovi i Kontrole vreća -->
-<div class="form-row" style="margin-bottom: 20px;" id="sectionKvaroviKontrole">
+<div class="form-row" style="margin-bottom: 14px;" id="sectionKvaroviKontrole">
   <!-- Aktivne prijave kvarova -->
-  <div class="card" style="flex: 1;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); color: white;">
+  <div class="card" style="flex: 1; border-left: 3px solid var(--danger);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
+        <span class="dash-icon dash-icon-md dash-icon-wrench" style="color: var(--danger);"></span>
         Aktivne prijave kvarova
       </span>
-      <span class="badge" id="kvaroviBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
+      <span class="badge" id="kvaroviBadge" style="background: var(--remap-danger-bg); color: var(--danger); padding: 3px 10px; border-radius: 12px; font-size: 0.85em; border: 1px solid var(--danger);">0</span>
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 250px; overflow-y: auto;">
         <table>
-          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+          <thead style="position: sticky; top: 0; background: var(--remap-grey-bg);">
             <tr>
               <th style="padding: 8px;">Broj</th>
               <th style="padding: 8px;">Stroj</th>
@@ -363,7 +375,7 @@
             </tr>
           </thead>
           <tbody id="kvaroviTableBody">
-            <tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Učitavanje...</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-mid);">Učitavanje...</td></tr>
           </tbody>
         </table>
       </div>
@@ -371,18 +383,18 @@
   </div>
   
   <!-- Kontrole vreća -->
-  <div class="card" style="flex: 1;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); color: white;">
+  <div class="card" style="flex: 1; border-left: 3px solid var(--primary);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span style="display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-check"></span>
+        <span class="dash-icon dash-icon-md dash-icon-check" style="color: var(--success);"></span>
         Kontrole vreća (jučer + danas)
       </span>
-      <span class="badge" id="kontroleBadge" style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">0</span>
+      <span class="badge" id="kontroleBadge" style="background: var(--remap-info-bg); color: var(--primary); padding: 3px 10px; border-radius: 12px; font-size: 0.85em; border: 1px solid var(--primary);">0</span>
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 250px; overflow-y: auto;">
         <table>
-          <thead style="position: sticky; top: 0; background: #f8f9fa;">
+          <thead style="position: sticky; top: 0; background: var(--remap-grey-bg);">
             <tr>
               <th style="padding: 8px;">RN</th>
               <th style="padding: 8px;">Artikl</th>
@@ -394,7 +406,7 @@
             </tr>
           </thead>
           <tbody id="kontroleTableBody">
-            <tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Učitavanje...</td></tr>
+            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-mid);">Učitavanje...</td></tr>
           </tbody>
         </table>
       </div>
@@ -447,11 +459,11 @@
     </span>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
       <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85em; color: #666;">Datum:</label>
+        <label style="font-size: 0.85em; color: var(--text-mid);">Datum:</label>
         <input type="date" id="izvjesceDatum" class="form-control" style="padding: 6px 10px; width: auto;">
       </div>
       <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85em; color: #666;">Smjena:</label>
+        <label style="font-size: 0.85em; color: var(--text-mid);">Smjena:</label>
         <select id="izvjesceSmjena" class="form-control" style="padding: 6px 10px; width: auto;">
           <option value="">Sve</option>
           <option value="1">1. smjena</option>
@@ -460,7 +472,7 @@
         </select>
       </div>
       <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85em; color: #666;">Linija:</label>
+        <label style="font-size: 0.85em; color: var(--text-mid);">Linija:</label>
         <select id="izvjesceLinija" class="form-control" style="padding: 6px 10px; width: auto;">
           <option value="">Sve</option>
           <option value="WH">WH</option>
@@ -469,7 +481,7 @@
         </select>
       </div>
       <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85em; color: #666;">Stroj:</label>
+        <label style="font-size: 0.85em; color: var(--text-mid);">Stroj:</label>
         <select id="izvjesceStroj" class="form-control" style="padding: 6px 10px; width: auto;">
           <option value="">Svi</option>
           <option value="bottomer">Bottomer</option>
@@ -490,7 +502,7 @@
   <div class="card-body" style="padding: 0;">
     <div class="table-container" style="max-height: 400px; overflow-y: auto;">
       <table>
-        <thead style="position: sticky; top: 0; background: #f5f5f5; z-index: 1;">
+        <thead style="position: sticky; top: 0; background: var(--remap-grey-bg); z-index: 1;">
           <tr>
             <th style="padding: 10px;">Datum</th>
             <th style="padding: 10px;">Smjena</th>
@@ -505,7 +517,7 @@
           </tr>
         </thead>
         <tbody id="izvjescaTableBody">
-          <tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Odaberite filtere i kliknite "Traži"</td></tr>
+          <tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--text-mid);">Odaberite filtere i kliknite "Traži"</td></tr>
         </tbody>
       </table>
     </div>
@@ -515,9 +527,9 @@
 <!-- MODAL ZA DETALJE KVARA -->
 <div class="modal" id="kvarDetaljiModal">
   <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
-    <div class="modal-header" style="background: linear-gradient(135deg, #c62828 0%, #e53935 100%); color: white;">
-      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-wrench"></span>
+    <div class="modal-header" style="border-left: 4px solid var(--danger);">
+      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px; color: var(--text-hi);">
+        <span class="dash-icon dash-icon-md dash-icon-wrench" style="color: var(--danger);"></span>
         Detalji prijave kvara
       </h3>
       <button class="modal-close" onclick="zatvoriKvarModal()">&times;</button>
@@ -531,9 +543,9 @@
 <!-- MODAL ZA DETALJE KONTROLE VREĆA -->
 <div class="modal" id="kontrolaDetaljiModal">
   <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-    <div class="modal-header" style="background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); color: white;">
-      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-check"></span>
+    <div class="modal-header" style="border-left: 4px solid var(--primary);">
+      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px; color: var(--text-hi);">
+        <span class="dash-icon dash-icon-md dash-icon-check" style="color: var(--success);"></span>
         Detalji kontrole vreće
       </h3>
       <button class="modal-close" onclick="zatvoriKontrolaModal()">&times;</button>
@@ -547,9 +559,9 @@
 <!-- MODAL ZA DETALJE IZVJEŠĆA -->
 <div class="modal" id="izvjesceDetaljiModal">
   <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-    <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white;">
-      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px;">
-        <span class="dash-icon dash-icon-md dash-icon-file"></span>
+    <div class="modal-header" style="border-left: 4px solid var(--primary);">
+      <h3 style="margin: 0; display:inline-flex; align-items:center; gap:8px; color: var(--text-hi);">
+        <span class="dash-icon dash-icon-md dash-icon-file" style="color: var(--primary);"></span>
         Detalji smjenskog izvješća
       </h3>
       <button class="modal-close" onclick="zatvoriIzvjesceModal()">&times;</button>
@@ -561,253 +573,173 @@
 </div>
 
 <style>
+/* ============================================
+   DASHBOARD — DARK GLASS OVERRIDES
+   Globalni .modal/.card stilovi iz styles.css se primjenjuju.
+   Ovdje samo dashboard-specifične stvari.
+   ============================================ */
+
 .cam-spinner {
   width: 40px; height: 40px;
-  border: 3px solid #333;
-  border-top-color: #4caf50;
+  border: 3px solid rgba(70,130,220,0.15);
+  border-top-color: var(--blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 10px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Status badges — dark glass varijante */
 .status-badge {
   padding: 3px 10px;
   border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: 600;
+  font-size: 0.78em;
+  font-weight: 700;
   white-space: nowrap;
+  border: 1px solid;
 }
 .status-pending {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(233, 181, 102, 0.10); color: var(--warning);
+  border-color: rgba(233, 181, 102, 0.30);
 }
 .status-active {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(126, 207, 176, 0.10); color: var(--success);
+  border-color: rgba(126, 207, 176, 0.30);
 }
 .status-completed {
-  background: #cce5ff;
-  color: #004085;
+  background: rgba(106, 172, 238, 0.10); color: var(--blue);
+  border-color: rgba(106, 172, 238, 0.30);
 }
 
-#activeRNTable tr:hover, #activeTisakTable tr:hover {
-  background: #f5f5f5;
-}
-
-/* Modal stilovi za izvješća */
-#izvjesceDetaljiModal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-}
-#izvjesceDetaljiModal.active {
-  display: flex;
-}
-#izvjesceDetaljiModal .modal-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  width: 95%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-#izvjesceDetaljiModal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-}
-#izvjesceDetaljiModal .modal-close {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  font-size: 1.5em;
-  cursor: pointer;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#izvjesceDetaljiModal .modal-close:hover {
-  background: rgba(255,255,255,0.3);
-}
-#izvjesceDetaljiModal .modal-body {
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* Edit inputi u modalu */
-#izvjesceDetaljiModal .edit-input {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-#izvjesceDetaljiModal .edit-input:focus {
-  border-color: #1976d2;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-}
-#izvjesceDetaljiModal .edit-input::-webkit-inner-spin-button {
-  opacity: 1;
-}
-
-/* Modal stilovi za kvarove i kontrole */
-#kvarDetaljiModal, #kontrolaDetaljiModal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-}
-#kvarDetaljiModal.active, #kontrolaDetaljiModal.active {
-  display: flex;
-}
-#kvarDetaljiModal .modal-content, #kontrolaDetaljiModal .modal-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  width: 95%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-#kvarDetaljiModal .modal-header, #kontrolaDetaljiModal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-}
-#kvarDetaljiModal .modal-close, #kontrolaDetaljiModal .modal-close {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  font-size: 1.5em;
-  cursor: pointer;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#kvarDetaljiModal .modal-close:hover, #kontrolaDetaljiModal .modal-close:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-/* Hover efekt na tablice kvarova i kontrola */
-#kvaroviTableBody tr:hover, #kontroleTableBody tr:hover {
-  background: #f5f5f5;
+/* Hover overrides za tablice (originalne pravilo iz styles.css) */
+#activeRNTable tr:hover,
+#activeTisakTable tr:hover,
+#kvaroviTableBody tr:hover,
+#kontroleTableBody tr:hover {
   cursor: pointer;
 }
 
-/* Detalji grid */
+/* Detalji grid (modal sadržaj — kvarovi/kontrole/izvjesca) */
 .detalji-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 12px;
 }
 .detalji-item {
-  padding: 12px;
-  background: #f8f9fa;
+  padding: 12px 14px;
+  background: rgba(70,130,220,0.06);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--blue);
 }
-.detalji-item.warning {
-  border-left-color: #ff9800;
-  background: #fff8e1;
-}
-.detalji-item.error {
-  border-left-color: #f44336;
-  background: #ffebee;
-}
-.detalji-item.success {
-  border-left-color: #4caf50;
-  background: #e8f5e9;
-}
-.detalji-label {
-  font-size: 0.8em;
-  color: #666;
-  margin-bottom: 4px;
-}
-.detalji-value {
-  font-weight: 600;
-  font-size: 1.1em;
-}
+.detalji-item.warning { border-left-color: var(--warning); background: rgba(233,181,102,0.08); }
+.detalji-item.error   { border-left-color: var(--danger);  background: rgba(176,126,138,0.10); }
+.detalji-item.success { border-left-color: var(--success); background: rgba(126,207,176,0.08); }
+.detalji-label { font-size: 10px; color: var(--text-lo); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.detalji-value { font-weight: 700; font-size: 1.0em; color: var(--text-hi); }
 
 /* ============================================
-   DASHBOARD ANIMACIJE + PROFESIONALNI STIL
+   DASHBOARD ANIMACIJE + KPI KARTICE
    ============================================ */
 
-/* KPI kartice — accent bar + hover lift */
-.dash-kpi-row .status-card {
-  position: relative;
-  overflow: hidden;
-  text-align: left;
-  padding: 18px 20px;
-  border: 1px solid rgba(0,0,0,0.06);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+/* === KPI Row v2 — kompaktnije (label gore, brojka dolje, delta) === */
+.dash-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
 }
-.dash-kpi-row .status-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  background: var(--primary);
-  transition: width 0.18s ease;
+@media (max-width: 1100px) {
+  .dash-kpi-row { grid-template-columns: repeat(2, 1fr); }
 }
-.dash-kpi-row .status-card.warning::before { background: var(--warning); }
-.dash-kpi-row .status-card.info::before { background: var(--info); }
-.dash-kpi-row .status-card.success::before { background: var(--success); }
-.dash-kpi-row .status-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
-.dash-kpi-row .status-card:hover::before { width: 6px; }
-.dash-kpi-row .status-card-icon {
-  margin-bottom: 10px;
-  color: var(--primary);
-  opacity: 0.85;
-}
-.dash-kpi-row .status-card.warning .status-card-icon { color: var(--warning); }
-.dash-kpi-row .status-card.info .status-card-icon { color: var(--info); }
-.dash-kpi-row .status-card.success .status-card-icon { color: var(--success); }
-.dash-kpi-row .status-card-value {
-  font-size: 2em;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.dash-kpi-row .status-card-label {
-  font-size: 0.78em;
-  color: #555;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-top: 4px;
+@media (max-width: 600px) {
+  .dash-kpi-row { grid-template-columns: 1fr; }
 }
 
-/* Pulse dot za live indikator (Live brojači) */
+.dash-kpi-row .kpi-card-v2 {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  min-height: 96px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: inset 3px 0 0 0 var(--blue);
+}
+.dash-kpi-row .kpi-card-v2.warning { box-shadow: inset 3px 0 0 0 var(--warning); }
+.dash-kpi-row .kpi-card-v2.success { box-shadow: inset 3px 0 0 0 var(--success); }
+.dash-kpi-row .kpi-card-v2.danger  { box-shadow: inset 3px 0 0 0 var(--danger); }
+.dash-kpi-row .kpi-card-v2.info    { box-shadow: inset 3px 0 0 0 var(--blue); }
+
+.dash-kpi-row .kpi-card-v2:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 4px 0 0 0 var(--blue), 0 3px 12px rgba(106,172,238,0.12);
+  border-color: var(--glass-border-strong);
+}
+.dash-kpi-row .kpi-card-v2.warning:hover { box-shadow: inset 4px 0 0 0 var(--warning), 0 3px 12px rgba(233,181,102,0.12); }
+.dash-kpi-row .kpi-card-v2.success:hover { box-shadow: inset 4px 0 0 0 var(--success), 0 3px 12px rgba(126,207,176,0.12); }
+
+.dash-kpi-row .kpi-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dash-kpi-row .kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: rgba(106, 172, 238, 0.08);
+  color: var(--blue);
+  flex-shrink: 0;
+}
+.dash-kpi-row .kpi-icon .dash-icon { width: 13px; height: 13px; }
+.dash-kpi-row .kpi-card-v2.warning .kpi-icon { background: rgba(233, 181, 102, 0.08); color: var(--warning); }
+.dash-kpi-row .kpi-card-v2.success .kpi-icon { background: rgba(126, 207, 176, 0.08); color: var(--success); }
+.dash-kpi-row .kpi-card-v2.danger  .kpi-icon { background: rgba(176, 126, 138, 0.08); color: var(--danger); }
+
+.dash-kpi-row .kpi-label {
+  font-size: 10px;
+  color: var(--text-mid);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.dash-kpi-row .kpi-value {
+  font-size: 1.85em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-hi);
+  line-height: 1.05;
+  letter-spacing: -0.3px;
+  margin-top: auto;
+}
+
+.dash-kpi-row .kpi-delta {
+  font-size: 11px;
+  color: var(--text-lo);
+  margin-top: 4px;
+  min-height: 14px;
+}
+.dash-kpi-row .kpi-delta.up   { color: var(--success); }
+.dash-kpi-row .kpi-delta.down { color: var(--danger); }
+.dash-kpi-row .kpi-delta.flat { color: var(--text-lo); }
+
+/* Pulse dot za live indikator */
 @keyframes dashPulseDot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,82,82,0.7); transform: scale(1); }
-  50%      { box-shadow: 0 0 0 8px rgba(255,82,82,0); transform: scale(1.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(176, 126, 138, 0.7); transform: scale(1); }
+  50%      { box-shadow: 0 0 0 8px rgba(176, 126, 138, 0); transform: scale(1.15); }
 }
 .live-dot { animation: dashPulseDot 1.5s ease-in-out infinite; }
 
-/* Animirani progress bar fill (KPI / Active RN / Live counters) */
+/* Animirani progress bar fill */
 @keyframes dashBarFill {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
@@ -817,61 +749,48 @@
   animation: dashBarFill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* OEE donut — CSS conic-gradient (no SVG-in-JS) */
+/* OEE donut — CSS conic-gradient (dark theme) */
 .dash-donut {
   --donut-pct: 0;
-  --donut-color: #2e7d32;
-  width: 78px;
-  height: 78px;
+  --donut-color: var(--success);
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   position: relative;
   display: grid;
   place-items: center;
-  background: conic-gradient(var(--donut-color) calc(var(--donut-pct) * 1%), #eef2f7 0);
+  /* opacity 0.65 na donut color → manje vibrantno, suptilnije u dark temi */
+  background: conic-gradient(color-mix(in srgb, var(--donut-color) 70%, transparent) calc(var(--donut-pct) * 1%), rgba(70,130,220,0.10) 0);
   flex-shrink: 0;
   transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dash-donut::before {
   content: '';
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: white;
-  box-shadow: inset 0 0 0 1px #f0f0f0;
+  background: var(--bg-card);
+  box-shadow: inset 0 0 0 1px var(--glass-border);
 }
 .dash-donut-label {
   position: relative;
   z-index: 1;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-hi);
 }
 
-/* Sparkline draw animacija */
-@keyframes dashSparkDraw {
-  from { stroke-dashoffset: 200; }
-  to   { stroke-dashoffset: 0; }
-}
-.dash-sparkline-path {
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: dashSparkDraw 1.4s ease-out forwards;
-}
-
-/* Card header iconize */
+/* Card header inline icons — finiji stroke */
 .card-header svg { flex-shrink: 0; }
 
-/* Quick access gumbi sa SVG-om — finiji hover */
+/* Quick access gumbi */
 .dash-quick-access .btn { transition: all 0.18s ease; }
-.dash-quick-access .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.dash-quick-access .btn:hover { transform: translateY(-1px); box-shadow: 0 0 14px rgba(106, 172, 238, 0.25); }
 
 /* ============================================
-   ICON CLASSES — URL-encoded SVG kao background
-   Razlog: VSCode Live Server inject-a auto-reload script ispred svakog
-   closing svg taga (regex matcha /body i /svg) — encoding kao data URL
-   sa %3C/%3E umjesto literal angle brackets zaobilazi to.
-   Vidi: memory/feedback_no_svg_in_js_strings.md
+   DASH-ICON CLASSES — light blue stroke za dark theme
+   URL-encoded SVG kao background-image (Pravilo 25 — Live Server bug zaobilazi)
    ============================================ */
 .dash-icon {
   display: inline-block;
@@ -880,64 +799,30 @@
   background-position: center;
   background-size: contain;
   flex-shrink: 0;
-  color: currentColor;
+  opacity: 0.85;
 }
 .dash-icon-sm { width: 18px; height: 18px; }
-.dash-icon-md { width: 24px; height: 24px; }
-.dash-icon-lg { width: 28px; height: 28px; }
+.dash-icon-md { width: 22px; height: 22px; }
+.dash-icon-lg { width: 26px; height: 26px; }
 
-/* Lucide-style ikone (URL-encoded — encoded form ne lomi Live Server) */
-.dash-icon-bar-chart {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='M7 16V9'/%3E%3Cpath d='M12 16V5'/%3E%3Cpath d='M17 16v-4'/%3E%3C/svg%3E");
-}
-.dash-icon-users {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
-}
-.dash-icon-package {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='M3.3 7 12 12l8.7-5'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E");
-}
-.dash-icon-factory {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/%3E%3C/svg%3E");
-}
-.dash-icon-clipboard {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='8' height='4' x='8' y='2' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3C/svg%3E");
-}
-.dash-icon-search {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
-}
-.dash-icon-printer {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 6 2 18 2 18 9'/%3E%3Cpath d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'/%3E%3Crect width='12' height='8' x='6' y='14'/%3E%3C/svg%3E");
-}
-.dash-icon-wrench {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/svg%3E");
-}
-.dash-icon-zap {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E");
-}
-.dash-icon-alert {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
-}
-.dash-icon-check {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
-}
-.dash-icon-file {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3C/svg%3E");
-}
-.dash-icon-rotate {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8'/%3E%3Cpath d='M3 3v5h5'/%3E%3C/svg%3E");
-}
-.dash-icon-grid {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Cpath d='M7 3v18'/%3E%3Cpath d='M3 12h18'/%3E%3C/svg%3E");
-}
-.dash-icon-people {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 18a5 5 0 0 1 10 0'/%3E%3Ccircle cx='7' cy='7' r='3'/%3E%3Cpath d='M14 8a4 4 0 1 0 0-8'/%3E%3Cpath d='M22 18a3 3 0 0 0-2-2.82'/%3E%3C/svg%3E");
-}
-.dash-icon-target {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3C/svg%3E");
-}
-.dash-icon-tag {
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Cline x1='7' x2='7.01' y1='7' y2='7'/%3E%3C/svg%3E");
-}
+/* Stroke = #6aacee (var --blue) — encoded kao %236aacee */
+.dash-icon-bar-chart { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='M7 16V9'/%3E%3Cpath d='M12 16V5'/%3E%3Cpath d='M17 16v-4'/%3E%3C/svg%3E"); }
+.dash-icon-users     { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E"); }
+.dash-icon-package   { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='M3.3 7 12 12l8.7-5'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E"); }
+.dash-icon-factory   { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/%3E%3C/svg%3E"); }
+.dash-icon-clipboard { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='8' height='4' x='8' y='2' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3C/svg%3E"); }
+.dash-icon-search    { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E"); }
+.dash-icon-printer   { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 6 2 18 2 18 9'/%3E%3Cpath d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'/%3E%3Crect width='12' height='8' x='6' y='14'/%3E%3C/svg%3E"); }
+.dash-icon-wrench    { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/svg%3E"); }
+.dash-icon-zap       { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E"); }
+.dash-icon-alert     { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9b566' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E"); }
+.dash-icon-check     { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237ecfb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E"); }
+.dash-icon-file      { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3C/svg%3E"); }
+.dash-icon-rotate    { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8'/%3E%3Cpath d='M3 3v5h5'/%3E%3C/svg%3E"); }
+.dash-icon-grid      { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Cpath d='M7 3v18'/%3E%3Cpath d='M3 12h18'/%3E%3C/svg%3E"); }
+.dash-icon-people    { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 18a5 5 0 0 1 10 0'/%3E%3Ccircle cx='7' cy='7' r='3'/%3E%3Cpath d='M14 8a4 4 0 1 0 0-8'/%3E%3Cpath d='M22 18a3 3 0 0 0-2-2.82'/%3E%3C/svg%3E"); }
+.dash-icon-target    { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3C/svg%3E"); }
+.dash-icon-tag       { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236aacee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Cline x1='7' x2='7.01' y1='7' y2='7'/%3E%3C/svg%3E"); }
 
 /* Subtle fade-in za cijeli dashboard pri loadu */
 @keyframes dashFadeIn {
@@ -955,6 +840,86 @@
 .dash-kpi-row .status-card:nth-child(2) { animation-delay: 0.05s; }
 .dash-kpi-row .status-card:nth-child(3) { animation-delay: 0.1s; }
 .dash-kpi-row .status-card:nth-child(4) { animation-delay: 0.15s; }
+
+/* ============================================
+   HARDCODED INLINE STYLE OVERRIDES
+   Razlog: dashboard ima ~50 inline style="background:#xxx" s light-theme
+   bojama (#fafafa, #f5f5f5, #fff3e0, #e8f5e9 itd.). Ovdje override-amo
+   kroz attribute selektore da ne moramo ručno ručno mijenjati svaki red.
+   ============================================ */
+
+/* Pillovi NLI/WH/Tisak — gradient dark glass */
+[style*="#fff3e0"],
+[style*="background:#fff3e0"],
+[style*="background: #fff3e0"] {
+  background: rgba(233, 181, 102, 0.10) !important;
+  border: 1px solid rgba(233, 181, 102, 0.25);
+}
+[style*="#e8f5e9"],
+[style*="background:#e8f5e9"],
+[style*="background: #e8f5e9"] {
+  background: rgba(126, 207, 176, 0.10) !important;
+  border: 1px solid rgba(126, 207, 176, 0.25);
+}
+[style*="#e3f2fd"],
+[style*="background:#e3f2fd"],
+[style*="background: #e3f2fd"] {
+  background: rgba(106, 172, 238, 0.10) !important;
+  border: 1px solid rgba(106, 172, 238, 0.25);
+}
+[style*="#fafafa"],
+[style*="background:#fafafa"],
+[style*="background: #fafafa"],
+[style*="#f5f5f5"],
+[style*="background:#f5f5f5"],
+[style*="background: #f5f5f5"],
+[style*="#f8f9fa"],
+[style*="background:#f8f9fa"],
+[style*="background: #f8f9fa"] {
+  background: rgba(70, 130, 220, 0.06) !important;
+}
+[style*="background:#fff3cd"], [style*="background: #fff3cd"] { background: rgba(233,181,102,0.10) !important; color: var(--warning); }
+[style*="background:#ffebee"], [style*="background: #ffebee"] { background: rgba(176,126,138,0.10) !important; color: var(--danger); }
+[style*="background:#fff5f5"], [style*="background: #fff5f5"] { background: rgba(176,126,138,0.05) !important; }
+[style*="background:#efebe9"], [style*="background: #efebe9"] { background: rgba(140,110,90,0.12) !important; }
+
+/* Card header gradient banneri (kvarovi/oee/variance/itd.) — neka ostanu */
+[style*="linear-gradient(135deg, #d84315"],
+[style*="linear-gradient(135deg, #1976d2"],
+[style*="linear-gradient(135deg, #f57c00"],
+[style*="linear-gradient(135deg, #d32f2f"],
+[style*="linear-gradient(135deg, #1565c0"],
+[style*="linear-gradient(135deg, #c62828"],
+[style*="linear-gradient(135deg, #1e3a5f"] {
+  /* zadrži original — odlični su za vizualno odvajanje sekcija */
+}
+
+/* Sticky table headers s light backgroundom — overrideaj */
+table thead[style*="background: #f8f9fa"],
+table thead[style*="background:#f8f9fa"],
+table thead[style*="background: #f5f5f5"],
+table thead[style*="background:#f5f5f5"] {
+  background: rgba(8, 22, 55, 0.95) !important;
+}
+
+/* Nazivi tipa "ostali" (color: #666, #888) — light variant */
+[style*="color: #666"], [style*="color:#666"] { color: var(--text-mid) !important; }
+[style*="color: #888"], [style*="color:#888"] { color: var(--text-lo) !important; }
+[style*="color: #555"], [style*="color:#555"] { color: var(--text-mid) !important; }
+[style*="color: #999"], [style*="color:#999"] { color: var(--text-lo) !important; }
+
+/* KPI brojke (color: var(--primary)) već rade jer --primary je sad plava */
+
+/* Sparkline draw animacija */
+@keyframes dashSparkDraw {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+.dash-sparkline-path {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: dashSparkDraw 1.4s ease-out forwards;
+}
 </style>
 
 <script>
@@ -1025,7 +990,7 @@ function dashAnimateDecimal(elementId, targetValue, duration, decimals) {
 // Vidi memory/feedback_no_svg_in_js_strings.md
 function dashOeeDonut(percent, color, label) {
   percent = Math.max(0, Math.min(100, Number(percent) || 0));
-  color = color || '#2e7d32';
+  color = color || 'var(--success)';
   label = label || (percent.toFixed(0) + '%');
   // HTML s CSS conic-gradient — bez SVG-a
   return '<div class="dash-donut" style="--donut-pct:' + percent.toFixed(2) + '; --donut-color:' + color + ';">' +
@@ -1047,17 +1012,22 @@ async function initDashboardView() {
     // Sakrij sekcije za obične korisnike
     var sectionsToHide = [
       'sectionKpiCards',
-      'sectionRolePapira', 
+      'sectionRolePapira',
       'sectionResursi',
       'sectionBrziPristup',
       'sectionSmjenskaIzvjesca'
     ];
-    
+
+    // Računovodstvo treba vidjeti stanje papira (i Google Sheets link s paralelnom evidencijom)
+    if (user && user.role === 'racunovodstvo') {
+      sectionsToHide = sectionsToHide.filter(function(id) { return id !== 'sectionRolePapira'; });
+    }
+
     sectionsToHide.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
-    
+
     console.log('Dashboard: Ograničeni prikaz za ulogu:', user ? user.role : 'unknown');
   }
   
@@ -1079,9 +1049,18 @@ async function initDashboardView() {
     dashAnimateCount('kpiBelts', r[4] ? r[4].length : 0);
     dashAnimateCount('kpiEmployees', r[5] ? r[5].length : 0);
 
-    // Aktivne narudžbe
-    var ord = await initSupabase().from('prod_orders').select('id').eq('status', 'Aktivno');
-    dashAnimateCount('kpiOrders', ord.data ? ord.data.length : 0);
+    // KPI delta indikatori (kontekstualni labeli)
+    var setDelta = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    setDelta('kpiCustomersDelta', 'kupaca u sustavu');
+    setDelta('kpiArticlesDelta', 'artikala u katalogu');
+    setDelta('kpiMachinesDelta', 'strojeva u proizvodnji');
+
+    // Aktivne narudžbe + delta vs ukupno
+    var ord = await initSupabase().from('prod_orders').select('id, status').limit(10000);
+    var aktivne = ord.data ? ord.data.filter(function(o){ return o.status === 'Aktivno'; }).length : 0;
+    var ukupno = ord.data ? ord.data.length : 0;
+    dashAnimateCount('kpiOrders', aktivne);
+    setDelta('kpiOrdersDelta', 'aktivne od ' + ukupno + ' ukupno');
 
     // Izračunaj bijeli/smeđi papir u tonama
     if (r[3] && r[3].length) {
@@ -1243,15 +1222,15 @@ async function loadAktivniKvarovi() {
         switch (kvar.priority) {
           case 'Visok - stroj stoji':
             prioritetClass = 'background: #ffebee; color: #c62828;';
-            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d32f2f;margin-right:4px;vertical-align:middle;"></span>';
+            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--danger);margin-right:4px;vertical-align:middle;"></span>';
             break;
           case 'Srednji - radi ali nije dobro':
             prioritetClass = 'background: #fff3e0; color: #e65100;';
-            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f57c00;margin-right:4px;vertical-align:middle;"></span>';
+            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warning);margin-right:4px;vertical-align:middle;"></span>';
             break;
           default:
             prioritetClass = 'background: #e8f5e9; color: #2e7d32;';
-            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2e7d32;margin-right:4px;vertical-align:middle;"></span>';
+            prioritetIcon = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:4px;vertical-align:middle;"></span>';
         }
         
         var datum = kvar.reported_at ? new Date(kvar.reported_at).toLocaleDateString('hr-HR') : '-';
@@ -1271,12 +1250,12 @@ async function loadAktivniKvarovi() {
     } else {
       window.kvaroviData = [];
       if (badge) badge.textContent = '0';
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #4caf50;">✅ Nema aktivnih prijava kvarova</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--success);">✅ Nema aktivnih prijava kvarova</td></tr>';
     }
   } catch (e) {
     console.error('Kvarovi error:', e);
     var tbody = document.getElementById('kvaroviTableBody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #f44336;">Greška učitavanja</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--danger);">Greška učitavanja</td></tr>';
   }
 }
 
@@ -1354,12 +1333,12 @@ async function loadKontroleVreca() {
     } else {
       window.kontroleData = [];
       if (badge) badge.textContent = '0';
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Nema kontrola od jučerašnjeg proizvodnog dana</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-mid);">Nema kontrola od jučerašnjeg proizvodnog dana</td></tr>';
     }
   } catch (e) {
     console.error('Kontrole error:', e);
     var tbody = document.getElementById('kontroleTableBody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #f44336;">Greška učitavanja</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--danger);">Greška učitavanja</td></tr>';
   }
 }
 
@@ -1437,40 +1416,40 @@ async function traceSearch() {
     status.style.color = '#2e7d32';
 
     // 3. Pripremi HTML za modal
-    var rolesHtml = traceRow.roll_codes ? traceRow.roll_codes : '<em style="color:#999;">nema link-a (stara paleta ili tuber-materijal nije evidentiran)</em>';
+    var rolesHtml = traceRow.roll_codes ? traceRow.roll_codes : '<em style="color:var(--text-lo);">nema link-a (stara paleta ili tuber-materijal nije evidentiran)</em>';
     var manHtml = traceRow.manufacturers ? traceRow.manufacturers : '-';
-    var popHtml = traceRow.pop_codes ? traceRow.pop_codes : '<em style="color:#999;">nema link-a</em>';
+    var popHtml = traceRow.pop_codes ? traceRow.pop_codes : '<em style="color:var(--text-lo);">nema link-a</em>';
 
     var linijaColor = gop.production_line === 'WH' ? '#2e7d32' : '#e65100';
     var dispStatus = gop.status === 'Otpremljeno'
-      ? '<span style="color:#2e7d32;font-weight:600;">Otpremljeno ' + (gop.dispatched_at ? new Date(gop.dispatched_at).toLocaleDateString('hr-HR') : '') + '</span>'
-      : '<span style="color:#f57c00;font-weight:600;">' + (gop.status || '-') + '</span>';
+      ? '<span style="color:var(--success);font-weight:600;">Otpremljeno ' + (gop.dispatched_at ? new Date(gop.dispatched_at).toLocaleDateString('hr-HR') : '') + '</span>'
+      : '<span style="color:var(--warning);font-weight:600;">' + (gop.status || '-') + '</span>';
 
     var html =
       '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;width:180px;">Paleta</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;"><strong>' + gop.pallet_number + '</strong></td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Kupac</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;"><strong>' + (gop.customer_name || '-') + '</strong></td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Artikl</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.article_name || '-') + '</td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Količina</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + formatBroj(gop.quantity || 0) + ' kom</td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Radni nalog</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.work_order_number || '-') + '</td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Linija</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;"><span style="background:' + linijaColor + ';color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">' + (gop.production_line || '-') + '</span></td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Smjena / operater</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.shift || '-') + ' / ' + (gop.operator_name || '-') + '</td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Proizvedeno</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + (gop.created_at ? new Date(gop.created_at).toLocaleString('hr-HR') : '-') + '</td></tr>' +
-      '<tr><td style="padding:6px;border-bottom:1px solid #eee;color:#666;">Status otpreme</td>' +
-        '<td style="padding:6px;border-bottom:1px solid #eee;">' + dispStatus + '</td></tr>' +
-      '<tr><td style="padding:10px 6px;color:#666;vertical-align:top;border-top:2px solid #1976d2;">POP tuljci korišteni</td>' +
-        '<td style="padding:10px 6px;border-top:2px solid #1976d2;">' + popHtml + '</td></tr>' +
-      '<tr><td style="padding:6px;color:#666;vertical-align:top;">Role papira</td>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);width:180px;">Paleta</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);"><strong>' + gop.pallet_number + '</strong></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Kupac</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);"><strong>' + (gop.customer_name || '-') + '</strong></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Artikl</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (gop.article_name || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Količina</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + formatBroj(gop.quantity || 0) + ' kom</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Radni nalog</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (gop.work_order_number || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Linija</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);"><span style="background:' + linijaColor + ';color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">' + (gop.production_line || '-') + '</span></td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Smjena / operater</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (gop.shift || '-') + ' / ' + (gop.operator_name || '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Proizvedeno</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (gop.created_at ? new Date(gop.created_at).toLocaleString('hr-HR') : '-') + '</td></tr>' +
+      '<tr><td style="padding:6px;border-bottom:1px solid var(--border);color:var(--text-mid);">Status otpreme</td>' +
+        '<td style="padding:6px;border-bottom:1px solid var(--border);">' + dispStatus + '</td></tr>' +
+      '<tr><td style="padding:10px 6px;color:var(--text-mid);vertical-align:top;border-top:2px solid var(--primary);">POP tuljci korišteni</td>' +
+        '<td style="padding:10px 6px;border-top:2px solid var(--primary);">' + popHtml + '</td></tr>' +
+      '<tr><td style="padding:6px;color:var(--text-mid);vertical-align:top;">Role papira</td>' +
         '<td style="padding:6px;">' + rolesHtml + '</td></tr>' +
-      '<tr><td style="padding:6px;color:#666;vertical-align:top;">Proizvođači papira</td>' +
+      '<tr><td style="padding:6px;color:var(--text-mid);vertical-align:top;">Proizvođači papira</td>' +
         '<td style="padding:6px;">' + manHtml + '</td></tr>' +
       '</table>';
 
@@ -1566,7 +1545,7 @@ async function traceSearchByRN(woNumber, status) {
   var pctColor = pct >= 90 ? '#2e7d32' : (pct >= 50 ? '#f57c00' : '#d32f2f');
 
   var headerHtml =
-    '<div style="background:#f8f9fa;padding:14px;border-radius:6px;margin-bottom:16px;">' +
+    '<div style="background:var(--remap-grey-bg);padding:14px;border-radius:6px;margin-bottom:16px;">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">' +
     '<div><strong>Kupac:</strong> ' + (wo.customer_name || '-') + '</div>' +
     '<div><strong>Linija:</strong> <span style="background:' + linijaColor + ';color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">' + (wo.production_line || '-') + '</span></div>' +
@@ -1584,40 +1563,40 @@ async function traceSearchByRN(woNumber, status) {
     var otp = g.dispatched_at ? new Date(g.dispatched_at).toLocaleDateString('hr-HR') : '-';
     var query = woNumber + ' ' + g.pallet_number;
     return '<tr style="cursor:pointer;" onclick="document.getElementById(\'traceInput\').value=\'' + query + '\'; closeModal(\'traceModal\'); traceSearch();" title="Klik za detalj palete">' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;"><strong>' + g.pallet_number + '</strong></td>' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">' + formatBroj(g.quantity || 0) + '</td>' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;">' + (g.pallet_dimension || '-') + '</td>' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;">' + (g.operator_name || '-') + ' / ' + (g.shift || '-') + '</td>' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;">' + datum + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);"><strong>' + g.pallet_number + '</strong></td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);text-align:right;">' + formatBroj(g.quantity || 0) + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (g.pallet_dimension || '-') + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);">' + (g.operator_name || '-') + ' / ' + (g.shift || '-') + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);">' + datum + '</td>' +
       '<td style="padding:6px;border-bottom:1px solid #eee;color:' + statusColor + ';font-weight:600;">' + (g.status || '-') + '</td>' +
-      '<td style="padding:6px;border-bottom:1px solid #eee;">' + otp + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border);">' + otp + '</td>' +
       '</tr>';
   }).join('');
 
   var ukupnoGop = (gopList || []).reduce(function(s, g) { return s + (g.quantity || 0); }, 0);
-  var gopHtml = '<h4 style="margin:12px 0 6px 0;color:#1976d2;">📦 Palete (' + (gopList || []).length + ', ukupno ' + formatBroj(ukupnoGop) + ' kom)</h4>';
+  var gopHtml = '<h4 style="margin:12px 0 6px 0;color:var(--primary);">📦 Palete (' + (gopList || []).length + ', ukupno ' + formatBroj(ukupnoGop) + ' kom)</h4>';
   if (gopRows) {
     gopHtml += '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
-      '<thead><tr style="background:#f5f5f5;"><th style="padding:6px;text-align:left;">Paleta</th><th style="padding:6px;text-align:right;">Kom</th><th style="padding:6px;text-align:left;">Dim.</th><th style="padding:6px;text-align:left;">Operater/sm.</th><th style="padding:6px;text-align:left;">Datum</th><th style="padding:6px;text-align:left;">Status</th><th style="padding:6px;text-align:left;">Otpremljeno</th></tr></thead>' +
+      '<thead><tr style="background:var(--remap-grey-bg);"><th style="padding:6px;text-align:left;">Paleta</th><th style="padding:6px;text-align:right;">Kom</th><th style="padding:6px;text-align:left;">Dim.</th><th style="padding:6px;text-align:left;">Operater/sm.</th><th style="padding:6px;text-align:left;">Datum</th><th style="padding:6px;text-align:left;">Status</th><th style="padding:6px;text-align:left;">Otpremljeno</th></tr></thead>' +
       '<tbody>' + gopRows + '</tbody></table>';
   } else {
-    gopHtml += '<div style="color:#999;font-style:italic;padding:8px;">Nema paleta za ovaj RN</div>';
+    gopHtml += '<div style="color:var(--text-lo);font-style:italic;padding:8px;">Nema paleta za ovaj RN</div>';
   }
 
   // POP tuljci
   var popRows = (popList || []).map(function(p) {
     var stanje = (p.quantity_in_stock || 0) + (p.quantity_reserved ? ' (+' + p.quantity_reserved + ' rez.)' : '');
     return '<tr>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (p.pop_code || '-') + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;text-align:right;">' + stanje + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (p.status || '-') + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (p.created_at ? new Date(p.created_at).toLocaleDateString('hr-HR') : '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + (p.pop_code || '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);text-align:right;">' + stanje + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + (p.status || '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + (p.created_at ? new Date(p.created_at).toLocaleDateString('hr-HR') : '-') + '</td>' +
       '</tr>';
   }).join('');
-  var popHtml = '<h4 style="margin:12px 0 6px 0;color:#1976d2;">🧻 POP tuljci (' + (popList || []).length + ')</h4>';
+  var popHtml = '<h4 style="margin:12px 0 6px 0;color:var(--primary);">🧻 POP tuljci (' + (popList || []).length + ')</h4>';
   popHtml += popRows
-    ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:right;">Stanje</th><th style="padding:6px;text-align:left;">Status</th><th style="padding:6px;text-align:left;">Datum</th></tr></thead><tbody>' + popRows + '</tbody></table>'
-    : '<div style="color:#999;font-style:italic;padding:8px;">Nema POP-a</div>';
+    ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--remap-grey-bg);"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:right;">Stanje</th><th style="padding:6px;text-align:left;">Status</th><th style="padding:6px;text-align:left;">Datum</th></tr></thead><tbody>' + popRows + '</tbody></table>'
+    : '<div style="color:var(--text-lo);font-style:italic;padding:8px;">Nema POP-a</div>';
 
   // Potrošene role (agregirane) - s Tisak enrichment-om
   var rollMap = {};
@@ -1644,27 +1623,27 @@ async function traceSearchByRN(woNumber, status) {
   var rollRows = Object.values(rollMap).map(function(r) {
     var tipLabel = r.source_table === 'prod_inventory_printed' ? '🖨️ Otisnuto' : (r.type || '-');
     var tisakInfo = r.source_table === 'prod_inventory_printed'
-      ? '<div style="font-size:0.85em;color:#666;margin-top:2px;">↳ ' +
+      ? '<div style="font-size:0.85em;color:var(--text-mid);margin-top:2px;">↳ ' +
         (r.tisak_rn ? 'Tisak ' + r.tisak_rn + ' · ' : '') +
         (r.parent_code ? 'iz role ' + r.parent_code : 'izvorna rola nepoznata') + '</div>'
       : '';
     return '<tr>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;"><strong>' + (r.code || '-') + '</strong>' + tisakInfo + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + tipLabel + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;text-align:center;">' + (r.layer || '-') + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.width || '-') + ' cm / ' + (r.grammage || '-') + ' g</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;">' + (r.manufacturer || '-') + '</td>' +
-      '<td style="padding:4px 6px;border-bottom:1px solid #f5f5f5;text-align:right;">' + r.kg.toFixed(1) + ' kg</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);"><strong>' + (r.code || '-') + '</strong>' + tisakInfo + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + tipLabel + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);text-align:center;">' + (r.layer || '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + (r.width || '-') + ' cm / ' + (r.grammage || '-') + ' g</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);">' + (r.manufacturer || '-') + '</td>' +
+      '<td style="padding:4px 6px;border-bottom:1px solid var(--remap-grey-bg);text-align:right;">' + r.kg.toFixed(1) + ' kg</td>' +
       '</tr>';
   }).join('');
   var ukupnoKg = Object.values(rollMap).reduce(function(s, r) { return s + r.kg; }, 0);
   var printedCount = Object.values(rollMap).filter(function(r) { return r.source_table === 'prod_inventory_printed'; }).length;
-  var rollHtml = '<h4 style="margin:12px 0 6px 0;color:#1976d2;">📜 Role papira (' + Object.keys(rollMap).length + ' različitih' +
+  var rollHtml = '<h4 style="margin:12px 0 6px 0;color:var(--primary);">📜 Role papira (' + Object.keys(rollMap).length + ' različitih' +
     (printedCount > 0 ? ', od toga ' + printedCount + ' otisnutih' : '') +
     ', ukupno ' + ukupnoKg.toFixed(1) + ' kg)</h4>';
   rollHtml += rollRows
-    ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:left;">Tip</th><th style="padding:6px;text-align:center;">Sloj</th><th style="padding:6px;text-align:left;">Širina/gram.</th><th style="padding:6px;text-align:left;">Proizvođač</th><th style="padding:6px;text-align:right;">Potrošeno</th></tr></thead><tbody>' + rollRows + '</tbody></table>'
-    : '<div style="color:#999;font-style:italic;padding:8px;">Nema evidencije potrošnje (tuber-materijal nije evidentiran)</div>';
+    ? '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--remap-grey-bg);"><th style="padding:6px;text-align:left;">Šifra</th><th style="padding:6px;text-align:left;">Tip</th><th style="padding:6px;text-align:center;">Sloj</th><th style="padding:6px;text-align:left;">Širina/gram.</th><th style="padding:6px;text-align:left;">Proizvođač</th><th style="padding:6px;text-align:right;">Potrošeno</th></tr></thead><tbody>' + rollRows + '</tbody></table>'
+    : '<div style="color:var(--text-lo);font-style:italic;padding:8px;">Nema evidencije potrošnje (tuber-materijal nije evidentiran)</div>';
 
   document.getElementById('traceModalTitle').textContent = '🔍 Sljedivost RN-a: ' + woNumber;
   document.getElementById('traceModalBody').innerHTML = headerHtml + gopHtml + popHtml + rollHtml;
@@ -1678,18 +1657,18 @@ function showPalletPicker(palletNo, gopList) {
     var statusColor = g.status === 'Otpremljeno' ? '#2e7d32' : '#f57c00';
     var query = (g.work_order_number || '') + ' ' + palletNo;
     return '<tr style="cursor:pointer;" onclick="document.getElementById(\'traceInput\').value=\'' + query + '\'; closeModal(\'traceModal\'); traceSearch();">' +
-      '<td style="padding:8px;border-bottom:1px solid #eee;"><strong>' + (g.work_order_number || '-') + '</strong></td>' +
-      '<td style="padding:8px;border-bottom:1px solid #eee;">' + (g.customer_name || '-') + '</td>' +
-      '<td style="padding:8px;border-bottom:1px solid #eee;">' + (g.article_name || '-') + '</td>' +
-      '<td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">' + formatBroj(g.quantity || 0) + '</td>' +
-      '<td style="padding:8px;border-bottom:1px solid #eee;">' + datum + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid var(--border);"><strong>' + (g.work_order_number || '-') + '</strong></td>' +
+      '<td style="padding:8px;border-bottom:1px solid var(--border);">' + (g.customer_name || '-') + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid var(--border);">' + (g.article_name || '-') + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid var(--border);text-align:right;">' + formatBroj(g.quantity || 0) + '</td>' +
+      '<td style="padding:8px;border-bottom:1px solid var(--border);">' + datum + '</td>' +
       '<td style="padding:8px;border-bottom:1px solid #eee;color:' + statusColor + ';font-weight:600;">' + (g.status || '-') + '</td>' +
       '</tr>';
   }).join('');
 
-  var html = '<p style="margin-bottom:10px;color:#666;">Paleta <strong>' + palletNo + '</strong> postoji u ' + gopList.length + ' radnih naloga. Kliknite red za pregled sljedivosti:</p>' +
+  var html = '<p style="margin-bottom:10px;color:var(--text-mid);">Paleta <strong>' + palletNo + '</strong> postoji u ' + gopList.length + ' radnih naloga. Kliknite red za pregled sljedivosti:</p>' +
     '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
-    '<thead><tr style="background:#f5f5f5;"><th style="padding:8px;text-align:left;">RN</th><th style="padding:8px;text-align:left;">Kupac</th><th style="padding:8px;text-align:left;">Artikl</th><th style="padding:8px;text-align:right;">Količina</th><th style="padding:8px;text-align:left;">Datum</th><th style="padding:8px;text-align:left;">Status</th></tr></thead>' +
+    '<thead><tr style="background:var(--remap-grey-bg);"><th style="padding:8px;text-align:left;">RN</th><th style="padding:8px;text-align:left;">Kupac</th><th style="padding:8px;text-align:left;">Artikl</th><th style="padding:8px;text-align:right;">Količina</th><th style="padding:8px;text-align:left;">Datum</th><th style="padding:8px;text-align:left;">Status</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table>';
 
   document.getElementById('traceModalTitle').textContent = '🔍 Više paleta s brojem ' + palletNo;
@@ -1711,7 +1690,7 @@ async function loadLiveCounters() {
     var data = await SB.select('v_machine_counters', { limit: 30 });
 
     if (!data || data.length === 0) {
-      grid.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Nema brojača</div>';
+      grid.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-lo);">Nema brojača</div>';
       return;
     }
 
@@ -1744,8 +1723,8 @@ async function loadLiveCounters() {
       }
 
       var liveDot = isLive
-        ? '<span style="display:inline-block;width:8px;height:8px;background:#4caf50;border-radius:50%;margin-right:6px;"></span>'
-        : '<span style="display:inline-block;width:8px;height:8px;background:#9e9e9e;border-radius:50%;margin-right:6px;"></span>';
+        ? '<span style="display:inline-block;width:8px;height:8px;background:var(--success);border-radius:50%;margin-right:6px;"></span>'
+        : '<span style="display:inline-block;width:8px;height:8px;background:var(--text-lo);border-radius:50%;margin-right:6px;"></span>';
 
       var linija = c.machine_code && c.machine_code.indexOf('WH') >= 0 ? 'WH' : 'NLI';
       var linijaColor = linija === 'WH' ? '#2e7d32' : '#e65100';
@@ -1753,20 +1732,20 @@ async function loadLiveCounters() {
       return '<div style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;background:' + (c.is_active ? '#fff' : '#fafafa') + ';" data-machine="' + c.machine_code + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
         '<div>' + liveDot + '<strong>' + c.machine_code + '</strong> <span style="background:' + linijaColor + ';color:white;padding:1px 6px;border-radius:3px;font-size:0.75em;margin-left:4px;">' + linija + '</span></div>' +
-        '<span style="font-size:0.75em;color:#999;">' + pulseAge + '</span>' +
+        '<span style="font-size:0.75em;color:var(--text-lo);">' + pulseAge + '</span>' +
         '</div>' +
-        '<div style="font-size:0.85em;color:#666;margin-bottom:6px;">' + (c.work_order_number || '(nema aktivnog RN)') + '</div>' +
-        '<div style="font-size:1.4em;font-weight:700;margin-bottom:4px;">' + formatBroj(c.count || 0) + ' <span style="font-size:0.6em;color:#999;font-weight:400;">/ ' + formatBroj(c.target_quantity || 0) + '</span></div>' +
-        '<div style="background:#eee;border-radius:3px;height:6px;overflow:hidden;margin-bottom:4px;">' +
+        '<div style="font-size:0.85em;color:var(--text-mid);margin-bottom:6px;">' + (c.work_order_number || '(nema aktivnog RN)') + '</div>' +
+        '<div style="font-size:1.4em;font-weight:700;margin-bottom:4px;">' + formatBroj(c.count || 0) + ' <span style="font-size:0.6em;color:var(--text-lo);font-weight:400;">/ ' + formatBroj(c.target_quantity || 0) + '</span></div>' +
+        '<div style="background:var(--border);border-radius:3px;height:6px;overflow:hidden;margin-bottom:4px;">' +
         '<div class="dash-bar-fill" style="width:' + pctClamped + '%;background:' + barColor + ';height:100%;transition:width 0.5s;"></div></div>' +
-        '<div style="font-size:0.8em;color:#666;text-align:right;">' + pct.toFixed(1) + '%</div>' +
+        '<div style="font-size:0.8em;color:var(--text-mid);text-align:right;">' + pct.toFixed(1) + '%</div>' +
         '</div>';
     }).join('');
 
     grid.innerHTML = html;
   } catch (e) {
     console.error('loadLiveCounters:', e);
-    grid.innerHTML = '<div style="padding:20px;text-align:center;color:#d32f2f;">Greška učitavanja brojača</div>';
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger);">Greška učitavanja brojača</div>';
   }
 }
 
@@ -1811,7 +1790,7 @@ async function loadOeeSummary() {
     });
 
     if (!data || data.length === 0) {
-      container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Nema OEE podataka za zadnjih 30 dana</div>';
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-lo);">Nema OEE podataka za zadnjih 30 dana</div>';
       return;
     }
 
@@ -1847,35 +1826,38 @@ async function loadOeeSummary() {
       var perf = g.perf / g.count;
       var qual = g.qual / g.count;
 
-      // OEE world-class: 85%, good: 70%, OK: 50%
-      var oeeColor = oee >= 70 ? '#2e7d32' : (oee >= 50 ? '#f57c00' : '#d32f2f');
-      var linijaColor = g.line === 'WH' ? '#2e7d32' : '#e65100';
+      // OEE world-class: 85%, good: 70%, OK: 50% — koristi theme tokens (suptilnije u dark temi)
+      var oeeColor = oee >= 70 ? 'var(--success)' : (oee >= 50 ? 'var(--warning)' : 'var(--danger)');
+      // Linija badge — diskretni glass tint umjesto vibrantne pune boje
+      var linijaBadge = g.line === 'WH'
+        ? 'background: var(--remap-success-bg); color: var(--success); border: 1px solid var(--success);'
+        : 'background: var(--remap-warning-bg); color: var(--warning); border: 1px solid var(--warning);';
 
-      return '<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; background: #fff;">' +
-        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">' +
-        '<span style="font-weight: 600; font-size: 0.95em;">' + g.machine +
-        ' <span style="background: ' + linijaColor + '; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 6px;">' + g.line + '</span></span>' +
-        '<span style="font-size: 0.8em; color: #999;">' + g.count + ' smj.</span>' +
+      return '<div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: var(--bg-card);">' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
+        '<span style="font-weight: 600; font-size: 0.92em; color: var(--text-hi);">' + g.machine +
+        ' <span style="' + linijaBadge + ' padding: 1px 7px; border-radius: 4px; font-size: 0.75em; margin-left: 6px; font-weight: 600;">' + g.line + '</span></span>' +
+        '<span style="font-size: 0.75em; color: var(--text-lo);">' + g.count + ' smj.</span>' +
         '</div>' +
-        '<div style="display:flex; align-items:center; gap:14px; margin-bottom: 12px;">' +
+        '<div style="display:flex; align-items:center; gap:12px; margin-bottom: 10px;">' +
         dashOeeDonut(oee, oeeColor, oee.toFixed(1) + '%') +
-        '<div style="flex:1;"><div style="font-size: 0.7em; color: #999; letter-spacing: 1px; text-transform:uppercase; margin-bottom:4px;">OEE</div>' +
-        '<div style="font-size: 1.6em; font-weight: 700; color: ' + oeeColor + '; line-height: 1.1;">' + oee.toFixed(1) + '%</div></div>' +
+        '<div style="flex:1;"><div style="font-size: 0.65em; color: var(--text-lo); letter-spacing: 1px; text-transform:uppercase; margin-bottom:3px;">OEE</div>' +
+        '<div style="font-size: 1.5em; font-weight: 700; color: ' + oeeColor + '; line-height: 1.1;">' + oee.toFixed(1) + '%</div></div>' +
         '</div>' +
-        '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.8em;">' +
-        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
-        '<div style="color: #666; font-size: 0.9em;">Dostupnost</div><div style="font-weight: 600;">' + av.toFixed(0) + '%</div></div>' +
-        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
-        '<div style="color: #666; font-size: 0.9em;">Performans</div><div style="font-weight: 600;">' + perf.toFixed(0) + '%</div></div>' +
-        '<div style="text-align: center; padding: 6px 4px; background: #f5f5f5; border-radius: 4px;">' +
-        '<div style="color: #666; font-size: 0.9em;">Kvaliteta</div><div style="font-weight: 600;">' + qual.toFixed(0) + '%</div></div>' +
+        '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.75em;">' +
+        '<div style="text-align: center; padding: 5px 4px; background: var(--remap-grey-bg); border-radius: 4px;">' +
+        '<div style="color: var(--text-lo); font-size: 0.9em;">Dostupnost</div><div style="font-weight: 600; color: var(--text-hi);">' + av.toFixed(0) + '%</div></div>' +
+        '<div style="text-align: center; padding: 5px 4px; background: var(--remap-grey-bg); border-radius: 4px;">' +
+        '<div style="color: var(--text-lo); font-size: 0.9em;">Performans</div><div style="font-weight: 600; color: var(--text-hi);">' + perf.toFixed(0) + '%</div></div>' +
+        '<div style="text-align: center; padding: 5px 4px; background: var(--remap-grey-bg); border-radius: 4px;">' +
+        '<div style="color: var(--text-lo); font-size: 0.9em;">Kvaliteta</div><div style="font-weight: 600; color: var(--text-hi);">' + qual.toFixed(0) + '%</div></div>' +
         '</div></div>';
     }).join('');
 
     container.innerHTML = html;
   } catch (e) {
     console.error('loadOeeSummary:', e);
-    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #d32f2f;">Greška učitavanja OEE podataka</div>';
+    container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--danger);">Greška učitavanja OEE podataka</div>';
   }
 }
 
@@ -1901,7 +1883,7 @@ async function loadPodProizvedeniRN() {
 
     if (res.error) {
       console.error('Pod-proizvedeni RN error:', res.error);
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #d32f2f;">Greška: ' + res.error.message + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--danger);">Greška: ' + res.error.message + '</td></tr>';
       return;
     }
 
@@ -1909,7 +1891,7 @@ async function loadPodProizvedeniRN() {
     if (badge) badge.textContent = data.length;
 
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #4caf50;">✅ Svi završeni nalozi u zadnjih 30 dana su u toleranciji</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--success);">✅ Svi završeni nalozi u zadnjih 30 dana su u toleranciji</td></tr>';
       return;
     }
 
@@ -1973,9 +1955,9 @@ async function loadActiveRN() {
         var pctClamped = Math.min(pct, 100);
         var barColor = pct >= 90 ? '#4caf50' : (pct >= 50 ? '#ff9800' : '#f44336');
         var progressHtml = '<div style="min-width: 130px;">' +
-          '<div style="font-size: 0.82em; color: #555; margin-bottom: 2px;">' +
+          '<div style="font-size: 0.82em; color: var(--text-mid); margin-bottom: 2px;">' +
           formatBroj(proizvedeno) + ' / ' + formatBroj(planirano) + ' <strong>(' + pct.toFixed(0) + '%)</strong></div>' +
-          '<div style="background: #eee; border-radius: 3px; height: 6px; overflow: hidden;">' +
+          '<div style="background: var(--border); border-radius: 3px; height: 6px; overflow: hidden;">' +
           '<div class="dash-bar-fill" style="width: ' + pctClamped + '%; background: ' + barColor + '; height: 100%;"></div></div></div>';
 
         tableHtml += '<tr>' +
@@ -1988,7 +1970,7 @@ async function loadActiveRN() {
           '</tr>';
       });
     } else {
-      tableHtml = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Nema aktivnih naloga</td></tr>';
+      tableHtml = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-mid);">Nema aktivnih naloga</td></tr>';
     }
     
     document.getElementById('activeRNTable').innerHTML = tableHtml;
@@ -2010,7 +1992,7 @@ async function loadActiveRN() {
           '</tr>';
       });
     } else {
-      tisakHtml = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #666;">Nema naloga</td></tr>';
+      tisakHtml = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-mid);">Nema naloga</td></tr>';
     }
     
     document.getElementById('activeTisakTable').innerHTML = tisakHtml;
@@ -2078,12 +2060,12 @@ async function ucitajSmjenskaIzvjesca() {
     var result = await query;
     
     if (result.error) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #d32f2f;">Greška: ' + result.error.message + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--danger);">Greška: ' + result.error.message + '</td></tr>';
       return;
     }
     
     if (!result.data || result.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Nema pronađenih izvješća</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--text-mid);">Nema pronađenih izvješća</td></tr>';
       return;
     }
     
@@ -2104,9 +2086,9 @@ async function ucitajSmjenskaIzvjesca() {
       // Boja linije
       var linijaBadge = '';
       if (izv.production_line === 'WH') {
-        linijaBadge = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">WH</span>';
+        linijaBadge = '<span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">WH</span>';
       } else if (izv.production_line === 'NLI') {
-        linijaBadge = '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">NLI</span>';
+        linijaBadge = '<span style="background: var(--warning); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">NLI</span>';
       } else if (izv.production_line === 'Tisak') {
         linijaBadge = '<span style="background: #9c27b0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">Tisak</span>';
       } else {
@@ -2114,14 +2096,14 @@ async function ucitajSmjenskaIzvjesca() {
       }
       
       // Boja smjene
-      var smjenaBadge = '<span style="background: #1976d2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">' + izv.shift_number + '. smjena</span>';
+      var smjenaBadge = '<span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em;">' + izv.shift_number + '. smjena</span>';
       
       // Stroj tip badge
       var strojBadge = '';
       if (izv.machine_type === 'bottomer') {
-        strojBadge = '<span style="background: #1565c0; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Bottomer</span>';
+        strojBadge = '<span style="background: var(--primary); color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Bottomer</span>';
       } else if (izv.machine_type === 'tuber') {
-        strojBadge = '<span style="background: #2e7d32; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Tuber</span>';
+        strojBadge = '<span style="background: var(--success); color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Tuber</span>';
       } else if (izv.machine_type === 'tisak') {
         strojBadge = '<span style="background: #7b1fa2; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">Tisak</span>';
       } else {
@@ -2135,8 +2117,8 @@ async function ucitajSmjenskaIzvjesca() {
       html += '<td style="padding: 10px;">' + strojBadge + '</td>';
       html += '<td style="padding: 10px;">' + (izv.strojar || '-') + '</td>';
       html += '<td style="padding: 10px; font-size: 0.85em; max-width: 150px; overflow: hidden; text-overflow: ellipsis;" title="' + (izv.pomocnici || '') + '">' + (izv.pomocnici || '-') + '</td>';
-      html += '<td style="padding: 10px; font-weight: 600; color: #2e7d32;">' + proizvedeno + '</td>';
-      html += '<td style="padding: 10px; color: #d32f2f;">' + skart + '</td>';
+      html += '<td style="padding: 10px; font-weight: 600; color: var(--success);">' + proizvedeno + '</td>';
+      html += '<td style="padding: 10px; color: var(--danger);">' + skart + '</td>';
       html += '<td style="padding: 10px;">' + brojNaloga + '</td>';
       html += '<td style="padding: 10px;">';
       html += '<button class="btn btn-sm btn-outline" onclick="prikaziDetaljeIzvjesca(\'' + izv.id + '\')" title="Detalji">👁️</button>';
@@ -2147,7 +2129,7 @@ async function ucitajSmjenskaIzvjesca() {
     tbody.innerHTML = html;
     
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #d32f2f;">Greška: ' + e.message + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--danger);">Greška: ' + e.message + '</td></tr>';
   }
 }
 
@@ -2156,7 +2138,7 @@ function resetIzvjescaFilter() {
   document.getElementById('izvjesceSmjena').value = '';
   document.getElementById('izvjesceLinija').value = '';
   document.getElementById('izvjesceStroj').value = '';
-  document.getElementById('izvjescaTableBody').innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Odaberite filtere i kliknite "Traži"</td></tr>';
+  document.getElementById('izvjescaTableBody').innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--text-mid);">Odaberite filtere i kliknite "Traži"</td></tr>';
 }
 
 async function prikaziDetaljeIzvjesca(id) {
@@ -2195,41 +2177,41 @@ async function prikaziDetaljeIzvjesca(id) {
     
     // ADMIN TOOLBAR
     if (isAdmin) {
-      html += '<div style="background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">';
+      html += '<div style="background: var(--remap-warning-bg); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">';
       html += '<span style="color: #e65100; font-weight: 600;">⚙️ Admin način - možete uređivati podatke</span>';
       html += '<button class="btn btn-success" onclick="spremiIzmjeneIzvjesca()" style="padding: 8px 20px;">💾 Spremi izmjene</button>';
       html += '</div>';
     }
     
     // ZAGLAVLJE
-    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
-    html += '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">';
-    html += '<div style="font-size: 0.85em; color: #666;">📅 Datum</div>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 14px;">';
+    html += '<div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">';
+    html += '<div style="font-size: 0.85em; color: var(--text-mid);">📅 Datum</div>';
     html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.shift_date ? new Date(izv.shift_date).toLocaleDateString('hr-HR') : '-') + '</div>';
     html += '</div>';
-    html += '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">';
-    html += '<div style="font-size: 0.85em; color: #666;">🔄 Smjena</div>';
+    html += '<div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--success);">';
+    html += '<div style="font-size: 0.85em; color: var(--text-mid);">🔄 Smjena</div>';
     html += '<div style="font-size: 1.2em; font-weight: 600;">' + izv.shift_number + '. smjena</div>';
     html += '</div>';
-    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">';
-    html += '<div style="font-size: 0.85em; color: #666;">🏭 Linija</div>';
+    html += '<div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--warning);">';
+    html += '<div style="font-size: 0.85em; color: var(--text-mid);">🏭 Linija</div>';
     html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.production_line || '-') + '</div>';
     html += '</div>';
-    html += '<div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0;">';
-    html += '<div style="font-size: 0.85em; color: #666;">⚙️ Stroj</div>';
+    html += '<div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0;">';
+    html += '<div style="font-size: 0.85em; color: var(--text-mid);">⚙️ Stroj</div>';
     html += '<div style="font-size: 1.2em; font-weight: 600;">' + (izv.machine_type || '-') + '</div>';
     html += '</div>';
     html += '</div>';
     
     // POSTAVA (editabilno za admina)
-    html += '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">';
+    html += '<div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 14px;">';
     html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">';
     if (isAdmin) {
-      html += '<div><span style="color: #666;">👷 Strojar:</span> <input type="text" id="editStrojar" value="' + (izv.strojar || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
-      html += '<div><span style="color: #666;">👥 Pomoćnici:</span> <input type="text" id="editPomocnici" value="' + (izv.pomocnici || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
+      html += '<div><span style="color: var(--text-mid);">👷 Strojar:</span> <input type="text" id="editStrojar" value="' + (izv.strojar || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
+      html += '<div><span style="color: var(--text-mid);">👥 Pomoćnici:</span> <input type="text" id="editPomocnici" value="' + (izv.pomocnici || '') + '" class="form-control" style="display: inline-block; width: auto; padding: 5px 10px; margin-left: 5px;"></div>';
     } else {
-      html += '<div><span style="color: #666;">👷 Strojar:</span> <strong>' + (izv.strojar || '-') + '</strong></div>';
-      html += '<div><span style="color: #666;">👥 Pomoćnici:</span> <strong>' + (izv.pomocnici || '-') + '</strong></div>';
+      html += '<div><span style="color: var(--text-mid);">👷 Strojar:</span> <strong>' + (izv.strojar || '-') + '</strong></div>';
+      html += '<div><span style="color: var(--text-mid);">👥 Pomoćnici:</span> <strong>' + (izv.pomocnici || '-') + '</strong></div>';
     }
     html += '</div>';
     html += '</div>';
@@ -2242,12 +2224,12 @@ async function prikaziDetaljeIzvjesca(id) {
       html += '<thead><tr style="background: #1e3a5f; color: white;">';
       html += '<th style="padding: 8px; text-align: left;">RN</th>';
       html += '<th style="padding: 8px; text-align: left;">Opis</th>';
-      html += '<th style="padding: 8px; text-align: right; background: #2e7d32;">Kom</th>';
-      html += '<th style="padding: 8px; text-align: right; background: #c62828;">Škart</th>';
-      html += '<th style="padding: 8px; text-align: right; background: #1565c0;">Rad</th>';
-      html += '<th style="padding: 8px; text-align: right; background: #f57c00;">Kvar</th>';
+      html += '<th style="padding: 8px; text-align: right; background: var(--success);">Kom</th>';
+      html += '<th style="padding: 8px; text-align: right; background: var(--danger);">Škart</th>';
+      html += '<th style="padding: 8px; text-align: right; background: var(--primary);">Rad</th>';
+      html += '<th style="padding: 8px; text-align: right; background: var(--warning);">Kvar</th>';
       html += '<th style="padding: 8px; text-align: right; background: #ad1457;">Preštel.</th>';
-      html += '<th style="padding: 8px; text-align: right; background: #00796b;">Ček.tulj.</th>';
+      html += '<th style="padding: 8px; text-align: right; background: var(--success);">Ček.tulj.</th>';
       html += '<th style="padding: 8px; text-align: right; background: #5d4037;">Van str.</th>';
       html += '<th style="padding: 8px; text-align: right; background: #546e7a;">Čekanje</th>';
       html += '<th style="padding: 8px; text-align: right; background: #3f51b5;">Čišćenje</th>';
@@ -2257,39 +2239,39 @@ async function prikaziDetaljeIzvjesca(id) {
       reportData.nalozi.forEach(function(n, i) {
         var bgColor = i % 2 === 0 ? '#ffffff' : '#f9f9f9';
         html += '<tr style="background: ' + bgColor + ';" data-index="' + i + '">';
-        html += '<td style="padding: 6px; border-bottom: 1px solid #eee; font-weight: 600; color: #1565c0;">' + (n.rn || '-') + '</td>';
-        html += '<td style="padding: 6px; border-bottom: 1px solid #eee; max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;" title="' + (n.opis || '') + '">' + (n.opis || '-') + '</td>';
+        html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--primary);">' + (n.rn || '-') + '</td>';
+        html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;" title="' + (n.opis || '') + '">' + (n.opis || '-') + '</td>';
         
         if (isAdmin) {
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-kom" data-index="' + i + '" value="' + (n.kom || 0) + '" onchange="izracunajUkupnoIzvjesca()" style="width: 70px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-skart" data-index="' + i + '" value="' + (n.skart || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-rad" data-index="' + i + '" value="' + (n.rad || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-kvar" data-index="' + i + '" value="' + (n.kvar || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-prestelavanje" data-index="' + i + '" value="' + (n.prestelavanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-cekanje_tuljke" data-index="' + i + '" value="' + (n.cekanje_tuljke || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-van_stroja" data-index="' + i + '" value="' + (n.van_stroja || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-cekanje" data-index="' + i + '" value="' + (n.cekanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
-          html += '<td style="padding: 4px; border-bottom: 1px solid #eee;"><input type="number" class="edit-input edit-ciscenje" data-index="' + i + '" value="' + (n.ciscenje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-kom" data-index="' + i + '" value="' + (n.kom || 0) + '" onchange="izracunajUkupnoIzvjesca()" style="width: 70px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-skart" data-index="' + i + '" value="' + (n.skart || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-rad" data-index="' + i + '" value="' + (n.rad || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-kvar" data-index="' + i + '" value="' + (n.kvar || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-prestelavanje" data-index="' + i + '" value="' + (n.prestelavanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-cekanje_tuljke" data-index="' + i + '" value="' + (n.cekanje_tuljke || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-van_stroja" data-index="' + i + '" value="' + (n.van_stroja || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-cekanje" data-index="' + i + '" value="' + (n.cekanje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
+          html += '<td style="padding: 4px; border-bottom: 1px solid var(--border);"><input type="number" class="edit-input edit-ciscenje" data-index="' + i + '" value="' + (n.ciscenje || 0) + '" step="0.1" onchange="izracunajUkupnoIzvjesca()" style="width: 55px; padding: 4px; text-align: right;"></td>';
         } else {
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600; color: #2e7d32;">' + (n.kom || 0).toLocaleString() + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; color: #c62828;">' + (n.skart || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.rad || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.kvar || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.prestelavanje || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.cekanje_tuljke || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.van_stroja || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.cekanje || 0) + '</td>';
-          html += '<td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right;">' + (n.ciscenje || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right; font-weight: 600; color: var(--success);">' + (n.kom || 0).toLocaleString() + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right; color: var(--danger);">' + (n.skart || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.rad || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.kvar || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.prestelavanje || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.cekanje_tuljke || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.van_stroja || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.cekanje || 0) + '</td>';
+          html += '<td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">' + (n.ciscenje || 0) + '</td>';
         }
         html += '</tr>';
       });
       
       // UKUPNO redak
       var u = reportData.ukupno || {};
-      html += '<tr style="background: #e3f2fd; font-weight: 600;">';
+      html += '<tr style="background: var(--remap-info-bg); font-weight: 600;">';
       html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f;" colspan="2"><strong>UKUPNO:</strong></td>';
-      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: #2e7d32;" id="ukupnoKom">' + (u.kom || 0).toLocaleString() + '</td>';
-      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: #c62828;" id="ukupnoSkart">' + (u.skart || 0) + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: var(--success);" id="ukupnoKom">' + (u.kom || 0).toLocaleString() + '</td>';
+      html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right; color: var(--danger);" id="ukupnoSkart">' + (u.skart || 0) + '</td>';
       html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoRad">' + (u.rad || 0) + '</td>';
       html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoKvar">' + (u.kvar || 0) + '</td>';
       html += '<td style="padding: 8px; border-top: 2px solid #1e3a5f; text-align: right;" id="ukupnoPrestelavanje">' + (u.prestelavanje || 0) + '</td>';
@@ -2306,19 +2288,19 @@ async function prikaziDetaljeIzvjesca(id) {
     // NAPOMENA (editabilna za admina)
     html += '<h4 style="margin: 20px 0 10px; color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 5px;">📝 Napomena</h4>';
     if (isAdmin) {
-      html += '<textarea id="editNapomena" class="form-control" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">' + (izv.napomena || '') + '</textarea>';
+      html += '<textarea id="editNapomena" class="form-control" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">' + (izv.napomena || '') + '</textarea>';
     } else {
-      html += '<div style="background: #fffde7; padding: 15px; border-radius: 8px; border-left: 4px solid #fbc02d; white-space: pre-wrap;">' + (izv.napomena || '-') + '</div>';
+      html += '<div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #fbc02d; white-space: pre-wrap;">' + (izv.napomena || '-') + '</div>';
     }
     
     // META INFO
-    html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.8em; color: #999;">';
+    html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 0.8em; color: var(--text-lo);">';
     html += '🕐 Kreirano: ' + (izv.created_at ? new Date(izv.created_at).toLocaleString('hr-HR') : '-');
     html += '</div>';
     
     // ADMIN GUMB NA DNU
     if (isAdmin) {
-      html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: right;">';
+      html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); text-align: right;">';
       html += '<button class="btn btn-outline" onclick="zatvoriIzvjesceModal()" style="margin-right: 10px;">Odustani</button>';
       html += '<button class="btn btn-success" onclick="spremiIzmjeneIzvjesca()" style="padding: 10px 30px;">💾 Spremi izmjene</button>';
       html += '</div>';
@@ -2503,28 +2485,28 @@ function prikaziKvarDetalje(index) {
   
   // Opis kvara
   html += '<div style="margin-top: 20px;">';
-  html += '<h4 style="margin-bottom: 10px; color: #333;">📝 Opis kvara</h4>';
-  html += '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + (kvar.description || 'Nema opisa') + '</div>';
+  html += '<h4 style="margin-bottom: 10px; color: var(--text-hi);">📝 Opis kvara</h4>';
+  html += '<div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + (kvar.description || 'Nema opisa') + '</div>';
   html += '</div>';
   
   // Ako ima rješenje
   if (kvar.resolution) {
     html += '<div style="margin-top: 20px;">';
-    html += '<h4 style="margin-bottom: 10px; color: #4caf50;">✅ Rješenje</h4>';
-    html += '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.resolution + '</div>';
+    html += '<h4 style="margin-bottom: 10px; color: var(--success);">✅ Rješenje</h4>';
+    html += '<div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.resolution + '</div>';
     html += '</div>';
   }
   
   // Ako ima napomene
   if (kvar.notes) {
     html += '<div style="margin-top: 20px;">';
-    html += '<h4 style="margin-bottom: 10px; color: #1976d2;">📋 Napomene</h4>';
-    html += '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.notes + '</div>';
+    html += '<h4 style="margin-bottom: 10px; color: var(--primary);">📋 Napomene</h4>';
+    html += '<div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; white-space: pre-wrap;">' + kvar.notes + '</div>';
     html += '</div>';
   }
   
   // Dodatne informacije
-  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.85em; color: #666;">';
+  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-mid);">';
   if (kvar.assigned_to) html += '<div>👤 Dodijeljeno: ' + kvar.assigned_to + '</div>';
   if (kvar.downtime_minutes) html += '<div>⏱️ Vrijeme zastoja: ' + kvar.downtime_minutes + ' min</div>';
   if (kvar.source_module) html += '<div>📍 Izvor: ' + kvar.source_module + '</div>';
@@ -2551,26 +2533,26 @@ function prikaziKontrolaDetalje(index) {
   var html = '';
   
   // Header info
-  html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #1976d2;">';
+  html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 15px; border-bottom: 2px solid var(--primary);">';
   html += '<div>';
-  html += '<div style="font-size: 0.85em; color: #666;">Radni nalog</div>';
-  html += '<div style="font-size: 1.3em; font-weight: 700; color: #1565c0;">' + (k.work_order_number || '-') + '</div>';
+  html += '<div style="font-size: 0.85em; color: var(--text-mid);">Radni nalog</div>';
+  html += '<div style="font-size: 1.3em; font-weight: 700; color: var(--primary);">' + (k.work_order_number || '-') + '</div>';
   html += '</div>';
   html += '<div style="text-align: right;">';
   html += '<span style="background: ' + linijaColor + '; color: white; padding: 4px 12px; border-radius: 4px; font-weight: 600;">' + (k.production_line || '-') + '</span>';
-  html += '<div style="margin-top: 5px; font-size: 0.85em; color: #666;">' + (k.shift_number || '-') + '. smjena</div>';
+  html += '<div style="margin-top: 5px; font-size: 0.85em; color: var(--text-mid);">' + (k.shift_number || '-') + '. smjena</div>';
   html += '</div>';
   html += '</div>';
   
   // Artikl
-  html += '<div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 20px;">';
-  html += '<div style="font-size: 0.85em; color: #666;">Artikl</div>';
+  html += '<div style="background: var(--remap-grey-bg); padding: 12px; border-radius: 8px; margin-bottom: 14px;">';
+  html += '<div style="font-size: 0.85em; color: var(--text-mid);">Artikl</div>';
   html += '<div style="font-weight: 600;">' + (k.article_name || '-') + '</div>';
-  if (k.article_code) html += '<div style="font-size: 0.85em; color: #888;">Šifra: ' + k.article_code + '</div>';
+  if (k.article_code) html += '<div style="font-size: 0.85em; color: var(--text-lo);">Šifra: ' + k.article_code + '</div>';
   html += '</div>';
   
   // Dimenzije
-  html += '<h4 style="margin-bottom: 10px; color: #333;">📏 Izmjerene dimenzije</h4>';
+  html += '<h4 style="margin-bottom: 10px; color: var(--text-hi);">📏 Izmjerene dimenzije</h4>';
   html += '<div class="detalji-grid">';
   html += '<div class="detalji-item"><div class="detalji-label">Dužina vreće (mm)</div><div class="detalji-value">' + (k.duzina_vrece || '-') + '</div></div>';
   html += '<div class="detalji-item"><div class="detalji-label">Širina vreće (mm)</div><div class="detalji-value">' + (k.sirina_vrece || '-') + '</div></div>';
@@ -2583,7 +2565,7 @@ function prikaziKontrolaDetalje(index) {
   html += '</div>';
   
   // Kontrole kvalitete
-  html += '<h4 style="margin: 20px 0 10px; color: #333;">✅ Kontrole kvalitete</h4>';
+  html += '<h4 style="margin: 20px 0 10px; color: var(--text-hi);">✅ Kontrole kvalitete</h4>';
   html += '<div class="detalji-grid">';
   
   var kontrolePolja = [
@@ -2610,12 +2592,12 @@ function prikaziKontrolaDetalje(index) {
   if (k.odstupanja) {
     html += '<div style="margin-top: 20px;">';
     html += '<h4 style="margin-bottom: 10px; color: #e65100;">⚠️ Zabilježena odstupanja</h4>';
-    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #e65100; white-space: pre-wrap;">' + k.odstupanja + '</div>';
+    html += '<div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #e65100; white-space: pre-wrap;">' + k.odstupanja + '</div>';
     html += '</div>';
   }
   
   // Meta info
-  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.85em; color: #666;">';
+  html += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-mid);">';
   html += '<div>👤 Kontrolor: ' + (k.kontrolor || '-') + '</div>';
   html += '<div>🕐 Vrijeme: ' + datum + '</div>';
   html += '</div>';

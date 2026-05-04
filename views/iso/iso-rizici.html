@@ -1,0 +1,511 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-globe svg-icon-lg"></span>
+  Registar rizika (OB_18)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Procjena: vjerojatnost (1–3) × posljedica (1–3) = score (1–9). Veliki rizici (≥6) zahtijevaju obavezne mjere.
+  <strong>ISO 9001:2026</strong> traži uključivanje klimatskih rizika u kontekst organizacije.
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-globe svg-icon-lg"></span></div>
+    <div class="status-card-value" id="riskKpiTotal">-</div>
+    <div class="status-card-label">Ukupno rizika</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="riskKpiBig">-</div>
+    <div class="status-card-label">Veliki (≥6)</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-target svg-icon-lg"></span></div>
+    <div class="status-card-value" id="riskKpiMid">-</div>
+    <div class="status-card-label">Srednji (3–5)</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="riskKpiSmall">-</div>
+    <div class="status-card-label">Mali (1–2)</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="riskFilterSearch" placeholder="Pretraga..." class="doc-input">
+    <select id="riskFilterArea" class="doc-input">
+      <option value="">Sva područja</option>
+      <option value="repromaterijal">Repromaterijal</option>
+      <option value="usluga_treci">Usluge trećih lica</option>
+      <option value="gotov_proizvod">Gotovi proizvodi</option>
+      <option value="u_proizvodnji">U proizvodnji</option>
+      <option value="skladiste">Skladište</option>
+      <option value="administracija">Administracija</option>
+      <option value="odrzavanje">Održavanje</option>
+      <option value="dnevna_kontrola">Dnevna kontrola</option>
+      <option value="klimatski">Klimatski (ISO 9001:2026)</option>
+    </select>
+    <select id="riskFilterStatus" class="doc-input">
+      <option value="">Svi statusi</option>
+      <option value="Aktivan" selected>Aktivan</option>
+      <option value="Pod_pracenjem">Pod praćenjem</option>
+      <option value="Mitigiran">Mitigiran</option>
+      <option value="Otkazan">Otkazan</option>
+    </select>
+    <select id="riskFilterScore" class="doc-input">
+      <option value="">Sve ocjene</option>
+      <option value="big">Veliki (≥6)</option>
+      <option value="mid">Srednji (3–5)</option>
+      <option value="small">Mali (1–2)</option>
+    </select>
+  </div>
+  <button class="btn-primary doc-btn-add" onclick="riskOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi rizik
+  </button>
+</div>
+
+<!-- RISK MATRIX (vizualna 3×3) -->
+<div class="iso-card" style="margin-bottom: 16px;">
+  <div style="display:flex; align-items:flex-start; gap: 20px; flex-wrap: wrap;">
+    <div>
+      <h3 style="margin: 0 0 8px; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Matrica rizika</h3>
+      <table class="risk-matrix">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Malo štetno (1)</th>
+            <th>Srednje štetno (2)</th>
+            <th>Izrazito štetno (3)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Vrlo vjerojatno (3)</th>
+            <td class="rm-mid"><span id="rmCnt-3-1">0</span></td>
+            <td class="rm-big"><span id="rmCnt-3-2">0</span></td>
+            <td class="rm-big"><span id="rmCnt-3-3">0</span></td>
+          </tr>
+          <tr>
+            <th>Vjerojatno (2)</th>
+            <td class="rm-small"><span id="rmCnt-2-1">0</span></td>
+            <td class="rm-mid"><span id="rmCnt-2-2">0</span></td>
+            <td class="rm-big"><span id="rmCnt-2-3">0</span></td>
+          </tr>
+          <tr>
+            <th>Malo vjerojatno (1)</th>
+            <td class="rm-small"><span id="rmCnt-1-1">0</span></td>
+            <td class="rm-small"><span id="rmCnt-1-2">0</span></td>
+            <td class="rm-mid"><span id="rmCnt-1-3">0</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="flex: 1; min-width: 240px;">
+      <h3 style="margin: 0 0 8px; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Legenda</h3>
+      <div style="font-size: 12px; line-height: 1.7;">
+        <div><span class="rm-pill rm-small">1–2</span> <strong>Mali rizik</strong> — nije obavezna mjera, samo pratiti</div>
+        <div><span class="rm-pill rm-mid">3–5</span> <strong>Srednji rizik</strong> — Direktor i PUK procjenjuju mjeru</div>
+        <div><span class="rm-pill rm-big">6–9</span> <strong>Veliki rizik</strong> — <em>obavezna preventivna mjera</em></div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--text-lo);">
+          Auditor će tražiti dokaz mjera za sve rizike s score ≥ 6.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Br.</th>
+        <th>Područje</th>
+        <th>Rizik</th>
+        <th>Vj.</th>
+        <th>Pos.</th>
+        <th>Score</th>
+        <th>Status</th>
+        <th>Vlasnik</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="riskTableBody">
+      <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="riskModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="riskModalTitle">Novi rizik</h3>
+      <button class="doc-modal-close" onclick="riskCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="riskFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Područje *</label>
+          <select id="riskFArea" class="doc-input">
+            <option value="repromaterijal">Repromaterijal</option>
+            <option value="usluga_treci">Usluge trećih lica</option>
+            <option value="gotov_proizvod">Gotovi proizvodi</option>
+            <option value="u_proizvodnji" selected>U proizvodnji</option>
+            <option value="skladiste">Skladište</option>
+            <option value="administracija">Administracija</option>
+            <option value="odrzavanje">Održavanje</option>
+            <option value="dnevna_kontrola">Dnevna kontrola</option>
+            <option value="klimatski">Klimatski (ISO 9001:2026)</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Status</label>
+          <select id="riskFStatus" class="doc-input">
+            <option value="Aktivan" selected>Aktivan</option>
+            <option value="Pod_pracenjem">Pod praćenjem</option>
+            <option value="Mitigiran">Mitigiran</option>
+            <option value="Otkazan">Otkazan</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis rizika *</label>
+        <textarea id="riskFDescription" rows="2" class="doc-input" placeholder="Što je rizik (jedna rečenica)"></textarea>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Vjerojatnost *</label>
+          <select id="riskFProbability" class="doc-input" onchange="riskUpdateScore()">
+            <option value="1">1 — Malo vjerojatno</option>
+            <option value="2" selected>2 — Vjerojatno</option>
+            <option value="3">3 — Vrlo vjerojatno</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Posljedica (štetnost) *</label>
+          <select id="riskFSeverity" class="doc-input" onchange="riskUpdateScore()">
+            <option value="1">1 — Malo štetno</option>
+            <option value="2" selected>2 — Srednje štetno</option>
+            <option value="3">3 — Izrazito štetno</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Score (auto)</label>
+          <div id="riskFScoreDisplay" style="font-size: 22px; font-weight: 700; padding: 6px 12px; border-radius: 6px; text-align: center;">4 (Srednji rizik)</div>
+        </div>
+        <div class="doc-field">
+          <label>Vlasnik (zaposlenik)</label>
+          <select id="riskFOwner" class="doc-input">
+            <option value="">— bez vlasnika —</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Odgovorna uloga</label>
+        <input type="text" id="riskFRole" class="doc-input" placeholder="Član uprave za nabavu, Voditelj proizvodnje...">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Preventivne mjere</label>
+        <textarea id="riskFPreventive" rows="3" class="doc-input" placeholder="Konkretni koraci za smanjenje vjerojatnosti / posljedice"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Plan smanjenja rizika (mitigation)</label>
+        <textarea id="riskFMitigation" rows="2" class="doc-input" placeholder="Akcijski plan ako se rizik realizira"></textarea>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Zadnja revizija</label>
+          <input type="date" id="riskFLastReview" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Sljedeća revizija</label>
+          <input type="date" id="riskFNextReview" class="doc-input">
+        </div>
+      </div>
+      <div id="riskModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="riskCloseModal()">Odustani</button>
+      <button class="btn-primary" id="riskSaveBtn" onclick="riskSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.risk-matrix { border-collapse: collapse; font-size: 12px; }
+.risk-matrix th, .risk-matrix td { border: 1px solid #d0d0d0; padding: 10px 14px; text-align: center; }
+.risk-matrix thead th { background: #f5f5f5; font-weight: 600; }
+.risk-matrix tbody th { background: #fafafa; text-align: left; font-weight: 600; }
+.risk-matrix td { font-weight: 700; font-size: 16px; cursor: default; min-width: 60px; }
+.rm-small { background: #e8f5e9; color: #2e7d32; }
+.rm-mid { background: #fff8e1; color: #f57f17; }
+.rm-big { background: #ffebee; color: #c62828; }
+
+.rm-pill { display: inline-block; min-width: 30px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; text-align: center; margin-right: 6px; }
+
+.risk-area { background: #ede7f6; color: #5e35b1; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.risk-area-klimatski { background: #e0f7fa; color: #00838f; }
+
+.risk-score-cell { font-weight: 700; padding: 4px 10px; border-radius: 12px; display: inline-block; min-width: 40px; text-align: center; }
+.risk-score-small { background: #e8f5e9; color: #2e7d32; }
+.risk-score-mid { background: #fff8e1; color: #f57f17; }
+.risk-score-big { background: #ffebee; color: #c62828; }
+
+.risk-status-Aktivan { background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.risk-status-Pod_pracenjem { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.risk-status-Mitigiran { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.risk-status-Otkazan { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+</style>
+
+<script>
+(async function initIsoRiziciView() {
+  console.log('[iso-rizici] init');
+  let allRisks = [], allEmployees = [];
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+
+  function scoreCls(score) {
+    if (score >= 6) return 'risk-score-big';
+    if (score >= 3) return 'risk-score-mid';
+    return 'risk-score-small';
+  }
+  function scoreLabel(score) {
+    if (score >= 6) return 'Veliki';
+    if (score >= 3) return 'Srednji';
+    return 'Mali';
+  }
+  function areaLabels(a) {
+    const m = {
+      'repromaterijal':'Repromaterijal','usluga_treci':'Usluge trećih','gotov_proizvod':'Gotovi proizvodi',
+      'u_proizvodnji':'U proizvodnji','skladiste':'Skladište','administracija':'Administracija',
+      'odrzavanje':'Održavanje','dnevna_kontrola':'Dnevna kontrola','klimatski':'Klimatski'
+    };
+    return m[a] || a;
+  }
+
+  // ========== KPI + Matrica ==========
+  function computeKpi() {
+    document.getElementById('riskKpiTotal').textContent = allRisks.length;
+    document.getElementById('riskKpiBig').textContent = allRisks.filter(r => r.score >= 6).length;
+    document.getElementById('riskKpiMid').textContent = allRisks.filter(r => r.score >= 3 && r.score < 6).length;
+    document.getElementById('riskKpiSmall').textContent = allRisks.filter(r => r.score < 3).length;
+
+    // Matrica counts
+    const counts = {};
+    for (let p = 1; p <= 3; p++) {
+      for (let s = 1; s <= 3; s++) counts[`${p}-${s}`] = 0;
+    }
+    allRisks.forEach(r => {
+      const key = `${r.probability}-${r.severity}`;
+      if (counts[key] !== undefined) counts[key]++;
+    });
+    Object.entries(counts).forEach(([k, v]) => {
+      const el = document.getElementById('rmCnt-' + k);
+      if (el) el.textContent = v;
+    });
+  }
+
+  // ========== EMPLOYEES ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true }, columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' }, silent: true
+      });
+      const sel = document.getElementById('riskFOwner');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option'); opt.value = e.id;
+        opt.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== TABLE ==========
+  function applyFilters() {
+    const q = document.getElementById('riskFilterSearch').value.trim().toLowerCase();
+    const area = document.getElementById('riskFilterArea').value;
+    const status = document.getElementById('riskFilterStatus').value;
+    const score = document.getElementById('riskFilterScore').value;
+    return allRisks.filter(r => {
+      if (q && !((r.risk_number + ' ' + (r.risk_description||'') + ' ' + (r.preventive_measures||'')).toLowerCase().includes(q))) return false;
+      if (area && r.area !== area) return false;
+      if (status && r.status !== status) return false;
+      if (score === 'big' && r.score < 6) return false;
+      if (score === 'mid' && (r.score < 3 || r.score >= 6)) return false;
+      if (score === 'small' && r.score >= 3) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('riskTableBody');
+    const filtered = applyFilters().sort((a, b) => (b.score - a.score) || (a.area || '').localeCompare(b.area || ''));
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema rizika po filteru. Klikni "Novi rizik" da dodaš prvi.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(r => {
+      const owner = allEmployees.find(e => e.id === r.owner_employee_id);
+      const ownerName = owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() : (r.responsible_role || '<span style="color:var(--text-lo);">—</span>');
+      const areaCls = r.area === 'klimatski' ? 'risk-area risk-area-klimatski' : 'risk-area';
+      return `
+        <tr>
+          <td><strong>${r.risk_number || '—'}</strong></td>
+          <td><span class="${areaCls}">${areaLabels(r.area)}</span></td>
+          <td style="max-width: 320px;">${escapeHtml(r.risk_description)}</td>
+          <td style="text-align:center;">${r.probability}</td>
+          <td style="text-align:center;">${r.severity}</td>
+          <td><span class="risk-score-cell ${scoreCls(r.score)}">${r.score} ${scoreLabel(r.score)}</span></td>
+          <td><span class="risk-status-${r.status || 'Aktivan'}">${(r.status || 'Aktivan').replace('_',' ')}</span></td>
+          <td style="font-size:12px;">${escapeHtml(ownerName)}</td>
+          <td>
+            <button class="doc-action-btn" onclick="riskOpenEdit('${r.id}')" title="Uredi"><span class="svg-icon svg-icon-pencil"></span></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadRisks() {
+    try {
+      allRisks = await SB.select('iso_risks', { silent: true });
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('riskTableBody').innerHTML = `<tr><td colspan="9" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['riskFilterSearch','riskFilterArea','riskFilterStatus','riskFilterScore'].forEach(id =>
+    document.getElementById(id).addEventListener('input', renderTable)
+  );
+
+  // ========== MODAL ==========
+  window.riskUpdateScore = function() {
+    const p = parseInt(document.getElementById('riskFProbability').value);
+    const s = parseInt(document.getElementById('riskFSeverity').value);
+    const score = p * s;
+    const display = document.getElementById('riskFScoreDisplay');
+    const cls = score >= 6 ? 'risk-score-big' : score >= 3 ? 'risk-score-mid' : 'risk-score-small';
+    const lbl = score >= 6 ? 'Veliki rizik (obavezna mjera!)' : score >= 3 ? 'Srednji rizik' : 'Mali rizik';
+    display.className = '';
+    display.textContent = `${score} — ${lbl}`;
+    if (score >= 6) display.style.cssText = 'font-size:18px; font-weight:700; padding:6px 12px; border-radius:6px; text-align:center; background:#ffebee; color:#c62828;';
+    else if (score >= 3) display.style.cssText = 'font-size:18px; font-weight:700; padding:6px 12px; border-radius:6px; text-align:center; background:#fff8e1; color:#f57f17;';
+    else display.style.cssText = 'font-size:18px; font-weight:700; padding:6px 12px; border-radius:6px; text-align:center; background:#e8f5e9; color:#2e7d32;';
+  };
+
+  window.riskOpenAddModal = function() {
+    document.getElementById('riskModalTitle').textContent = 'Novi rizik';
+    document.getElementById('riskFId').value = '';
+    document.getElementById('riskFArea').value = 'u_proizvodnji';
+    document.getElementById('riskFStatus').value = 'Aktivan';
+    document.getElementById('riskFDescription').value = '';
+    document.getElementById('riskFProbability').value = '2';
+    document.getElementById('riskFSeverity').value = '2';
+    document.getElementById('riskFOwner').value = '';
+    document.getElementById('riskFRole').value = '';
+    document.getElementById('riskFPreventive').value = '';
+    document.getElementById('riskFMitigation').value = '';
+    document.getElementById('riskFLastReview').value = '';
+    document.getElementById('riskFNextReview').value = '';
+    document.getElementById('riskModalError').style.display = 'none';
+    riskUpdateScore();
+    document.getElementById('riskModal').style.display = 'flex';
+  };
+
+  window.riskOpenEdit = function(id) {
+    const r = allRisks.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('riskModalTitle').textContent = `Uredi ${r.risk_number || 'rizik'}`;
+    document.getElementById('riskFId').value = id;
+    document.getElementById('riskFArea').value = r.area;
+    document.getElementById('riskFStatus').value = r.status || 'Aktivan';
+    document.getElementById('riskFDescription').value = r.risk_description || '';
+    document.getElementById('riskFProbability').value = r.probability;
+    document.getElementById('riskFSeverity').value = r.severity;
+    document.getElementById('riskFOwner').value = r.owner_employee_id || '';
+    document.getElementById('riskFRole').value = r.responsible_role || '';
+    document.getElementById('riskFPreventive').value = r.preventive_measures || '';
+    document.getElementById('riskFMitigation').value = r.mitigation_plan || '';
+    document.getElementById('riskFLastReview').value = r.last_review_at || '';
+    document.getElementById('riskFNextReview').value = r.next_review_date || '';
+    document.getElementById('riskModalError').style.display = 'none';
+    riskUpdateScore();
+    document.getElementById('riskModal').style.display = 'flex';
+  };
+
+  window.riskCloseModal = function() {
+    document.getElementById('riskModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('riskModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.riskSave = async function() {
+    const btn = document.getElementById('riskSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const desc = document.getElementById('riskFDescription').value.trim();
+      if (!desc) throw new Error('Opis rizika je obavezan');
+
+      const data = {
+        area: document.getElementById('riskFArea').value,
+        risk_description: desc,
+        probability: parseInt(document.getElementById('riskFProbability').value),
+        severity: parseInt(document.getElementById('riskFSeverity').value),
+        status: document.getElementById('riskFStatus').value,
+        owner_employee_id: document.getElementById('riskFOwner').value || null,
+        responsible_role: document.getElementById('riskFRole').value.trim() || null,
+        preventive_measures: document.getElementById('riskFPreventive').value.trim() || null,
+        mitigation_plan: document.getElementById('riskFMitigation').value.trim() || null,
+        last_review_at: document.getElementById('riskFLastReview').value || null,
+        next_review_date: document.getElementById('riskFNextReview').value || null,
+        updated_at: new Date().toISOString()
+      };
+
+      const id = document.getElementById('riskFId').value;
+      if (id) {
+        await SB.update('iso_risks', data, { id });
+      } else {
+        const { data: numData, error: numErr } = await initSupabase().rpc('iso_next_risk_number');
+        if (numErr) throw new Error('Generiranje broja: ' + numErr.message);
+        data.risk_number = numData;
+        await SB.insert('iso_risks', data);
+      }
+      riskCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Rizik ažuriran' : 'Rizik dodan', 'success');
+      await loadRisks();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  document.getElementById('riskModal').addEventListener('click', e => {
+    if (e.target.id === 'riskModal') riskCloseModal();
+  });
+
+  await Promise.all([loadEmployees(), loadRisks()]);
+  console.log('[iso-rizici] ready');
+})();
+</script>

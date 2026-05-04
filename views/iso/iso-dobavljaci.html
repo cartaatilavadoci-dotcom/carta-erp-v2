@@ -1,0 +1,457 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-building-2 svg-icon-lg"></span>
+  Ocjena dobavljača (OB_10)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Auto-bodovanje 1–3 po dimenziji (kvaliteta / rok / cijena). Sustav predlaže ocjenu iz proizvodnih podataka,
+  PUK potvrdi/promijeni i potpiše. <strong>Auditor godinama traži ovo</strong> — sad je rješeno.
+</div>
+
+<!-- YEAR SWITCHER -->
+<div style="display: flex; gap: 6px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;">
+  <span style="font-size: 13px; color: var(--text-mid);">Godina:</span>
+  <div id="supYearTabs" style="display: flex; gap: 4px;"></div>
+  <button class="btn-secondary" style="margin-left: auto; font-size: 12px;" onclick="supRefreshAuto()">
+    <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Osvježi auto-bodovanje za godinu
+  </button>
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-building-2 svg-icon-lg"></span></div>
+    <div class="status-card-value" id="supKpiTotal">-</div>
+    <div class="status-card-label">Aktivni dobavljači</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="supKpiA">-</div>
+    <div class="status-card-label">A klasa (8–9)</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-target svg-icon-lg"></span></div>
+    <div class="status-card-value" id="supKpiB">-</div>
+    <div class="status-card-label">B klasa (5–7)</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="supKpiC">-</div>
+    <div class="status-card-label">C klasa (1–4)</div>
+  </div>
+</div>
+
+<!-- TABLICA AUTO-METRIKE + BODOVANJA -->
+<h2 class="iso-section-title-h2">
+  <span class="svg-icon svg-icon-bot"></span> Auto-metrika i bodovanje za <span id="supYearLabel">2026</span>
+</h2>
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Dobavljač</th>
+        <th>Isporuka</th>
+        <th>Reklamacija</th>
+        <th>Kašnjenja</th>
+        <th>Ukupno (kg)</th>
+        <th>Kvaliteta</th>
+        <th>Rok</th>
+        <th>Cijena</th>
+        <th>Total</th>
+        <th>Klasa</th>
+        <th>Potpisano</th>
+        <th style="width: 80px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="supTableBody">
+      <tr><td colspan="12" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- BODOVANJE MODAL -->
+<div id="supModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal" style="max-width: 640px;">
+    <div class="doc-modal-header">
+      <h3 id="supModalTitle">Bodovanje dobavljača</h3>
+      <button class="doc-modal-close" onclick="supCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="supFEvalId">
+      <input type="hidden" id="supFSupplierName">
+      <input type="hidden" id="supFYear">
+
+      <div style="background:#f0f4f8; padding:12px; border-radius:6px; margin-bottom:14px;">
+        <strong id="supModalSupplier">—</strong> · godina <strong id="supModalYear">—</strong><br>
+        <span style="font-size:12px; color:var(--text-mid);">
+          Izvor podataka: <span id="supModalMetrics">—</span>
+        </span>
+      </div>
+
+      <div class="doc-field">
+        <label>Grupa dobavljača</label>
+        <select id="supFGroup" class="doc-input">
+          <option value="dobavljac_sirovine" selected>Dobavljač sirovine</option>
+          <option value="usluga_prijevoza">Usluga prijevoza</option>
+          <option value="usluga_odrzavanja">Usluga održavanja</option>
+          <option value="usluga_klisej">Klišej / tisak</option>
+          <option value="usluga_ostalo">Ostalo</option>
+        </select>
+      </div>
+
+      <h4 style="margin: 18px 0 8px; color: var(--primary); font-size: 14px;">Ocjene 1–3 po dimenziji</h4>
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Kvaliteta * <span id="supAutoQ" style="font-size:11px; color:var(--text-lo);">— auto: ?</span></label>
+          <select id="supFQuality" class="doc-input" onchange="supRecalcTotal()">
+            <option value="">— odaberi —</option>
+            <option value="1">1 — Loša (česte reklamacije)</option>
+            <option value="2">2 — Zadovoljava</option>
+            <option value="3">3 — Odlična (bez prigovora)</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Rok * <span id="supAutoT" style="font-size:11px; color:var(--text-lo);">— auto: ?</span></label>
+          <select id="supFTime" class="doc-input" onchange="supRecalcTotal()">
+            <option value="">— odaberi —</option>
+            <option value="1">1 — Često kasni</option>
+            <option value="2">2 — Povremeno kasni</option>
+            <option value="3">3 — U roku</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Cijena *</label>
+          <select id="supFPrice" class="doc-input" onchange="supRecalcTotal()">
+            <option value="">— odaberi —</option>
+            <option value="1">1 — Skup u odnosu na konkurenciju</option>
+            <option value="2">2 — Tržišna cijena</option>
+            <option value="3">3 — Konkurentno (najpovoljniji)</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Total + Klasa</label>
+          <div id="supFTotalDisplay" style="font-size:18px; font-weight:700; padding:6px 12px; border-radius:6px; text-align:center; background:var(--remap-grey-bg); color:var(--text-mid);">— čeka unos —</div>
+        </div>
+      </div>
+
+      <div class="doc-field" style="margin-top: 14px;">
+        <label>Bilješke (opcionalno)</label>
+        <textarea id="supFNotes" rows="2" class="doc-input" placeholder="Razlog odstupanja od auto-ocjene, posebne napomene..."></textarea>
+      </div>
+
+      <div id="supModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="supCloseModal()">Odustani</button>
+      <button class="btn-primary" id="supSaveBtn" onclick="supSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Potpiši i spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.sup-class { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; min-width: 24px; text-align: center; }
+.sup-class-A { background: #e8f5e9; color: #2e7d32; }
+.sup-class-B { background: #fff8e1; color: #f57f17; }
+.sup-class-C { background: #ffebee; color: #c62828; }
+
+.sup-score { font-weight: 700; padding: 2px 6px; border-radius: 4px; min-width: 20px; display: inline-block; text-align: center; }
+.sup-score-3 { background: #e8f5e9; color: #2e7d32; }
+.sup-score-2 { background: #fff8e1; color: #f57f17; }
+.sup-score-1 { background: #ffebee; color: #c62828; }
+.sup-score-na { color: #aaa; }
+
+.sup-auto-hint { font-size: 11px; color: #888; }
+.sup-auto-hint strong { color: #5e35b1; }
+
+.sup-row-pending { background: #fffaf0; }
+.sup-row-signed { background: #f1f8f4; }
+</style>
+
+<script>
+(async function initIsoDobavljaciView() {
+  console.log('[iso-dobavljaci] init');
+
+  const NOW_YEAR = new Date().getFullYear();
+  let currentYear = NOW_YEAR;
+  let autoMetrics = []; // iz iso_supplier_metrics RPC
+  let evaluations = []; // iz iso_supplier_evaluations
+  let merged = [];
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtKg(v) { return v == null ? '—' : Number(v).toLocaleString('hr-HR', { maximumFractionDigits: 0 }); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+
+  function scorePill(s) {
+    if (s == null) return '<span class="sup-score-na">—</span>';
+    return `<span class="sup-score sup-score-${s}">${s}</span>`;
+  }
+  function classifyTotal(total) {
+    if (total >= 8) return 'A';
+    if (total >= 5) return 'B';
+    if (total >= 1) return 'C';
+    return null;
+  }
+  function classPill(cls) {
+    if (!cls) return '<span class="sup-auto-hint">—</span>';
+    return `<span class="sup-class sup-class-${cls}">${cls}</span>`;
+  }
+
+  // ========== YEAR TABS ==========
+  function renderYearTabs() {
+    const years = [NOW_YEAR + 1, NOW_YEAR, NOW_YEAR - 1, NOW_YEAR - 2, NOW_YEAR - 3];
+    const wrap = document.getElementById('supYearTabs');
+    wrap.innerHTML = years.map(y =>
+      `<button class="obj-year-tab ${y === currentYear ? 'active' : ''}" onclick="supSetYear(${y})">${y}</button>`
+    ).join('');
+    document.getElementById('supYearLabel').textContent = currentYear;
+  }
+  window.supSetYear = function(y) {
+    currentYear = y;
+    renderYearTabs();
+    loadAll();
+  };
+
+  // ========== LOAD ==========
+  async function loadAll() {
+    try {
+      // 1) Auto metrika iz RPC-a
+      const { data: rpcData, error: rpcErr } = await initSupabase().rpc('iso_supplier_metrics', { p_year: currentYear });
+      if (rpcErr) throw rpcErr;
+      autoMetrics = rpcData || [];
+
+      // 2) Vec ubacene evaluacije za godinu
+      evaluations = await SB.select('iso_supplier_evaluations', {
+        eq: { year: currentYear }, silent: true
+      });
+
+      // 3) Merge: svaki supplier_name dobi auto + (možda) eval row
+      const evalByName = {};
+      evaluations.forEach(e => { evalByName[e.supplier_name] = e; });
+
+      merged = autoMetrics.map(m => ({
+        supplier_name: m.supplier_name,
+        deliveries_count: Number(m.deliveries_count) || 0,
+        complaints_count: Number(m.complaints_count) || 0,
+        late_deliveries_count: Number(m.late_deliveries_count) || 0,
+        total_kg: Number(m.total_quantity_kg) || 0,
+        quality_score_auto: m.quality_score_auto,
+        time_score_auto: m.time_score_auto,
+        price_score_auto: m.price_score_auto,
+        eval: evalByName[m.supplier_name] || null
+      }));
+
+      // Dodaj evaluacije koje nemaju auto match (slučaj: ručno dodan dobavljač)
+      evaluations.forEach(e => {
+        if (!autoMetrics.find(m => m.supplier_name === e.supplier_name)) {
+          merged.push({
+            supplier_name: e.supplier_name,
+            deliveries_count: e.deliveries_count || 0,
+            complaints_count: e.complaints_count || 0,
+            late_deliveries_count: e.late_deliveries_count || 0,
+            total_kg: 0,
+            quality_score_auto: null,
+            time_score_auto: null,
+            price_score_auto: null,
+            eval: e
+          });
+        }
+      });
+
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('supTableBody').innerHTML = `<tr><td colspan="12" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  function computeKpi() {
+    document.getElementById('supKpiTotal').textContent = merged.length;
+    let a = 0, b = 0, c = 0;
+    merged.forEach(m => {
+      if (m.eval && m.eval.total_score) {
+        const cls = classifyTotal(m.eval.total_score);
+        if (cls === 'A') a++;
+        else if (cls === 'B') b++;
+        else if (cls === 'C') c++;
+      }
+    });
+    document.getElementById('supKpiA').textContent = a;
+    document.getElementById('supKpiB').textContent = b;
+    document.getElementById('supKpiC').textContent = c;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('supTableBody');
+    if (merged.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; color:var(--text-lo); padding:30px;">Nema dobavljača za ovu godinu. Auto-metrika računa se iz prod_inventory_rolls.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = merged.map(m => {
+      const e = m.eval;
+      const total = e ? e.total_score : null;
+      const cls = total ? classifyTotal(total) : null;
+      const signed = e && e.signed_at;
+      const rowCls = signed ? 'sup-row-signed' : (e ? 'sup-row-pending' : '');
+      return `
+        <tr class="${rowCls}">
+          <td><strong>${escapeHtml(m.supplier_name)}</strong></td>
+          <td style="text-align:center;">${m.deliveries_count}</td>
+          <td style="text-align:center; ${m.complaints_count > 0 ? 'color:#c62828; font-weight:700;' : ''}">${m.complaints_count}</td>
+          <td style="text-align:center;">${m.late_deliveries_count}</td>
+          <td style="text-align:right; font-size:12px;">${fmtKg(m.total_kg)}</td>
+          <td style="text-align:center;">${e ? scorePill(e.quality_score) : '<span class="sup-auto-hint">auto: ' + (m.quality_score_auto || '?') + '</span>'}</td>
+          <td style="text-align:center;">${e ? scorePill(e.time_score) : '<span class="sup-auto-hint">auto: ' + (m.time_score_auto || '?') + '</span>'}</td>
+          <td style="text-align:center;">${e ? scorePill(e.price_score) : '<span class="sup-auto-hint">—</span>'}</td>
+          <td style="text-align:center; font-weight:700;">${total != null ? total : '—'}</td>
+          <td style="text-align:center;">${classPill(cls)}</td>
+          <td style="font-size:11px;">${signed ? '✓ ' + fmtDate(signed) : (e ? '<span style="color:var(--warning);">draft</span>' : '<span style="color:var(--text-lo);">—</span>')}</td>
+          <td>
+            <button class="doc-action-btn" onclick="supOpenModal('${escapeHtml(m.supplier_name).replace(/'/g, '\\\'')}')" title="${e ? 'Uredi bodovanje' : 'Bodi'}">
+              <span class="svg-icon svg-icon-${e ? 'pencil' : 'plus'}"></span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ========== REFRESH AUTO ==========
+  window.supRefreshAuto = async function() {
+    await loadAll();
+    if (typeof showMessage === 'function') showMessage('Auto-metrika osvježena za ' + currentYear, 'success');
+  };
+
+  // ========== MODAL ==========
+  window.supOpenModal = function(supplierName) {
+    const m = merged.find(x => x.supplier_name === supplierName);
+    if (!m) return;
+    document.getElementById('supModalTitle').textContent = m.eval ? 'Uredi bodovanje' : 'Bodovanje dobavljača';
+    document.getElementById('supModalSupplier').textContent = supplierName;
+    document.getElementById('supModalYear').textContent = currentYear;
+    document.getElementById('supModalMetrics').textContent =
+      `${m.deliveries_count} isporuka, ${m.complaints_count} reklamacija, ${m.late_deliveries_count} kašnjenja`;
+
+    document.getElementById('supFEvalId').value = m.eval ? m.eval.id : '';
+    document.getElementById('supFSupplierName').value = supplierName;
+    document.getElementById('supFYear').value = currentYear;
+
+    document.getElementById('supFGroup').value = (m.eval && m.eval.supplier_group) || 'dobavljac_sirovine';
+
+    // Auto hints
+    document.getElementById('supAutoQ').innerHTML = m.quality_score_auto
+      ? `auto: <strong>${m.quality_score_auto}</strong>` : 'auto: —';
+    document.getElementById('supAutoT').innerHTML = m.time_score_auto
+      ? `auto: <strong>${m.time_score_auto}</strong>` : 'auto: —';
+
+    // Pre-fill: ako vec postoji eval, koristi finalne; inace auto
+    document.getElementById('supFQuality').value = m.eval ? (m.eval.quality_score || '') : (m.quality_score_auto || '');
+    document.getElementById('supFTime').value = m.eval ? (m.eval.time_score || '') : (m.time_score_auto || '');
+    document.getElementById('supFPrice').value = m.eval ? (m.eval.price_score || '') : '';
+    document.getElementById('supFNotes').value = (m.eval && m.eval.notes) || '';
+
+    supRecalcTotal();
+    document.getElementById('supModalError').style.display = 'none';
+    document.getElementById('supModal').style.display = 'flex';
+  };
+
+  window.supRecalcTotal = function() {
+    const q = parseInt(document.getElementById('supFQuality').value) || 0;
+    const t = parseInt(document.getElementById('supFTime').value) || 0;
+    const p = parseInt(document.getElementById('supFPrice').value) || 0;
+    const total = q + t + p;
+    const display = document.getElementById('supFTotalDisplay');
+    if (total === 0) {
+      display.textContent = '— čeka unos —';
+      display.style.cssText = 'font-size:16px; padding:6px 12px; border-radius:6px; text-align:center; background:#f5f5f5; color:#666;';
+    } else {
+      const cls = classifyTotal(total);
+      const lbl = cls === 'A' ? 'A klasa (zeleni)' : cls === 'B' ? 'B klasa (žuti)' : 'C klasa (crveni)';
+      display.textContent = `${total} — ${lbl}`;
+      const colors = { A: ['#e8f5e9','#2e7d32'], B: ['#fff8e1','#f57f17'], C: ['#ffebee','#c62828'] };
+      const [bg, fg] = colors[cls] || ['#f5f5f5','#666'];
+      display.style.cssText = `font-size:18px; font-weight:700; padding:6px 12px; border-radius:6px; text-align:center; background:${bg}; color:${fg};`;
+    }
+  };
+
+  window.supCloseModal = function() {
+    document.getElementById('supModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('supModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.supSave = async function() {
+    const btn = document.getElementById('supSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const q = parseInt(document.getElementById('supFQuality').value) || null;
+      const t = parseInt(document.getElementById('supFTime').value) || null;
+      const p = parseInt(document.getElementById('supFPrice').value) || null;
+      if (!q || !t || !p) throw new Error('Sve tri ocjene (kvaliteta/rok/cijena) su obavezne');
+
+      const total = q + t + p;
+      const cls = classifyTotal(total);
+      const supplierName = document.getElementById('supFSupplierName').value;
+      const year = parseInt(document.getElementById('supFYear').value);
+      const m = merged.find(x => x.supplier_name === supplierName);
+
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+
+      const data = {
+        supplier_name: supplierName,
+        supplier_group: document.getElementById('supFGroup').value,
+        year,
+        deliveries_count: m ? m.deliveries_count : 0,
+        complaints_count: m ? m.complaints_count : 0,
+        late_deliveries_count: m ? m.late_deliveries_count : 0,
+        quality_score_auto: m ? m.quality_score_auto : null,
+        time_score_auto: m ? m.time_score_auto : null,
+        price_score_auto: m ? m.price_score_auto : null,
+        quality_score: q,
+        time_score: t,
+        price_score: p,
+        classification: cls,
+        notes: document.getElementById('supFNotes').value.trim() || null,
+        signed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const evalId = document.getElementById('supFEvalId').value;
+      if (evalId) {
+        await SB.update('iso_supplier_evaluations', data, { id: evalId });
+      } else {
+        await SB.insert('iso_supplier_evaluations', data);
+      }
+
+      supCloseModal();
+      if (typeof showMessage === 'function')
+        showMessage(`${supplierName}: bodovanje potpisano (klasa ${cls})`, 'success');
+      await loadAll();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Potpiši i spremi';
+    }
+  };
+
+  document.getElementById('supModal').addEventListener('click', e => {
+    if (e.target.id === 'supModal') supCloseModal();
+  });
+
+  renderYearTabs();
+  await loadAll();
+  console.log('[iso-dobavljaci] ready');
+})();
+</script>

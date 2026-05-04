@@ -125,7 +125,7 @@
       <strong>📐 Formula bonusa:</strong>
       <span class="formula-tag voditelj">Voditelji/Koordinatori: <span id="formulaVoditelj">25.5</span>/2200 × razlika</span>
       <span class="formula-tag ostali">Ostali: <span id="formulaOstali">12.5</span>/2200 × razlika</span>
-      <span class="formula-tag" style="background:#ffebee;color:#c62828;">Škart: -12 × (ostvareni% - 1%)</span>
+      <span class="formula-tag" style="background:var(--remap-danger-bg);color:var(--danger);">Škart: -12 × (ostvareni% - 1%)</span>
     </div>
     
     <table>
@@ -145,7 +145,7 @@
         <tr><td colspan="8" class="empty-state">Odaberite mjesec</td></tr>
       </tbody>
       <tfoot id="monthlyStatsTfoot" style="display: none;">
-        <tr style="background: #e8f5e9; font-weight: bold;">
+        <tr style="background: var(--remap-success-bg); font-weight: bold;">
           <td colspan="4">UKUPNO</td>
           <td style="text-align: right;" id="totalRazlika">0</td>
           <td colspan="3"></td>
@@ -186,21 +186,21 @@
       <div class="form-row" id="teamInfoRow" style="display: none;">
         <div class="form-group">
           <label>Linija</label>
-          <input type="text" class="form-control" id="entryLineDisplay" readonly style="background:#e3f2fd; font-weight:bold;">
+          <input type="text" class="form-control" id="entryLineDisplay" readonly style="background:var(--remap-info-bg); font-weight:bold;">
         </div>
         <div class="form-group">
           <label>Stroj</label>
-          <input type="text" class="form-control" id="entryMachineDisplay" readonly style="background:#e3f2fd; font-weight:bold;">
+          <input type="text" class="form-control" id="entryMachineDisplay" readonly style="background:var(--remap-info-bg); font-weight:bold;">
         </div>
       </div>
       
-      <hr style="margin: 20px 0; border-color: #eee;">
+      <hr style="margin: 20px 0; border-color: var(--border);">
       
       <!-- Plan iz postavki -->
       <div class="form-row">
         <div class="form-group">
-          <label>📋 Plan (kom/h) <small style="color:#888;">(iz postavki)</small></label>
-          <input type="number" class="form-control" id="entryPlan" value="0" readonly style="background:#e8f5e9; font-weight:bold;">
+          <label>📋 Plan (kom/h) <small style="color:var(--text-lo);">(iz postavki)</small></label>
+          <input type="number" class="form-control" id="entryPlan" value="0" readonly style="background:var(--remap-success-bg); font-weight:bold;">
         </div>
         <div class="form-group">
           <label>✅ Ostvareno (kom/h)</label>
@@ -211,8 +211,8 @@
       <!-- Škart u postotcima -->
       <div class="form-row">
         <div class="form-group">
-          <label>🎯 Škart dozvoljeni (%) <small style="color:#888;">(iz postavki)</small></label>
-          <input type="number" class="form-control" id="entryScrapAllowed" value="1" step="0.1" readonly style="background:#fff3e0; font-weight:bold;">
+          <label>🎯 Škart dozvoljeni (%) <small style="color:var(--text-lo);">(iz postavki)</small></label>
+          <input type="number" class="form-control" id="entryScrapAllowed" value="1" step="0.1" readonly style="background:var(--remap-warning-bg); font-weight:bold;">
         </div>
         <div class="form-group">
           <label>⚠️ Škart ostvareni (%)</label>
@@ -691,7 +691,7 @@ function renderProductivityTable() {
       '<td><strong>' + (team ? team.name : '-') + '</strong></td>' +
       '<td>' + (p.line || '-') + '</td>' +
       '<td>' + (p.machine_type || '-') + '</td>' +
-      '<td style="text-align: right;">' + (p.actual_pieces || 0).toLocaleString() + ' <small style="color:#888;">/' + (p.target_pieces || 0).toLocaleString() + '</small></td>' +
+      '<td style="text-align: right;">' + (p.actual_pieces || 0).toLocaleString() + ' <small style="color:var(--text-lo);">/' + (p.target_pieces || 0).toLocaleString() + '</small></td>' +
       '<td style="text-align: right; ' + scrapClass + '">' + scrapPct.toFixed(1) + '% <small>(' + scrapAllowed + '%)</small></td>' +
       '<td>' +
         '<div class="oee-bar">' +
@@ -967,7 +967,7 @@ function renderMonthlyStats(stats, year, month) {
         <td style="text-align: right;">${skartPostotak.toFixed(2)}%</td>
         <td style="text-align: right; ${bonusClass}; font-weight: bold;">
           +${ukupnoBonusOstali.toFixed(2)}%
-          <small style="color:#999;display:block;font-size:0.65em;">V/K: +${ukupnoBonusVoditelj.toFixed(2)}%</small>
+          <small style="color:var(--text-lo);display:block;font-size:0.65em;">V/K: +${ukupnoBonusVoditelj.toFixed(2)}%</small>
         </td>
         <td>
           <button class="btn btn-sm btn-success" onclick="applyBonus('${s.team_id}', ${year}, ${month}, ${razlika}, ${skartPostotak})">

@@ -126,6 +126,9 @@ const Router = {
         viewPath = `views/upravljanje/${viewId}.html`;
       } else if (['postavke', 'admin'].includes(viewId)) {
         viewPath = `views/admin/${viewId}.html`;
+      } else if (viewId.startsWith('iso-')) {
+        // ISO 9001 sustav kvalitete moduli
+        viewPath = `views/iso/${viewId}.html`;
       } else {
         viewPath = 'views/404.html';
       }

@@ -324,8 +324,16 @@ function buildSidebar() {
       html += '<div class="nav-separator">' + item.section + '</div>';
     }
 
+    // Backward-compat: ako je item.icon emoji (legacy), prikazi ga kao text;
+    // ako je semantic name (preporuceno), renderiraj SVG ikonu iz icons.css
+    var iconHtml;
+    if (/^[a-z][a-z0-9-]*$/.test(item.icon)) {
+      iconHtml = '<span class="nav-icon svg-icon svg-icon-' + item.icon + '"></span>';
+    } else {
+      iconHtml = '<span class="nav-icon">' + item.icon + '</span>';
+    }
     html += '<a href="#' + item.id + '" class="nav-item" data-view="' + item.id + '">' +
-            '<span class="nav-icon">' + item.icon + '</span>' +
+            iconHtml +
             '<span class="nav-text">' + item.label + '</span>' +
             '</a>';
   });
@@ -351,8 +359,13 @@ function buildSidebar() {
     if (btnPasswordMobile) {
       btnPasswordMobile.style.display = isAdmin ? 'inline-block' : 'none';
     }
+
+    // Top header user avatar (inicijali)
+    if (typeof window.updateTopUserAvatar === 'function') {
+      window.updateTopUserAvatar();
+    }
   }
-  
+
   // Refresh mobile menu s istim dozvolama
   if (typeof window.refreshMobileMenu === 'function') {
     window.refreshMobileMenu();

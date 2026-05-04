@@ -453,66 +453,10 @@
   text-align: center;
 }
 
-/* ========== SMJENSKI IZVJEŠTAJ STILOVI ========== */
-.izvjestaj-print {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  color: #333;
-}
-.izvjestaj-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 15px 0;
-}
-.izvjestaj-table th, .izvjestaj-table td {
-  border: 1px solid #333;
-  padding: 6px 4px;
-  text-align: center;
-  font-size: 0.8em;
-}
-.izvjestaj-table th { background: #9c27b0; color: white; }
-.izvjestaj-table .header-row { background: #f3e5f5; font-weight: 600; }
-.izvjestaj-table .kolicina-col {
-  background: #fff3e0 !important;
-  min-width: 80px;
-}
-.izvjestaj-table th.kolicina-col {
-  background: #e65100 !important;
-  color: white;
-}
-.izvjestaj-input-header {
-  width: 100%;
-  border: none;
-  border-bottom: 2px solid #9c27b0;
-  background: transparent;
-  font-size: 1em;
-  padding: 5px;
-}
-.izvjestaj-input-kom {
-  width: 100%;
-  border: 2px solid #e65100;
-  background: #fff3e0;
-  text-align: center;
-  font-size: 1em;
-  font-weight: 700;
-  padding: 6px 2px;
-  color: #e65100;
-  border-radius: 4px;
-}
-.izvjestaj-input-vrijeme {
-  width: 100%;
-  border: 1px solid #ccc;
-  background: white;
-  text-align: center;
-  font-size: 0.85em;
-  padding: 6px 2px;
-  border-radius: 4px;
-}
-.izvjestaj-input-vrijeme:focus {
-  border-color: #9c27b0;
-  outline: none;
-}
+/* ========== SMJENSKI IZVJEŠTAJ STILOVI — duplikati uklonjeni 2026-05-03,
+   naslijeđuju iz globalnog css/styles.css. Tisak-purple identity ide kroz
+   tema-aware varijable (purple kontekst u dark/sage temi je purple gradient,
+   u light temi pravi tisak purple #9c27b0). ========== */
 @media print {
   body * { visibility: hidden; }
   .izvjestaj-print, .izvjestaj-print * { visibility: visible; }
@@ -520,107 +464,9 @@
   .no-print { display: none !important; }
 }
 
-/* ========== NAPOMENE STILOVI ========== */
-.notes-section {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.notes-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #9c27b0;
-}
-.notes-section-header h3 {
-  margin: 0;
-  color: #9c27b0;
-  font-size: 1.1em;
-}
-.note-card {
-  background: #fafafa;
-  border-left: 4px solid #9c27b0;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 0 8px 8px 0;
-}
-.note-card.note-warning { border-left-color: #ff9800; background: #fff8e1; }
-.note-card.note-info { border-left-color: #2196f3; background: #e3f2fd; }
-.note-card.note-article { border-left-color: #f44336; background: #ffebee; }
-.note-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-.note-card-meta {
-  font-size: 0.8em;
-  color: #666;
-}
-.note-card-type {
-  font-size: 0.75em;
-  padding: 3px 8px;
-  border-radius: 12px;
-  background: #e0e0e0;
-  color: #333;
-  font-weight: 600;
-}
-.note-card-type.type-article { background: #ffcdd2; color: #c62828; }
-.note-card-type.type-shift { background: #c8e6c9; color: #2e7d32; }
-.note-card-content {
-  font-size: 0.95em;
-  line-height: 1.5;
-  color: #333;
-}
-.note-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed #ddd;
-}
-.note-card-article {
-  font-weight: 600;
-  color: #9c27b0;
-}
-.note-empty {
-  text-align: center;
-  padding: 40px;
-  color: #999;
-}
-.note-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 15px;
-}
-.btn-note { 
-  padding: 10px 20px; 
-  border-radius: 8px; 
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-}
-.btn-note-article { background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; }
-.btn-note-article:hover { background: #ffcdd2; }
-.btn-note-shift { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
-.btn-note-shift:hover { background: #c8e6c9; }
-.btn-acknowledge {
-  background: #4caf50;
-  color: white;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 5px;
-  font-size: 0.85em;
-  cursor: pointer;
-}
-.btn-acknowledge:hover { background: #388e3c; }
+/* ========== NAPOMENE STILOVI — uklonjeni duplikati 2026-05-03,
+   naslijeđuju iz globalnog css/styles.css. Tisak-purple identity ostaje
+   kroz globalne `--*` varijable (border-left akcent ostaje purple per-modul). */
 
 /* ========================================== */
 /* PREGLED PO RN — grupiranje po narudžbi     */
@@ -775,9 +621,9 @@
       <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.85em; white-space:nowrap;">
         <input type="checkbox" id="tisakSakrijZavrsene" checked onchange="tisakFiltrirajRN()"> Sakrij završene
       </label>
-      <span id="tisakBrojRezultata" style="color:#666;"></span>
+      <span id="tisakBrojRezultata" style="color:var(--text-mid);"></span>
       <span style="margin-left:auto; display:flex; gap:4px;">
-        <button class="tisak-btn tisak-btn-secondary tisakFilterTipBtn" data-tip="sve" onclick="tisakFilterTip('sve')" style="padding:5px 10px; font-size:0.8em; font-weight:600; background:#1565c0; color:white;">Sve</button>
+        <button class="tisak-btn tisak-btn-secondary tisakFilterTipBtn" data-tip="sve" onclick="tisakFilterTip('sve')" style="padding:5px 10px; font-size:0.8em; font-weight:600; background:var(--primary); color:white;">Sve</button>
         <button class="tisak-btn tisak-btn-secondary tisakFilterTipBtn" data-tip="tijelo" onclick="tisakFilterTip('tijelo')" style="padding:5px 10px; font-size:0.8em;">Tijelo</button>
         <button class="tisak-btn tisak-btn-secondary tisakFilterTipBtn" data-tip="etiketa" onclick="tisakFilterTip('etiketa')" style="padding:5px 10px; font-size:0.8em;">Etikete</button>
         <button class="tisak-btn tisak-btn-secondary tisakFilterTipBtn" data-tip="kila" onclick="tisakFilterTip('kila')" style="padding:5px 10px; font-size:0.8em;">Kila</button>
@@ -879,7 +725,7 @@
     </div>
 
     <!-- Progress bar -->
-    <div style="background:#e0e0e0; border-radius:10px; height:30px; overflow:hidden; position:relative;">
+    <div style="background:var(--border); border-radius:10px; height:30px; overflow:hidden; position:relative;">
       <div id="tisakProgressBar" style="background:linear-gradient(90deg, #4caf50, #8bc34a); height:100%; width:0%; transition:width 0.5s;"></div>
       <div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; font-weight:bold;">
         <span id="tisakProgressText">0%</span>
@@ -887,18 +733,18 @@
     </div>
 
     <!-- Info -->
-    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85em; color:#666;">
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85em; color:var(--text-mid);">
       <span id="tisakKpiPreostalo" style="display:none;"></span>
       <span>Formula: širina × gramatura × sliv × količina / 10.000.000</span>
     </div>
   </div>
   
   <!-- PDF GRAFIČKA PRIPREMA ETIKETE -->
-  <div id="tisakEtiketaPdf" style="display: none; margin-top: 15px; padding: 15px; background: #fff3e0; border-radius: 8px; border: 1px solid #ff9800;">
+  <div id="tisakEtiketaPdf" style="display: none; margin-top: 15px; padding: 15px; background: var(--remap-warning-bg); border-radius: 8px; border: 1px solid var(--warning);">
     <h4 style="margin: 0 0 10px 0;">PDF Graficka priprema etikete</h4>
-    <iframe id="tisakEtiketaPdfFrame" style="width:100%; height:400px; border:1px solid #ddd; border-radius:8px; background:white;" src=""></iframe>
+    <iframe id="tisakEtiketaPdfFrame" style="width:100%; height:400px; border:1px solid var(--border); border-radius:8px; background:white;" src=""></iframe>
     <div style="margin-top: 8px; display: flex; justify-content: flex-end;">
-      <a id="tisakEtiketaPdfLink" href="#" target="_blank" style="font-size: 0.85em; color: #1565c0;">Otvori u novom tabu</a>
+      <a id="tisakEtiketaPdfLink" href="#" target="_blank" style="font-size: 0.85em; color: var(--primary);">Otvori u novom tabu</a>
     </div>
   </div>
 
@@ -907,7 +753,7 @@
     <div class="tisak-section-header">
       <h3>📦 Dostupne Role</h3>
       <div>
-        <label style="font-size:0.85em; color:#666; margin-right:10px;">
+        <label style="font-size:0.85em; color:var(--text-mid); margin-right:10px;">
           <input type="checkbox" id="tisakAutoFilterCheck" checked onchange="tisakToggleAutoFilter()">
           Auto-filter po RN
         </label>
@@ -915,9 +761,9 @@
     </div>
     
     <!-- INFO O AUTO-FILTERU -->
-    <div id="tisakAutoFilterInfo" class="tisak-info-box" style="display:none; margin-bottom:15px; background:#fff3e0; border-color:#ff9800;">
+    <div id="tisakAutoFilterInfo" class="tisak-info-box" style="display:none; margin-bottom:15px; background:var(--remap-warning-bg); border-color:var(--warning);">
       🔍 <strong>Auto-filter aktivan:</strong> <span id="tisakAutoFilterText"></span>
-      <button class="tisak-btn" style="float:right; padding:3px 8px; background:#ff9800; color:white;" onclick="tisakResetFilterRole()">Prikaži sve</button>
+      <button class="tisak-btn" style="float:right; padding:3px 8px; background:var(--warning); color:white;" onclick="tisakResetFilterRole()">Prikaži sve</button>
     </div>
     
     <!-- SKENER BARKODA -->
@@ -931,7 +777,7 @@
                onkeypress="if(event.key==='Enter') tisakOdaberiRoluBarkod()">
       </div>
       <button class="tisak-btn" onclick="tisakOdaberiRoluBarkod()" 
-              style="background:white; color:#2e7d32; padding:12px 20px; font-weight:bold;">
+              style="background:white; color:var(--success); padding:12px 20px; font-weight:bold;">
         ✓ Odaberi
       </button>
     </div>
@@ -1012,18 +858,18 @@
       </div>
 
       <!-- KOREKCIJA ŠIRINE REZANJA -->
-      <div id="tisakKorekcijaSirineSection" style="display:none; margin-top:15px; padding:15px; background:#e3f2fd; border-radius:10px; border:2px solid #2196f3;">
+      <div id="tisakKorekcijaSirineSection" style="display:none; margin-top:15px; padding:15px; background:var(--remap-info-bg); border-radius:10px; border:2px solid var(--info);">
         <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
           <div>
-            <div style="font-weight:bold; color:#1565c0; font-size:0.95em;">✂️ Korekcija širine rezanja</div>
-            <div style="font-size:0.8em; color:#666;">Rola je šira od artikla - unesite stvarnu širinu rezanja</div>
+            <div style="font-weight:bold; color:var(--primary); font-size:0.95em;">✂️ Korekcija širine rezanja</div>
+            <div style="font-size:0.8em; color:var(--text-mid);">Rola je šira od artikla - unesite stvarnu širinu rezanja</div>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <label style="font-size:0.9em; font-weight:600; white-space:nowrap;">Reži na:</label>
-            <input type="number" id="tisakKorekcijaSirine" step="0.1" min="0" placeholder="cm" style="width:80px; padding:8px; border:2px solid #2196f3; border-radius:6px; font-size:1.1em; font-weight:bold; text-align:center;" oninput="tisakPrimijeniKorekcijuSirine()">
+            <input type="number" id="tisakKorekcijaSirine" step="0.1" min="0" placeholder="cm" style="width:80px; padding:8px; border:2px solid var(--info); border-radius:6px; font-size:1.1em; font-weight:bold; text-align:center;" oninput="tisakPrimijeniKorekcijuSirine()">
             <span style="font-size:0.9em;">cm</span>
           </div>
-          <div style="font-size:0.85em; color:#1565c0;">
+          <div style="font-size:0.85em; color:var(--primary);">
             Traka: <strong id="tisakKorigiranaTraka">-</strong> cm
           </div>
         </div>
@@ -1036,36 +882,36 @@
       </div>
       
       <!-- TRAKA SEKCIJA -->
-      <div id="tisakTrakaSection" style="display:none; margin-top:15px; padding:20px; background:#fff8e1; border-radius:10px; border:2px solid #ffc107;">
+      <div id="tisakTrakaSection" style="display:none; margin-top:15px; padding:20px; background:var(--remap-warning-bg); border-radius:10px; border:2px solid var(--warning);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
           <div>
-            <div style="font-weight:bold; color:#f57c00; font-size:1.1em;">✂️ Traka (višak širine)</div>
-            <div style="font-size:0.85em; color:#666;">Rola je šira od potrebne širine</div>
+            <div style="font-weight:bold; color:var(--warning); font-size:1.1em;">✂️ Traka (višak širine)</div>
+            <div style="font-size:0.85em; color:var(--text-mid);">Rola je šira od potrebne širine</div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:1.5em; font-weight:bold; color:#e65100;" id="tisakTrakaSirina">0 cm</div>
-            <div style="font-size:0.85em; color:#666;">širina trake</div>
+            <div style="font-size:0.85em; color:var(--text-mid);">širina trake</div>
           </div>
         </div>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
-          <label style="display:flex; align-items:center; gap:10px; padding:15px; background:white; border-radius:8px; cursor:pointer; border:2px solid #ddd;">
+          <label style="display:flex; align-items:center; gap:10px; padding:15px; background:white; border-radius:8px; cursor:pointer; border:2px solid var(--border);">
             <input type="radio" name="tisakTrakaOpcija" id="tisakReziTraku" checked onchange="tisakIzracunajSkidanje()">
             <div>
               <div style="font-weight:bold;">✂️ Reži traku</div>
-              <div style="font-size:0.85em; color:#666;">Traka ide u skladište</div>
+              <div style="font-size:0.85em; color:var(--text-mid);">Traka ide u skladište</div>
             </div>
           </label>
-          <label style="display:flex; align-items:center; gap:10px; padding:15px; background:white; border-radius:8px; cursor:pointer; border:2px solid #ddd;">
+          <label style="display:flex; align-items:center; gap:10px; padding:15px; background:white; border-radius:8px; cursor:pointer; border:2px solid var(--border);">
             <input type="radio" name="tisakTrakaOpcija" id="tisakTiskajSiru" onchange="tisakIzracunajSkidanje()">
             <div>
               <div style="font-weight:bold;">🖨️ Tiskaj na širu</div>
-              <div style="font-size:0.85em; color:#666;">Nema trake, širi otisak</div>
+              <div style="font-size:0.85em; color:var(--text-mid);">Nema trake, širi otisak</div>
             </div>
           </label>
         </div>
         
-        <div id="tisakTrakaInfo" style="margin-top:15px; padding:10px; background:#e8f5e9; border-radius:5px;">
+        <div id="tisakTrakaInfo" style="margin-top:15px; padding:10px; background:var(--remap-success-bg); border-radius:5px;">
           <div style="display:flex; justify-content:space-between;">
             <span>Šifra trake:</span>
             <strong id="tisakTrakaSifra">-</strong>
@@ -1078,39 +924,39 @@
       </div>
       
       <!-- UNOS TEŽINE -->
-      <div style="margin-top:20px; padding:20px; background:white; border-radius:10px; border:3px solid #4caf50;">
+      <div style="margin-top:20px; padding:20px; background:white; border-radius:10px; border:3px solid var(--success);">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
           <div>
-            <label style="font-weight:bold; color:#333; display:block; margin-bottom:10px;">
+            <label style="font-weight:bold; color:var(--text-hi); display:block; margin-bottom:10px;">
               Težina otiskane role (kg):
             </label>
             <input type="number" id="tisakTezinaOtiskane" value="" min="0" step="0.1"
-                   style="width:100%; padding:15px; font-size:1.5em; border:2px solid #4caf50; border-radius:8px; text-align:center;"
+                   style="width:100%; padding:15px; font-size:1.5em; border:2px solid var(--success); border-radius:8px; text-align:center;"
                    placeholder="Upiši težinu s vage"
                    oninput="tisakIzracunajSkidanje()">
             <!-- CHECKBOX: CIJELA ROLA UTROŠENA -->
-            <label id="tisakCijelaRolaLabel" style="display:flex; align-items:center; gap:10px; margin-top:12px; padding:10px 15px; background:#fff3e0; border:2px solid #ff9800; border-radius:8px; cursor:pointer; font-weight:600; color:#e65100;">
-              <input type="checkbox" id="tisakCijelaRola" onchange="tisakCijelaRolaToggle()" style="width:22px; height:22px; accent-color:#ff9800;">
+            <label id="tisakCijelaRolaLabel" style="display:flex; align-items:center; gap:10px; margin-top:12px; padding:10px 15px; background:var(--remap-warning-bg); border:2px solid var(--warning); border-radius:8px; cursor:pointer; font-weight:600; color:#e65100;">
+              <input type="checkbox" id="tisakCijelaRola" onchange="tisakCijelaRolaToggle()" style="width:22px; height:22px; accent-color:var(--warning);">
               Cijela rola utrošena
             </label>
           </div>
           <div>
-            <label style="font-weight:bold; color:#333; display:block; margin-bottom:10px;">
+            <label style="font-weight:bold; color:var(--text-hi); display:block; margin-bottom:10px;">
               Skida se s matične:
             </label>
-            <div id="tisakSkidaSe" style="font-size:2em; font-weight:bold; color:#e53935; padding:15px; background:#ffebee; border-radius:8px; text-align:center;">
+            <div id="tisakSkidaSe" style="font-size:2em; font-weight:bold; color:var(--danger); padding:15px; background:var(--remap-danger-bg); border-radius:8px; text-align:center;">
               0 kg
             </div>
           </div>
         </div>
         
         <!-- CARRY-OVER -->
-        <div id="tisakCarryOverSection" style="margin-top:15px; padding:15px; background:#fff3e0; border-radius:8px; display:none;">
+        <div id="tisakCarryOverSection" style="margin-top:15px; padding:15px; background:var(--remap-warning-bg); border-radius:8px; display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span>🔄 <strong>Ostatak s prethodne role:</strong></span>
-            <span id="tisakCarryOver" style="font-size:1.3em; font-weight:bold; color:#ff9800;">0 kg</span>
+            <span id="tisakCarryOver" style="font-size:1.3em; font-weight:bold; color:var(--warning);">0 kg</span>
           </div>
-          <div style="font-size:0.85em; color:#666; margin-top:5px;">
+          <div style="font-size:0.85em; color:var(--text-mid); margin-top:5px;">
             Oduzima se od težine prije skidanja
           </div>
           <button class="tisak-btn tisak-btn-warning" onclick="tisakResetCarryOver()" style="margin-top:10px; padding:5px 10px; font-size:0.85em;">
@@ -1120,10 +966,10 @@
       </div>
       
       <!-- NOVA KOLIČINA -->
-      <div style="margin-top:15px; padding:15px; background:#e3f2fd; border-radius:8px;">
+      <div style="margin-top:15px; padding:15px; background:var(--remap-info-bg); border-radius:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span>📦 <strong>Ostaje na matičnoj roli:</strong></span>
-          <span id="tisakOstajeMat" style="font-size:1.3em; font-weight:bold; color:#1976d2;">- kg</span>
+          <span id="tisakOstajeMat" style="font-size:1.3em; font-weight:bold; color:var(--primary);">- kg</span>
         </div>
       </div>
       
@@ -1159,7 +1005,7 @@
       </select>
       <input type="text" id="tisakOtiskaneFilterSifra" placeholder="Pretraži šifru..." oninput="tisakFiltrirajOtiskane()">
       <button class="tisak-btn tisak-btn-secondary" onclick="tisakResetFilterOtiskane()" style="padding:8px 12px;">Reset</button>
-      <span id="tisakOtiskaneBroj" style="margin-left:auto; color:#666;"></span>
+      <span id="tisakOtiskaneBroj" style="margin-left:auto; color:var(--text-mid);"></span>
     </div>
     
     <!-- TABLICA -->
@@ -1200,22 +1046,22 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #9c27b0; padding-bottom: 15px;">
       <div style="font-size: 2em; font-weight: bold; color: #9c27b0;">📄 carta</div>
       <div style="text-align: right;">
-        <div style="font-size: 0.9em; color: #666;">Datum:</div>
+        <div style="font-size: 0.9em; color: var(--text-mid);">Datum:</div>
         <div style="font-size: 1.2em; font-weight: bold;" id="tisakIzvDatum">-</div>
       </div>
     </div>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;">
       <div>
-        <div style="font-size: 0.8em; color: #666;">Voditelj stroja:</div>
+        <div style="font-size: 0.8em; color: var(--text-mid);">Voditelj stroja:</div>
         <input type="text" class="izvjestaj-input-header" id="tisakIzvVoditelj" placeholder="Ime i prezime">
       </div>
       <div>
-        <div style="font-size: 0.8em; color: #666;">Strojar:</div>
+        <div style="font-size: 0.8em; color: var(--text-mid);">Strojar:</div>
         <input type="text" class="izvjestaj-input-header" id="tisakIzvStrojar" placeholder="Ime i prezime">
       </div>
       <div>
-        <div style="font-size: 0.8em; color: #666;">Red. Smjene:</div>
+        <div style="font-size: 0.8em; color: var(--text-mid);">Red. Smjene:</div>
         <div style="font-size: 1.2em; font-weight: bold; padding: 5px 0;" id="tisakIzvSmjena">1</div>
       </div>
     </div>
@@ -1227,6 +1073,7 @@
           <th rowspan="2" style="width: 180px;">Kupac / Artikl</th>
           <th rowspan="2" class="kolicina-col" style="width: 80px;">Proizvedena količina/m</th>
           <th rowspan="2" class="kolicina-col" style="width: 80px;">Proizvedena količina/kom</th>
+          <th rowspan="2" style="width: 70px;">Škart (kom)</th>
           <th rowspan="2" style="width: 60px;">prešte-lavanje</th>
           <th rowspan="2" style="width: 60px;">priprema</th>
           <th rowspan="2" style="width: 60px;">priprema u radu</th>
@@ -1248,6 +1095,7 @@
           <td colspan="2"><strong>UKUPNO:</strong></td>
           <td class="kolicina-col" id="tisakIzvUkupnoM">0</td>
           <td class="kolicina-col" id="tisakIzvUkupnoKom">0</td>
+          <td id="tisakIzvUkupnoSkartKom">0</td>
           <td id="tisakIzvUkupnoPrestel">0</td>
           <td id="tisakIzvUkupnoPriprema">0</td>
           <td id="tisakIzvUkupnoPripremaRad">0</td>
@@ -1262,12 +1110,12 @@
     
     <div style="margin-top: 20px;">
       <strong>Napomena:</strong>
-      <textarea id="tisakIzvNapomena" style="width: 100%; height: 60px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; padding: 8px;"></textarea>
+      <textarea id="tisakIzvNapomena" style="width: 100%; height: 60px; margin-top: 5px; border: 1px solid var(--border); border-radius: 4px; padding: 8px;"></textarea>
     </div>
     
     <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 50px;">
-      <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">Potpis voditelja</div>
-      <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">Potpis primopredaje</div>
+      <div style="border-top: 1px solid var(--text-hi); padding-top: 10px; text-align: center;">Potpis voditelja</div>
+      <div style="border-top: 1px solid var(--text-hi); padding-top: 10px; text-align: center;">Potpis primopredaje</div>
     </div>
   </div>
   
@@ -1276,7 +1124,7 @@
       <button class="btn btn-primary" onclick="tisakDodajRedakIzvjestaja()">➕ Dodaj redak (RN)</button>
       <button class="btn btn-secondary" onclick="tisakDodajRucniRedak()">➕ Dodaj ručni redak</button>
       <button class="btn btn-success" onclick="tisakSpremiIzvjestaj()">💾 Spremi izvještaj</button>
-      <span style="color: #666; font-size: 0.9em; align-self: center; margin-left: auto;">💡 Izvještaj se može spremiti više puta tijekom smjene</span>
+      <span style="color: var(--text-mid); font-size: 0.9em; align-self: center; margin-left: auto;">💡 Izvještaj se može spremiti više puta tijekom smjene</span>
     </div>
   </div>
 
@@ -1286,7 +1134,7 @@
       📋 Izvještaj prethodne smjene <span id="tisakPrethodnaSmjenaInfo" style="font-weight: normal; opacity: 0.9;"></span>
     </div>
     <div id="tisakPrethodnaSmjenaContent" style="padding: 15px;">
-      <div class="tisak-empty" style="text-align: center; color: #999; padding: 30px;">
+      <div class="tisak-empty" style="text-align: center; color: var(--text-lo); padding: 30px;">
         Učitavam izvještaj prethodne smjene...
       </div>
     </div>
@@ -1304,7 +1152,7 @@
       <button class="tisak-btn tisak-btn-primary" onclick="tisakRefreshGraficka()">🔄 Osvježi</button>
     </div>
     
-    <div class="tisak-info-box" style="background:#e3f2fd; border-left-color:#1565c0; margin-bottom:15px;">
+    <div class="tisak-info-box" style="background:var(--remap-info-bg); border-left-color:var(--primary); margin-bottom:15px;">
       <strong>ℹ️</strong> Ovdje možete pregledati grafičku pripremu (PDF) za artikle iz aktivnih radnih naloga.
     </div>
     
@@ -1315,7 +1163,7 @@
       <select id="tisakGrafickaKupac" onchange="tisakFilterGraficka()">
         <option value="">Svi kupci</option>
       </select>
-      <label style="display:flex; align-items:center; gap:5px; font-size:0.9em; color:#666;">
+      <label style="display:flex; align-items:center; gap:5px; font-size:0.9em; color:var(--text-mid);">
         <input type="checkbox" id="tisakGrafickaSamoSPDF" onchange="tisakFilterGraficka()">
         Samo s pripremom
       </label>
@@ -1368,7 +1216,7 @@
         📋 Napomena za sljedeću smjenu
       </button>
     </div>
-    <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+    <p style="margin-top: 15px; color: var(--text-mid); font-size: 0.9em;">
       <strong>Napomena o artiklu:</strong> Problem s klišejom, maziljkom, grafičkom pripremom...<br>
       <strong>Napomena o smjeni:</strong> Opće informacije za sljedeću smjenu
     </p>
@@ -1380,13 +1228,13 @@
 <!-- TAB: PREGLED PO RN -->
 <div class="module-tab-content" id="contentPregledRN">
   <div style="padding:20px;">
-    <h3 style="margin:0 0 15px 0; color:#333;">📊 Pregled proizvedenih metara i komada po RN</h3>
-    <p style="color:#666; font-size:0.9em; margin-bottom:15px;">Podaci izvučeni iz smjenskih izvještaja.</p>
+    <h3 style="margin:0 0 15px 0; color:var(--text-hi);">📊 Pregled proizvedenih metara i komada po RN</h3>
+    <p style="color:var(--text-mid); font-size:0.9em; margin-bottom:15px;">Podaci izvučeni iz smjenskih izvještaja.</p>
 
     <!-- FILTERI Pregled RN -->
-    <div class="tisak-pregled-filters" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:15px; flex-wrap:wrap; background:#f8f9fa; padding:10px; border-radius:8px;">
+    <div class="tisak-pregled-filters" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:15px; flex-wrap:wrap; background:var(--remap-grey-bg); padding:10px; border-radius:8px;">
       <div style="flex:0 0 110px;">
-        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Status</label>
+        <label style="font-size:0.75em; display:block; color:var(--text-mid); margin-bottom:2px;">Status</label>
         <select class="form-control form-control-sm" id="tisakPregledFilterStatus" onchange="tisakRenderPregledRN()">
           <option value="Aktivni" selected>Aktivni (bez Završ.)</option>
           <option value="">Svi</option>
@@ -1397,19 +1245,19 @@
         </select>
       </div>
       <div style="flex:1; min-width:130px;">
-        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Kupac</label>
+        <label style="font-size:0.75em; display:block; color:var(--text-mid); margin-bottom:2px;">Kupac</label>
         <select class="form-control form-control-sm" id="tisakPregledFilterKupac" onchange="tisakRenderPregledRN()">
           <option value="">Svi kupci</option>
         </select>
       </div>
       <div style="flex:1; min-width:130px;">
-        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Artikl</label>
+        <label style="font-size:0.75em; display:block; color:var(--text-mid); margin-bottom:2px;">Artikl</label>
         <select class="form-control form-control-sm" id="tisakPregledFilterArtikl" onchange="tisakRenderPregledRN()">
           <option value="">Svi artikli</option>
         </select>
       </div>
       <div style="flex:1; min-width:140px;">
-        <label style="font-size:0.75em; display:block; color:#666; margin-bottom:2px;">Pretraži</label>
+        <label style="font-size:0.75em; display:block; color:var(--text-mid); margin-bottom:2px;">Pretraži</label>
         <input type="text" class="form-control form-control-sm" id="tisakPregledSearch" placeholder="Broj RN, narudžba..." oninput="tisakRenderPregledRN()">
       </div>
       <div style="flex:0 0 auto; display:flex; gap:4px;">
@@ -1417,7 +1265,7 @@
         <button class="tisak-pregled-toolbar-btn" type="button" onclick="tisakCollapseAllPregledGroups()" title="Skupi sve narudžbe">Skupi sve</button>
         <button class="tisak-btn tisak-btn-secondary" onclick="tisakUcitajPregledRN()" style="padding:7px 14px;">🔄</button>
       </div>
-      <span id="tisakPregledInfo" style="color:#666; font-size:0.85em; width:100%;"></span>
+      <span id="tisakPregledInfo" style="color:var(--text-mid); font-size:0.85em; width:100%;"></span>
     </div>
 
     <!-- Agregat -->
@@ -1436,7 +1284,7 @@
       </div>
     </div>
 
-    <div style="max-height:500px; overflow-y:auto; border:1px solid #ddd; border-radius:8px;">
+    <div style="max-height:500px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
       <table class="tisak-rn-table" style="margin:0;">
         <thead style="position:sticky; top:0; z-index:1;">
           <tr>
@@ -1452,7 +1300,7 @@
           </tr>
         </thead>
         <tbody id="tisakPregledRNBody">
-          <tr><td colspan="9" style="text-align:center; color:#999; padding:30px;">Kliknite "Osvježi" za učitavanje podataka</td></tr>
+          <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Kliknite "Osvježi" za učitavanje podataka</td></tr>
         </tbody>
       </table>
     </div>
@@ -1544,36 +1392,36 @@
       <!-- Osnovni podaci -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">📝 Osnovni podaci</h4>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Broj RN</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Broj RN</div>
           <div style="font-weight:bold;" id="tisakDetalji_BrojRN">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Kupac</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Kupac</div>
           <div style="font-weight:bold;" id="tisakDetalji_Kupac">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Artikl</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Artikl</div>
           <div style="font-weight:bold;" id="tisakDetalji_Artikl">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Šifra artikla</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Šifra artikla</div>
           <div style="font-weight:bold;" id="tisakDetalji_SifraArtikla">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Količina</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Količina</div>
           <div style="font-weight:bold;" id="tisakDetalji_Kolicina">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Status</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Status</div>
           <div style="font-weight:bold;" id="tisakDetalji_Status">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Datum</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Datum</div>
           <div style="font-weight:bold;" id="tisakDetalji_Datum">-</div>
         </div>
-        <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Boja vreće</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja vreće</div>
           <div style="font-weight:bold;" id="tisakDetalji_BojaVrece">-</div>
         </div>
       </div>
@@ -1581,16 +1429,16 @@
       <!-- Papir -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">📄 Papir</h4>
       <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#e8f5e9; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Šifra papira (S1)</div>
+        <div style="background:var(--remap-success-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Šifra papira (S1)</div>
           <div style="font-weight:bold;" id="tisakDetalji_SifraPapira">-</div>
         </div>
-        <div style="background:#e8f5e9; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Širina papira</div>
-          <div style="font-weight:bold; font-size:1.2em; color:#2e7d32;" id="tisakDetalji_Sirina">-</div>
+        <div style="background:var(--remap-success-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Širina papira</div>
+          <div style="font-weight:bold; font-size:1.2em; color:var(--success);" id="tisakDetalji_Sirina">-</div>
         </div>
-        <div style="background:#e8f5e9; padding:12px; border-radius:5px;">
-          <div style="font-size:0.8em; color:#666;">Gramatura</div>
+        <div style="background:var(--remap-success-bg); padding:12px; border-radius:5px;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Gramatura</div>
           <div style="font-weight:bold;" id="tisakDetalji_Gramatura">-</div>
         </div>
       </div>
@@ -1598,28 +1446,28 @@
       <!-- Parametri tiska -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">⚙️ Parametri tiska</h4>
       <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Broj formi</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Broj formi</div>
           <div style="font-weight:bold;" id="tisakDetalji_BrojFormi">-</div>
         </div>
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Debljina klišeja</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Debljina klišeja</div>
           <div style="font-weight:bold;" id="tisakDetalji_DebljinaKliseja">-</div>
         </div>
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Debljina duplofana</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Debljina duplofana</div>
           <div style="font-weight:bold;" id="tisakDetalji_DebljinaDuplofana">-</div>
         </div>
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Dužina reza</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Dužina reza</div>
           <div style="font-weight:bold;" id="tisakDetalji_DuzinaReza">-</div>
         </div>
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Adapter</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Adapter</div>
           <div style="font-weight:bold;" id="tisakDetalji_Adapter">-</div>
         </div>
-        <div style="background:#e3f2fd; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Sliv</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Sliv</div>
           <div style="font-weight:bold;" id="tisakDetalji_Sliv">-</div>
         </div>
       </div>
@@ -1627,20 +1475,20 @@
       <!-- Fotoćelije i materijal -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">📷 Fotoćelije i materijal</h4>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Fotoćelija odmatanje</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Fotoćelija odmatanje</div>
           <div style="font-weight:bold;" id="tisakDetalji_FotoOdmatanje">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Materijal odmatanje</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Materijal odmatanje</div>
           <div style="font-weight:bold;" id="tisakDetalji_MatOdmatanje">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Fotoćelija namatanje</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Fotoćelija namatanje</div>
           <div style="font-weight:bold;" id="tisakDetalji_FotoNamatanje">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Materijal namatanje</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Materijal namatanje</div>
           <div style="font-weight:bold;" id="tisakDetalji_MatNamatanje">-</div>
         </div>
       </div>
@@ -1648,12 +1496,12 @@
       <!-- Pozicije -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">📍 Pozicije</h4>
       <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#fce4ec; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Pozicija klišeja</div>
+        <div style="background:var(--remap-danger-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Pozicija klišeja</div>
           <div style="font-weight:bold;" id="tisakDetalji_PozicijaKliseja">-</div>
         </div>
-        <div style="background:#fce4ec; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Pozicija noževa</div>
+        <div style="background:var(--remap-danger-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Pozicija noževa</div>
           <div style="font-weight:bold;" id="tisakDetalji_PozicijaNozeva">-</div>
         </div>
       </div>
@@ -1661,32 +1509,32 @@
       <!-- Boje tiska -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">🎨 Boje tiska</h4>
       <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#f3e5f5; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Broj boja</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Broj boja</div>
           <div style="font-weight:bold; font-size:1.5em; color:#9c27b0;" id="tisakDetalji_BrojBoja">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 1</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 1</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja1">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 2</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 2</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja2">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 3</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 3</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja3">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 4</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 4</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja4">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 5</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 5</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja5">-</div>
         </div>
-        <div style="background:#fff3e0; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Boja 6</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Boja 6</div>
           <div style="font-weight:bold;" id="tisakDetalji_Boja6">-</div>
         </div>
       </div>
@@ -1694,35 +1542,35 @@
       <!-- Anilox valjci -->
       <h4 style="color:#9c27b0; margin-bottom:10px;">🔄 Anilox valjci</h4>
       <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; margin-bottom:20px;">
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 1</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 1</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox1">-</div>
         </div>
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 2</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 2</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox2">-</div>
         </div>
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 3</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 3</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox3">-</div>
         </div>
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 4</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 4</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox4">-</div>
         </div>
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 5</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 5</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox5">-</div>
         </div>
-        <div style="background:#e0f7fa; padding:12px; border-radius:5px; text-align:center;">
-          <div style="font-size:0.8em; color:#666;">Anilox 6</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:5px; text-align:center;">
+          <div style="font-size:0.8em; color:var(--text-mid);">Anilox 6</div>
           <div style="font-weight:bold;" id="tisakDetalji_Anilox6">-</div>
         </div>
       </div>
       
       <!-- Napomene -->
-      <div style="background:#f5f5f5; padding:12px; border-radius:5px;">
-        <div style="font-size:0.8em; color:#666;">Napomene</div>
+      <div style="background:var(--remap-grey-bg); padding:12px; border-radius:5px;">
+        <div style="font-size:0.8em; color:var(--text-mid);">Napomene</div>
         <div id="tisakDetalji_Napomene">-</div>
       </div>
     </div>
@@ -1740,8 +1588,8 @@
       <span class="modal-close" onclick="tisakZatvoriModalEtikete()">&times;</span>
     </div>
     <div class="modal-body">
-      <p style="color:#666; font-size:0.9em; margin-bottom:15px;">Optimizirano za Brother QL-810Wc (62mm)</p>
-      <div id="tisakEtiketaContainer" style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; padding:15px; background:#eee; border-radius:8px;">
+      <p style="color:var(--text-mid); font-size:0.9em; margin-bottom:15px;">Optimizirano za Brother QL-810Wc (62mm)</p>
+      <div id="tisakEtiketaContainer" style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; padding:15px; background:var(--border); border-radius:8px;">
         <!-- Etikete -->
       </div>
     </div>
@@ -2109,7 +1957,7 @@ function tisakRenderRNTable() {
     
     // Gumb za odobrenje (samo admin/koordinator)
     if (cekaOdobrenje && jeAdmin) {
-      akcije += `<button class="tisak-btn" style="padding:5px 8px; background:#4caf50; color:white;" 
+      akcije += `<button class="tisak-btn" style="padding:5px 8px; background:var(--success); color:white;" 
                   onclick="event.stopPropagation(); tisakOdobriRN('${rn.id}')" title="Odobri tisak">
                   ✅</button>`;
     }
@@ -2120,13 +1968,13 @@ function tisakRenderRNTable() {
     return `
       <tr onclick="tisakOdaberiRN('${rn.id}')" class="${isSelected ? 'selected' : ''}" 
           style="${isPauziran ? 'opacity:0.7; background:#fff5f5;' : ''}">
-        <td><strong>${rn.wo_number || '-'}</strong>${isKila ? ' <span style="background:#4caf50;color:white;padding:1px 5px;border-radius:4px;font-size:0.7em;vertical-align:middle;">KILA</span>' : (isEtiketa ? ' <span style="background:#ff9800;color:white;padding:1px 5px;border-radius:4px;font-size:0.7em;vertical-align:middle;">ETI</span>' : '')}</td>
+        <td><strong>${rn.wo_number || '-'}</strong>${isKila ? ' <span style="background:var(--success);color:white;padding:1px 5px;border-radius:4px;font-size:0.7em;vertical-align:middle;">KILA</span>' : (isEtiketa ? ' <span style="background:var(--warning);color:white;padding:1px 5px;border-radius:4px;font-size:0.7em;vertical-align:middle;">ETI</span>' : '')}</td>
         <td>${rn.customer_name || '-'}</td>
         <td>${rn.article_name || '-'}</td>
-        <td style="font-size:0.85em; color:#666;">${sifraArtikla}</td>
+        <td style="font-size:0.85em; color:var(--text-mid);">${sifraArtikla}</td>
         <td>
           <div>${kolicina.toLocaleString('hr-HR')} kom</div>
-          <div style="font-size:0.8em; color:#666;">${metara.toFixed(1)} m</div>
+          <div style="font-size:0.8em; color:var(--text-mid);">${metara.toFixed(1)} m</div>
         </td>
         <td><strong>${sirinaPapira}</strong> cm</td>
         <td>${statusBadge}</td>
@@ -2887,17 +2735,35 @@ async function tisakSpremiOtiskanu() {
     trenutnoConsumed: tisakOdabranaRola.consumed_kg
   });
   
+  // V2 mode: provjeri feature flag — ako je on, koristit ćemo atomsku RPC umjesto inline UPDATE
+  let v2Enabled = false;
+  try {
+    if (window.RollConsumption && typeof window.RollConsumption.isV2Enabled === 'function') {
+      v2Enabled = await window.RollConsumption.isV2Enabled('tisak');
+    }
+  } catch (e) {
+    console.warn('[tisak] flag check failed, fallback v1', e);
+  }
+
   if (skidaSe > tisakKalkulacija.preostalo) {
-    if (!confirm(`Skidanje (${skidaSe.toFixed(1)} kg) prelazi dostupnu količinu (${tisakKalkulacija.preostalo.toFixed(1)} kg). Nastaviti?`)) {
-      return;
+    if (v2Enabled) {
+      // V2: informativno upozorenje, save uvijek prolazi
+      const overdraftKg = (skidaSe - tisakKalkulacija.preostalo).toFixed(1);
+      if (!confirm(`ℹ️ Označeno (${skidaSe.toFixed(1)} kg) prelazi preostalo (${tisakKalkulacija.preostalo.toFixed(1)} kg) za ${overdraftKg} kg.\n\nSave će svejedno proći — razlika će biti vidljiva u "Discrepancy log" (skladište).\n\nNastavi?`)) {
+        return;
+      }
+    } else {
+      if (!confirm(`Skidanje (${skidaSe.toFixed(1)} kg) prelazi dostupnu količinu (${tisakKalkulacija.preostalo.toFixed(1)} kg). Nastaviti?`)) {
+        return;
+      }
     }
   }
-  
+
   showLoading('Spremam...');
-  
+
   try {
     const supabase = initSupabase();
-    
+
     // 1. Spremi otiskanu rolu
     const printedData = {
       printed_roll_code: tisakKalkulacija.sifraOtiskane,
@@ -2913,13 +2779,16 @@ async function tisakSpremiOtiskanu() {
       color: tisakKalkulacija.boja,
       status: 'Na skladištu'
     };
-    
-    const { error: printedError } = await supabase
+
+    const { data: printedInserted, error: printedError } = await supabase
       .from('prod_inventory_printed')
-      .insert(printedData);
-    
+      .insert(printedData)
+      .select()
+      .single();
+
     if (printedError) throw printedError;
     console.log('✅ Otiskana rola spremljena');
+    const printedRollId = printedInserted?.id || null;
     
     // 2. Spremi traku (ako se reže)
     if (reziTraku && tisakKalkulacija.sirinaTrake > 0.5 && tezinaTrake > 0) {
@@ -2942,76 +2811,87 @@ async function tisakSpremiOtiskanu() {
       else console.log('✅ Traka spremljena');
     }
     
-    // 3. Ažuriraj matičnu rolu - dohvati svježe podatke prvo
-    const { data: freshRoll, error: fetchError } = await supabase
-      .from('prod_inventory_rolls')
-      .select('*')
-      .eq('roll_code', tisakKalkulacija.sifraRole)
-      .single();
-    
-    if (fetchError) {
-      console.warn('⚠️ Ne mogu dohvatiti svježe podatke role:', fetchError);
-    }
-    
-    const currentConsumed = parseFloat(freshRoll?.consumed_kg || tisakOdabranaRola.consumed_kg || 0);
-    const newConsumed = currentConsumed + skidaSe;
-    const originalKg = parseFloat(freshRoll?.original_kg || freshRoll?.weight_kg || tisakOdabranaRola.original_kg || tisakOdabranaRola.weight_kg || 0);
-    const novoPreostalo = Math.max(0, originalKg - newConsumed);
-    const noviStatus = novoPreostalo < 1 ? 'Utrošena' : 'Djelomično utrošeno';
-    
-    console.log('📊 Ažuriranje matične role:', {
-      rollCode: tisakKalkulacija.sifraRole,
-      originalKg,
-      previousConsumed: currentConsumed,
-      skidaSe,
-      newConsumed,
-      novoPreostalo,
-      noviStatus
-    });
-    
-    const { error: updateError } = await supabase
-      .from('prod_inventory_rolls')
-      .update({ 
-        consumed_kg: newConsumed,
-        status: noviStatus 
-      })
-      .eq('roll_code', tisakKalkulacija.sifraRole);
-    
-    if (updateError) {
-      console.error('❌ Greška pri ažuriranju role:', updateError);
-      throw updateError;
-    }
-    console.log('✅ Matična rola ažurirana, consumed_kg:', newConsumed);
-    
-    // 3b. Evidentiraj utrošak u prod_inventory_consumed_rolls
-    try {
-      if (freshRoll) {
-        const consumedData = {
-          roll_code: tisakKalkulacija.sifraRole,
-          source_roll_id: freshRoll.id,
-          source_table: 'prod_inventory_rolls',
-          material_type: 'rolls',
-          width_cm: freshRoll.width_cm,
-          grammage: freshRoll.grammage,
-          color: freshRoll.color,
-          manufacturer: freshRoll.manufacturer,
-          consumed_kg: skidaSe,
-          remaining_kg: novoPreostalo,
-          work_order_number: tisakKalkulacija.brojRN,
-          article_name: tisakKalkulacija.artikl,
-          article_code: tisakKalkulacija.sifraArtikla,
-          customer_name: tisakKalkulacija.kupac,
-          production_line: 'Tisak',
-          consumption_type: 'Tiskanje',
-          consumed_by: Auth.getUser()?.name || 'Nepoznato',
-          original_scanned_code: tisakKalkulacija.sifraRole
-        };
-        
-        await supabase.from('prod_inventory_consumed_rolls').insert(consumedData);
-        console.log('✅ Evidentirano u consumed_rolls');
+    // 3. Skini matičnu rolu — V2 (atomska RPC) ili V1 (inline) ovisno o feature flag-u
+    if (v2Enabled) {
+      try {
+        const v2Result = await window.RollConsumption.consume({
+          machine: 'tisak',
+          workOrderId: tisakOdabraniRNData?.id || null,
+          workOrderNumber: tisakKalkulacija.brojRN,
+          printedRollId: printedRollId,
+          rolls: [{
+            scannedCode: tisakKalkulacija.sifraRole,
+            consumedKg: skidaSe,
+            clientRowId: 'parent_' + (printedRollId || Date.now())
+          }]
+        });
+        console.log('✅ V2 consumption ok:', v2Result);
+      } catch (e) {
+        console.error('❌ V2 consumption failed:', e);
+        throw e;
       }
-    } catch (e) {
-      console.warn('⚠️ Greška evidencije consumed_rolls:', e);
+    } else {
+      // V1 (legacy) path — ostaje aktivan dok ne potvrdimo v2
+      const { data: freshRoll, error: fetchError } = await supabase
+        .from('prod_inventory_rolls')
+        .select('*')
+        .eq('roll_code', tisakKalkulacija.sifraRole)
+        .single();
+
+      if (fetchError) {
+        console.warn('⚠️ Ne mogu dohvatiti svježe podatke role:', fetchError);
+      }
+
+      const currentConsumed = parseFloat(freshRoll?.consumed_kg || tisakOdabranaRola.consumed_kg || 0);
+      const newConsumed = currentConsumed + skidaSe;
+      const originalKg = parseFloat(freshRoll?.original_kg || freshRoll?.weight_kg || tisakOdabranaRola.original_kg || tisakOdabranaRola.weight_kg || 0);
+      const novoPreostalo = Math.max(0, originalKg - newConsumed);
+      const noviStatus = novoPreostalo < 1 ? 'Utrošena' : 'Djelomično utrošeno';
+
+      const { error: updateError } = await supabase
+        .from('prod_inventory_rolls')
+        .update({
+          consumed_kg: newConsumed,
+          status: noviStatus
+        })
+        .eq('roll_code', tisakKalkulacija.sifraRole);
+
+      if (updateError) {
+        console.error('❌ Greška pri ažuriranju role:', updateError);
+        throw updateError;
+      }
+      console.log('✅ Matična rola ažurirana, consumed_kg:', newConsumed);
+
+      // Evidentiraj utrošak u prod_inventory_consumed_rolls
+      try {
+        if (freshRoll) {
+          const consumedData = {
+            roll_code: tisakKalkulacija.sifraRole,
+            source_roll_id: freshRoll.id,
+            source_table: 'prod_inventory_rolls',
+            material_type: 'rolls',
+            width_cm: freshRoll.width_cm,
+            grammage: freshRoll.grammage,
+            color: freshRoll.color,
+            manufacturer: freshRoll.manufacturer,
+            consumed_kg: skidaSe,
+            remaining_kg: novoPreostalo,
+            work_order_number: tisakKalkulacija.brojRN,
+            article_name: tisakKalkulacija.artikl,
+            article_code: tisakKalkulacija.sifraArtikla,
+            customer_name: tisakKalkulacija.kupac,
+            production_line: 'Tisak',
+            consumption_type: 'Tiskanje',
+            consumed_by: Auth.getUser()?.name || 'Nepoznato',
+            original_scanned_code: tisakKalkulacija.sifraRole
+          };
+
+          await supabase.from('prod_inventory_consumed_rolls').insert(consumedData);
+          console.log('✅ Evidentirano u consumed_rolls');
+        }
+      } catch (e) {
+        console.warn('⚠️ Greška evidencije consumed_rolls:', e);
+      }
     }
     
     // 4. Ažuriraj status RN i produced_kg
@@ -3212,7 +3092,7 @@ function tisakRenderOtiskane() {
   }).join('');
   
   if (filtered.length > 100) {
-    tbody.innerHTML += `<tr><td colspan="8" style="text-align:center; color:#666;">... i još ${filtered.length - 100} rola</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="8" style="text-align:center; color:var(--text-mid);">... i još ${filtered.length - 100} rola</td></tr>`;
   }
 }
 
@@ -3595,7 +3475,7 @@ function tisakGenerirajEtikete(podaci) {
         <div class="tisak-etiketa-row"><span>Gram:</span><strong>${podaci.gramatura || '-'} g | ${podaci.boja || '-'}</strong></div>
         <div class="tisak-etiketa-row"><span>RN:</span><strong>${podaci.brojRN || '-'}</strong></div>
         <div class="tisak-etiketa-row"><span>Kupac:</span><strong>${(podaci.kupac || '-').substring(0, 18)}</strong></div>
-        <div class="tisak-etiketa-row" style="border-bottom:none; margin-top:4px; padding-top:4px; border-top:1px dashed #ccc;">
+        <div class="tisak-etiketa-row" style="border-bottom:none; margin-top:4px; padding-top:4px; border-top:1px dashed var(--border);">
           <span>Smjena:</span><strong>${smjenaBroj}.</strong>
         </div>
         <div class="tisak-etiketa-row" style="border-bottom:none; font-size:9px;">
@@ -3620,7 +3500,7 @@ function tisakGenerirajEtikete(podaci) {
           <div class="tisak-etiketa-row"><span>Težina:</span><strong>${(podaci.tezinaTrake || 0).toFixed(1)} kg</strong></div>
           <div class="tisak-etiketa-row"><span>Gram:</span><strong>${podaci.gramatura || '-'} g | ${podaci.boja || '-'}</strong></div>
           <div class="tisak-etiketa-row"><span>Izvor:</span><strong>${podaci.brojRN || '-'}</strong></div>
-          <div class="tisak-etiketa-row" style="border-bottom:none; margin-top:4px; padding-top:4px; border-top:1px dashed #ccc;">
+          <div class="tisak-etiketa-row" style="border-bottom:none; margin-top:4px; padding-top:4px; border-top:1px dashed var(--border);">
             <span>Smjena:</span><strong>${smjenaBroj}.</strong>
           </div>
           <div class="tisak-etiketa-qr">
@@ -3807,7 +3687,7 @@ async function tisakLoadGrafickaList() {
     
   } catch (e) {
     console.error('Greška učitavanja grafičke pripreme:', e);
-    container.innerHTML = '<div class="tisak-empty" style="color:#c62828;">❌ Greška: ' + e.message + '</div>';
+    container.innerHTML = '<div class="tisak-empty" style="color:var(--danger);">❌ Greška: ' + e.message + '</div>';
   }
 }
 
@@ -3848,7 +3728,7 @@ function tisakRenderGrafickaList() {
     var hasPrep = artikl.print_preparation_url ? true : false;
     var prepUrl = artikl.print_preparation_url || '';
     
-    html += '<div style="background:white; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">';
+    html += '<div style="background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">';
     
     // Header
     html += '<div style="background:' + (hasPrep ? 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)' : '#757575') + '; color:white; padding:12px 15px;">';
@@ -3859,13 +3739,13 @@ function tisakRenderGrafickaList() {
     // Body
     html += '<div style="padding:15px;">';
     html += '<div style="display:flex; justify-content:space-between; margin-bottom:8px;">';
-    html += '<span style="color:#666;">Kupac:</span><strong>' + (artikl.customer_name || '-') + '</strong>';
+    html += '<span style="color:var(--text-mid);">Kupac:</span><strong>' + (artikl.customer_name || '-') + '</strong>';
     html += '</div>';
     html += '<div style="display:flex; justify-content:space-between; margin-bottom:8px;">';
-    html += '<span style="color:#666;">Boja vreće:</span><strong>' + (artikl.bag_color || '-') + '</strong>';
+    html += '<span style="color:var(--text-mid);">Boja vreće:</span><strong>' + (artikl.bag_color || '-') + '</strong>';
     html += '</div>';
     html += '<div style="display:flex; justify-content:space-between; margin-bottom:12px;">';
-    html += '<span style="color:#666;">Broj boja tiska:</span><strong>' + (artikl.print_colors_count || '-') + '</strong>';
+    html += '<span style="color:var(--text-mid);">Broj boja tiska:</span><strong>' + (artikl.print_colors_count || '-') + '</strong>';
     html += '</div>';
     
     // Buttons
@@ -3874,7 +3754,7 @@ function tisakRenderGrafickaList() {
       html += '📄 Otvori grafičku pripremu';
       html += '</a>';
     } else {
-      html += '<div style="background:#fff3e0; color:#e65100; padding:10px; border-radius:5px; text-align:center; font-size:0.9em;">';
+      html += '<div style="background:var(--remap-warning-bg); color:#e65100; padding:10px; border-radius:5px; text-align:center; font-size:0.9em;">';
       html += '⚠️ Grafička priprema nije dostupna';
       html += '</div>';
     }
@@ -4337,10 +4217,10 @@ async function tisakGenerirajIzvjestaj() {
       if (reportData.rows && reportData.rows.length > 0) {
         reportData.rows.forEach(function(row) {
           if (row.tip === 'rucni') {
-            html += tisakGenerirajRucniRedak(row.wo_number, row.opis, row.metri, row.kom, row.prestel, row.priprema, row.pripremaRad, row.rad, row.kvar, row.cekanje, row.vanStroja, row.ciscenje, '#fffde7');
+            html += tisakGenerirajRucniRedak(row.wo_number, row.opis, row.metri, row.kom, row.skart_kom, row.prestel, row.priprema, row.pripremaRad, row.rad, row.kvar, row.cekanje, row.vanStroja, row.ciscenje, '#fffde7');
             rucniCount++;
           } else {
-            html += tisakGenerirajRedakIzvjestaja(row.wo_number, row.opis, row.metri, row.kom, row.prestel, row.priprema, row.pripremaRad, row.rad, row.kvar, row.cekanje, row.vanStroja, row.ciscenje, '#fff');
+            html += tisakGenerirajRedakIzvjestaja(row.wo_number, row.opis, row.metri, row.kom, row.skart_kom, row.prestel, row.priprema, row.pripremaRad, row.rad, row.kvar, row.cekanje, row.vanStroja, row.ciscenje, '#fff');
             autoCount++;
           }
         });
@@ -4348,11 +4228,11 @@ async function tisakGenerirajIzvjestaj() {
 
       // Dodaj prazne retke do minimuma
       while (autoCount < 4) {
-        html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '#fff');
+        html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '', '#fff');
         autoCount++;
       }
       while (rucniCount < 2) {
-        html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
+        html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
         rucniCount++;
       }
       
@@ -4367,10 +4247,10 @@ async function tisakGenerirajIzvjestaj() {
     // Nema spremljenog izvještaja - 6 auto redova + 2 ručna
     var html = '';
     for (var i = 0; i < 6; i++) {
-      html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '#fff');
+      html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '', '#fff');
     }
     for (var i = 0; i < 2; i++) {
-      html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
+      html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
     }
 
     tbody.innerHTML = html;
@@ -4382,10 +4262,10 @@ async function tisakGenerirajIzvjestaj() {
     // Prikaži prazne redove i u slučaju greške
     var html = '';
     for (var i = 0; i < 6; i++) {
-      html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '#fff');
+      html += tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '', '#fff');
     }
     for (var i = 0; i < 2; i++) {
-      html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
+      html += tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
     }
     tbody.innerHTML = html;
   }
@@ -4425,13 +4305,14 @@ function tisakGenerirajRNOpcije(selectedWO) {
 
 // Helper funkcija za generiranje retka izvještaja
 // /m = ručni unos, /kom = auto-kalkulirano iz metara po artiklu
-function tisakGenerirajRedakIzvjestaja(woNumber, opis, metri, kom, prestel, priprema, pripremaRad, rad, kvar, cekanje, vanStroja, ciscenje, bgColor) {
+function tisakGenerirajRedakIzvjestaja(woNumber, opis, metri, kom, skartKom, prestel, priprema, pripremaRad, rad, kvar, cekanje, vanStroja, ciscenje, bgColor) {
   bgColor = bgColor || '#fff';
   var row = '<tr>';
   row += '<td><select class="izvjestaj-input-vrijeme tisakIzvRN" style="background:' + bgColor + '; padding:4px 2px; font-size:0.8em; width:100%;" onchange="tisakIzvRNOdabran(this)">' + tisakGenerirajRNOpcije(woNumber || '') + '</select></td>';
   row += '<td><input type="text" class="izvjestaj-input-vrijeme tisakIzvOpis" value="' + (opis || '') + '" placeholder="Kupac / Artikl" style="background:' + bgColor + '; font-size:0.75em;" readonly></td>';
   row += '<td class="kolicina-col"><input type="number" class="izvjestaj-input-kom tisakIzvM" value="' + (metri || '') + '" placeholder="0" oninput="tisakRecalcKomZaRed(this); tisakIzracunajUkupno()"></td>';
-  row += '<td class="kolicina-col"><input type="number" class="izvjestaj-input-kom tisakIzvKom" value="' + (kom || '') + '" placeholder="0" style="background:#e8f5e9;" oninput="tisakIzracunajUkupno()" title="Auto-kalkulirano iz metara"></td>';
+  row += '<td class="kolicina-col"><input type="number" class="izvjestaj-input-kom tisakIzvKom" value="' + (kom || '') + '" placeholder="0" style="background:var(--remap-success-bg);" oninput="tisakIzracunajUkupno()" title="Auto-kalkulirano iz metara"></td>';
+  row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvSkartKom" min="0" value="' + (skartKom != null && skartKom !== '' ? skartKom : '') + '" placeholder="0" oninput="tisakIzracunajUkupno()" title="Škart u komadima (za OEE Quality)"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPrestel" step="0.5" value="' + (prestel || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPriprema" step="0.1" value="' + (priprema || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPripremaRad" step="0.1" value="' + (pripremaRad || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
@@ -4469,13 +4350,14 @@ function tisakIzvRNOdabran(selectEl) {
 }
 
 // Ručni redak - text input za RN i opis (za ostale naloge koji nisu u listi)
-function tisakGenerirajRucniRedak(woNumber, opis, metri, kom, prestel, priprema, pripremaRad, rad, kvar, cekanje, vanStroja, ciscenje, bgColor) {
+function tisakGenerirajRucniRedak(woNumber, opis, metri, kom, skartKom, prestel, priprema, pripremaRad, rad, kvar, cekanje, vanStroja, ciscenje, bgColor) {
   bgColor = bgColor || '#fffde7';
   var row = '<tr data-tip="rucni">';
   row += '<td><input type="text" class="izvjestaj-input-vrijeme tisakIzvRN" value="' + (woNumber || '') + '" placeholder="RN..." style="background:' + bgColor + ';" onchange="tisakRecalcKomZaRed(this)"></td>';
   row += '<td><input type="text" class="izvjestaj-input-vrijeme tisakIzvOpis" value="' + (opis || '') + '" placeholder="Opis..." style="background:' + bgColor + '; font-size:0.75em;"></td>';
   row += '<td class="kolicina-col"><input type="number" class="izvjestaj-input-kom tisakIzvM" value="' + (metri || '') + '" placeholder="0" oninput="tisakRecalcKomZaRed(this); tisakIzracunajUkupno()"></td>';
   row += '<td class="kolicina-col"><input type="number" class="izvjestaj-input-kom tisakIzvKom" value="' + (kom || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
+  row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvSkartKom" min="0" value="' + (skartKom != null && skartKom !== '' ? skartKom : '') + '" placeholder="0" oninput="tisakIzracunajUkupno()" title="Škart u komadima (za OEE Quality)"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPrestel" step="0.5" value="' + (prestel || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPriprema" step="0.1" value="' + (priprema || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
   row += '<td><input type="number" class="izvjestaj-input-vrijeme tisakIzvPripremaRad" step="0.1" value="' + (pripremaRad || '') + '" placeholder="0" oninput="tisakIzracunajUkupno()"></td>';
@@ -4491,14 +4373,14 @@ function tisakGenerirajRucniRedak(woNumber, opis, metri, kom, prestel, priprema,
 // Dodaj novi automatski redak (s dropdown-om)
 function tisakDodajRedakIzvjestaja() {
   var tbody = document.getElementById('tisakIzvjestajBody');
-  var newRow = tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '#fff');
+  var newRow = tisakGenerirajRedakIzvjestaja('', '', '', '', '', '', '', '', '', '', '', '', '', '#fff');
   tbody.insertAdjacentHTML('beforeend', newRow);
 }
 
 // Dodaj novi ručni redak (s text inputom)
 function tisakDodajRucniRedak() {
   var tbody = document.getElementById('tisakIzvjestajBody');
-  var newRow = tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
+  var newRow = tisakGenerirajRucniRedak('', '', '', '', '', '', '', '', '', '', '', '', '', '#fffde7');
   tbody.insertAdjacentHTML('beforeend', newRow);
 }
 
@@ -4653,7 +4535,7 @@ function tisakRenderPregledRN() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#999; padding:30px;">Nema podataka za prikaz</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema podataka za prikaz</td></tr>';
     document.getElementById('tisakPregledUkupnoM').textContent = '0';
     document.getElementById('tisakPregledUkupnoKom').textContent = '0';
     document.getElementById('tisakPregledBrojRN').textContent = '0';
@@ -4709,7 +4591,7 @@ function tisakRenderPregledRN() {
     var byStatus = {};
     g.items.forEach(function(i) { byStatus[i.status] = (byStatus[i.status] || 0) + 1; });
     var statusParts = [];
-    if (byStatus['Planiran']) statusParts.push('<span style="background:#fff3cd;color:#856404;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Planiran'] + ' Plan.</span>');
+    if (byStatus['Planiran']) statusParts.push('<span style="background:var(--remap-warning-bg);color:#856404;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Planiran'] + ' Plan.</span>');
     if (byStatus['U tijeku']) statusParts.push('<span style="background:#cce5ff;color:#004085;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['U tijeku'] + ' U tij.</span>');
     if (byStatus['Pauziran']) statusParts.push('<span style="background:#e2e3e5;color:#383d41;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Pauziran'] + ' Pauz.</span>');
     if (byStatus['Završeno']) statusParts.push('<span style="background:#d4edda;color:#155724;padding:1px 6px;border-radius:10px;font-size:0.7em;margin-right:2px;">' + byStatus['Završeno'] + ' Zav.</span>');
@@ -4725,7 +4607,7 @@ function tisakRenderPregledRN() {
     html += '<td style="text-align:right;"><strong>' + gMetri.toFixed(1) + '</strong></td>';
     html += '<td style="text-align:right;"><strong>' + formatBroj(Math.round(gKom)) + '</strong></td>';
     html += '<td style="text-align:right; ' + gPctStyle + '">' + (gNaruceno > 0 ? gPct.toFixed(1) + '%' : '') + '</td>';
-    html += '<td>' + (statusParts.join('') || '<span style="color:#94a3b8;font-size:0.8em;">—</span>') + '</td>';
+    html += '<td>' + (statusParts.join('') || '<span style="color:var(--text-mid);font-size:0.8em;">—</span>') + '</td>';
     html += '</tr>';
 
     // RN leaf redovi
@@ -4749,9 +4631,9 @@ function tisakRenderPregledRN() {
       else if (item.status === 'Planiran') statusRowBg = 'background:#fff3cd;';
 
       var tipBadge = item.printing_type === 'kila'
-        ? '<span style="background:#4caf50;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">KILA</span>'
+        ? '<span style="background:var(--success);color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">KILA</span>'
         : (item.printing_type === 'etiketa'
-            ? '<span style="background:#ff9800;color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">ETI</span>'
+            ? '<span style="background:var(--warning);color:white;padding:1px 5px;border-radius:4px;font-size:0.75em;">ETI</span>'
             : '');
 
       html += '<tr class="tisak-pregled-leaf-row ' + (isExpanded ? '' : 'hidden') + '" data-pregled-parent="' + key + '" style="' + statusRowBg + '">';
@@ -4828,11 +4710,12 @@ function formatBroj(n) {
 }
 
 function tisakIzracunajUkupno() {
-  var ukupnoM = 0, ukupnoKom = 0, ukupnoPrestel = 0, ukupnoPriprema = 0, ukupnoPripremaRad = 0;
+  var ukupnoM = 0, ukupnoKom = 0, ukupnoSkartKom = 0, ukupnoPrestel = 0, ukupnoPriprema = 0, ukupnoPripremaRad = 0;
   var ukupnoRad = 0, ukupnoKvar = 0, ukupnoCekanje = 0, ukupnoVanStroja = 0, ukupnoCiscenje = 0;
-  
+
   document.querySelectorAll('.tisakIzvM').forEach(function(el) { ukupnoM += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvKom').forEach(function(el) { ukupnoKom += parseFloat(el.value) || 0; });
+  document.querySelectorAll('.tisakIzvSkartKom').forEach(function(el) { ukupnoSkartKom += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvPrestel').forEach(function(el) { ukupnoPrestel += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvPriprema').forEach(function(el) { ukupnoPriprema += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvPripremaRad').forEach(function(el) { ukupnoPripremaRad += parseFloat(el.value) || 0; });
@@ -4841,9 +4724,10 @@ function tisakIzracunajUkupno() {
   document.querySelectorAll('.tisakIzvCekanje').forEach(function(el) { ukupnoCekanje += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvVanStroja').forEach(function(el) { ukupnoVanStroja += parseFloat(el.value) || 0; });
   document.querySelectorAll('.tisakIzvCiscenje').forEach(function(el) { ukupnoCiscenje += parseFloat(el.value) || 0; });
-  
+
   document.getElementById('tisakIzvUkupnoM').textContent = ukupnoM.toFixed(1);
   document.getElementById('tisakIzvUkupnoKom').textContent = ukupnoKom.toFixed(0);
+  document.getElementById('tisakIzvUkupnoSkartKom').textContent = ukupnoSkartKom.toFixed(0);
   document.getElementById('tisakIzvUkupnoPrestel').textContent = ukupnoPrestel.toFixed(1); // Decimala za preštelavanje
   document.getElementById('tisakIzvUkupnoPriprema').textContent = ukupnoPriprema.toFixed(1);
   document.getElementById('tisakIzvUkupnoPripremaRad').textContent = ukupnoPripremaRad.toFixed(1);
@@ -4925,6 +4809,7 @@ async function tisakSpremiIzvjestaj() {
       var opis = tr.querySelector('.tisakIzvOpis')?.value || '';
       var metri = tr.querySelector('.tisakIzvM')?.value || '';
       var kom = tr.querySelector('.tisakIzvKom')?.value || '';
+      var skartKom = tr.querySelector('.tisakIzvSkartKom')?.value || '';
       var prestel = tr.querySelector('.tisakIzvPrestel')?.value || '';
       var priprema = tr.querySelector('.tisakIzvPriprema')?.value || '';
       var pripremaRad = tr.querySelector('.tisakIzvPripremaRad')?.value || '';
@@ -4944,6 +4829,7 @@ async function tisakSpremiIzvjestaj() {
           opis: opis,
           metri: metri,
           kom: kom,
+          skart_kom: skartKom,
           prestel: prestel,
           priprema: priprema,
           pripremaRad: pripremaRad,
@@ -4957,10 +4843,17 @@ async function tisakSpremiIzvjestaj() {
       }
     });
     
+    // Detektira je li bilo koji red unio skart_kom (za OEE Quality)
+    var anySkartKomEntered = Array.prototype.some.call(
+      document.querySelectorAll('.tisakIzvSkartKom'),
+      function(el) { return el.value !== ''; }
+    );
+
     // Prikupi ukupne vrijednosti
     var ukupno = {
       metri: document.getElementById('tisakIzvUkupnoM').textContent,
       kom: document.getElementById('tisakIzvUkupnoKom').textContent,
+      skart_kom: anySkartKomEntered ? document.getElementById('tisakIzvUkupnoSkartKom').textContent : '',
       prestel: document.getElementById('tisakIzvUkupnoPrestel').textContent,
       priprema: document.getElementById('tisakIzvUkupnoPriprema').textContent,
       pripremaRad: document.getElementById('tisakIzvUkupnoPripremaRad').textContent,
@@ -5074,7 +4967,7 @@ async function tisakUcitajPrethodnaSmjena() {
       .maybeSingle();
 
     if (!result.data || !result.data.report_data) {
-      container.innerHTML = '<div class="tisak-empty" style="text-align: center; color: #999; padding: 30px;">Nema spremljenog izvještaja za prethodnu smjenu</div>';
+      container.innerHTML = '<div class="tisak-empty" style="text-align: center; color: var(--text-lo); padding: 30px;">Nema spremljenog izvještaja za prethodnu smjenu</div>';
       return;
     }
 
@@ -5085,10 +4978,10 @@ async function tisakUcitajPrethodnaSmjena() {
     var html = '';
 
     // Header info
-    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #f5f5f5; padding: 12px; border-radius: 8px;">';
-    html += '<div><span style="font-size: 0.8em; color: #666;">Voditelj:</span><br><strong>' + (report.strojar || '-') + '</strong></div>';
-    html += '<div><span style="font-size: 0.8em; color: #666;">Strojar:</span><br><strong>' + (report.pomocnici || '-') + '</strong></div>';
-    html += '<div><span style="font-size: 0.8em; color: #666;">Smjena:</span><br><strong>' + prevShift + '. smjena</strong></div>';
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; background: var(--remap-grey-bg); padding: 12px; border-radius: 8px;">';
+    html += '<div><span style="font-size: 0.8em; color: var(--text-mid);">Voditelj:</span><br><strong>' + (report.strojar || '-') + '</strong></div>';
+    html += '<div><span style="font-size: 0.8em; color: var(--text-mid);">Strojar:</span><br><strong>' + (report.pomocnici || '-') + '</strong></div>';
+    html += '<div><span style="font-size: 0.8em; color: var(--text-mid);">Smjena:</span><br><strong>' + prevShift + '. smjena</strong></div>';
     html += '</div>';
 
     // Tablica
@@ -5129,7 +5022,7 @@ async function tisakUcitajPrethodnaSmjena() {
         html += '</tr>';
       });
     } else {
-      html += '<tr><td colspan="12" style="text-align: center; color: #999;">Nema unesenih naloga</td></tr>';
+      html += '<tr><td colspan="12" style="text-align: center; color: var(--text-lo);">Nema unesenih naloga</td></tr>';
     }
 
     html += '</tbody>';
@@ -5137,7 +5030,7 @@ async function tisakUcitajPrethodnaSmjena() {
     // Ukupno footer
     if (reportData.ukupno) {
       var u = reportData.ukupno;
-      html += '<tfoot><tr style="background: #e8f5e9; font-weight: 600;">';
+      html += '<tfoot><tr style="background: var(--remap-success-bg); font-weight: 600;">';
       html += '<td colspan="2">UKUPNO:</td>';
       html += '<td style="text-align: center;">' + (u.metri || 0) + '</td>';
       html += '<td style="text-align: center;">' + (u.kom || 0) + '</td>';
@@ -5157,7 +5050,7 @@ async function tisakUcitajPrethodnaSmjena() {
 
     // Napomena
     if (report.napomena) {
-      html += '<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;">';
+      html += '<div style="margin-top: 15px; padding: 10px; background: var(--remap-warning-bg); border-radius: 6px; border-left: 3px solid var(--warning);">';
       html += '<strong>Napomena:</strong> ' + report.napomena;
       html += '</div>';
     }
@@ -5167,7 +5060,7 @@ async function tisakUcitajPrethodnaSmjena() {
 
   } catch (e) {
     console.error('Greška učitavanja prethodne smjene:', e);
-    container.innerHTML = '<div class="tisak-empty" style="text-align: center; color: #c62828; padding: 30px;">Greška pri učitavanju izvještaja</div>';
+    container.innerHTML = '<div class="tisak-empty" style="text-align: center; color: var(--danger); padding: 30px;">Greška pri učitavanju izvještaja</div>';
   }
 }
 
@@ -5416,12 +5309,12 @@ tisakCheckSmjenaConfirmed();
       <span class="modal-close" onclick="closeModal('zamjeneModalTisak')" style="color:white;">&times;</span>
     </div>
     <div class="modal-body">
-      <div style="background:#e0f2f1; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9em;">
+      <div style="background:var(--remap-success-bg); padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9em;">
         <strong>ℹ️</strong> Zamjene vrijede samo za današnju smjenu.
       </div>
       <table style="width:100%; border-collapse:collapse;">
         <thead>
-          <tr style="background:#f5f5f5;">
+          <tr style="background:var(--remap-grey-bg);">
             <th style="padding:10px; text-align:left;">Originalni član</th>
             <th style="padding:10px; text-align:left;">Zamjena</th>
             <th style="padding:10px; text-align:left;">Status</th>

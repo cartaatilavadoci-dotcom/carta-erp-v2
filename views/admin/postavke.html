@@ -99,14 +99,7 @@
     font-size: 10px;
   }
   
-  .btn-sm {
-    padding: 5px 10px;
-    font-size: 11px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    margin-right: 3px;
-  }
+  
   
   .btn-edit { background: #e3f2fd; color: #1565c0; }
   .btn-delete { background: #ffebee; color: #c62828; }
@@ -183,6 +176,112 @@
   
   .test-result.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
   .test-result.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+  /* ============================================
+     THEME PICKER — Izgled tab (3 theme kartice)
+     ============================================ */
+  .theme-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .theme-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .theme-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--glass-border-strong);
+    box-shadow: var(--shadow-lg);
+  }
+  .theme-card.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(106, 172, 238, 0.20), var(--shadow);
+  }
+  .theme-card.active .theme-card-check { display: flex; }
+  .theme-card-check {
+    display: none;
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 28px; height: 28px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.30);
+    z-index: 2;
+  }
+  .theme-card-check .svg-icon { width: 16px; height: 16px; }
+
+  /* Preview area (mini mockup) */
+  .theme-card-preview {
+    height: 140px;
+    display: flex;
+    overflow: hidden;
+  }
+  .tp-sidebar {
+    width: 30px;
+    flex-shrink: 0;
+  }
+  .tp-main {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tp-header { height: 14px; border-radius: 3px; }
+  .tp-card { height: 32px; border-radius: 4px; }
+  .tp-card-row { display: flex; gap: 4px; }
+  .tp-pill { height: 12px; border-radius: 6px; flex: 1; }
+
+  /* Dark theme preview */
+  .theme-preview-dark { background: #000510; }
+  .theme-preview-dark .tp-sidebar { background: rgba(0, 5, 18, 0.92); border-right: 1px solid rgba(70, 130, 220, 0.25); }
+  .theme-preview-dark .tp-header { background: rgba(70, 130, 220, 0.20); }
+  .theme-preview-dark .tp-card { background: rgba(12, 40, 100, 0.45); border: 1px solid rgba(70, 130, 220, 0.20); }
+  .theme-preview-dark .tp-pill-1 { background: rgba(126, 207, 176, 0.35); }
+  .theme-preview-dark .tp-pill-2 { background: rgba(233, 181, 102, 0.35); }
+
+  /* Light theme preview */
+  .theme-preview-light { background: #f5f7fa; }
+  .theme-preview-light .tp-sidebar { background: #ffffff; border-right: 1px solid #e0e0e0; }
+  .theme-preview-light .tp-header { background: #1976d2; }
+  .theme-preview-light .tp-card { background: #ffffff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .theme-preview-light .tp-pill-1 { background: #4caf50; }
+  .theme-preview-light .tp-pill-2 { background: #ff9800; }
+
+  /* Sage theme preview */
+  .theme-preview-sage { background: #4a5550; }
+  .theme-preview-sage .tp-sidebar { background: rgba(40, 50, 45, 0.95); border-right: 1px solid rgba(155, 184, 155, 0.30); }
+  .theme-preview-sage .tp-header { background: rgba(155, 184, 155, 0.40); }
+  .theme-preview-sage .tp-card { background: rgba(60, 75, 65, 0.65); border: 1px solid rgba(155, 184, 155, 0.30); }
+  .theme-preview-sage .tp-pill-1 { background: rgba(165, 201, 148, 0.65); }
+  .theme-preview-sage .tp-pill-2 { background: rgba(212, 184, 112, 0.55); }
+
+  /* Body text */
+  .theme-card-body {
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--glass-border);
+  }
+  .theme-card-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-hi);
+    margin-bottom: 4px;
+  }
+  .theme-card-desc {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.4;
+  }
 </style>
 
 <div class="card">
@@ -197,6 +296,8 @@
     <button class="settings-tab" onclick="switchSettingsTab('primatelji')">📬 Email Primatelji</button>
     <button class="settings-tab" onclick="switchSettingsTab('oee')">📊 OEE</button>
     <button class="settings-tab" onclick="switchSettingsTab('produktivnost')">📈 Plan produktivnosti</button>
+    <button class="settings-tab" onclick="switchSettingsTab('iso')">🛡️ ISO 9001</button>
+    <button class="settings-tab" onclick="switchSettingsTab('izgled')">🎨 Izgled</button>
   </div>
   
   <!-- ============================================ -->
@@ -209,7 +310,7 @@
     </div>
     
     <div class="settings-grid" id="settingsGrid">
-      <p style="color:#999;">Učitavam postavke...</p>
+      <p style="color:var(--text-lo);">Učitavam postavke...</p>
     </div>
   </div>
   
@@ -231,7 +332,7 @@
         </tr>
       </thead>
       <tbody id="rolesTableBody">
-        <tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">Učitavam...</td></tr>
+        <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
       </tbody>
     </table>
   </div>
@@ -241,8 +342,8 @@
   <!-- ============================================ -->
   <div id="panelKorisnici" class="settings-panel">
     <div style="margin-bottom: 20px;">
-      <h3 style="margin: 0 0 10px; color: #333;">🔐 Upravljanje korisnicima</h3>
-      <p style="color: #666; font-size: 0.9em;">
+      <h3 style="margin: 0 0 10px; color: var(--text-hi);">🔐 Upravljanje korisnicima</h3>
+      <p style="color: var(--text-mid); font-size: 0.9em;">
         Upravljanje korisničkim računima, PIN-ovima i lozinkama.
       </p>
     </div>
@@ -251,7 +352,7 @@
     <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
       <button class="btn btn-primary" onclick="otvoriDodajKorisnika()">+ Novi korisnik</button>
       <button class="btn btn-secondary" onclick="ucitajKorisnike()">🔄 Osvježi</button>
-      <button class="btn" style="background:#fff3e0; color:#e65100; margin-left:auto;" onclick="otvoriPromjenuLozinke()">
+      <button class="btn" style="background:var(--remap-warning-bg); color:#e65100; margin-left:auto;" onclick="otvoriPromjenuLozinke()">
         🔑 Promijeni moju lozinku
       </button>
     </div>
@@ -278,7 +379,7 @@
         </tr>
       </thead>
       <tbody id="korisniciTableBody">
-        <tr><td colspan="8" style="text-align:center; padding:20px; color:#999;">Kliknite na tab za učitavanje...</td></tr>
+        <tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-lo);">Kliknite na tab za učitavanje...</td></tr>
       </tbody>
     </table>
   </div>
@@ -298,7 +399,7 @@
     <div style="margin-bottom:15px;">
       <button class="btn btn-primary" onclick="spremiEmailPostavke()">💾 Spremi</button>
       <button class="btn btn-secondary" onclick="ucitajEmailPostavke()">🔄 Osvježi</button>
-      <button class="btn" style="background:#e8f5e9; color:#2e7d32;" onclick="testEmailConnection()">🧪 Test Email</button>
+      <button class="btn" style="background:var(--remap-success-bg); color:var(--success);" onclick="testEmailConnection()">🧪 Test Email</button>
     </div>
     
     <div class="settings-grid" id="emailSettingsGrid">
@@ -362,7 +463,7 @@
         </tr>
       </thead>
       <tbody id="primateljiTableBody">
-        <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Učitavam...</td></tr>
+        <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
       </tbody>
     </table>
   </div>
@@ -372,8 +473,8 @@
   <!-- ============================================ -->
   <div id="panelOee" class="settings-panel">
     <div style="margin-bottom: 20px;">
-      <h3 style="margin: 0 0 10px; color: #333;">📊 OEE Postavke</h3>
-      <p style="color: #666; font-size: 0.9em;">
+      <h3 style="margin: 0 0 10px; color: var(--text-hi);">📊 OEE Postavke</h3>
+      <p style="color: var(--text-mid); font-size: 0.9em;">
         Konfiguriraj ciljne brzine strojeva za izračun OEE. Brzine za Bottomer i Tuber su u kom/min, za Tisak u m/min.
       </p>
     </div>
@@ -384,17 +485,17 @@
     </div>
     
     <!-- BOTTOMER -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #fff3e0;">🔶 Bottomer - ciljne brzine (kom/min)</div>
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-warning-bg);">🔶 Bottomer - ciljne brzine (kom/min)</div>
       <div class="card-body">
         <div class="settings-grid">
-          <div class="setting-item" style="border-left: 4px solid #ff9800;">
+          <div class="setting-item" style="border-left: 4px solid var(--warning);">
             <label>◆ NLI Bottomer</label>
             <input type="number" id="oee_bottomer_nli" min="1" max="500" value="150">
             <div class="hint">Brža linija - trenutno aktivna</div>
           </div>
           
-          <div class="setting-item" style="border-left: 4px solid #4caf50;">
+          <div class="setting-item" style="border-left: 4px solid var(--success);">
             <label>● W&H Bottomer</label>
             <input type="number" id="oee_bottomer_wh" min="1" max="500" value="100">
             <div class="hint">Sporija linija - zamjena sredinom 2025.</div>
@@ -404,17 +505,17 @@
     </div>
     
     <!-- TUBER -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #e8f5e9;">🟢 Tuber - ciljne brzine (kom/min)</div>
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-success-bg);">🟢 Tuber - ciljne brzine (kom/min)</div>
       <div class="card-body">
         <div class="settings-grid">
-          <div class="setting-item" style="border-left: 4px solid #ff9800;">
+          <div class="setting-item" style="border-left: 4px solid var(--warning);">
             <label>◆ NLI Tuber</label>
             <input type="number" id="oee_tuber_nli" min="1" max="500" value="200">
             <div class="hint">Brža linija</div>
           </div>
           
-          <div class="setting-item" style="border-left: 4px solid #4caf50;">
+          <div class="setting-item" style="border-left: 4px solid var(--success);">
             <label>● W&H Tuber</label>
             <input type="number" id="oee_tuber_wh" min="1" max="500" value="120">
             <div class="hint">Sporija linija</div>
@@ -424,11 +525,11 @@
     </div>
     
     <!-- TISAK -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #e3f2fd;">🖨️ Tisak - ciljne brzine (m/min)</div>
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-info-bg);">🖨️ Tisak - ciljne brzine (m/min)</div>
       <div class="card-body">
         <div class="settings-grid">
-          <div class="setting-item" style="border-left: 4px solid #2196f3;">
+          <div class="setting-item" style="border-left: 4px solid var(--info);">
             <label>Sciavi Padane</label>
             <input type="number" id="oee_tisak_sciavi" min="1" max="500" value="150">
             <div class="hint">Tisak linija 1</div>
@@ -444,10 +545,10 @@
     </div>
     
     <!-- REZAČ - Bonus sustav -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #fce4ec;">✂️ Rezač - postavke</div>
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-danger-bg);">✂️ Rezač - postavke</div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Postavke za rezač - granica širine i bonus sustav.
         </p>
         <div class="settings-grid">
@@ -473,8 +574,8 @@
     </div>
     
     <!-- Ciljni OEE -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #f8f9fa;">🎯 Opće postavke</div>
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-grey-bg);">🎯 Opće postavke</div>
       <div class="card-body">
         <div class="settings-grid">
           <div class="setting-item">
@@ -492,13 +593,242 @@
       </div>
     </div>
     
-    <!-- OEE Formula objašnjenje -->
-    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #f8f9fa;">📖 OEE Formula</div>
+    <!-- EPU & Bonus pravila (NLI Bottomer) -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 2px solid var(--primary);">
+      <div class="card-header" style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); color: white;">
+        💰 EPU & Bonus pravila (NLI Bottomer)
+      </div>
       <div class="card-body">
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-family: monospace;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
+          Pragovi i koeficijenti za EPU/Speed Gate/Util Gate sustav. Sve vrijednosti se primjenjuju u live izračunu na <code>v_oee_epu_shift</code> view-u.
+        </p>
+
+        <!-- Gates -->
+        <h4 style="margin: 15px 0 8px; color: var(--primary);">🚪 Pragovi za gates</h4>
+        <div class="settings-grid">
+          <div class="setting-item" style="border-left: 4px solid var(--success);">
+            <label>Speed Gate prag (%)</label>
+            <input type="number" id="oee_speed_gate_threshold" min="0" max="200" value="85" step="0.5">
+            <div class="hint">Stvarni kom / nominalni kom ≥ X%</div>
+          </div>
+          <div class="setting-item" style="border-left: 4px solid var(--info);">
+            <label>Util Gate prag (%)</label>
+            <input type="number" id="oee_util_gate_threshold" min="0" max="100" value="75" step="0.5">
+            <div class="hint">Rad / (Rad + Setup + Čekanje) ≥ X% (BEZ kvara)</div>
+          </div>
+        </div>
+
+        <!-- EPU formula -->
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">⚙️ EPU formula</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Referenta brzina (kom/min)</label>
+            <input type="number" id="oee_epu_ref_speed" min="50" max="500" value="180" step="1">
+            <div class="hint">EPU = kom × (REF / nom_speed_artikl)</div>
+          </div>
+          <div class="setting-item">
+            <label>Setup credit (EPU)</label>
+            <input type="number" id="oee_setup_credit_epu" min="0" max="100000" value="10800" step="100">
+            <div class="hint">Bonus za preštelavanje za sljedeću smjenu</div>
+          </div>
+          <div class="setting-item">
+            <label>Primijeni setup credit?</label>
+            <select id="oee_apply_setup_credit" style="width: 100%; padding: 8px;">
+              <option value="0">Ne (povijesno isključeno)</option>
+              <option value="1">Da (live aktivno)</option>
+            </select>
+            <div class="hint">Toggle (0/1)</div>
+          </div>
+        </div>
+
+        <!-- Bonus formula -->
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">💵 Bonus formula</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Prag (EPU)</label>
+            <input type="number" id="oee_bonus_epu_threshold" min="0" max="500000" value="70000" step="1000">
+            <div class="hint">Iznad ovog praga počinje bonus</div>
+          </div>
+          <div class="setting-item">
+            <label>Koeficijent (€ po 1000 EPU)</label>
+            <input type="number" id="oee_bonus_coefficient_per_1000_epu" min="0" max="100" value="4.29" step="0.01">
+            <div class="hint">CLAUDE_CODE_TASK: 0.00429 €/EPU = 4.29 €/1000 EPU</div>
+          </div>
+          <div class="setting-item">
+            <label>Cap po smjeni (€)</label>
+            <input type="number" id="oee_bonus_cap_eur" min="0" max="1000" value="150" step="5">
+            <div class="hint">Max bonus po cijeloj postavi</div>
+          </div>
+          <div class="setting-item">
+            <label>Veličina postave</label>
+            <input type="number" id="oee_bonus_team_size" min="1" max="20" value="6" step="1">
+            <div class="hint">Bonus se dijeli na X članova</div>
+          </div>
+        </div>
+
+        <!-- Nominalne brzine po valve_type -->
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">🎯 Nominalne brzine artikla (kom/min za 35-41 cm)</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>VL (bazna)</label>
+            <input type="number" id="oee_nom_speed_vl_base" min="50" max="500" value="180" step="1">
+          </div>
+          <div class="setting-item">
+            <label>VL2 (bazna)</label>
+            <input type="number" id="oee_nom_speed_vl2_base" min="50" max="500" value="165" step="1">
+          </div>
+          <div class="setting-item">
+            <label>VL2n (bazna)</label>
+            <input type="number" id="oee_nom_speed_vl2n_base" min="50" max="500" value="150" step="1">
+          </div>
+          <div class="setting-item">
+            <label>VLRn (bazna)</label>
+            <input type="number" id="oee_nom_speed_vlrn_base" min="50" max="500" value="160" step="1">
+          </div>
+          <div class="setting-item">
+            <label>VLR (bazna)</label>
+            <input type="number" id="oee_nom_speed_vlr_base" min="50" max="500" value="160" step="1">
+          </div>
+          <div class="setting-item">
+            <label>Default (fallback)</label>
+            <input type="number" id="oee_nom_speed_default" min="50" max="500" value="150" step="1">
+            <div class="hint">Za nepoznate valve_type (OL/IV/...)</div>
+          </div>
+        </div>
+
+        <!-- Korekcija širine -->
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">📏 Korekcija po širini i specijalni slučajevi</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Prag širine (cm)</label>
+            <input type="number" id="oee_nom_speed_width_threshold_cm" min="20" max="80" value="41" step="1">
+            <div class="hint">Iznad ove širine smanjuj brzinu</div>
+          </div>
+          <div class="setting-item">
+            <label>Korekcija (kom/min po +1 cm)</label>
+            <input type="number" id="oee_nom_speed_correction_per_cm" min="-20" max="0" value="-2" step="0.1">
+            <div class="hint">Negativan broj = smanjenje</div>
+          </div>
+          <div class="setting-item">
+            <label>VL2n &lt; 36 cm (fiksno)</label>
+            <input type="number" id="oee_nom_speed_vl2n_under_36cm" min="50" max="500" value="135" step="1">
+            <div class="hint">Slaganje bottleneck</div>
+          </div>
+          <div class="setting-item">
+            <label>VLRn &lt; 36 cm (fiksno)</label>
+            <input type="number" id="oee_nom_speed_vlrn_under_36cm" min="50" max="500" value="150" step="1">
+            <div class="hint">Slaganje uske dimenzije</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding: 10px 14px; background: var(--remap-warning-bg); border-left: 4px solid var(--warning); border-radius: 4px; font-size: 0.85em;">
+          ℹ️ <strong>Napomena:</strong> Kad spremiš, pravila se primjenjuju retroaktivno na <em>sve</em> postojeće smjene jer view svaki put čita aktualne vrijednosti iz <code>settings</code>. Bonus za prošli mjesec može se promijeniti ako se mijenja prag.
+        </div>
+      </div>
+    </div>
+
+    <!-- KLASIČNI BONUS — postavke za auto-izračun po smjenskim izvještajima -->
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 2px solid var(--primary);">
+      <div class="card-header" style="background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%); color: white;">
+        📋 Klasični bonus (auto-izračun iz smjenskih izvještaja)
+      </div>
+      <div class="card-body">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
+          Pragovi za klasični mjesečni bonus produktivnosti, primjenjuju se u <code>v_classical_bonus_monthly</code> view-u (OEE → tab OEE Bonusi → sekcija Klasični bonus).
+        </p>
+
+        <h4 style="margin: 15px 0 8px; color: var(--primary);">⚙️ Koeficijenti formule</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Koef. voditelja</label>
+            <input type="number" id="BONUS_KOEF_VODITELJ" min="0" max="100" step="0.5" value="25.5">
+            <div class="hint">% baza × razlika produktivnosti</div>
+          </div>
+          <div class="setting-item">
+            <label>Koef. ostali</label>
+            <input type="number" id="BONUS_KOEF_OSTALI" min="0" max="100" step="0.5" value="12.5">
+          </div>
+          <div class="setting-item">
+            <label>Baza (djelitelj)</label>
+            <input type="number" id="BONUS_BAZA" min="100" max="10000" step="100" value="2200">
+            <div class="hint">razlika / baza × koef = bonus %</div>
+          </div>
+        </div>
+
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">📉 Korekcija škarta</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>Skart koef. voditelj</label>
+            <input type="number" id="SKART_KOEF_VODITELJ" min="-30" max="0" step="0.5" value="-12">
+            <div class="hint">Negativan = kazna</div>
+          </div>
+          <div class="setting-item">
+            <label>Skart koef. ostali</label>
+            <input type="number" id="SKART_KOEF_OSTALI" min="-30" max="0" step="0.5" value="-8">
+          </div>
+          <div class="setting-item">
+            <label>Dozvoljeni škart (%)</label>
+            <input type="number" id="PLANIRANI_SKART" min="0" max="20" step="0.1" value="1.0">
+            <div class="hint">Iznad ovog škarta primijeni kazna</div>
+          </div>
+          <div class="setting-item" style="border-left: 4px solid var(--warning);">
+            <label>Prosj. težina vreće (g)</label>
+            <input type="number" id="bonus_avg_bag_weight_g" min="10" max="500" step="1" value="60">
+            <div class="hint">Konverzija škart kg → kom</div>
+          </div>
+          <div class="setting-item" style="border-left: 4px solid var(--danger); grid-column: span 2;">
+            <label>🔧 Isključi škart iz bonusa</label>
+            <select id="bonus_exclude_skart" style="width: 100%; padding: 8px;">
+              <option value="0">Ne — koristi škart u izračunu</option>
+              <option value="1">Da — preskoči škart korekciju (privremeno)</option>
+            </select>
+            <div class="hint">Privremeni toggle dok se unos škart komada ne uskladi po svim smjenama</div>
+          </div>
+        </div>
+
+        <h4 style="margin: 20px 0 8px; color: var(--primary);">🎯 Plan produktivnosti po stroju (kom/h, Tisak: m/h)</h4>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>NLI Bottomer</label>
+            <input type="number" id="plan_osobna_nli_bottomer" min="100" max="50000" step="100" value="5000">
+            <div class="hint">kom/h</div>
+          </div>
+          <div class="setting-item">
+            <label>NLI Tuber</label>
+            <input type="number" id="plan_osobna_nli_tuber" min="100" max="50000" step="100" value="6500">
+            <div class="hint">kom/h</div>
+          </div>
+          <div class="setting-item">
+            <label>WH Bottomer</label>
+            <input type="number" id="plan_osobna_wh_bottomer" min="100" max="50000" step="100" value="3200">
+            <div class="hint">kom/h</div>
+          </div>
+          <div class="setting-item">
+            <label>WH Tuber</label>
+            <input type="number" id="plan_osobna_wh_tuber" min="100" max="50000" step="100" value="4000">
+            <div class="hint">kom/h</div>
+          </div>
+          <div class="setting-item" style="border-left: 4px solid #6a1b9a;">
+            <label>Tisak Flexotecnica</label>
+            <input type="number" id="plan_osobna_tisak_flexotecnica" min="100" max="50000" step="100" value="3500">
+            <div class="hint"><strong>m/h</strong> (metri, ne kom)</div>
+          </div>
+          <div class="setting-item" style="border-left: 4px solid #6a1b9a;">
+            <label>Tisak Aries</label>
+            <input type="number" id="plan_osobna_tisak_aries" min="100" max="50000" step="100" value="3500">
+            <div class="hint"><strong>m/h</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OEE Formula objašnjenje -->
+    <div class="card" style="box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-grey-bg);">📖 OEE Formula</div>
+      <div class="card-body">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; font-family: monospace;">
           <div style="margin-bottom: 10px;"><b>OEE = Availability × Performance × Quality</b></div>
-          <div style="color: #666; font-size: 0.9em;">
+          <div style="color: var(--text-mid); font-size: 0.9em;">
             <div style="margin: 5px 0;">• <b>Availability</b> = Rad / (Rad + Kvar + Čekanje + Preštavanje)</div>
             <div style="margin: 5px 0;">• <b>Performance</b> = Proizvedeno / (Rad × 60 × Ciljna brzina)</div>
             <div style="margin: 5px 0;">• <b>Quality</b> = (Proizvedeno - Škart) / Proizvedeno</div>
@@ -508,10 +838,10 @@
         <div style="margin-top: 15px;">
           <h4 style="margin: 0 0 10px; font-size: 0.95em;">OEE Razine:</h4>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <span style="background: #4caf50; color: white; padding: 5px 12px; border-radius: 4px;">≥85% Svjetska klasa</span>
+            <span style="background: var(--success); color: white; padding: 5px 12px; border-radius: 4px;">≥85% Svjetska klasa</span>
             <span style="background: #8bc34a; color: white; padding: 5px 12px; border-radius: 4px;">70-84% Dobro</span>
-            <span style="background: #ff9800; color: white; padding: 5px 12px; border-radius: 4px;">60-69% Tipično</span>
-            <span style="background: #f44336; color: white; padding: 5px 12px; border-radius: 4px;">&lt;60% Potrebno poboljšanje</span>
+            <span style="background: var(--warning); color: white; padding: 5px 12px; border-radius: 4px;">60-69% Tipično</span>
+            <span style="background: var(--danger); color: white; padding: 5px 12px; border-radius: 4px;">&lt;60% Potrebno poboljšanje</span>
           </div>
         </div>
       </div>
@@ -527,18 +857,18 @@
       <button class="btn btn-secondary" onclick="ucitajPlanProduktivnosti()">🔄 Osvježi</button>
     </div>
     
-    <p style="color: #666; margin-bottom: 20px;">
+    <p style="color: var(--text-mid); margin-bottom: 20px;">
       Ovdje postavljate mjesečni plan proizvodnje u komadima. Grupna produktivnost se koristi za ukupne izvještaje, 
       a osobna produktivnost po timu za izračun bonusa.
     </p>
     
     <!-- GRUPNA PRODUKTIVNOST -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
       <div class="card-header" style="background: linear-gradient(135deg, #1565c0, #1976d2); color: white;">
         🏭 Grupna produktivnost (sve smjene zajedno)
       </div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Plan proizvodnje za cijelu liniju (sve smjene i timovi zajedno) - u komadima po satu.
         </p>
         <div class="settings-grid">
@@ -584,7 +914,7 @@
         🔵 W&H - Osobna produktivnost po timu/postavi
       </div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Plan po stroju za izračun bonusa timova na W&H liniji - u komadima po satu.
         </p>
         <div class="settings-grid">
@@ -614,12 +944,12 @@
     </div>
     
     <!-- OSOBNA PRODUKTIVNOST - NLI -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #1565c0;">
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--primary);">
       <div class="card-header" style="background: linear-gradient(135deg, #1565c0, #1976d2); color: white;">
         🟢 NLI - Osobna produktivnost po timu/postavi
       </div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Plan po stroju za izračun bonusa timova na NLI liniji - u komadima po satu.
         </p>
         <div class="settings-grid">
@@ -654,7 +984,7 @@
         🟣 Tisak - Osobna produktivnost po timu/postavi
       </div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Plan po stroju za izračun bonusa timova na Tisak liniji - u komadima po satu.
         </p>
         <div class="settings-grid">
@@ -684,12 +1014,12 @@
     </div>
     
     <!-- SKLADIŠTE PRODUKTIVNOST -->
-    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #ff9800;">
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--warning);">
       <div class="card-header" style="background: linear-gradient(135deg, #f57c00, #ff9800); color: white;">
         📦 Skladište - Produktivnost po ukupnoj proizvodnji
       </div>
       <div class="card-body">
-        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+        <p style="color: var(--text-mid); font-size: 0.85em; margin-bottom: 15px;">
           Mjesečni plan ukupne proizvodnje za skladište.
         </p>
         <div class="settings-grid">
@@ -708,23 +1038,23 @@
     </div>
     
     <!-- Info box -->
-    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0;">
-      <div class="card-header" style="background: #f8f9fa;">📖 Kako se koriste ovi planovi?</div>
+    <div class="card" style="box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: var(--remap-grey-bg);">📖 Kako se koriste ovi planovi?</div>
       <div class="card-body">
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;">
           <div style="margin-bottom: 10px;"><b>Grupna produktivnost:</b></div>
-          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+          <div style="color: var(--text-mid); font-size: 0.9em; margin-left: 15px;">
             • Koristi se za ukupne izvještaje i dashboarde<br>
             • Prikazuje očekivanu produktivnost cijele linije (kom/h)
           </div>
           <div style="margin: 15px 0 10px;"><b>Osobna produktivnost:</b></div>
-          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+          <div style="color: var(--text-mid); font-size: 0.9em; margin-left: 15px;">
             • Koristi se za izračun bonusa po timovima/postavama<br>
             • Svaki tim ima svoj plan u kom/h koji mora ostvariti<br>
             • Npr. 4000 kom/h × 8h smjena = 32.000 kom po smjeni
           </div>
           <div style="margin: 15px 0 10px;"><b>Skladište:</b></div>
-          <div style="color: #666; font-size: 0.9em; margin-left: 15px;">
+          <div style="color: var(--text-mid); font-size: 0.9em; margin-left: 15px;">
             • Mjeri se po ukupnoj mjesečnoj proizvodnji<br>
             • Default: 4.000.000 kom/mjesec
           </div>
@@ -732,6 +1062,139 @@
       </div>
     </div>
   </div>
+
+  <!-- ============================================ -->
+  <!-- PANEL: ISO 9001 Postavke (Pravilo 26: PUK konfigurabilan, ne hardkodiran) -->
+  <!-- ============================================ -->
+  <div id="panelIso" class="settings-panel">
+    <div style="margin-bottom:15px;">
+      <button class="btn btn-primary" onclick="spremiIsoPostavke()"><span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi ISO postavke</button>
+      <button class="btn btn-secondary" onclick="ucitajIsoPostavke()"><span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Osvježi</button>
+    </div>
+
+    <p style="color: var(--text-mid); margin-bottom: 20px; font-size: 13px;">
+      Konfigurabilne postavke ISO 9001 sustava. Vrijednosti se koriste u <strong>Sustav kvalitete (ISO)</strong> modulima
+      i u <em>Ocjeni uprave (OB_12)</em>.
+    </p>
+
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: linear-gradient(135deg, #366092, #2a4d75); color: white;">
+        <span class="svg-icon svg-icon-users svg-icon-sm" style="color:white"></span> Tim sustava kvalitete
+      </div>
+      <div class="card-body">
+        <p style="color: var(--text-mid); font-size: 12px; margin-bottom: 15px;">
+          Tko obavlja koju ulogu u ISO sustavu. Lista zaposlenika je iz tablice <code>employees</code> (samo aktivni).
+        </p>
+        <div class="settings-grid" id="isoTeamGrid">
+          <p style="color:var(--text-lo);">Učitavam...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: #607d8b; color: white;">
+        <span class="svg-icon svg-icon-shield-check svg-icon-sm" style="color:white"></span> Certifikacijsko tijelo i datumi
+      </div>
+      <div class="card-body">
+        <div class="settings-grid" id="isoCertGrid">
+          <p style="color:var(--text-lo);">Učitavam...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border);">
+      <div class="card-header" style="background: #795548; color: white;">
+        <span class="svg-icon svg-icon-alert-triangle svg-icon-sm" style="color:white"></span> Pragovi za auto-NC i alerti
+      </div>
+      <div class="card-body">
+        <p style="color: var(--text-mid); font-size: 12px; margin-bottom: 15px;">
+          Iznad ovih pragova sustav automatski generira nesukladnost (NC) iz proizvodnih podataka.
+        </p>
+        <div class="settings-grid" id="isoThresholdsGrid">
+          <p style="color:var(--text-lo);">Učitavam...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PANEL: Izgled (Theme switcher) -->
+  <!-- ============================================ -->
+  <div id="panelIzgled" class="settings-panel">
+    <div style="margin-bottom: 18px;">
+      <h3 style="margin: 0 0 6px 0;">Tema sučelja</h3>
+      <p style="color: var(--text-mid); margin: 0; font-size: 13px;">
+        Odaberite vizualni stil sučelja. Izbor se sprema lokalno (po pregledniku) i primjenjuje se odmah.
+      </p>
+    </div>
+
+    <div class="theme-picker-grid">
+      <!-- DARK -->
+      <div class="theme-card" data-theme-card="dark" onclick="window.applyThemeFromPicker('dark')">
+        <div class="theme-card-preview theme-preview-dark">
+          <div class="tp-sidebar"></div>
+          <div class="tp-main">
+            <div class="tp-header"></div>
+            <div class="tp-card"></div>
+            <div class="tp-card-row">
+              <div class="tp-pill tp-pill-1"></div>
+              <div class="tp-pill tp-pill-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-card-body">
+          <div class="theme-card-title">Dark Glass Blue</div>
+          <div class="theme-card-desc">Tamna pozadina + plavi glass kartice. Default.</div>
+        </div>
+        <div class="theme-card-check"><span class="svg-icon svg-icon-check"></span></div>
+      </div>
+
+      <!-- LIGHT -->
+      <div class="theme-card" data-theme-card="light" onclick="window.applyThemeFromPicker('light')">
+        <div class="theme-card-preview theme-preview-light">
+          <div class="tp-sidebar"></div>
+          <div class="tp-main">
+            <div class="tp-header"></div>
+            <div class="tp-card"></div>
+            <div class="tp-card-row">
+              <div class="tp-pill tp-pill-1"></div>
+              <div class="tp-pill tp-pill-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-card-body">
+          <div class="theme-card-title">Light</div>
+          <div class="theme-card-desc">Klasični svijetli ERP look. Bijela pozadina, plavi akcent.</div>
+        </div>
+        <div class="theme-card-check"><span class="svg-icon svg-icon-check"></span></div>
+      </div>
+
+      <!-- SAGE -->
+      <div class="theme-card" data-theme-card="sage" onclick="window.applyThemeFromPicker('sage')">
+        <div class="theme-card-preview theme-preview-sage">
+          <div class="tp-sidebar"></div>
+          <div class="tp-main">
+            <div class="tp-header"></div>
+            <div class="tp-card"></div>
+            <div class="tp-card-row">
+              <div class="tp-pill tp-pill-1"></div>
+              <div class="tp-pill tp-pill-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-card-body">
+          <div class="theme-card-title">Sage Mid Green</div>
+          <div class="theme-card-desc">Sive-zelena, smireni wellness/eco look. Mint akcent.</div>
+        </div>
+        <div class="theme-card-check"><span class="svg-icon svg-icon-check"></span></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px; padding: 14px 16px; background: var(--remap-info-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-mid); font-size: 13px;">
+      <strong style="color: var(--text-hi);">Napomena:</strong> tema se primjenjuje odmah i sprema lokalno. Drugi korisnici (drugi računala/preglednici) zadržavaju svoju temu. Promjena teme ne utječe na pohranjene podatke.
+    </div>
+  </div>
+
 </div>
 <!-- ============================================ -->
 <div id="roleModal" class="modal" style="display:none;">
@@ -746,7 +1209,7 @@
       <div class="form-group">
         <label>Naziv uloge *</label>
         <input type="text" id="roleNaziv" class="form-control" placeholder="npr. skladistar">
-        <small style="color:#888;">Bez razmaka, mala slova, crtice umjesto razmaka</small>
+        <small style="color:var(--text-lo);">Bez razmaka, mala slova, crtice umjesto razmaka</small>
       </div>
       
       <div class="form-group">
@@ -886,11 +1349,23 @@ function switchSettingsTab(tab) {
     'email': 'panelEmail',
     'primatelji': 'panelPrimatelji',
     'oee': 'panelOee',
-    'produktivnost': 'panelProduktivnost'
+    'produktivnost': 'panelProduktivnost',
+    'iso': 'panelIso',
+    'izgled': 'panelIzgled'
   };
-  
+
   document.getElementById(panelMap[tab]).classList.add('active');
-  
+
+  // Označi aktivnu theme karticu kad se otvori Izgled tab
+  if (tab === 'izgled' && typeof window.refreshThemePickerSelection === 'function') {
+    window.refreshThemePickerSelection();
+  }
+
+  // Učitaj ISO 9001 postavke kad se otvori tab
+  if (tab === 'iso') {
+    ucitajIsoPostavke();
+  }
+
   // Učitaj OEE postavke kad se otvori tab
   if (tab === 'oee') {
     ucitajOEEPostavke();
@@ -933,7 +1408,7 @@ function renderPostavke() {
   var grid = document.getElementById('settingsGrid');
   
   if (svePostavke.length === 0) {
-    grid.innerHTML = '<p style="color:#999;">Nema postavki u bazi</p>';
+    grid.innerHTML = '<p style="color:var(--text-lo);">Nema postavki u bazi</p>';
     return;
   }
   
@@ -1000,7 +1475,7 @@ function renderUloge() {
   var tbody = document.getElementById('rolesTableBody');
   
   if (sveUloge.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">Nema uloga</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-lo);">Nema uloga</td></tr>';
     return;
   }
   
@@ -1019,7 +1494,7 @@ function renderUloge() {
     html += '<td><div class="permissions-list">';
     
     if (dozvole.includes('*')) {
-      html += '<span class="perm-badge" style="background:#f3e5f5;color:#7b1fa2;">SVE</span>';
+      html += '<span class="perm-badge" style="background:var(--remap-grey-bg);color:#7b1fa2;">SVE</span>';
     } else {
       dozvole.slice(0, 6).forEach(function(p) {
         html += '<span class="perm-badge">' + p + '</span>';
@@ -1036,7 +1511,7 @@ function renderUloge() {
       html += '<button class="btn-sm btn-edit" onclick="urediUlogu(' + role.id + ')">Uredi</button> ';
       html += '<button class="btn-sm btn-delete" onclick="obrisiUlogu(' + role.id + ', \'' + role.naziv + '\')">Obriši</button>';
     } else {
-      html += '<span style="color:#999; font-size:11px;">Zaštićeno</span>';
+      html += '<span style="color:var(--text-lo); font-size:11px;">Zaštićeno</span>';
     }
     
     html += '</td></tr>';
@@ -1328,7 +1803,7 @@ function renderPrimatelje() {
   var tbody = document.getElementById('primateljiTableBody');
   
   if (sviPrimatelji.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Nema primatelja. Dodajte prvog!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-lo);">Nema primatelja. Dodajte prvog!</td></tr>';
     return;
   }
   
@@ -1543,18 +2018,52 @@ var oeeDescriptions = {
   'oee_scheduled_hours_default': 'Standardna smjena (sati)'
 };
 
+// EPU & Bonus pravila — settings ključevi (kategorija OEE_BONUS)
+// inputId === settingsKey (1:1) za sve EPU/Bonus polja
+var oeeBonusKeys = [
+  'oee_speed_gate_threshold', 'oee_util_gate_threshold',
+  'oee_epu_ref_speed', 'oee_setup_credit_epu', 'oee_apply_setup_credit',
+  'oee_bonus_epu_threshold', 'oee_bonus_coefficient_per_1000_epu',
+  'oee_bonus_cap_eur', 'oee_bonus_team_size',
+  'oee_nom_speed_vl_base', 'oee_nom_speed_vl2_base', 'oee_nom_speed_vl2n_base',
+  'oee_nom_speed_vlrn_base', 'oee_nom_speed_vlr_base', 'oee_nom_speed_default',
+  'oee_nom_speed_width_threshold_cm', 'oee_nom_speed_correction_per_cm',
+  'oee_nom_speed_vl2n_under_36cm', 'oee_nom_speed_vlrn_under_36cm'
+];
+
+// Klasični bonus — settings ključevi (kategorija PRODUKTIVNOST)
+var classicalBonusKeys = [
+  'BONUS_KOEF_VODITELJ', 'BONUS_KOEF_OSTALI', 'BONUS_BAZA',
+  'SKART_KOEF_VODITELJ', 'SKART_KOEF_OSTALI', 'PLANIRANI_SKART',
+  'bonus_avg_bag_weight_g', 'bonus_exclude_skart',
+  'plan_osobna_nli_bottomer', 'plan_osobna_nli_tuber',
+  'plan_osobna_wh_bottomer', 'plan_osobna_wh_tuber',
+  'plan_osobna_tisak_flexotecnica', 'plan_osobna_tisak_aries'
+];
+
 async function ucitajOEEPostavke() {
   try {
     var result = await initSupabase()
       .from('settings')
       .select('*')
-      .eq('category', 'OEE');
-    
+      .in('category', ['OEE', 'OEE_BONUS', 'PRODUKTIVNOST']);
+
     if (result.error) throw result.error;
-    
+
     oeePostavke = {};
     (result.data || []).forEach(function(s) {
       oeePostavke[s.key] = s;
+    });
+
+    // Popuni EPU & Bonus inputs (inputId === settingsKey)
+    oeeBonusKeys.forEach(function(key) {
+      var input = document.getElementById(key);
+      if (input && oeePostavke[key]) input.value = oeePostavke[key].value;
+    });
+    // Popuni klasični bonus inputs
+    classicalBonusKeys.forEach(function(key) {
+      var input = document.getElementById(key);
+      if (input && oeePostavke[key]) input.value = oeePostavke[key].value;
     });
     
     // Popuni forme iz mapiranja
@@ -1577,9 +2086,9 @@ async function ucitajOEEPostavke() {
 
 async function spremiOEEPostavke() {
   showLoading();
-  
+
   try {
-    // Prikupi sve vrijednosti iz formi
+    // Prikupi vrijednosti iz starih OEE polja
     var updates = [];
     Object.keys(oeeFieldMap).forEach(function(inputId) {
       var settingsKey = oeeFieldMap[inputId];
@@ -1588,34 +2097,53 @@ async function spremiOEEPostavke() {
         updates.push({
           key: settingsKey,
           value: parseFloat(input.value) || oeeDefaults[settingsKey],
-          desc: oeeDescriptions[settingsKey]
+          desc: oeeDescriptions[settingsKey],
+          category: 'OEE'
         });
       }
     });
-    
+
+    // Plus EPU & Bonus polja (kategorija OEE_BONUS)
+    oeeBonusKeys.forEach(function(key) {
+      var input = document.getElementById(key);
+      if (input) {
+        updates.push({
+          key: key,
+          value: parseFloat(input.value) || 0,
+          desc: oeePostavke[key] ? oeePostavke[key].description : key,
+          category: 'OEE_BONUS'
+        });
+      }
+    });
+    // Klasični bonus polja (kategorija PRODUKTIVNOST)
+    classicalBonusKeys.forEach(function(key) {
+      var input = document.getElementById(key);
+      if (input) {
+        updates.push({
+          key: key,
+          value: parseFloat(input.value) || 0,
+          desc: oeePostavke[key] ? oeePostavke[key].description : key,
+          category: 'PRODUKTIVNOST'
+        });
+      }
+    });
+
     for (var i = 0; i < updates.length; i++) {
       var u = updates[i];
-      
+
       if (oeePostavke[u.key]) {
-        // Update postojeće
         await initSupabase()
           .from('settings')
           .update({ value: u.value, updated_at: new Date().toISOString() })
           .eq('id', oeePostavke[u.key].id);
       } else {
-        // Insert nove
         await initSupabase()
           .from('settings')
-          .insert({
-            key: u.key,
-            value: u.value,
-            category: 'OEE',
-            description: u.desc
-          });
+          .insert({ key: u.key, value: u.value, category: u.category, description: u.desc });
       }
     }
-    
-    showMessage('OEE postavke spremljene!', 'success');
+
+    showMessage('OEE & Bonus postavke spremljene!', 'success');
     ucitajOEEPostavke();
     
   } catch (e) {
@@ -1827,7 +2355,7 @@ function renderKorisnici(korisnici) {
   var tbody = document.getElementById('korisniciTableBody');
   
   if (korisnici.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#999;">Nema korisnika</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-lo);">Nema korisnika</td></tr>';
     return;
   }
   
@@ -1844,16 +2372,16 @@ function renderKorisnici(korisnici) {
     html += '<tr>';
     html += '<td><strong>' + escapeHtml(user.ime) + '</strong></td>';
     html += '<td>' + escapeHtml(user.email) + '</td>';
-    html += '<td>' + (isAdminRole ? '<span style="color:#888;">-</span>' : (user.pin_code || '-')) + '</td>';
-    html += '<td>' + (isAdminRole && user.password ? '<span class="password-cell" style="font-family:monospace; background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:11px;">' + escapeHtml(user.password) + '</span>' : '<span style="color:#888;">-</span>') + '</td>';
+    html += '<td>' + (isAdminRole ? '<span style="color:var(--text-lo);">-</span>' : (user.pin_code || '-')) + '</td>';
+    html += '<td>' + (isAdminRole && user.password ? '<span class="password-cell" style="font-family:monospace; background:var(--remap-grey-bg); padding:2px 6px; border-radius:4px; font-size:11px;">' + escapeHtml(user.password) + '</span>' : '<span style="color:var(--text-lo);">-</span>') + '</td>';
     html += '<td><span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; ' + roleClass + '">' + user.uloga + '</span></td>';
     html += '<td><span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; ' + (user.aktivan ? 'background:#e8f5e9; color:#2e7d32;' : 'background:#ffebee; color:#c62828;') + '">' + (user.aktivan ? 'Aktivan' : 'Neaktivan') + '</span></td>';
     html += '<td>' + lastLogin + '</td>';
     html += '<td style="display:flex; gap:5px;">';
-    html += '<button class="btn btn-sm" style="background:#e3f2fd; color:#1565c0;" onclick="urediKorisnika(\'' + user.id + '\')">Uredi</button>';
+    html += '<button class="btn btn-sm" style="background:var(--remap-info-bg); color:var(--primary);" onclick="urediKorisnika(\'' + user.id + '\')">Uredi</button>';
     
     if (user.uloga !== 'superadmin') {
-      html += '<button class="btn btn-sm" style="background:#ffebee; color:#c62828;" onclick="obrisiKorisnika(\'' + user.id + '\', \'' + escapeHtml(user.ime) + '\')">Obriši</button>';
+      html += '<button class="btn btn-sm" style="background:var(--remap-danger-bg); color:var(--danger);" onclick="obrisiKorisnika(\'' + user.id + '\', \'' + escapeHtml(user.ime) + '\')">Obriši</button>';
     }
     
     html += '</td>';
@@ -2052,6 +2580,199 @@ async function spremiNovuLozinku() {
     hideLoading();
   }
 }
+
+// ============================================
+// ISO 9001 POSTAVKE
+// ============================================
+let isoEmployeesCache = [];
+let isoSettingsCache = {};
+
+async function ucitajIsoPostavke() {
+  try {
+    // 1) Dohvati employees za dropdownove
+    if (isoEmployeesCache.length === 0) {
+      isoEmployeesCache = await SB.select('employees', {
+        eq: { active: true },
+        columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' },
+        silent: true
+      });
+    }
+    // 2) Dohvati postavke ISO_9001
+    const settings = await SB.select('settings', {
+      eq: { category: 'ISO_9001' },
+      columns: 'key, value, text_value, description',
+      silent: true
+    });
+    isoSettingsCache = {};
+    settings.forEach(s => { isoSettingsCache[s.key] = s; });
+
+    renderIsoTeam();
+    renderIsoCert();
+    renderIsoThresholds();
+  } catch (e) {
+    if (typeof showMessage === 'function') showMessage('Greška ISO postavki: ' + e.message, 'error');
+  }
+}
+
+function isoEmpDropdown(key, value, label, hint) {
+  let html = `<div class="settings-item"><label><strong>${label}</strong>`;
+  if (hint) html += `<br><span style="font-size:11px; color:var(--text-lo);">${hint}</span>`;
+  html += `</label><select id="iso_${key}" class="form-control"><option value="">— bez konkretne osobe —</option>`;
+  isoEmployeesCache.forEach(e => {
+    const name = `${e.first_name || ''} ${e.last_name || ''}`.trim() + (e.position ? ` (${e.position})` : '');
+    const sel = (value === e.id) ? ' selected' : '';
+    html += `<option value="${e.id}"${sel}>${name}</option>`;
+  });
+  html += `</select></div>`;
+  return html;
+}
+
+function isoTextInput(key, value, label, hint, type) {
+  type = type || 'text';
+  let html = `<div class="settings-item"><label><strong>${label}</strong>`;
+  if (hint) html += `<br><span style="font-size:11px; color:var(--text-lo);">${hint}</span>`;
+  html += `</label><input type="${type}" id="iso_${key}" class="form-control" value="${(value || '').toString().replace(/"/g,'&quot;')}"></div>`;
+  return html;
+}
+
+function renderIsoTeam() {
+  const grid = document.getElementById('isoTeamGrid');
+  const get = (k) => isoSettingsCache[k] && isoSettingsCache[k].text_value;
+  grid.innerHTML =
+    isoEmpDropdown('predsjednica_uprave_employee_id', get('iso_predsjednica_uprave_employee_id'),
+      'Predsjednica uprave', 'Potpisuje politiku kvalitete i ocjenu uprave') +
+    isoEmpDropdown('puk_employee_id', get('iso_puk_employee_id'),
+      'PUK — Predstavnik Uprave za Kvalitetu', 'Operativno vodi sustav (može biti različito od službenog imenovanja)') +
+    isoEmpDropdown('voditelj_kontrolinga_employee_id', get('iso_voditelj_kontrolinga_employee_id'),
+      'Voditelj kontrolinga', 'Sudjeluje u Ocjeni uprave (OB_12)') +
+    isoTextInput('external_consultant_name', get('iso_external_consultant_name'),
+      'Vanjski ISO konzultant — ime', 'Sudjeluje u godišnjoj Ocjeni uprave') +
+    isoTextInput('external_consultant_email', get('iso_external_consultant_email'),
+      'Vanjski konzultant — email', 'Rezervirano za buduću read-only rolu (zasad samo info)', 'email');
+}
+
+function renderIsoCert() {
+  const grid = document.getElementById('isoCertGrid');
+  const get = (k) => isoSettingsCache[k] && isoSettingsCache[k].text_value;
+  grid.innerHTML =
+    isoTextInput('certifikator', get('iso_certifikator'),
+      'Certifikacijsko tijelo', 'TÜV NORD, Bureau Veritas, DNV, DQS, Cro-Cert...') +
+    isoTextInput('certifikat_broj', get('iso_certifikat_broj'),
+      'Broj ISO 9001 certifikata', '') +
+    isoTextInput('certifikat_vrijedi_do', get('iso_certifikat_vrijedi_do'),
+      'Datum isteka certifikata', 'YYYY-MM-DD', 'date') +
+    isoTextInput('next_external_audit_date', get('iso_next_external_audit_date'),
+      'Sljedeći eksterni nadzorni audit', 'YYYY-MM-DD — prikazuje se kao countdown na ISO Pregled', 'date') +
+    isoTextInput('politika_kvalitete_revision_date', get('iso_politika_kvalitete_revision_date'),
+      'Politika kvalitete — datum zadnje revizije', 'YYYY-MM-DD', 'date');
+}
+
+function isoNumInput(key, value, label, hint, step, min) {
+  let html = `<div class="settings-item"><label><strong>${label}</strong>`;
+  if (hint) html += `<br><span style="font-size:11px; color:var(--text-lo);">${hint}</span>`;
+  html += `</label><input type="number" step="${step || 1}" min="${min !== undefined ? min : 0}" id="iso_${key}" class="form-control" value="${value !== null && value !== undefined ? value : ''}"></div>`;
+  return html;
+}
+
+function renderIsoThresholds() {
+  const grid = document.getElementById('isoThresholdsGrid');
+  const get = (k) => isoSettingsCache[k] && isoSettingsCache[k].value;
+  grid.innerHTML =
+    isoNumInput('skart_threshold_pct', get('iso_skart_threshold_pct'),
+      'Prag % škarta za NC kandidat', 'Smjenski izvještaj iznad ovog % se flag-uje', 0.1) +
+    isoNumInput('kvar_min_minutes', get('iso_kvar_min_minutes'),
+      'Min. trajanje kvara za auto-NC (min)', 'Trigger fn_iso_nc_from_failure (UI ne mijenja trigger)') +
+    isoNumInput('kvar_major_minutes', get('iso_kvar_major_minutes'),
+      'Trajanje kvara za severity=major (min)', '') +
+    isoNumInput('doc_review_default_months', get('iso_doc_review_default_months'),
+      'Default frekvencija pregleda dokumenata (mjeseci)', '', 1, 1) +
+    isoNumInput('capa_default_due_days', get('iso_capa_default_due_days'),
+      'Default rok za izvršenje CAPA (dana)', '', 1, 1) +
+    isoNumInput('audit_alert_days_before', get('iso_audit_alert_days_before'),
+      'Dana prije internog audita za alert', '', 1, 1);
+}
+
+async function spremiIsoPostavke() {
+  showLoading && showLoading();
+  try {
+    // Tim: 5 stavki (text_value)
+    const teamKeys = [
+      'iso_predsjednica_uprave_employee_id',
+      'iso_puk_employee_id',
+      'iso_voditelj_kontrolinga_employee_id',
+      'iso_external_consultant_name',
+      'iso_external_consultant_email'
+    ];
+    // Cert: 5 stavki (text_value)
+    const certKeys = [
+      'iso_certifikator',
+      'iso_certifikat_broj',
+      'iso_certifikat_vrijedi_do',
+      'iso_next_external_audit_date',
+      'iso_politika_kvalitete_revision_date'
+    ];
+    // Thresholds: 6 stavki (value numeric)
+    const thresholdKeys = [
+      'iso_skart_threshold_pct',
+      'iso_kvar_min_minutes',
+      'iso_kvar_major_minutes',
+      'iso_doc_review_default_months',
+      'iso_capa_default_due_days',
+      'iso_audit_alert_days_before'
+    ];
+
+    for (const k of [...teamKeys, ...certKeys]) {
+      const elId = 'iso_' + k.replace(/^iso_/, '');
+      const el = document.getElementById(elId);
+      if (!el) continue;
+      const val = el.value || null;
+      await SB.update('settings', { text_value: val, updated_at: new Date().toISOString() }, { key: k });
+    }
+    for (const k of thresholdKeys) {
+      const elId = 'iso_' + k.replace(/^iso_/, '');
+      const el = document.getElementById(elId);
+      if (!el) continue;
+      const val = parseFloat(el.value);
+      if (isNaN(val)) continue;
+      await SB.update('settings', { value: val, updated_at: new Date().toISOString() }, { key: k });
+    }
+
+    if (typeof showMessage === 'function') showMessage('ISO postavke spremljene', 'success');
+    await ucitajIsoPostavke();
+  } catch (e) {
+    if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+  } finally {
+    hideLoading && hideLoading();
+  }
+}
+
+// ============================================
+// THEME PICKER (Izgled tab)
+// ============================================
+window.applyThemeFromPicker = function(themeName) {
+  if (typeof window.setTheme !== 'function') {
+    console.error('setTheme helper nije dostupan (treba biti definiran u index.html)');
+    return;
+  }
+  window.setTheme(themeName);
+  window.refreshThemePickerSelection();
+  if (typeof showMessage === 'function') {
+    var labels = { dark: 'Dark Glass Blue', light: 'Light', sage: 'Sage Mid Green' };
+    showMessage('Tema postavljena: ' + (labels[themeName] || themeName), 'success');
+  }
+};
+
+window.refreshThemePickerSelection = function() {
+  var current = (typeof window.getTheme === 'function') ? window.getTheme() : 'dark';
+  document.querySelectorAll('.theme-card[data-theme-card]').forEach(function(card) {
+    if (card.getAttribute('data-theme-card') === current) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
+};
 </script>
 
 <!-- MODAL: Korisnik -->
@@ -2083,7 +2804,7 @@ async function spremiNovuLozinku() {
       <div class="form-group" id="korisnikPasswordGroup" style="display: none;">
         <label>Lozinka (za admin prijavu)</label>
         <input type="text" id="korisnikPassword" class="form-control" placeholder="Lozinka za admin pristup">
-        <small style="color: #888;">Obavezno za admin i superadmin uloge</small>
+        <small style="color: var(--text-lo);">Obavezno za admin i superadmin uloge</small>
       </div>
       
       <div style="display: flex; gap: 15px;">

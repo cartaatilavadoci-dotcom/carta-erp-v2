@@ -8,8 +8,8 @@
 
 <style>
   .tab-nav { display: flex; gap: 5px; border-bottom: 2px solid #dee2e6; padding-bottom: 0; }
-  .tab-btn { padding: 12px 30px; border: none; background: #f0f0f0; cursor: pointer; font-weight: 600; border-radius: 8px 8px 0 0; transition: all 0.2s; color: #666; font-size: 1em; }
-  .tab-btn:hover { background: #e0e0e0; }
+  
+  
   .tab-btn.active { background: var(--primary); color: white; }
   .main-tab-content { display: none; }
   .main-tab-content.active { display: block; }
@@ -57,15 +57,15 @@
   
   <!-- Stats Kupci -->
   <div class="status-grid" style="margin-bottom: 20px;">
-    <div class="status-card" style="background: #e8f5e9;">
+    <div class="status-card" style="background: var(--remap-success-bg);">
       <div class="status-card-value" id="totalCustomersTab">0</div>
       <div class="status-card-label">Ukupno kupaca</div>
     </div>
-    <div class="status-card" style="background: #e3f2fd;">
+    <div class="status-card" style="background: var(--remap-info-bg);">
       <div class="status-card-value" id="customersHR">0</div>
       <div class="status-card-label">🇭🇷 HR/BIH/SRB</div>
     </div>
-    <div class="status-card" style="background: #fff3e0;">
+    <div class="status-card" style="background: var(--remap-warning-bg);">
       <div class="status-card-value" id="customersOther">0</div>
       <div class="status-card-label">🌍 Ostale zemlje</div>
     </div>
@@ -94,7 +94,7 @@
   <div class="card">
     <div class="card-header">
       🏢 Popis kupaca
-      <span id="filteredCustomersCount" style="font-weight: normal; margin-left: 10px; color: #666;"></span>
+      <span id="filteredCustomersCount" style="font-weight: normal; margin-left: 10px; color: var(--text-mid);"></span>
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="table-container" style="max-height: 550px; overflow-y: auto;">
@@ -159,7 +159,7 @@
     <div class="status-card-value" id="filteredArticles">0</div>
     <div class="status-card-label">Prikazano</div>
   </div>
-  <div class="status-card" style="background: #e8f5e9;">
+  <div class="status-card" style="background: var(--remap-success-bg);">
     <div class="status-card-value" id="totalCustomers">0</div>
     <div class="status-card-label">Kupaca</div>
   </div>
@@ -217,7 +217,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Šifra kupca</label>
-            <input type="text" class="form-control" id="customerCode" readonly style="background: #f5f5f5; font-weight: bold;">
+            <input type="text" class="form-control" id="customerCode" readonly style="background: var(--remap-grey-bg); font-weight: bold;">
           </div>
           <div class="form-group">
             <label>Status</label>
@@ -290,7 +290,7 @@
         </div>
         
         <!-- Info o jeziku etikete -->
-        <div id="labelLanguageBox" style="margin-top: 15px; padding: 12px; border-radius: 8px; border-left: 4px solid #1976d2; background: #e3f2fd;">
+        <div id="labelLanguageBox" style="margin-top: 15px; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); background: var(--remap-info-bg);">
           <strong>🏷️ Jezik etikete:</strong>
           <span id="labelLanguagePreview">Hrvatski</span>
         </div>
@@ -334,12 +334,12 @@
           </div>
           <div class="form-group" style="flex: 1;">
             <label>Novi ID artikla</label>
-            <input type="text" class="form-control" id="wizardNewArticleId" readonly style="background: #e8f5e9; font-weight: bold; font-size: 1.1em;">
+            <input type="text" class="form-control" id="wizardNewArticleId" readonly style="background: var(--remap-success-bg); font-weight: bold; font-size: 1.1em;">
           </div>
         </div>
 
         <div id="wizardSimilarResults" style="display: none; margin-top: 16px;">
-          <h4>3️⃣ Slični artikli <span id="wizardResultsCount" style="font-weight: normal; color: #888; font-size: 0.85em;"></span></h4>
+          <h4>3️⃣ Slični artikli <span id="wizardResultsCount" style="font-weight: normal; color: var(--text-lo); font-size: 0.85em;"></span></h4>
           <div class="wizard-results-grid" id="wizardResultsContainer"></div>
         </div>
       </div>
@@ -362,7 +362,7 @@
     </div>
     
     <!-- Tabovi -->
-    <div style="display: flex; border-bottom: 2px solid #e0e0e0; background: #f8f9fa;">
+    <div style="display: flex; border-bottom: 2px solid var(--border); background: var(--remap-grey-bg);">
       <button class="tab-btn active" data-tab="tabOsnovni" onclick="switchTab(this, 'tabOsnovni')">📋 Osnovni podaci</button>
       <button class="tab-btn" data-tab="tabTuber" onclick="switchTab(this, 'tabTuber')">🏭 Tuber</button>
       <button class="tab-btn" data-tab="tabBottomer" onclick="switchTab(this, 'tabBottomer')">⚙️ Bottomer</button>
@@ -533,7 +533,7 @@
             <div class="form-group">
               <label>Dužina tuljka (cm) *</label>
               <input type="number" step="0.01" class="form-control" id="artTubeLength" placeholder="npr. 63">
-              <small id="artTubeLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+              <small id="artTubeLengthSuggestion" style="color: var(--primary); font-size: 0.8em; display: none;"></small>
             </div>
             <div class="form-group">
               <label>Vrsta reza</label>
@@ -843,7 +843,7 @@
             <div class="form-group">
               <label>Dužina (cm) *</label>
               <input type="number" step="0.01" class="form-control" id="artTopLength" placeholder="0.00">
-              <small id="artTopLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+              <small id="artTopLengthSuggestion" style="color: var(--primary); font-size: 0.8em; display: none;"></small>
             </div>
             <div class="form-group">
               <label>Preklop (cm)</label>
@@ -889,7 +889,7 @@
             <div class="form-group">
               <label>Dužina (cm) *</label>
               <input type="number" step="0.01" class="form-control" id="artBottomLength" placeholder="0.00">
-              <small id="artBottomLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+              <small id="artBottomLengthSuggestion" style="color: var(--primary); font-size: 0.8em; display: none;"></small>
             </div>
             <div class="form-group">
               <label>Preklop (cm)</label>
@@ -910,7 +910,7 @@
       <!-- ==================== TAB: TISAK ==================== -->
       <div id="tabTisak" class="tab-content" style="display: none;">
         <!-- GRAFIČKA PRIPREMA -->
-        <div class="form-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196F3; border-radius: 8px;">
+        <div class="form-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid var(--info); border-radius: 8px;">
           <h4>📄 Grafička priprema (PDF)</h4>
           <div class="form-row" style="align-items: flex-end;">
             <div class="form-group" style="flex: 3;">
@@ -966,7 +966,7 @@
             <div class="form-group">
               <label>Dužina reza (cm)</label>
               <input type="number" step="0.01" class="form-control" id="artCutLength" placeholder="0.00">
-              <small id="artCutLengthSuggestion" style="color: #1976d2; font-size: 0.8em; display: none;"></small>
+              <small id="artCutLengthSuggestion" style="color: var(--primary); font-size: 0.8em; display: none;"></small>
             </div>
             <div class="form-group">
               <label>Sliv</label>
@@ -1077,29 +1077,13 @@
 </div>
 
 <style>
-.tab-btn {
-  padding: 12px 20px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s;
-}
-.tab-btn:hover {
-  background: #f0f0f0;
-  color: var(--primary);
-}
+
 .tab-btn.active {
   color: var(--primary);
   border-bottom-color: var(--primary);
   background: white;
 }
-.tab-content {
-  animation: fadeIn 0.3s ease;
-}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -1809,7 +1793,7 @@ function showPaperCodeSuggestions(input, dropdown) {
   if (matches.length === 0) {
     dropdown.innerHTML = `<div class="paper-code-no-results">
       Nema rezultata za "${query}"<br>
-      <small style="color:#999">Ukupno šifri u bazi: ${paperCodes.length}</small>
+      <small style="color:var(--text-lo)">Ukupno šifri u bazi: ${paperCodes.length}</small>
     </div>`;
   } else {
     dropdown.innerHTML = matches.map((p, idx) => {
@@ -2038,7 +2022,7 @@ function initSearchableSelect(select) {
     ).slice(0, 50); // Max 50 rezultata
     
     if (filtered.length === 0) {
-      dropdown.innerHTML = '<div style="padding:8px; color:#999;">Nema rezultata</div>';
+      dropdown.innerHTML = '<div style="padding:8px; color:var(--text-lo);">Nema rezultata</div>';
     } else {
       filtered.forEach(opt => {
         const item = document.createElement('div');
@@ -2226,7 +2210,7 @@ function renderArticles(articles) {
     const hasNotes = articleNotes.length > 0;
     const noteIcon = hasNotes 
       ? `<span style="cursor: pointer; font-size: 1.2em;" onclick="showArticleNotesDetail('${a.id}')" title="${articleNotes.length} aktivna napomena">⚠️</span>`
-      : '<span style="color: #ccc;">-</span>';
+      : '<span style="color: var(--border);">-</span>';
     
     return `
       <tr style="${hasNotes ? 'border-left: 3px solid #ff9800;' : ''}">
@@ -3227,9 +3211,9 @@ function updatePrintPreparationStatus(url) {
   const statusEl = document.getElementById('printPreparationStatus');
   if (!statusEl) return;
   if (url && url.trim()) {
-    statusEl.innerHTML = '<span style="color: #2e7d32;">✅ Grafička priprema povezana</span>';
+    statusEl.innerHTML = '<span style="color: var(--success);">✅ Grafička priprema povezana</span>';
   } else {
-    statusEl.innerHTML = '<span style="color: #f57c00;">⚠️ Nema povezane grafičke pripreme</span>';
+    statusEl.innerHTML = '<span style="color: var(--warning);">⚠️ Nema povezane grafičke pripreme</span>';
   }
 }
 

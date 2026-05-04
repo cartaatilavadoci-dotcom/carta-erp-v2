@@ -113,8 +113,12 @@
           items += '<div style="padding: 6px 15px; font-size: 0.7em; color: #999; text-transform: uppercase; letter-spacing: 1px;">' + item.section + '</div>';
         }
         
+        // SVG ikona ako je item.icon semantic name, inace text (legacy emoji)
+        var iconHtml = /^[a-z][a-z0-9-]*$/.test(item.icon)
+          ? '<span class="menu-icon svg-icon svg-icon-' + item.icon + '"></span>'
+          : '<span class="menu-icon">' + item.icon + '</span>';
         items += '<a href="#' + item.id + '" class="mobile-menu-item" onclick="closeMobileMenu()">' +
-                 '<span class="menu-icon">' + item.icon + '</span>' +
+                 iconHtml +
                  '<span>' + item.label + '</span></a>';
       });
     }

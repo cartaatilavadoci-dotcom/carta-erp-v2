@@ -1,57 +1,66 @@
 <div class="login-container">
-  <!-- Login Type Tabs -->
+  <!-- Login Box -->
   <div class="login-box" id="loginBox">
-    <div class="login-logo">🏭</div>
+    <div class="login-logo">
+      <img src="carta-logotip.png" alt="Carta">
+    </div>
     <h1 class="login-title">Carta ERP</h1>
-    
+    <p class="login-subtitle" style="margin-bottom: 24px;">Sustav za upravljanje proizvodnjom</p>
+
     <!-- Tabs za tip prijave -->
+    <!-- NAPOMENA: ne koristiti inline <svg> (Pravilo 25) — Live Server lomi fragment.
+         Koristim .svg-icon klase iz css/icons.css (mask-image, currentColor). -->
     <div class="login-tabs">
       <button class="login-tab active" id="tabPin" onclick="switchLoginTab('pin')">
-        🔢 PIN
+        <span class="svg-icon svg-icon-target svg-icon-xs" style="margin-right:6px;"></span>
+        PIN
       </button>
       <button class="login-tab" id="tabPassword" onclick="switchLoginTab('password')">
-        🔐 Admin
+        <span class="svg-icon svg-icon-shield-check svg-icon-xs" style="margin-right:6px;"></span>
+        Admin
       </button>
     </div>
-    
+
     <!-- PIN Login Form -->
     <div id="pinLoginForm">
       <p class="login-subtitle">Unesite vaš 4-znamenkasti PIN</p>
-      
+
       <div class="pin-input-container">
         <input type="password" class="pin-input" maxlength="1" data-index="0" inputmode="numeric">
         <input type="password" class="pin-input" maxlength="1" data-index="1" inputmode="numeric">
         <input type="password" class="pin-input" maxlength="1" data-index="2" inputmode="numeric">
         <input type="password" class="pin-input" maxlength="1" data-index="3" inputmode="numeric">
       </div>
-      
+
       <div id="loginError" class="login-error"></div>
       <div id="attemptWarning" class="attempt-warning"></div>
-      
+
       <button class="btn btn-primary btn-block btn-lg" onclick="handlePinLogin()">
         Prijava
       </button>
     </div>
-    
+
     <!-- Password Login Form (Admin/Superadmin) -->
     <div id="passwordLoginForm" style="display: none;">
       <p class="login-subtitle">Prijava za administratore</p>
-      
-      <div class="form-group">
+
+      <div class="form-group" style="text-align:left;">
         <label>Email</label>
         <input type="email" id="adminEmail" class="form-control" placeholder="admin@carta.hr" autocomplete="email">
       </div>
-      
-      <div class="form-group">
+
+      <div class="form-group" style="text-align:left;">
         <label>Lozinka</label>
         <div class="password-input-wrapper">
           <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" autocomplete="current-password">
-          <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">👁️</button>
+          <button type="button" class="password-toggle" onclick="togglePasswordVisibility()" title="Prikaži/sakrij lozinku">
+            <span class="svg-icon svg-icon-eye svg-icon-sm"></span>
+          </button>
         </div>
       </div>
-      
+
       <div id="passwordError" class="login-error"></div>
-      
+
       <button class="btn btn-primary btn-block btn-lg" onclick="handlePasswordLogin()">
         Prijava
       </button>
@@ -60,28 +69,30 @@
 
   <!-- Blocked Box -->
   <div class="login-box blocked-box" id="blockedBox" style="display: none;">
-    <div class="login-logo">🔒</div>
-    <h1 class="login-title" style="color: #c62828;">Pristup blokiran</h1>
+    <div class="login-logo" style="background: rgba(176,126,138,0.10); border-color: rgba(176,126,138,0.40); box-shadow: 0 0 14px rgba(176,126,138,0.28);">
+      <span class="svg-icon svg-icon-shield-check svg-icon-xl" style="color: var(--danger);"></span>
+    </div>
+    <h1 class="login-title" style="color: var(--danger);">Pristup blokiran</h1>
     <p class="login-subtitle">Previše neuspjelih pokušaja.<br>Potrebna autorizacija administratora.</p>
-    
+
     <div class="blocked-info">
-      <div>⚠️ Blokirano: <span id="blockedTime"></span></div>
+      <div>Blokirano: <span id="blockedTime"></span></div>
       <div>Pokušaja: <span id="blockedAttempts">3</span></div>
     </div>
-    
-    <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9em;">
+
+    <p style="margin-top: 20px; color: var(--text-mid); font-size: 0.9em;">
       Admin lozinka za odblokiravanje:
     </p>
-    
-    <div class="form-group">
+
+    <div class="form-group" style="text-align:left;">
       <input type="email" id="unblockEmail" class="form-control" placeholder="Admin email">
     </div>
-    <div class="form-group">
+    <div class="form-group" style="text-align:left;">
       <input type="password" id="unblockPassword" class="form-control" placeholder="Admin lozinka">
     </div>
-    
+
     <div id="adminError" class="login-error"></div>
-    
+
     <button class="btn btn-primary btn-block btn-lg" onclick="handleAdminUnlock()">
       Odblokiraj
     </button>
@@ -89,116 +100,108 @@
 </div>
 
 <style>
+  /* Login-specifični overrides — globalna .login-* pravila u css/styles.css */
   .login-error {
     color: var(--danger);
-    margin-bottom: 15px;
+    margin-bottom: 14px;
     display: none;
-    font-size: 0.9em;
+    font-size: 0.85em;
+    padding: 8px 12px;
+    background: rgba(176, 126, 138, 0.10);
+    border: 1px solid rgba(176, 126, 138, 0.30);
+    border-radius: 8px;
   }
   .attempt-warning {
-    color: #e65100;
-    margin-bottom: 15px;
-    font-size: 0.85em;
+    color: var(--warning);
+    margin-bottom: 14px;
+    font-size: 0.82em;
     display: none;
+    padding: 8px 12px;
+    background: rgba(233, 181, 102, 0.10);
+    border: 1px solid rgba(233, 181, 102, 0.30);
+    border-radius: 8px;
   }
   .blocked-box {
-    border: 2px solid #c62828;
+    border-color: rgba(176, 126, 138, 0.45) !important;
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(120, 30, 40, 0.4) !important;
   }
   .blocked-info {
-    background: #ffebee;
-    padding: 15px;
+    background: rgba(176, 126, 138, 0.12);
+    border: 1px solid rgba(176, 126, 138, 0.30);
+    padding: 12px 14px;
     border-radius: 8px;
-    margin: 20px 0;
-    color: #c62828;
-    font-size: 0.9em;
+    margin: 18px 0;
+    color: var(--danger);
+    font-size: 0.88em;
   }
   .blocked-info div {
-    margin: 5px 0;
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
   }
-  
-  /* Login Tabs */
+
+  /* Login Tabs — pill-segmented control u glass style */
   .login-tabs {
     display: flex;
-    margin-bottom: 20px;
-    border-radius: 8px;
+    margin-bottom: 22px;
+    border-radius: 10px;
     overflow: hidden;
-    border: 2px solid #e0e0e0;
+    border: 1px solid var(--glass-border-strong);
+    background: rgba(0, 5, 18, 0.40);
+    padding: 3px;
+    gap: 3px;
   }
   .login-tab {
     flex: 1;
-    padding: 12px;
+    padding: 10px 12px;
     border: none;
-    background: #f5f5f5;
+    background: transparent;
+    color: var(--text-mid);
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.2s;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0.3px;
   }
   .login-tab:hover {
-    background: #e0e0e0;
+    color: var(--text-hi);
+    background: rgba(70, 130, 220, 0.08);
   }
   .login-tab.active {
-    background: var(--primary);
-    color: white;
+    background: linear-gradient(135deg, rgba(106, 172, 238, 0.20) 0%, rgba(70, 130, 220, 0.30) 100%);
+    color: var(--blue-bright);
+    box-shadow: 0 0 12px rgba(106, 172, 238, 0.20);
   }
-  
-  /* Password Input */
+
+  /* Password Input wrapper */
   .password-input-wrapper {
     position: relative;
   }
   .password-input-wrapper input {
-    padding-right: 45px;
+    padding-right: 42px;
   }
   .password-toggle {
     position: absolute;
-    right: 10px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 18px;
-    opacity: 0.6;
+    color: var(--text-lo);
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
   }
   .password-toggle:hover {
-    opacity: 1;
-  }
-  
-  /* Form styling for password login */
-  #passwordLoginForm .form-group {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  #passwordLoginForm label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 13px;
-  }
-  #passwordLoginForm .form-control {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 15px;
-    transition: border-color 0.2s;
-  }
-  #passwordLoginForm .form-control:focus {
-    border-color: var(--primary);
-    outline: none;
-  }
-  
-  /* Blocked form */
-  #blockedBox .form-group {
-    margin-bottom: 10px;
-  }
-  #blockedBox .form-control {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
+    color: var(--blue);
   }
 </style>
 

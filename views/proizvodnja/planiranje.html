@@ -412,12 +412,12 @@
             <th>ID Artikla</th>
             <th>Ventil</th>
             <th>Poz.</th>
-            <th class="weight-cell" style="background: #e3f2fd;">S1 Bijeli<br><small>kg</small></th>
-            <th class="weight-cell" style="background: #efebe9;">S1 Smeđi<br><small>kg</small></th>
-            <th class="weight-cell" style="background: #efebe9;">S2<br><small>kg</small></th>
-            <th class="weight-cell" style="background: #efebe9;">S3<br><small>kg</small></th>
-            <th class="weight-cell" style="background: #efebe9;">S4<br><small>kg</small></th>
-            <th class="weight-cell" style="background: #e8f5e9;">Folija<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-info-bg);">S1 Bijeli<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-grey-bg);">S1 Smeđi<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-grey-bg);">S2<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-grey-bg);">S3<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-grey-bg);">S4<br><small>kg</small></th>
+            <th class="weight-cell" style="background: var(--remap-success-bg);">Folija<br><small>kg</small></th>
             <th>Naručeno</th>
             <th>Proizvedeno</th>
             <th>Za Proizvesti</th>
@@ -455,7 +455,7 @@
   </div>
   <div class="card-body">
     <!-- Filteri za RN -->
-    <div class="form-row" style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; gap: 8px;">
+    <div class="form-row" style="margin-bottom: 15px; background: var(--remap-grey-bg); padding: 10px; border-radius: 8px; gap: 8px;">
       <div class="form-group" style="flex: 0 0 90px;">
         <label style="font-size: 0.8em;">Tip</label>
         <select class="form-control form-control-sm" id="filterRNTip" onchange="window.filterRN()">
@@ -575,7 +575,7 @@
       <span class="modal-close" onclick="closeModal('resolveNoteModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <div id="resolveNoteInfo" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;"></div>
+      <div id="resolveNoteInfo" style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;"></div>
       <div class="form-group">
         <label>Napomena o rješenju *</label>
         <textarea class="form-control" id="resolutionNotes" rows="4" placeholder="Opišite kako je problem riješen..."></textarea>
@@ -591,21 +591,21 @@
 <!-- Modal za brisanje RN -->
 <div class="modal" id="deleteRNModal">
   <div class="modal-content" style="max-width: 500px;">
-    <div class="modal-header" style="background: #ffebee; border-bottom: 2px solid #f44336;">
-      <h2 style="color: #c62828;">🗑️ Brisanje radnog naloga</h2>
+    <div class="modal-header" style="background: var(--remap-danger-bg); border-bottom: 2px solid var(--danger);">
+      <h2 style="color: var(--danger);">🗑️ Brisanje radnog naloga</h2>
       <span class="modal-close" onclick="closeModal('deleteRNModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <div id="deleteRNInfo" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+      <div id="deleteRNInfo" style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--warning);">
         <p><strong>⚠️ Upozorenje:</strong> Brisanje radnog naloga je nepovratna akcija!</p>
       </div>
-      <div id="deleteRNDetails" style="background: #f5f5f5; padding: 15px; border-radius: 8px;"></div>
+      <div id="deleteRNDetails" style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;"></div>
       <input type="hidden" id="deleteRNId">
       <input type="hidden" id="deleteRNType">
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('deleteRNModal')">Odustani</button>
-      <button class="btn" style="background: #c62828; color: white;" onclick="window.confirmDeleteRN()">🗑️ Obriši RN</button>
+      <button class="btn" style="background: var(--danger); color: white;" onclick="window.confirmDeleteRN()">🗑️ Obriši RN</button>
     </div>
   </div>
 </div>
@@ -614,12 +614,12 @@
 <div class="modal" id="orderAttachmentsModal">
   <div class="modal-content" style="max-width: 700px;">
     <div class="modal-header">
-      <h2>📎 Privici narudžbe <span id="orderAttachOrderNo" style="font-weight:400;color:#1976d2;"></span></h2>
+      <h2>📎 Privici narudžbe <span id="orderAttachOrderNo" style="font-weight:400;color:var(--primary);"></span></h2>
       <span class="modal-close" onclick="closeModal('orderAttachmentsModal')">&times;</span>
     </div>
     <div class="modal-body">
       <!-- Upload područje -->
-      <div style="background:#f5f5f5;padding:14px;border-radius:6px;margin-bottom:14px;">
+      <div style="background:var(--remap-grey-bg);padding:14px;border-radius:6px;margin-bottom:14px;">
         <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;margin-bottom:8px;">
           <label style="font-weight:600;">Tip dokumenta:</label>
           <select id="orderAttachKind" class="form-control">
@@ -638,14 +638,14 @@
         </div>
         <div style="text-align:right;">
           <button class="btn btn-primary" onclick="window.uploadOrderAttachment()">⬆️ Upload</button>
-          <span id="orderAttachStatus" style="margin-left:10px;font-size:0.85em;color:#666;"></span>
+          <span id="orderAttachStatus" style="margin-left:10px;font-size:0.85em;color:var(--text-mid);"></span>
         </div>
       </div>
 
       <!-- Lista postojećih privitaka -->
       <h3 style="margin-top:0;font-size:1em;">Postojeći privici</h3>
       <div id="orderAttachmentsList" style="max-height:380px;overflow-y:auto;">
-        <div style="padding:20px;text-align:center;color:#999;">Učitavanje...</div>
+        <div style="padding:20px;text-align:center;color:var(--text-lo);">Učitavanje...</div>
       </div>
 
       <input type="hidden" id="orderAttachOrderId">
@@ -661,7 +661,7 @@
       <span class="modal-close" onclick="closeModal('counterSyncModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <p style="margin-bottom: 15px; color: #666;">Ova funkcija skenira sve tablice i ažurira brojače na najveće pronađene vrijednosti.</p>
+      <p style="margin-bottom: 15px; color: var(--text-mid);">Ova funkcija skenira sve tablice i ažurira brojače na najveće pronađene vrijednosti.</p>
       
       <div class="table-container" style="max-height: 400px;">
         <table>
@@ -696,7 +696,7 @@
       <span class="modal-close" onclick="closeModal('pauseRNModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <div id="pauseRNDetails" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;"></div>
+      <div id="pauseRNDetails" style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;"></div>
       <div class="form-group">
         <label>Razlog (opcionalno)</label>
         <textarea class="form-control" id="pauseRNReason" rows="3" placeholder="Opišite razlog pauziranja..."></textarea>
@@ -720,10 +720,10 @@
       <span class="modal-close" onclick="closeModal('finishRNModal')" style="color: white;">&times;</span>
     </div>
     <div class="modal-body">
-      <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+      <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--warning);">
         <p><strong>⚠️ Upozorenje:</strong> Ovo ce trajno zavrsiti radni nalog. Operateri ga vise nece moci koristiti na stroju.</p>
       </div>
-      <div id="finishRNDetails" style="background: #f5f5f5; padding: 15px; border-radius: 8px;"></div>
+      <div id="finishRNDetails" style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;"></div>
       <input type="hidden" id="finishRNId">
       <input type="hidden" id="finishRNType">
     </div>
@@ -742,7 +742,7 @@
       <span class="modal-close" onclick="closeModal('reserveRNModal')" style="color: white;">&times;</span>
     </div>
     <div class="modal-body">
-      <p style="margin-bottom: 15px; color: #666;">Rezervirajte specifične brojeve koji će se preskočiti prilikom automatskog generiranja.</p>
+      <p style="margin-bottom: 15px; color: var(--text-mid);">Rezervirajte specifične brojeve koji će se preskočiti prilikom automatskog generiranja.</p>
       
       <!-- Tip RN -->
       <div class="form-row">
@@ -764,14 +764,14 @@
       </div>
       
       <!-- Unos brojeva -->
-      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
-        <h4 style="margin: 0 0 10px; color: #1976d2;">➕ Dodaj rezervacije</h4>
+      <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <h4 style="margin: 0 0 10px; color: var(--primary);">➕ Dodaj rezervacije</h4>
         <div class="form-row">
           <div class="form-group" style="flex: 2;">
             <label>Brojevi (odvojeni zarezom ili raspon)</label>
             <input type="text" class="form-control" id="reserveRNNumbers" 
                    placeholder="Npr: 50, 51, 52 ili 100-110">
-            <small style="color: #666;">Primjeri: "50, 55, 60" ili "100-120" ili "50, 100-110, 200"</small>
+            <small style="color: var(--text-mid);">Primjeri: "50, 55, 60" ili "100-120" ili "50, 100-110, 200"</small>
           </div>
           <div class="form-group" style="flex: 1;">
             <label>Kupac/Razlog</label>
@@ -798,12 +798,12 @@
             </tr>
           </thead>
           <tbody id="reservedNumbersTable">
-            <tr><td colspan="6" style="text-align: center; color: #999;">Učitavam...</td></tr>
+            <tr><td colspan="6" style="text-align: center; color: var(--text-lo);">Učitavam...</td></tr>
           </tbody>
         </table>
       </div>
       <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <span id="reservedCount" style="color: #666; font-size: 0.9em;">Ukupno: 0</span>
+        <span id="reservedCount" style="color: var(--text-mid); font-size: 0.9em;">Ukupno: 0</span>
         <button class="btn btn-danger btn-sm" onclick="window.removeSelectedReservations()" id="btnRemoveReservations" disabled>
           🗑️ Ukloni odabrane
         </button>
@@ -823,7 +823,7 @@
       <span class="modal-close" onclick="closeModal('changeRNModal')" style="color: white;">&times;</span>
     </div>
     <div class="modal-body">
-      <div style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+      <div style="background: var(--remap-warning-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--warning);">
         <strong>⚠️ Upozorenje:</strong> Izmjena broja RN može utjecati na povezane dokumente i evidencije!
       </div>
       
@@ -835,18 +835,18 @@
       </div>
       
       <div id="changeRNDetails" style="display: none;">
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <div class="form-row">
             <div class="form-group" style="flex: 1;">
-              <label style="font-size: 0.85em; color: #666;">Trenutni broj</label>
-              <div id="changeRNCurrentNumber" style="font-size: 1.3em; font-weight: 600; color: #333;">-</div>
+              <label style="font-size: 0.85em; color: var(--text-mid);">Trenutni broj</label>
+              <div id="changeRNCurrentNumber" style="font-size: 1.3em; font-weight: 600; color: var(--text-hi);">-</div>
             </div>
             <div class="form-group" style="flex: 1;">
-              <label style="font-size: 0.85em; color: #666;">Tip</label>
+              <label style="font-size: 0.85em; color: var(--text-mid);">Tip</label>
               <div id="changeRNCurrentType">-</div>
             </div>
           </div>
-          <div style="font-size: 0.85em; color: #666; margin-top: 10px;">
+          <div style="font-size: 0.85em; color: var(--text-mid); margin-top: 10px;">
             <span id="changeRNCurrentInfo"></span>
           </div>
         </div>
@@ -854,7 +854,7 @@
         <div class="form-group">
           <label>Novi broj RN</label>
           <input type="text" class="form-control" id="changeRNNewNumber" placeholder="Npr. RN001/26">
-          <small style="color: #666;">Format: PREFIX + broj + /godina (npr. RN001/26, TIS005/26)</small>
+          <small style="color: var(--text-mid);">Format: PREFIX + broj + /godina (npr. RN001/26, TIS005/26)</small>
         </div>
         
         <div class="form-group">
@@ -883,7 +883,7 @@
     <div class="modal-body">
       <p style="margin-bottom: 15px;">Ovaj artikl ima aktivne napomene iz proizvodnje:</p>
       <div id="articleWarningContent"></div>
-      <p style="margin-top: 15px; color: #666;">Želite li ipak nastaviti s narudžbom?</p>
+      <p style="margin-top: 15px; color: var(--text-mid);">Želite li ipak nastaviti s narudžbom?</p>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('articleWarningModal')">Odustani</button>
@@ -903,7 +903,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Broj otpremnice</label>
-          <input type="text" class="form-control" id="newDispatchNumber" readonly style="background: #f5f5f5;">
+          <input type="text" class="form-control" id="newDispatchNumber" readonly style="background: var(--remap-grey-bg);">
         </div>
         <div class="form-group">
           <label>Datum otpreme *</label>
@@ -930,7 +930,7 @@
             </tr>
           </thead>
           <tbody id="dispatchOrdersTable">
-            <tr><td colspan="6" style="text-align: center; color: #999;">Odaberi kupca</td></tr>
+            <tr><td colspan="6" style="text-align: center; color: var(--text-lo);">Odaberi kupca</td></tr>
           </tbody>
         </table>
       </div>
@@ -1021,7 +1021,7 @@
         </select>
       </div>
       
-      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
         <label style="font-weight: 600; margin-bottom: 10px; display: block;">Tip planiranja:</label>
         
         <div class="form-group" style="margin-bottom: 10px;">
@@ -1082,7 +1082,7 @@
           </label>
         </div>
 
-        <div class="form-group" id="paperSuffixGroup" style="margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <div class="form-group" id="paperSuffixGroup" style="margin-top: 15px; padding: 15px; background: var(--remap-grey-bg); border-radius: 8px;">
           <label style="font-weight: 600; margin-bottom: 10px; display: block;">
             📄 Zamjena sufiksa papira (opciono):
           </label>
@@ -1099,19 +1099,19 @@
                    style="width: 80px; display: none;" placeholder="XX" maxlength="4"
                    oninput="this.value = this.value.toUpperCase()">
           </div>
-          <small style="color: #666; margin-top: 8px; display: block;">
+          <small style="color: var(--text-mid); margin-top: 8px; display: block;">
             Primjer: B70-72-<strong>SE</strong> → B70-72-<strong>KR</strong>
           </small>
         </div>
       </div>
 
-      <div id="etiketaOpcije" style="display: none; background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 10px;">
+      <div id="etiketaOpcije" style="display: none; background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-top: 10px;">
         <h4 style="margin: 0 0 12px 0;">🏷️ Parametri etikete</h4>
 
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: 600;">Kolicina (kom)</label>
           <input type="number" id="planLabelQuantity" min="1" class="form-control" placeholder="Prazno = iz narudzbe" style="max-width: 200px;">
-          <small style="color: #666;">Ostavite prazno za preuzimanje kolicine iz narudzbe</small>
+          <small style="color: var(--text-mid);">Ostavite prazno za preuzimanje kolicine iz narudzbe</small>
         </div>
 
         <div class="form-group" style="margin-bottom: 10px;">
@@ -1150,17 +1150,17 @@
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: 600;">Etiketa po vreci</label>
           <span id="planLabelsPerBag" style="font-weight: bold; font-size: 18px; margin-left: 10px;">-</span>
-          <small style="color: #666; margin-left: 8px;">( automatski iz tipa ventila: OL=1, ostali=2 )</small>
+          <small style="color: var(--text-mid); margin-left: 8px;">( automatski iz tipa ventila: OL=1, ostali=2 )</small>
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-weight: 600;">PDF graficka priprema (URL)</label>
           <input type="url" id="planLabelPdfUrl" class="form-control" placeholder="https://...">
-          <small style="color: #666;">Link na PDF s grafickom pripremom etikete</small>
+          <small style="color: var(--text-mid);">Link na PDF s grafickom pripremom etikete</small>
         </div>
       </div>
 
-      <div id="kilaOpcije" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 10px;">
+      <div id="kilaOpcije" style="display: none; background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-top: 10px;">
         <h4 style="margin: 0 0 12px 0;">⚖️ Parametri tisak za kilu</h4>
 
         <div class="form-group" style="margin-bottom: 10px;">
@@ -1194,17 +1194,17 @@
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: 600;">Otisaka po vreci</label>
           <span id="planKilaPerBag" style="font-weight: bold; font-size: 18px; margin-left: 10px;">-</span>
-          <small style="color: #666; margin-left: 8px;">( automatski iz tipa ventila: OL=1, ostali=2 )</small>
+          <small style="color: var(--text-mid); margin-left: 8px;">( automatski iz tipa ventila: OL=1, ostali=2 )</small>
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-weight: 600;">PDF graficka priprema (URL)</label>
           <input type="url" id="planKilaPdfUrl" class="form-control" placeholder="https://...">
-          <small style="color: #666;">Link na PDF s grafickom pripremom za kilu</small>
+          <small style="color: var(--text-mid);">Link na PDF s grafickom pripremom za kilu</small>
         </div>
       </div>
 
-      <div id="planUpozorenje" style="display: none; background: #fff3e0; border: 2px solid #ff9800; padding: 12px; border-radius: 8px; margin-top: 10px;">
+      <div id="planUpozorenje" style="display: none; background: var(--remap-warning-bg); border: 2px solid var(--warning); padding: 12px; border-radius: 8px; margin-top: 10px;">
         <strong>⚠️ Napomena:</strong> Kada kasnije planirate glavni RN za ove narudžbe, bit će prikazano da tisak/rezanje već postoji.
       </div>
     </div>
@@ -1254,7 +1254,7 @@
       </div>
       
       <!-- Pretraga artikala -->
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+      <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin: 15px 0;">
         <div class="form-row" style="align-items: center;">
           <div class="form-group" style="flex: 2; margin-bottom: 0;">
             <input type="text" class="form-control" id="articleSearchInput" placeholder="🔍 Pretraži artikle po nazivu ili šifri..." oninput="filterArticlesTable()">
@@ -1315,7 +1315,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Kupac</label>
-          <input type="text" class="form-control" id="editOrderCustomer" readonly style="background: #f5f5f5;">
+          <input type="text" class="form-control" id="editOrderCustomer" readonly style="background: var(--remap-grey-bg);">
         </div>
         <div class="form-group">
           <label>Linija *</label>
@@ -1348,16 +1348,16 @@
       </div>
       
       <!-- Privici (narudžbenica, test punjenja) -->
-      <div id="editOrderAttachBanner" style="display:none;background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 100%);border-left:4px solid #1976d2;padding:12px 16px;border-radius:6px;margin:16px 0;cursor:pointer;" onclick="window.openEditOrderAttachments()" title="Klik za pregled privitaka">
+      <div id="editOrderAttachBanner" style="display:none;background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 100%);border-left:4px solid var(--primary);padding:12px 16px;border-radius:6px;margin:16px 0;cursor:pointer;" onclick="window.openEditOrderAttachments()" title="Klik za pregled privitaka">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
-            <strong style="color:#0d47a1;">📎 <span id="editOrderAttachCount">0</span> privitaka</strong>
-            <span id="editOrderAttachSummary" style="margin-left:8px;color:#555;font-size:0.9em;"></span>
+            <strong style="color:var(--primary-dark);">📎 <span id="editOrderAttachCount">0</span> privitaka</strong>
+            <span id="editOrderAttachSummary" style="margin-left:8px;color:var(--text-mid);font-size:0.9em;"></span>
           </div>
           <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); window.openEditOrderAttachments();">📂 Otvori</button>
         </div>
       </div>
-      <div id="editOrderAttachEmpty" style="display:none;background:#fafafa;border:1px dashed #ccc;padding:10px 14px;border-radius:6px;margin:16px 0;text-align:center;color:#999;">
+      <div id="editOrderAttachEmpty" style="display:none;background:var(--remap-grey-bg);border:1px dashed var(--border);padding:10px 14px;border-radius:6px;margin:16px 0;text-align:center;color:var(--text-lo);">
         📎 Nema privitaka za ovu narudžbu
         <button class="btn btn-sm btn-outline" style="margin-left:8px;" onclick="window.openEditOrderAttachments()">➕ Dodaj</button>
       </div>
@@ -1386,7 +1386,7 @@
       </div>
       
       <!-- Dodaj novi artikl -->
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+      <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-top: 15px;">
         <h5 style="margin-bottom: 10px;">➕ Dodaj artikl</h5>
         <div class="form-row">
           <div class="form-group" style="flex: 2;">
@@ -1424,23 +1424,23 @@
     </div>
     <div class="modal-body">
       <!-- Info o RN -->
-      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #1976d2;">
+      <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div>
-            <div style="font-size: 0.8em; color: #666;">Radni nalog</div>
+            <div style="font-size: 0.8em; color: var(--text-mid);">Radni nalog</div>
             <div style="font-weight: 600; font-size: 1.1em;" id="correctRNNumber">-</div>
           </div>
           <div>
-            <div style="font-size: 0.8em; color: #666;">Tip</div>
+            <div style="font-size: 0.8em; color: var(--text-mid);">Tip</div>
             <div id="correctRNType">-</div>
           </div>
         </div>
         <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
-          <div style="font-size: 0.8em; color: #666;">Artikl</div>
+          <div style="font-size: 0.8em; color: var(--text-mid);">Artikl</div>
           <div id="correctRNArticle" style="font-weight: 500;">-</div>
         </div>
         <div style="margin-top: 8px;">
-          <div style="font-size: 0.8em; color: #666;">Kupac</div>
+          <div style="font-size: 0.8em; color: var(--text-mid);">Kupac</div>
           <div id="correctRNCustomer">-</div>
         </div>
         <div id="correctRNArticleSync" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
@@ -1451,27 +1451,27 @@
       
       <!-- Količine -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 0.85em; color: #666;">Trenutna količina</div>
-          <div style="font-size: 1.8em; font-weight: 700; color: #333;" id="correctRNCurrentQty">-</div>
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.85em; color: var(--text-mid);">Trenutna količina</div>
+          <div style="font-size: 1.8em; font-weight: 700; color: var(--text-hi);" id="correctRNCurrentQty">-</div>
         </div>
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
-          <div style="font-size: 0.85em; color: #2e7d32;">Nova količina</div>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.85em; color: var(--success);">Nova količina</div>
           <input type="number" class="form-control" id="correctRNNewQty" 
-                 style="font-size: 1.5em; font-weight: 700; text-align: center; border: 2px solid #4caf50;"
+                 style="font-size: 1.5em; font-weight: 700; text-align: center; border: 2px solid var(--success);"
                  min="1" step="1" oninput="updateCorrectRNDiff()">
         </div>
       </div>
       
       <!-- Razlika -->
-      <div id="correctRNDiffBox" style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none;">
+      <div id="correctRNDiffBox" style="background: var(--remap-warning-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none;">
         <span style="font-size: 0.9em; color: #e65100;">Razlika: </span>
         <strong id="correctRNDiff" style="font-size: 1.1em;">-</strong>
       </div>
       
       <!-- Razlog -->
       <div class="form-group">
-        <label>Razlog korekcije <span style="color: #999;">(opcionalno)</span></label>
+        <label>Razlog korekcije <span style="color: var(--text-lo);">(opcionalno)</span></label>
         <input type="text" class="form-control" id="correctRNReason" placeholder="Npr. Greška pri unosu, dogovor s kupcem...">
       </div>
       
@@ -1494,7 +1494,7 @@
     </div>
 
     <!-- Tabovi -->
-    <div style="display: flex; border-bottom: 2px solid #e0e0e0; background: #f8f9fa;">
+    <div style="display: flex; border-bottom: 2px solid var(--border); background: var(--remap-grey-bg);">
       <button class="art-modal-tab active" data-tab="artTabOsnovni" onclick="switchArticleTab(this, 'artTabOsnovni')">📋 Osnovni</button>
       <button class="art-modal-tab" data-tab="artTabTuber" onclick="switchArticleTab(this, 'artTabTuber')">🏭 Tuber</button>
       <button class="art-modal-tab" data-tab="artTabBottomer" onclick="switchArticleTab(this, 'artTabBottomer')">⚙️ Bottomer</button>
@@ -1507,12 +1507,12 @@
       <!-- ==================== TAB: OSNOVNI PODACI ==================== -->
       <div id="artTabOsnovni" class="art-tab-content active">
         <!-- Identifikacija -->
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #1565c0;">🔑 Identifikacija</h4>
+        <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--primary);">🔑 Identifikacija</h4>
           <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>ID Artikla</label>
-              <input type="text" class="form-control" id="artModalArticleId" readonly style="background: #f5f5f5;">
+              <input type="text" class="form-control" id="artModalArticleId" readonly style="background: var(--remap-grey-bg);">
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Naziv artikla</label>
@@ -1520,23 +1520,23 @@
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Šifra</label>
-              <input type="text" class="form-control" id="artModalCode" readonly style="background: #f5f5f5;">
+              <input type="text" class="form-control" id="artModalCode" readonly style="background: var(--remap-grey-bg);">
             </div>
           </div>
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-top: 10px;">
             <div class="form-group" style="margin: 0;">
               <label>Kupac</label>
-              <input type="text" class="form-control" id="artModalCustomer" readonly style="background: #f5f5f5;">
+              <input type="text" class="form-control" id="artModalCustomer" readonly style="background: var(--remap-grey-bg);">
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Linija proizvodnje</label>
-              <input type="text" class="form-control" id="artModalProductionLine" readonly style="background: #f5f5f5;">
+              <input type="text" class="form-control" id="artModalProductionLine" readonly style="background: var(--remap-grey-bg);">
             </div>
           </div>
         </div>
 
         <!-- Dimenzije vreće -->
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #e65100;">📐 Dimenzije vreće</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1559,8 +1559,8 @@
         </div>
 
         <!-- Karakteristike -->
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #2e7d32;">🏷️ Karakteristike</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">🏷️ Karakteristike</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Vrsta ventila</label>
@@ -1624,7 +1624,7 @@
         </div>
 
         <!-- Maziljke -->
-        <div style="background: #fce4ec; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-danger-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #c2185b;">🔧 Maziljke (Bottomer)</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1647,7 +1647,7 @@
         </div>
 
         <!-- Napomena -->
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;">
           <h4 style="margin: 0 0 10px 0; color: #616161;">📝 Napomena</h4>
           <textarea class="form-control" id="artModalNotes" rows="2" placeholder="Napomene..."></textarea>
         </div>
@@ -1656,8 +1656,8 @@
       <!-- ==================== TAB: TUBER ==================== -->
       <div id="artTabTuber" class="art-tab-content" style="display: none;">
         <!-- Osnovne mjere tuljka -->
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #1565c0;">📏 Osnovne mjere tuljka</h4>
+        <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--primary);">📏 Osnovne mjere tuljka</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Dužina tuljka (cm)</label>
@@ -1675,7 +1675,7 @@
         </div>
 
         <!-- Papir S1 -->
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #e65100;">📄 Papir S1 (Prvi sloj)</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1698,8 +1698,8 @@
         </div>
 
         <!-- Papir S2 -->
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #2e7d32;">📄 Papir S2 (Drugi sloj)</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">📄 Papir S2 (Drugi sloj)</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Šifra papira</label>
@@ -1721,7 +1721,7 @@
         </div>
 
         <!-- Papir S3 -->
-        <div style="background: #fce4ec; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-danger-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #c2185b;">📄 Papir S3 (Treći sloj)</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1744,8 +1744,8 @@
         </div>
 
         <!-- Papir S4 -->
-        <div style="background: #e0f2f1; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #00796b;">📄 Papir S4 (Četvrti sloj)</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">📄 Papir S4 (Četvrti sloj)</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Šifra papira</label>
@@ -1767,7 +1767,7 @@
         </div>
 
         <!-- Boje Tuber -->
-        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px;">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px;">
           <h4 style="margin: 0 0 10px 0; color: #7b1fa2;">🎨 Boje Tuber</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1793,8 +1793,8 @@
       <!-- ==================== TAB: BOTTOMER ==================== -->
       <div id="artTabBottomer" class="art-tab-content" style="display: none;">
         <!-- Ventil S1 -->
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #1565c0;">🔵 Ventil S1</h4>
+        <div style="background: var(--remap-info-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--primary);">🔵 Ventil S1</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Šifra papira</label>
@@ -1816,8 +1816,8 @@
         </div>
 
         <!-- Ventil S2 -->
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #2e7d32;">🔵 Ventil S2</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">🔵 Ventil S2</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Šifra papira</label>
@@ -1839,7 +1839,7 @@
         </div>
 
         <!-- Folija -->
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #e65100;">🎞️ Folija</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1862,8 +1862,8 @@
         </div>
 
         <!-- Gornje dno -->
-        <div style="background: #e0f2f1; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #00796b;">🟢 Gornje dno</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">🟢 Gornje dno</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Šifra papira</label>
@@ -1885,7 +1885,7 @@
         </div>
 
         <!-- Donje dno -->
-        <div style="background: #fce4ec; padding: 15px; border-radius: 8px;">
+        <div style="background: var(--remap-danger-bg); padding: 15px; border-radius: 8px;">
           <h4 style="margin: 0 0 10px 0; color: #c2185b;">🟡 Donje dno</h4>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1911,8 +1911,8 @@
       <!-- ==================== TAB: TISAK ==================== -->
       <div id="artTabTisak" class="art-tab-content" style="display: none;">
         <!-- Grafička priprema -->
-        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #2196f3;">
-          <h4 style="margin: 0 0 10px 0; color: #1565c0;">📄 Grafička priprema (PDF)</h4>
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid var(--info);">
+          <h4 style="margin: 0 0 10px 0; color: var(--primary);">📄 Grafička priprema (PDF)</h4>
           <div style="display: flex; gap: 10px; align-items: flex-end;">
             <div class="form-group" style="margin: 0; flex: 1;">
               <label>URL grafičke pripreme (Google Drive)</label>
@@ -1921,11 +1921,11 @@
             <button type="button" class="btn btn-secondary" onclick="openArtModalDriveFolder()" title="Otvori folder s pripremama">📁 Drive</button>
             <button type="button" class="btn btn-info" onclick="previewArtModalPrintPrep()" title="Pregledaj PDF">👁️ Pregledaj</button>
           </div>
-          <small style="color: #1565c0; margin-top: 5px; display: block;">Pronađi pripremu na Google Drive, desni klik → "Get link" → zalijepi ovdje</small>
+          <small style="color: var(--primary); margin-top: 5px; display: block;">Pronađi pripremu na Google Drive, desni klik → "Get link" → zalijepi ovdje</small>
         </div>
 
         <!-- Osnovni podaci tiska -->
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #e65100;">🖨️ Osnovni podaci tiska</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
@@ -1948,8 +1948,8 @@
         </div>
 
         <!-- Pozicije -->
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: #2e7d32;">📍 Pozicije</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">📍 Pozicije</h4>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;">
               <label>Pozicija klišea</label>
@@ -1971,7 +1971,7 @@
         </div>
 
         <!-- Anilox valjci -->
-        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px 0; color: #7b1fa2;">🎨 Anilox valjci</h4>
           <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;"><label>Anilox 1</label><input type="number" class="form-control" id="artModalAnilox1"></div>
@@ -1984,8 +1984,8 @@
         </div>
 
         <!-- Boje tiska -->
-        <div style="background: #e0f2f1; padding: 15px; border-radius: 8px;">
-          <h4 style="margin: 0 0 10px 0; color: #00796b;">🎨 Boje tiska</h4>
+        <div style="background: var(--remap-success-bg); padding: 15px; border-radius: 8px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--success);">🎨 Boje tiska</h4>
           <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px;">
             <div class="form-group" style="margin: 0;"><label>Boja 1</label><input type="text" class="form-control" id="artModalPrintColor1"></div>
             <div class="form-group" style="margin: 0;"><label>Boja 2</label><input type="text" class="form-control" id="artModalPrintColor2"></div>
@@ -2689,7 +2689,7 @@ function renderOrdersTable(orders) {
         <td><span class="group-chevron">▶</span><strong class="group-order-number">${orderNumber || '-'}</strong></td>
         <td><span class="group-customer">${group.customer_name || '-'}</span></td>
         <td><span class="group-article-count" title="Broj artikala u narudžbi">${articleCount} ${articleWord}</span></td>
-        <td colspan="4" style="color:#94a3b8; font-size:0.85em;">— cjelina narudžbe —</td>
+        <td colspan="4" style="color:var(--text-mid); font-size:0.85em;">— cjelina narudžbe —</td>
         <td colspan="6" class="group-progress-cell">
           <div style="display:flex;gap:14px;align-items:center;flex-wrap:nowrap;">
             <div title="Generirani RN: ${rnGenCount}/${articleCount} artikala" style="display:inline-flex;align-items:center;gap:4px;">
@@ -2746,15 +2746,15 @@ function renderOrdersTable(orders) {
       let rnIndicators = '';
       if (hasGlavni) {
         const glavniRNs = order.existing_glavni.map(g => g.wo_number).join(', ');
-        rnIndicators += `<span title="Glavni RN: ${glavniRNs}" style="background: #fff9c4; color: #f57f17; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">📦 ${order.existing_glavni.length}</span>`;
+        rnIndicators += `<span title="Glavni RN: ${glavniRNs}" style="background: #fff9c4; color: var(--warning); padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">📦 ${order.existing_glavni.length}</span>`;
       }
       if (hasTisak) {
         const tisakRNs = order.existing_tisak.map(t => t.wo_number).join(', ');
-        rnIndicators += `<span title="Tisak RN: ${tisakRNs}" style="background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">🖨️ ${order.existing_tisak.length}</span>`;
+        rnIndicators += `<span title="Tisak RN: ${tisakRNs}" style="background: var(--remap-info-bg); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 3px; cursor: help;">🖨️ ${order.existing_tisak.length}</span>`;
       }
       if (hasRezanje) {
         const rezanjeRNs = order.existing_rezanje.map(r => r.wo_number).join(', ');
-        rnIndicators += `<span title="Rezanje RN: ${rezanjeRNs}" style="background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; cursor: help;">✂️ ${order.existing_rezanje.length}</span>`;
+        rnIndicators += `<span title="Rezanje RN: ${rezanjeRNs}" style="background: var(--remap-warning-bg); color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; cursor: help;">✂️ ${order.existing_rezanje.length}</span>`;
       }
 
       const weights = calculatePaperWeights(order, remaining > 0 ? remaining : ordered);
@@ -2776,14 +2776,14 @@ function renderOrdersTable(orders) {
       html += `
         <tr class="order-article-row ${isExpanded ? '' : 'hidden'}" data-parent="${orderNumber}" data-article-id="${order.id}" style="${rowBg}">
           <td>${planiranjeReadOnly ? '' : `<input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked} onchange="updateSelectedOrders()">`}</td>
-          <td style="color:#94a3b8; font-size:0.85em;">↳ ${order.item_number || ''}</td>
-          <td style="color:#94a3b8; font-size:0.85em;"></td>
+          <td style="color:var(--text-mid); font-size:0.85em;">↳ ${order.item_number || ''}</td>
+          <td style="color:var(--text-mid); font-size:0.85em;"></td>
           <td>
             ${order.article_name || '-'}
             ${rnIndicators ? '<br>' + rnIndicators : ''}
           </td>
           <td><span class="badge badge-info">${order.article_code || '-'}</span></td>
-          <td>${order.article_id ? `<a href="#" onclick="openArticleModal('${order.article_id}'); return false;" style="color: #1976d2; text-decoration: underline; cursor: pointer;" title="Klikni za pregled artikla">${order.prod_articles?.article_id || order.article_id.substring(0,8)}</a>` : '-'}</td>
+          <td>${order.article_id ? `<a href="#" onclick="openArticleModal('${order.article_id}'); return false;" style="color: var(--primary); text-decoration: underline; cursor: pointer;" title="Klikni za pregled artikla">${order.prod_articles?.article_id || order.article_id.substring(0,8)}</a>` : '-'}</td>
           <td>${order.prod_articles?.valve_type || order.valve_type || '-'}</td>
           <td>${order.prod_articles?.valve_position || '-'}</td>
           ${renderWeightCell(weights.s1White, weights.s1Grammage, 'white', weights.isS1White, weights.s1Width)}
@@ -2802,7 +2802,7 @@ function renderOrdersTable(orders) {
             ${planiranjeReadOnly ? '' : `
               ${canMoveUp ? `<button class="action-btn" onclick="moveOrderWithinGroup('${order.id}', -1)" title="Pomakni artikl gore (unutar narudžbe)" style="padding:2px 4px;">↑</button>` : ''}
               ${canMoveDown ? `<button class="action-btn" onclick="moveOrderWithinGroup('${order.id}', 1)" title="Pomakni artikl dolje (unutar narudžbe)" style="padding:2px 4px;">↓</button>` : ''}
-              ${order.status === 'Aktivno' ? `<button class="action-btn" onclick="window.finishOrder('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}', '${(order.article_name || '').replace(/'/g, "\\'")}')" title="Završi artikl" style="color: #2e7d32;">🏁</button>` : ''}
+              ${order.status === 'Aktivno' ? `<button class="action-btn" onclick="window.finishOrder('${order.id}', '${(order.order_number || '').replace(/'/g, "\\'")}', '${(order.article_name || '').replace(/'/g, "\\'")}')" title="Završi artikl" style="color: var(--success);">🏁</button>` : ''}
             `}
           </td>
         </tr>
@@ -3100,7 +3100,7 @@ function renderWeightCell(weight, grammage, colorClass, hasValue = true, width =
     'foil': 'layer-foil'
   };
   
-  const widthText = width > 0 ? `<br><span style="font-size: 0.75em; color: #1565c0; font-weight: 600;">${width} cm</span>` : '';
+  const widthText = width > 0 ? `<br><span style="font-size: 0.75em; color: var(--primary); font-weight: 600;">${width} cm</span>` : '';
   
   return `
     <td class="weight-cell">
@@ -3200,12 +3200,12 @@ function renderRNTable(rn) {
           <span style="font-size:1.05em;"><span class="badge ${g.tipClass}">${g.icon} ${g.label}</span></span>
           &nbsp;·&nbsp;
           <span class="group-article-count" title="Broj radnih naloga u grupi">${count} ${count === 1 ? 'nalog' : 'naloga'}</span>
-          <span style="color:#94a3b8;font-size:0.85em;margin-left:8px;">(${subgroupCountLabel})</span>
+          <span style="color:var(--text-mid);font-size:0.85em;margin-left:8px;">(${subgroupCountLabel})</span>
         </td>
         <td colspan="2"></td>
         <td colspan="1"></td>
         <td style="text-align: right;"><strong>${formatBroj(totalQty, 0)}</strong></td>
-        <td colspan="2">${statusBadges.join('') || '<span style="color:#94a3b8;font-size:0.8em;">—</span>'}</td>
+        <td colspan="2">${statusBadges.join('') || '<span style="color:var(--text-mid);font-size:0.8em;">—</span>'}</td>
         <td></td>
       </tr>
     `;
@@ -3232,11 +3232,11 @@ function renderRNTable(rn) {
         <tr class="rn-subgroup-row ${isSubExpanded ? 'expanded' : ''} ${isTipExpanded ? '' : 'hidden'}" data-rnsubgroup="${subKey}" data-rn-parent-tip="${g.tip}" onclick="toggleRNSubgroup('${subKeyEsc}', event)">
           <td colspan="3" style="padding-left:26px;">
             <span class="group-chevron">▶</span>
-            <strong style="color:#1565c0;">${orderKey}</strong>
+            <strong style="color:var(--primary);">${orderKey}</strong>
             &nbsp;·&nbsp;
             <span style="color:#2c3e50;">${sub.customer_name}</span>
             &nbsp;·&nbsp;
-            <span class="group-article-count" style="background:#e3ecf6;color:#1565c0;">${sub.rns.length} ${sub.rns.length === 1 ? 'nalog' : 'naloga'}</span>
+            <span class="group-article-count" style="background:#e3ecf6;color:var(--primary);">${sub.rns.length} ${sub.rns.length === 1 ? 'nalog' : 'naloga'}</span>
           </td>
           <td colspan="2"></td>
           <td></td>
@@ -3264,13 +3264,13 @@ function renderRNTable(rn) {
         let actions = '';
         if (!isFinished && !planiranjeReadOnly) {
           actions += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">`;
-          actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: #1976d2; padding: 2px 4px;">📊</button>`;
+          actions += `<button class="action-btn" onclick="window.openCorrectRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Korigiraj količinu" style="color: var(--primary); padding: 2px 4px;">📊</button>`;
           if (isPaused) {
             actions += `<button class="action-btn" onclick="window.openResumeRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Nastavi" style="padding: 2px 4px;">▶️</button>`;
           } else {
             actions += `<button class="action-btn" onclick="window.openPauseRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Pauziraj" style="padding: 2px 4px;">⏸️</button>`;
           }
-          actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: #2e7d32; padding: 2px 4px;">🏁</button>`;
+          actions += `<button class="action-btn" onclick="window.openFinishRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Zavrsi nalog" style="color: var(--success); padding: 2px 4px;">🏁</button>`;
           actions += `<button class="action-btn delete" onclick="window.openDeleteRNModal('${safeId}', '${safeTip}', '${safeWoNumber}')" title="Obriši" style="padding: 2px 4px;">🗑️</button>`;
           actions += `</div>`;
         }
@@ -3545,7 +3545,7 @@ function openResumeRNModal(id, tip, woNumber) {
   document.getElementById('pauseRNDetails').innerHTML = `
     <p><strong>Radni nalog:</strong> ${woNumber}</p>
     <p><strong>Tip:</strong> ${tip}</p>
-    <p style="color: #4caf50;">Radni nalog će se vratiti u status "Planiran".</p>
+    <p style="color: var(--success);">Radni nalog će se vratiti u status "Planiran".</p>
   `;
   document.getElementById('pauseRNReason').value = '';
   document.getElementById('btnPauseRN').textContent = '▶️ Nastavi';
@@ -3849,7 +3849,7 @@ async function scanCounters() {
           <td style="text-align: center;">${maxFound}</td>
           <td style="text-align: center; font-weight: 600; color: ${needsUpdate ? (isDecrease ? '#c62828' : '#e65100') : '#4caf50'};">${newValue}</td>
           <td style="text-align: center;">
-            ${needsUpdate ? (isDecrease ? '<span style="color: #c62828;">🔻 Smanjiti</span>' : '<span style="color: #e65100;">⚠️ Potrebno ažurirati</span>') : '<span style="color: #4caf50;">✅ OK</span>'}
+            ${needsUpdate ? (isDecrease ? '<span style="color: var(--danger);">🔻 Smanjiti</span>' : '<span style="color: #e65100;">⚠️ Potrebno ažurirati</span>') : '<span style="color: var(--success);">✅ OK</span>'}
           </td>
         </tr>
       `;
@@ -4100,7 +4100,7 @@ function checkRNArticleChanges(rn) {
   const article = allArticles.find(a => a.id === rn.article_id);
   if (!article) {
     syncDiv.style.display = 'block';
-    statusDiv.innerHTML = '<span style="color: #999;">Artikl nije pronađen u katalogu</span>';
+    statusDiv.innerHTML = '<span style="color: var(--text-lo);">Artikl nije pronađen u katalogu</span>';
     document.getElementById('correctRNSyncBtn').style.display = 'none';
     return;
   }
@@ -4129,7 +4129,7 @@ function checkRNArticleChanges(rn) {
     document.getElementById('correctRNSyncBtn').textContent = '🔄 Osvježi podatke artikla';
     document.getElementById('correctRNSyncBtn').disabled = false;
   } else {
-    statusDiv.innerHTML = '<span style="color: #2e7d32;">✅ Podaci artikla su ažurni</span>';
+    statusDiv.innerHTML = '<span style="color: var(--success);">✅ Podaci artikla su ažurni</span>';
     document.getElementById('correctRNSyncBtn').style.display = 'none';
   }
 }
@@ -4191,7 +4191,7 @@ async function syncRNArticleData() {
 
     // Ažuriraj status
     const statusDiv = document.getElementById('correctRNSyncStatus');
-    statusDiv.innerHTML = '<span style="color: #2e7d32;">✅ Podaci artikla uspješno osvježeni!</span>';
+    statusDiv.innerHTML = '<span style="color: var(--success);">✅ Podaci artikla uspješno osvježeni!</span>';
     document.getElementById('correctRNSyncBtn').textContent = '✅ Osvježeno';
     document.getElementById('correctRNSyncBtn').disabled = true;
     correctRNSyncData = null;
@@ -4235,7 +4235,7 @@ async function loadReservedNumbers() {
   const year = parseInt(document.getElementById('reserveRNYear').value);
   const tbody = document.getElementById('reservedNumbersTable');
   
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Učitavam...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-lo);">Učitavam...</td></tr>';
   
   try {
     const { data, error } = await initSupabase()
@@ -4249,7 +4249,7 @@ async function loadReservedNumbers() {
     if (error) throw error;
     
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Nema rezerviranih brojeva</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-lo);">Nema rezerviranih brojeva</td></tr>';
       document.getElementById('reservedCount').textContent = 'Ukupno: 0';
       return;
     }
@@ -4287,7 +4287,7 @@ async function loadReservedNumbers() {
     
   } catch (err) {
     console.error('loadReservedNumbers error:', err);
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #c62828;">Greška: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Greška: ${err.message}</td></tr>`;
     document.getElementById('reservedCount').textContent = 'Greška pri učitavanju';
   }
 }
@@ -5088,15 +5088,15 @@ function openPlanDialog() {
       let badges = [];
       if (glavniExists) {
         const glavniRNs = order.existing_glavni.map(g => g.wo_number).join(', ');
-        badges.push(`<span style="background: #fff9c4; color: #f57f17; padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">📦 Glavni: ${glavniRNs}</span>`);
+        badges.push(`<span style="background: #fff9c4; color: var(--warning); padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">📦 Glavni: ${glavniRNs}</span>`);
       }
       if (tisakExists) {
         const tisakRNs = order.existing_tisak.map(t => t.wo_number).join(', ');
-        badges.push(`<span style="background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">🖨️ Tisak: ${tisakRNs}</span>`);
+        badges.push(`<span style="background: var(--remap-info-bg); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">🖨️ Tisak: ${tisakRNs}</span>`);
       }
       if (rezanjeExists) {
         const rezanjeRNs = order.existing_rezanje.map(r => r.wo_number).join(', ');
-        badges.push(`<span style="background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">✂️ Rezanje: ${rezanjeRNs}</span>`);
+        badges.push(`<span style="background: var(--remap-warning-bg); color: #e65100; padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">✂️ Rezanje: ${rezanjeRNs}</span>`);
       }
       existingInfo += `<div style="margin-bottom: 5px;"><strong>${order.order_number}</strong> - ${order.article_name || ''}: ${badges.join(' ')}</div>`;
     }
@@ -5104,7 +5104,7 @@ function openPlanDialog() {
   
   const existingInfoDiv = document.getElementById('planExistingInfo');
   if (existingInfo) {
-    existingInfoDiv.innerHTML = `<div style="background: #e8f5e9; border: 1px solid #4caf50; padding: 10px; border-radius: 8px; margin-top: 10px;">
+    existingInfoDiv.innerHTML = `<div style="background: var(--remap-success-bg); border: 1px solid var(--success); padding: 10px; border-radius: 8px; margin-top: 10px;">
       <strong>✅ Već postoje RN-ovi:</strong>
       <div style="margin-top: 8px;">${existingInfo}</div>
     </div>`;
@@ -5701,7 +5701,7 @@ function renderArticlesTable() {
     const hasNotes = articleNotesData && articleNotesData.some(n => n.article_id === article.id);
     const noteIcon = hasNotes 
       ? `<span style="cursor: pointer; font-size: 1.2em;" onclick="showArticleNotes('${article.id}')" title="Artikl ima aktivne napomene!">⚠️</span>`
-      : '<span style="color: #ccc;">-</span>';
+      : '<span style="color: var(--border);">-</span>';
     
     return `
       <tr style="${article.selected ? 'background: #e8f5e9;' : ''} ${hasNotes ? 'border-left: 3px solid #ff9800;' : ''}">
@@ -5940,7 +5940,7 @@ function renderEditOrderItems() {
     const dimensions = item.bag_width && item.bag_length && item.bag_bottom
       ? `${item.bag_width}×${item.bag_length}×${item.bag_bottom}`
       : '-';
-    const rowNum = item._new ? `${idx + 1} <small style="color:#28a745;">(nova)</small>` : (idx + 1);
+    const rowNum = item._new ? `${idx + 1} <small style="color:var(--success);">(nova)</small>` : (idx + 1);
 
     // Provjeri ima li promjena u artiklu
     const synced = item._synced;
@@ -5958,7 +5958,7 @@ function renderEditOrderItems() {
     return `
       <tr>
         <td style="text-align: center;">${rowNum}</td>
-        <td><strong>${escapeHtml(item.article_name) || '-'}</strong>${changed ? ' <small style="color:#e65100;">⚠️</small>' : ''}${synced ? ' <small style="color:#2e7d32;">✓</small>' : ''}</td>
+        <td><strong>${escapeHtml(item.article_name) || '-'}</strong>${changed ? ' <small style="color:#e65100;">⚠️</small>' : ''}${synced ? ' <small style="color:var(--success);">✓</small>' : ''}</td>
         <td><span class="badge badge-info">${escapeHtml(item.article_code) || '-'}</span></td>
         <td style="${dimStyle}" ${dimTitle}>${dimensions}</td>
         <td>
@@ -6333,7 +6333,7 @@ async function loadShiftNotesPlanning() {
             <span class="note-card-meta">${createdAt.toLocaleDateString('hr-HR')} ${createdAt.toLocaleTimeString('hr-HR', {hour: '2-digit', minute: '2-digit'})}</span>
           </div>
           <div class="note-card-content">${escapeHtml(note.description)}</div>
-          ${note.work_order_number ? `<div style="margin-top: 8px; font-size: 0.85em; color: #666;">RN: ${escapeHtml(note.work_order_number)}</div>` : ''}
+          ${note.work_order_number ? `<div style="margin-top: 8px; font-size: 0.85em; color: var(--text-mid);">RN: ${escapeHtml(note.work_order_number)}</div>` : ''}
           <div class="note-card-footer">
             <span class="note-card-meta">Kreirao: ${escapeHtml(note.created_by)}</span>
           </div>
@@ -6464,7 +6464,7 @@ async function saveOrderWithWarningCheck() {
         <div class="article-warning">
           <span class="article-warning-icon">⚠️</span>
           <strong>${escapeHtml(articleName)}</strong><br>
-          <span style="color: #666;">${w.note_type}: ${escapeHtml(w.description)}</span>
+          <span style="color: var(--text-mid);">${w.note_type}: ${escapeHtml(w.description)}</span>
         </div>
       `;
     }).join('');
@@ -6565,7 +6565,7 @@ async function renderOrderAttachmentsList(orderId) {
     });
 
     if (!data || data.length === 0) {
-      list.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">Nema privitaka</div>';
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-lo);">Nema privitaka</div>';
       return;
     }
 
@@ -6579,22 +6579,22 @@ async function renderOrderAttachmentsList(orderId) {
       var size = a.file_size ? (a.file_size > 1024*1024 ? (a.file_size/(1024*1024)).toFixed(1) + ' MB' : Math.round(a.file_size/1024) + ' KB') : '-';
       var dt = a.created_at ? new Date(a.created_at).toLocaleString('hr-HR') : '-';
       var esc = function(s) { return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
-      return '<div style="border:1px solid #e0e0e0;border-radius:6px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
+      return '<div style="border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
         '<div style="flex:1;min-width:0;">' +
-        '<div style="font-weight:600;margin-bottom:2px;">' + (kindLabel[a.kind] || a.kind) + ' · <span style="font-weight:400;color:#1976d2;">' + esc(a.file_name) + '</span></div>' +
-        (a.note ? '<div style="font-size:0.85em;color:#666;margin-bottom:2px;">💬 ' + esc(a.note) + '</div>' : '') +
-        '<div style="font-size:0.8em;color:#999;">' + size + ' · ' + esc(a.uploaded_by || '-') + ' · ' + dt + '</div>' +
+        '<div style="font-weight:600;margin-bottom:2px;">' + (kindLabel[a.kind] || a.kind) + ' · <span style="font-weight:400;color:var(--primary);">' + esc(a.file_name) + '</span></div>' +
+        (a.note ? '<div style="font-size:0.85em;color:var(--text-mid);margin-bottom:2px;">💬 ' + esc(a.note) + '</div>' : '') +
+        '<div style="font-size:0.8em;color:var(--text-lo);">' + size + ' · ' + esc(a.uploaded_by || '-') + ' · ' + dt + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:4px;flex-shrink:0;">' +
         '<button class="btn btn-sm btn-primary" onclick="window.downloadOrderAttachment(\'' + a.id + '\')" title="Otvori">👁️</button>' +
-        '<button class="btn btn-sm" style="background:#f44336;color:white;" onclick="window.deleteOrderAttachment(\'' + a.id + '\')" title="Obriši">🗑️</button>' +
+        '<button class="btn btn-sm" style="background:var(--danger);color:white;" onclick="window.deleteOrderAttachment(\'' + a.id + '\')" title="Obriši">🗑️</button>' +
         '</div></div>';
     }).join('');
 
     list.innerHTML = html;
   } catch (e) {
     console.error('renderOrderAttachmentsList:', e);
-    list.innerHTML = '<div style="padding:20px;color:#d32f2f;">Greška: ' + e.message + '</div>';
+    list.innerHTML = '<div style="padding:20px;color:var(--danger);">Greška: ' + e.message + '</div>';
   }
 }
 

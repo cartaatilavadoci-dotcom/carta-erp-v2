@@ -458,7 +458,7 @@
       <strong>📦 Matična Rola:</strong> <span id="rezacRolaSifra"></span><br>
       <strong>📏 Širina:</strong> <span id="rezacRolaSirina"></span> cm<br>
       <strong>⚖️ Težina:</strong> <span id="rezacRolaTezina"></span> kg
-      <button id="rezacOverrideBtnWorkflow" class="btn btn-sm" onclick="openOverrideTezineWorkflow()" title="Korekcija težine" style="display:none; margin-left:10px; background:#ff9800; color:white; padding:4px 10px; vertical-align:middle;">⚖️ Korekcija</button>
+      <button id="rezacOverrideBtnWorkflow" class="btn btn-sm" onclick="openOverrideTezineWorkflow()" title="Korekcija težine" style="display:none; margin-left:10px; background:var(--warning); color:white; padding:4px 10px; vertical-align:middle;">⚖️ Korekcija</button>
     </div>
     
     <!-- KALKULATOR -->
@@ -490,11 +490,11 @@
     <!-- VIZUALNI PRIKAZ SLOŽENIH TRAKA -->
     <label style="font-weight: 600;">Složene trake (redoslijed rezanja):</label>
     <div class="trake-vizualni" id="rezacSlozeneTrakePrikaz">
-      <span style="color: #6c757d; font-style: italic;">Dodajte trake klikom iznad...</span>
+      <span style="color: var(--text-mid); font-style: italic;">Dodajte trake klikom iznad...</span>
     </div>
     
     <!-- OSTATAK -->
-    <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;" id="rezacOstatakSekcija">
+    <div style="margin: 15px 0; padding: 15px; background: var(--remap-grey-bg); border-radius: 8px;" id="rezacOstatakSekcija">
       <label style="font-weight: 600;">Ostatak (<span id="rezacOstatakSirina">0</span> cm):</label>
       <div style="margin-top: 10px;">
         <label style="margin-right: 20px;">
@@ -506,7 +506,7 @@
       </div>
       
       <!-- KOREKCIJA ŠIRINE OSTATKA -->
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #dee2e6;">
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border);">
         <label style="font-weight: 600; display: block; margin-bottom: 8px;">
           🔧 Korekcija širine ostatka:
         </label>
@@ -519,15 +519,15 @@
             <option value="+10">+10 mm (1 cm više)</option>
           </select>
           <div style="background: #e9ecef; padding: 8px 15px; border-radius: 4px;">
-            <span style="color: #6c757d;">Korigirana širina:</span>
-            <strong id="rezacOstatakKorigiranaVrijednost" style="color: #28a745; margin-left: 5px;">0 cm</strong>
+            <span style="color: var(--text-mid);">Korigirana širina:</span>
+            <strong id="rezacOstatakKorigiranaVrijednost" style="color: var(--success); margin-left: 5px;">0 cm</strong>
           </div>
           <div style="background: #667eea; color: white; padding: 8px 15px; border-radius: 4px;">
             <span>Šifra:</span>
             <strong id="rezacOstatakKorigiranaSifra" style="margin-left: 5px;">-</strong>
           </div>
         </div>
-        <small style="color: #6c757d; display: block; margin-top: 8px;">
+        <small style="color: var(--text-mid); display: block; margin-top: 8px;">
           💡 Koristi korekciju ako namještaš noževe da sve trake budu približno iste širine
         </small>
       </div>
@@ -541,7 +541,7 @@
         <option value="2" selected>2 prolaza</option>
         <option value="3">3 prolaza</option>
       </select>
-      <span id="rezacDjeliteljInfo" style="margin-left: 15px; color: #6c757d; font-size: 13px;">
+      <span id="rezacDjeliteljInfo" style="margin-left: 15px; color: var(--text-mid); font-size: 13px;">
         Djelitelj: /2
       </span>
     </div>
@@ -755,10 +755,10 @@
       <span class="modal-close" onclick="closeModal('overrideTezineModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <div style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+      <div style="background: var(--remap-warning-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--warning);">
         <p><strong>⚠️</strong> Ovo će promijeniti stanje role u bazi. Koristite samo ako prethodno skidanje nije bilo ispravno.</p>
       </div>
-      <div id="overrideRolaInfo" style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 15px;"></div>
+      <div id="overrideRolaInfo" style="background: var(--remap-grey-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px;"></div>
       <input type="hidden" id="overrideRollCode">
       <div class="form-group">
         <label><strong>Nova težina (kg) *</strong></label>
@@ -1364,7 +1364,7 @@ function rezacRenderDetaljiRN(brojRN, rnData, slobodnoRezanje = false) {
     
     // Sakrij suma tablicu jer nema podataka za izračun
     document.getElementById('rezacSumaPapiraBody').innerHTML = 
-      '<tr><td colspan="7" style="text-align:center; color: #6c757d; padding: 20px;">Nema automatskog izračuna - koristite slobodno rezanje</td></tr>';
+      '<tr><td colspan="7" style="text-align:center; color: var(--text-mid); padding: 20px;">Nema automatskog izračuna - koristite slobodno rezanje</td></tr>';
     
     return;
   }
@@ -1546,7 +1546,7 @@ function rezacGenerisiPapirBox(naslov, sifra, sirina, gramatura, tezina, duljina
     <div class="papir-detail"><span class="papir-detail-label">Širina:</span><span class="papir-detail-value">${sirina || '-'} cm</span></div>
     <div class="papir-detail"><span class="papir-detail-label">Gramatura:</span><span class="papir-detail-value">${gramatura || '-'} g</span></div>
     <div class="papir-detail"><span class="papir-detail-label">Duljina:</span><span class="papir-detail-value">${duljina ? duljina.toFixed(1) : '-'} cm</span></div>
-    <div class="papir-detail" style="border-top: 1px solid #eee; padding-top: 5px; margin-top: 5px;"><span class="papir-detail-label"><strong>Potrebno:</strong></span><span class="papir-detail-value"><strong>${tezina ? tezina.toFixed(2) : '0.00'} kg</strong></span></div>
+    <div class="papir-detail" style="border-top: 1px solid var(--border); padding-top: 5px; margin-top: 5px;"><span class="papir-detail-label"><strong>Potrebno:</strong></span><span class="papir-detail-value"><strong>${tezina ? tezina.toFixed(2) : '0.00'} kg</strong></span></div>
   </div>`;
 }
 
@@ -1906,7 +1906,7 @@ function rezacPrikaziSlozeneTrakePrikaz() {
   const container = document.getElementById('rezacSlozeneTrakePrikaz');
   
   if (rezacSlozeneTrakeLista.length === 0) {
-    container.innerHTML = '<span style="color: #6c757d; font-style: italic;">Dodajte trake klikom iznad...</span>';
+    container.innerHTML = '<span style="color: var(--text-mid); font-style: italic;">Dodajte trake klikom iznad...</span>';
     return;
   }
   
@@ -1956,7 +1956,7 @@ function rezacGenerirajNazive() {
       <div style="font-size: 12px;">`;
     
     rezacSlozeneTrakeLista.forEach(t => {
-      html += `<div style="padding: 3px 0; border-bottom: 1px dashed #dee2e6;">${t.sifra}/${t.brojTrake}/${maticnaSifra}/${prolaz}</div>`;
+      html += `<div style="padding: 3px 0; border-bottom: 1px dashed var(--border);">${t.sifra}/${t.brojTrake}/${maticnaSifra}/${prolaz}</div>`;
     });
     
     // Ostatak
@@ -2047,9 +2047,9 @@ function rezacPrikaziProlaze() {
       const tezina = rezacIzracunajTezinuTrake(g.sirina, g.count);
       html += `<div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;">
         <span style="font-weight: 600;">${g.sifra} (×${g.count})</span>
-        <span style="color: #6c757d;">${g.sirina} cm</span>
+        <span style="color: var(--text-mid);">${g.sirina} cm</span>
         <input type="number" step="0.1" value="${tezina.toFixed(2)}" class="form-control prolaz-tezina-input" data-prolaz="${prolaz}" data-sifra="${g.sifra}" data-sirina="${g.sirina}" data-count="${g.count}" style="width: 100px;">
-        <span style="font-size: 11px; color: #28a745;">≈${tezina.toFixed(2)} kg</span>
+        <span style="font-size: 11px; color: var(--success);">≈${tezina.toFixed(2)} kg</span>
         <label style="font-size: 12px;"><input type="checkbox" checked class="podjeli-jednako" data-prolaz="${prolaz}" data-sifra="${g.sifra}"> Podjeli jednako</label>
       </div>`;
     });
@@ -2063,11 +2063,11 @@ function rezacPrikaziProlaze() {
       
       const korekcija = rezacOstatakKorekcijaMM !== 0 ? ` <small style="color: #856404;">[${rezacOstatakKorekcijaMM > 0 ? '+' : ''}${rezacOstatakKorekcijaMM}mm]</small>` : '';
       
-      html += `<div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: #fff3cd; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+      html += `<div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--remap-warning-bg); border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;">
         <span style="font-weight: 600; color: #856404;">OSTATAK: ${ostatakSifra}/1${korekcija}</span>
         <span style="color: #856404;">${ostatakSirina.toFixed(1)} cm</span>
-        <input type="number" step="0.1" value="${ostatakTezina.toFixed(2)}" class="form-control prolaz-tezina-input ostatak-tezina" data-prolaz="${prolaz}" data-sifra="${ostatakSifra}" data-sirina="${ostatakSirina.toFixed(1)}" style="width: 100px; border-color: #ffc107;">
-        <span style="font-size: 11px; color: #28a745;">≈${ostatakTezina.toFixed(2)} kg</span>
+        <input type="number" step="0.1" value="${ostatakTezina.toFixed(2)}" class="form-control prolaz-tezina-input ostatak-tezina" data-prolaz="${prolaz}" data-sifra="${ostatakSifra}" data-sirina="${ostatakSirina.toFixed(1)}" style="width: 100px; border-color: var(--warning);">
+        <span style="font-size: 11px; color: var(--success);">≈${ostatakTezina.toFixed(2)} kg</span>
       </div>`;
     }
     
@@ -2129,11 +2129,11 @@ function rezacIzracunajSkidanjeStanja() {
     <p><strong>Ukupno izvagano:</strong> ${ukupnoIzvagano.toFixed(2)} kg</p>`;
   
   if (ostatak > 0) {
-    html += `<p style="color: #28a745;"><strong>Ostatak na roli:</strong> ${ostatak.toFixed(2)} kg</p>`;
+    html += `<p style="color: var(--success);"><strong>Ostatak na roli:</strong> ${ostatak.toFixed(2)} kg</p>`;
   } else if (ostatak < 0) {
     html += `<p style="color: #dc3545;"><strong>⚠️ Prekoračenje:</strong> ${Math.abs(ostatak).toFixed(2)} kg</p>`;
   } else {
-    html += `<p style="color: #28a745;"><strong>Rola potpuno utrošena</strong></p>`;
+    html += `<p style="color: var(--success);"><strong>Rola potpuno utrošena</strong></p>`;
   }
   
   html += '</div>';
@@ -2300,73 +2300,105 @@ async function rezacZavrsiSveIPotvrdi() {
   
   const utroseno = Math.min(ukupnoIzvagano, pocetnaTezina);
   const potpunoUtrosena = utroseno >= pocetnaTezina;
-  
+
+  // V2 mode: provjeri feature flag
+  let v2Enabled = false;
+  try {
+    if (window.RollConsumption && typeof window.RollConsumption.isV2Enabled === 'function') {
+      v2Enabled = await window.RollConsumption.isV2Enabled('rezac');
+    }
+  } catch (e) {
+    console.warn('[rezac] flag check failed, fallback v1', e);
+  }
+
   try {
     const supabase = initSupabase();
-    
-    // 1. Spremi trake
+
+    // 1. Spremi trake (sa returning za ID-ove)
+    let insertedStripIds = [];
     if (trakeZaSpremanje.length > 0) {
-      const { error: insertError } = await supabase
+      const { data: insertedStrips, error: insertError } = await supabase
         .from('prod_inventory_strips')
-        .insert(trakeZaSpremanje);
-      
+        .insert(trakeZaSpremanje)
+        .select();
+
       if (insertError) throw insertError;
-      console.log('✅ Trake spremljene');
+      insertedStripIds = (insertedStrips || []).map(s => s.id);
+      console.log('✅ Trake spremljene', insertedStripIds.length);
     }
-    
-    // 2. Ažuriraj rolu
-    const { data: rola, error: fetchError } = await supabase
-      .from('prod_inventory_rolls')
-      .select('consumed_kg')
-      .eq('roll_code', maticnaSifra)
-      .single();
-    
-    if (fetchError) throw fetchError;
-    
-    const novoUtroseno = (parseFloat(rola.consumed_kg) || 0) + utroseno;
-    const noviStatus = potpunoUtrosena ? 'Utrošena' : 'Djelomično utrošeno';
-    
-    const { error: updateError } = await supabase
-      .from('prod_inventory_rolls')
-      .update({ consumed_kg: novoUtroseno, status: noviStatus })
-      .eq('roll_code', maticnaSifra);
-    
-    if (updateError) throw updateError;
-    console.log('✅ Rola ažurirana');
-    
-    // 2b. Evidentiraj utrošak u prod_inventory_consumed_rolls
-    try {
-      // Dohvati sve podatke o roli
-      const { data: rolaFull } = await supabase
+
+    // 2. Skini matičnu rolu — V2 (atomska RPC) ili V1 (inline)
+    if (v2Enabled) {
+      try {
+        const v2Result = await window.RollConsumption.consume({
+          machine: 'rezac',
+          workOrderNumber: rnRezanja || ('REZ-MATICNA-' + maticnaSifra),
+          stripIds: insertedStripIds,
+          rolls: [{
+            scannedCode: maticnaSifra,
+            consumedKg: utroseno,
+            clientRowId: 'parent_' + maticnaSifra
+          }]
+        });
+        console.log('✅ V2 consumption ok:', v2Result);
+      } catch (e) {
+        console.error('❌ V2 consumption failed:', e);
+        throw e;
+      }
+    } else {
+      // V1 (legacy) path
+      const { data: rola, error: fetchError } = await supabase
         .from('prod_inventory_rolls')
-        .select('*')
+        .select('consumed_kg')
         .eq('roll_code', maticnaSifra)
         .single();
-      
-      if (rolaFull) {
-        const consumedData = {
-          roll_code: maticnaSifra,
-          source_roll_id: rolaFull.id,
-          source_table: 'prod_inventory_rolls',
-          material_type: 'rolls',
-          width_cm: rolaFull.width_cm,
-          grammage: rolaFull.grammage,
-          color: rolaFull.color,
-          manufacturer: rolaFull.manufacturer,
-          consumed_kg: utroseno,
-          remaining_kg: (parseFloat(rolaFull.initial_weight_kg) || 0) - novoUtroseno,
-          work_order_number: rnRezanja,
-          production_line: 'Rezač',
-          consumption_type: 'Rezanje',
-          consumed_by: Auth.getUser()?.name || 'Nepoznato',
-          original_scanned_code: maticnaSifra
-        };
-        
-        await supabase.from('prod_inventory_consumed_rolls').insert(consumedData);
-        console.log('✅ Evidentirano u consumed_rolls');
+
+      if (fetchError) throw fetchError;
+
+      const novoUtroseno = (parseFloat(rola.consumed_kg) || 0) + utroseno;
+      const noviStatus = potpunoUtrosena ? 'Utrošena' : 'Djelomično utrošeno';
+
+      const { error: updateError } = await supabase
+        .from('prod_inventory_rolls')
+        .update({ consumed_kg: novoUtroseno, status: noviStatus })
+        .eq('roll_code', maticnaSifra);
+
+      if (updateError) throw updateError;
+      console.log('✅ Rola ažurirana');
+
+      // Evidentiraj utrošak u prod_inventory_consumed_rolls
+      try {
+        const { data: rolaFull } = await supabase
+          .from('prod_inventory_rolls')
+          .select('*')
+          .eq('roll_code', maticnaSifra)
+          .single();
+
+        if (rolaFull) {
+          const consumedData = {
+            roll_code: maticnaSifra,
+            source_roll_id: rolaFull.id,
+            source_table: 'prod_inventory_rolls',
+            material_type: 'rolls',
+            width_cm: rolaFull.width_cm,
+            grammage: rolaFull.grammage,
+            color: rolaFull.color,
+            manufacturer: rolaFull.manufacturer,
+            consumed_kg: utroseno,
+            remaining_kg: (parseFloat(rolaFull.initial_weight_kg) || 0) - novoUtroseno,
+            work_order_number: rnRezanja,
+            production_line: 'Rezač',
+            consumption_type: 'Rezanje',
+            consumed_by: Auth.getUser()?.name || 'Nepoznato',
+            original_scanned_code: maticnaSifra
+          };
+
+          await supabase.from('prod_inventory_consumed_rolls').insert(consumedData);
+          console.log('✅ Evidentirano u consumed_rolls');
+        }
+      } catch (e) {
+        console.warn('⚠️ Greška evidencije consumed_rolls:', e);
       }
-    } catch (e) {
-      console.warn('⚠️ Greška evidencije consumed_rolls:', e);
     }
     
     // 3. Ažuriraj status RN
@@ -2589,7 +2621,7 @@ function rezacPrikaziRole(role) {
       <td>${(r.remaining_kg || 0).toFixed(1)} kg</td>
       <td>
         <button class="btn btn-sm btn-success" onclick="rezacUseRola('${r.roll_code}')" style="margin-right:4px;">Koristi</button>
-        <button class="btn btn-sm" onclick="openOverrideTezine('${r.roll_code}')" title="Korekcija težine" style="background:#ff9800;color:white;padding:4px 8px;">⚖️</button>
+        <button class="btn btn-sm" onclick="openOverrideTezine('${r.roll_code}')" title="Korekcija težine" style="background:var(--warning);color:white;padding:4px 8px;">⚖️</button>
       </td>
     `;
   });

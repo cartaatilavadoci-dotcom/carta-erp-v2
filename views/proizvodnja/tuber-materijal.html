@@ -492,11 +492,11 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
 
   <!-- ===== FIFO SKIDANJE (glavni UI) ===== -->
   <div id="fifoSection">
-    <div id="fifoHeader" style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+    <div id="fifoHeader" style="background: var(--remap-grey-bg); padding: 12px; border-radius: 6px; margin-bottom: 15px;">
       <div id="fifoHeaderContent">Učitavanje...</div>
     </div>
 
-    <div id="fifoPrintingBanner" style="display: none; background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #1976d2;">
+    <div id="fifoPrintingBanner" style="display: none; background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
       🖨️ <strong>Ovaj RN koristi otisnuti papir.</strong>
       Sloj 1 će skidati FIFO iz otisnutih rola (printed).
     </div>
@@ -506,7 +506,7 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
     <!-- Kalkulacija: potrebno po formuli vs označeno po slojevima -->
     <div id="fifoKalkulacija" style="margin-top: 15px;"></div>
 
-    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding: 15px 0; border-top: 1px solid #e0e0e0;">
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding: 15px 0; border-top: 1px solid var(--border);">
       <button class="btn-back" onclick="natragBezSpremanja()">← Natrag</button>
       <button class="btn-save" onclick="fifoSave()">💾 Spremi (FIFO)</button>
     </div>
@@ -515,32 +515,32 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
   <!-- Modal za manualni unos role koja nije u bazi -->
   <div id="fifoManualModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
     <div style="background:#fff; border-radius:8px; padding:20px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto;">
-      <h3 style="margin:0 0 12px 0; color:#e65100;">✏️ Manualni unos role <span style="font-size:14px; color:#666; font-weight:normal;">(sloj <span id="fifoManualLayerLabel">-</span>)</span></h3>
-      <p style="font-size:13px; color:#666; margin:0 0 14px 0;">Koristi za role koje fizički postoje ali nisu unesene u bazu. Sustav neće ažurirati skladište — samo evidentirati potrošnju.</p>
+      <h3 style="margin:0 0 12px 0; color:#e65100;">✏️ Manualni unos role <span style="font-size:14px; color:var(--text-mid); font-weight:normal;">(sloj <span id="fifoManualLayerLabel">-</span>)</span></h3>
+      <p style="font-size:13px; color:var(--text-mid); margin:0 0 14px 0;">Koristi za role koje fizički postoje ali nisu unesene u bazu. Sustav neće ažurirati skladište — samo evidentirati potrošnju.</p>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div>
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Šifra role *</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Šifra role *</label>
           <input type="text" id="fifoManualCode" class="form-control" placeholder="MANUAL-...">
         </div>
         <div>
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Težina potrošena (kg) *</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Težina potrošena (kg) *</label>
           <input type="number" step="0.01" min="0" id="fifoManualKg" class="form-control" placeholder="0.00">
         </div>
         <div>
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Širina (cm)</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Širina (cm)</label>
           <input type="number" step="0.1" id="fifoManualWidth" class="form-control" placeholder="106">
         </div>
         <div>
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Gramatura (g)</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Gramatura (g)</label>
           <input type="number" step="1" id="fifoManualGrammage" class="form-control" placeholder="70">
         </div>
         <div style="grid-column:1/3;">
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Proizvođač</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Proizvođač</label>
           <input type="text" id="fifoManualManufacturer" class="form-control" placeholder="Mondi / Billerud / ...">
         </div>
         <div style="grid-column:1/3;">
-          <label style="font-size:12px; color:#666; display:block; margin-bottom:3px;">Napomena</label>
+          <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:3px;">Napomena</label>
           <textarea id="fifoManualNote" class="form-control" rows="2" placeholder="Razlog manualnog unosa..."></textarea>
         </div>
       </div>
@@ -583,7 +583,7 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
 
   <!-- SLOJEVI -->
   <div id="slojeviContainer">
-    <div style="text-align: center; padding: 40px; color: #999;">
+    <div style="text-align: center; padding: 40px; color: var(--text-lo);">
       <div style="font-size: 2em; margin-bottom: 10px;">⏳</div>
       <div>Učitavanje podataka...</div>
     </div>
@@ -630,7 +630,7 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
   <div class="select-popup">
     <button class="close-btn" onclick="zatvoriSelectPopup()">✕</button>
     <h3 id="selectPopupTitle">Odaberi materijal</h3>
-    <p id="selectPopupInfo" style="font-size: 0.9em; color: #666; margin-bottom: 15px;"></p>
+    <p id="selectPopupInfo" style="font-size: 0.9em; color: var(--text-mid); margin-bottom: 15px;"></p>
     <div id="selectPopupList"></div>
     <div style="margin-top: 15px;">
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -639,8 +639,8 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
       </label>
     </div>
     <div style="margin-top: 15px; display: flex; gap: 10px;">
-      <button onclick="zatvoriSelectPopup()" style="flex: 1; padding: 12px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
-      <button onclick="potvrdidOdabirIzListe()" style="flex: 1; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer;">✓ Dodaj</button>
+      <button onclick="zatvoriSelectPopup()" style="flex: 1; padding: 12px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
+      <button onclick="potvrdidOdabirIzListe()" style="flex: 1; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">✓ Dodaj</button>
     </div>
   </div>
 </div>
@@ -650,7 +650,7 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
   <div class="select-popup" style="max-width: 450px;">
     <button class="close-btn" onclick="zatvoriManualRollModal()">✕</button>
     <h3>📝 Ručni unos role</h3>
-    <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">Unesite podatke za rolu bez barkoda/šifre</p>
+    <p style="font-size: 0.85em; color: var(--text-mid); margin-bottom: 15px;">Unesite podatke za rolu bez barkoda/šifre</p>
     
     <input type="hidden" id="manualRollSloj">
     
@@ -717,8 +717,8 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
     </div>
     
     <div style="margin-top: 20px; display: flex; gap: 10px;">
-      <button onclick="zatvoriManualRollModal()" style="flex: 1; padding: 12px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
-      <button onclick="spremiManualRoll()" style="flex: 1; padding: 12px; background: #ff9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">📝 Dodaj rolu</button>
+      <button onclick="zatvoriManualRollModal()" style="flex: 1; padding: 12px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
+      <button onclick="spremiManualRoll()" style="flex: 1; padding: 12px; background: var(--warning); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">📝 Dodaj rolu</button>
     </div>
   </div>
 </div>
@@ -728,7 +728,7 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
   <div class="select-popup" style="max-width: 400px;">
     <button class="close-btn" onclick="zatvoriAddLayerModal()">✕</button>
     <h3>➕ Dodaj dodatni sloj</h3>
-    <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">Dodaj sloj koji koristi istu šifru papira kao postojeći sloj</p>
+    <p style="font-size: 0.85em; color: var(--text-mid); margin-bottom: 15px;">Dodaj sloj koji koristi istu šifru papira kao postojeći sloj</p>
     
     <div class="manual-form">
       <div class="form-row">
@@ -742,17 +742,17 @@ body.linija-nli .sloj-card.active { border-color: #e65100; }
       
       <div class="form-row">
         <label>Naziv novog sloja</label>
-        <input type="text" id="addLayerName" value="Sloj 2b" readonly style="background: #f5f5f5;">
+        <input type="text" id="addLayerName" value="Sloj 2b" readonly style="background: var(--remap-grey-bg);">
       </div>
       
-      <p style="font-size: 0.8em; color: #999; margin-top: 10px;">
+      <p style="font-size: 0.8em; color: var(--text-lo); margin-top: 10px;">
         ℹ️ Novi sloj će koristiti istu šifru papira i formulu za kalkulaciju kao izvorni sloj.
       </p>
     </div>
     
     <div style="margin-top: 20px; display: flex; gap: 10px;">
-      <button onclick="zatvoriAddLayerModal()" style="flex: 1; padding: 12px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
-      <button onclick="dodajNoviSloj()" style="flex: 1; padding: 12px; background: #2196f3; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">➕ Dodaj sloj</button>
+      <button onclick="zatvoriAddLayerModal()" style="flex: 1; padding: 12px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer;">Odustani</button>
+      <button onclick="dodajNoviSloj()" style="flex: 1; padding: 12px; background: var(--info); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">➕ Dodaj sloj</button>
     </div>
   </div>
 </div>
@@ -1237,7 +1237,7 @@ function renderajSlojeve() {
     html += '<div class="sloj-header">';
     html += '<h3><span>📄 ' + extraSloj.naziv + '</span> <small style="opacity:0.8; font-weight:normal;">(' + extraSloj.paperCode + ') - kopija Sloja ' + extraSloj.sourceSloj + '</small></h3>';
     html += '<span class="status-badge ' + statusClass + '">' + statusText + '</span>';
-    html += '<button onclick="ukloniDodatniSloj(' + index + ')" style="margin-left:10px; padding:5px 10px; background:#f44336; color:white; border:none; border-radius:4px; cursor:pointer;" title="Ukloni sloj">🗑️</button>';
+    html += '<button onclick="ukloniDodatniSloj(' + index + ')" style="margin-left:10px; padding:5px 10px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;" title="Ukloni sloj">🗑️</button>';
     html += '</div>';
     html += '<div class="sloj-body">';
     
@@ -1283,7 +1283,7 @@ function renderajSlojeve() {
   }
   
   if (!html) {
-    html = '<div style="text-align: center; padding: 40px; color: #999;">' +
+    html = '<div style="text-align: center; padding: 40px; color: var(--text-lo);">' +
            '<div style="font-size: 2em; margin-bottom: 10px;">⚠️</div>' +
            '<div>Artikl nema definirane slojeve papira</div></div>';
   }
@@ -1943,7 +1943,7 @@ function izracunajKalkulaciju() {
     if (extraSloj.materijali.length === 0) {
       slojHtml += '<div class="kalk-sloj-row" style="border-left: 3px solid #9c27b0; padding-left: 8px;">';
       slojHtml += '<span>' + extraSloj.naziv + ' (' + extraSloj.paperCode + ')</span>';
-      slojHtml += '<span style="color: #999;">Nema materijala</span>';
+      slojHtml += '<span style="color: var(--text-lo);">Nema materijala</span>';
       slojHtml += '</div>';
       return;
     }
@@ -2573,7 +2573,7 @@ function obradiScanExtra(index) {
   
   if (!sifra) return;
   
-  statusEl.innerHTML = '<span style="color: #ff9800;">🔍 Tražim...</span>';
+  statusEl.innerHTML = '<span style="color: var(--warning);">🔍 Tražim...</span>';
   
   // Pretraži dostupne materijale
   var extraSloj = dodatniSlojevi[index];
@@ -2607,18 +2607,18 @@ function obradiScanExtra(index) {
     
     // Provjeri duplikat
     if (extraSloj.materijali.some(function(m) { return m.id === mat.id; })) {
-      statusEl.innerHTML = '<span style="color: #f44336;">⚠️ Materijal već dodan</span>';
+      statusEl.innerHTML = '<span style="color: var(--danger);">⚠️ Materijal već dodan</span>';
       input.value = '';
       return;
     }
     
     extraSloj.materijali.push(mat);
-    statusEl.innerHTML = '<span style="color: #4caf50;">✅ Dodano: ' + mat.sifra + '</span>';
+    statusEl.innerHTML = '<span style="color: var(--success);">✅ Dodano: ' + mat.sifra + '</span>';
     input.value = '';
     renderajSlojeve();
     azurirajKalkulaciju();
   } else {
-    statusEl.innerHTML = '<span style="color: #f44336;">❌ Nije pronađeno: ' + sifra + '</span>';
+    statusEl.innerHTML = '<span style="color: var(--danger);">❌ Nije pronađeno: ' + sifra + '</span>';
   }
 }
 
@@ -2703,7 +2703,7 @@ async function toggleFifoMode() {
 async function fifoInit() {
   if (typeof materijalKontekst === 'undefined' || !materijalKontekst || !materijalKontekst.articleId) {
     document.getElementById('fifoHeaderContent').innerHTML =
-      '<span style="color:#d32f2f;">⚠️ Nema materijalKontekst.articleId - otvori tuber-materijal iz tuber modula (Završi smjenu / Završi nalog).</span>';
+      '<span style="color:var(--danger);">⚠️ Nema materijalKontekst.articleId - otvori tuber-materijal iz tuber modula (Završi smjenu / Završi nalog).</span>';
     return;
   }
 
@@ -2738,7 +2738,7 @@ async function fifoInit() {
     fifoState.manufacturerFilter = { 1: '', 2: '', 3: '', 4: '' };  // filter po proizvođaču po sloju
 
     fifoRenderHeader();
-    document.getElementById('fifoLayers').innerHTML = '<div style="text-align:center;padding:30px;color:#666;">⏳ Učitavanje dostupnih rola...</div>';
+    document.getElementById('fifoLayers').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-mid);">⏳ Učitavanje dostupnih rola...</div>';
 
     // Provjeri material_deducted status POP-ova (Pravilo 18 — idempotencija)
     await fifoCheckPopDeductedStatus();
@@ -2748,7 +2748,7 @@ async function fifoInit() {
   } catch (e) {
     console.error('fifoInit greška:', e);
     document.getElementById('fifoHeaderContent').innerHTML =
-      '<span style="color:#d32f2f;">Greška: ' + (e.message || e) + '</span>';
+      '<span style="color:var(--danger);">Greška: ' + (e.message || e) + '</span>';
   }
 }
 
@@ -2995,11 +2995,11 @@ function fifoRenderHeader() {
   var totalCount = alreadyCount + pendingCount;
   if (alreadyCount > 0 && totalCount > 0) {
     if (pendingCount === 0) {
-      h += '<div style="grid-column:1/3; background:#ffebee; border-left:4px solid #c62828; padding:10px; border-radius:4px; margin-top:8px; color:#c62828; font-size:13px;">';
+      h += '<div style="grid-column:1/3; background:var(--remap-danger-bg); border-left:4px solid var(--danger); padding:10px; border-radius:4px; margin-top:8px; color:var(--danger); font-size:13px;">';
       h += '⛔ <strong>Materijal je već skinut za sve POP-ove (' + alreadyCount + '/' + totalCount + ').</strong> Skidanje nije moguće — već je obavljeno.';
       h += '</div>';
     } else {
-      h += '<div style="grid-column:1/3; background:#fff8e1; border-left:4px solid #f57c00; padding:10px; border-radius:4px; margin-top:8px; color:#e65100; font-size:13px;">';
+      h += '<div style="grid-column:1/3; background:var(--remap-warning-bg); border-left:4px solid var(--warning); padding:10px; border-radius:4px; margin-top:8px; color:#e65100; font-size:13px;">';
       h += '⚠️ <strong>' + alreadyCount + ' od ' + totalCount + ' POP-ova već ima skinut materijal.</strong> Skidanje će se odnositi samo na preostalih <strong>' + pendingCount + '</strong> POP-ova.';
       h += '</div>';
     }
@@ -3019,7 +3019,7 @@ function fifoRenderLayers() {
 
     // Folija - preskoči
     if (code.charAt(0).toUpperCase() === 'F') {
-      html += '<div style="background:#fff; border:1px dashed #ccc; padding:10px; border-radius:6px; margin-bottom:10px; color:#999;">';
+      html += '<div style="background:#fff; border:1px dashed var(--border); padding:10px; border-radius:6px; margin-bottom:10px; color:var(--text-lo);">';
       html += '<strong>SLOJ ' + s + ':</strong> ' + code + ' <em>(folija - preskačem, ne trebaš skidati)</em>';
       html += '</div>';
       continue;
@@ -3032,21 +3032,21 @@ function fifoRenderLayers() {
     var isPrinted = (s === 1 && fifoState.hasPrinting);
     var available = fifoState.availableByLayer[s] || [];
 
-    html += '<div style="background:#fff; border:1px solid #e0e0e0; padding:12px; border-radius:6px; margin-bottom:14px;" data-layer="' + s + '">';
+    html += '<div style="background:#fff; border:1px solid var(--border); padding:12px; border-radius:6px; margin-bottom:14px;" data-layer="' + s + '">';
 
     // Header sloja
     html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">';
-    html += '<div><strong>SLOJ ' + s + ':</strong> ' + code + ' <span style="color:#666;">(' + bojaLabel + ', ' + gram + 'g, ' + width + 'cm)</span>';
+    html += '<div><strong>SLOJ ' + s + ':</strong> ' + code + ' <span style="color:var(--text-mid);">(' + bojaLabel + ', ' + gram + 'g, ' + width + 'cm)</span>';
     if (isPrinted) {
-      html += ' <span style="background:#1976d2;color:white;padding:2px 8px;border-radius:3px;font-size:0.75em;margin-left:6px;">🖨️ OTISAK — role za artikl unutar narudžbe</span>';
+      html += ' <span style="background:var(--primary);color:white;padding:2px 8px;border-radius:3px;font-size:0.75em;margin-left:6px;">🖨️ OTISAK — role za artikl unutar narudžbe</span>';
     }
     html += '</div>';
-    html += '<div style="font-size:12px;color:#666;">' + available.length + ' slobodnih rola</div>';
+    html += '<div style="font-size:12px;color:var(--text-mid);">' + available.length + ' slobodnih rola</div>';
     html += '</div>';
 
     // Lista dostupnih rola (list-picker)
     if (available.length === 0) {
-      html += '<div style="background:#fff3e0;border:1px dashed #ffb74d;padding:10px;border-radius:4px;color:#e65100;font-size:13px;margin-bottom:10px;">';
+      html += '<div style="background:var(--remap-warning-bg);border:1px dashed var(--warning);padding:10px;border-radius:4px;color:#e65100;font-size:13px;margin-bottom:10px;">';
       html += '⚠️ Nema dostupnih rola za ovaj sloj u bazi (filtar: ' + bojaLabel + ', ' + gram + 'g, ' + width + 'cm). Skeniraj ili unesi šifru ispod.';
       html += '</div>';
     } else {
@@ -3054,8 +3054,8 @@ function fifoRenderLayers() {
       var manufacturers = [...new Set(available.map(r => r.manufacturer).filter(Boolean))].sort();
       if (manufacturers.length > 1) {
         html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">';
-        html += '<label style="font-size:12px; color:#666;">Proizvođač:</label>';
-        html += '<select onchange="fifoSetManufacturerFilter(' + s + ', this.value)" style="padding:4px 8px; font-size:12px; border:1px solid #ccc; border-radius:4px;">';
+        html += '<label style="font-size:12px; color:var(--text-mid);">Proizvođač:</label>';
+        html += '<select onchange="fifoSetManufacturerFilter(' + s + ', this.value)" style="padding:4px 8px; font-size:12px; border:1px solid var(--border); border-radius:4px;">';
         html += '<option value="">Svi (' + available.length + ')</option>';
         manufacturers.forEach(function(m) {
           var cnt = available.filter(r => r.manufacturer === m).length;
@@ -3064,14 +3064,14 @@ function fifoRenderLayers() {
         html += '</select>';
         html += '</div>';
       }
-      html += '<div id="fifoListPicker_' + s + '" style="max-height:360px; overflow-y:auto; border:1px solid #eee; border-radius:4px; padding:4px;"></div>';
+      html += '<div id="fifoListPicker_' + s + '" style="max-height:360px; overflow-y:auto; border:1px solid var(--border); border-radius:4px; padding:4px;"></div>';
     }
 
     // Scan / manual unos šifre — uvijek vidljiv kao fallback
     html += '<div style="display:flex; gap:8px; margin-top:10px;">';
     html += '<input type="text" placeholder="ili skeniraj/unesi šifru role" class="form-control" style="flex:1; font-size:13px;" id="fifoInput_' + s + '" onkeydown="if(event.key===\'Enter\') fifoManualAddRoll(' + s + ')">';
-    html += '<button class="btn btn-sm" style="background:#f5f5f5;" onclick="fifoManualAddRoll(' + s + ')">+ Dodaj</button>';
-    html += '<button class="btn btn-sm" style="background:#fff3e0; color:#e65100;" onclick="fifoOpenManualRollModal(' + s + ')" title="Rola koja nije u bazi (ručni unos)">✏️ Manualna</button>';
+    html += '<button class="btn btn-sm" style="background:var(--remap-grey-bg);" onclick="fifoManualAddRoll(' + s + ')">+ Dodaj</button>';
+    html += '<button class="btn btn-sm" style="background:var(--remap-warning-bg); color:#e65100;" onclick="fifoOpenManualRollModal(' + s + ')" title="Rola koja nije u bazi (ručni unos)">✏️ Manualna</button>';
     html += '</div>';
 
     // Ručno dodane (manualne / scanned) role
@@ -3113,7 +3113,7 @@ function fifoRenderListPicker(layer) {
     // Checkbox
     html += '<input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="fifoToggleListRoll(' + layer + ', \'' + r.id + '\')" style="width:18px; height:18px;">';
     // Code + label
-    html += '<div><strong>' + r.code + '</strong><div style="font-size:11px;color:#888;">' + (r.label.replace(r.code, '').trim() || '&nbsp;') + '</div></div>';
+    html += '<div><strong>' + r.code + '</strong><div style="font-size:11px;color:var(--text-lo);">' + (r.label.replace(r.code, '').trim() || '&nbsp;') + '</div></div>';
     // Remaining
     html += '<div style="text-align:right;">' + r.remaining_kg.toFixed(1) + ' kg</div>';
     // kg input + full toggle
@@ -3127,8 +3127,8 @@ function fifoRenderListPicker(layer) {
       html += '<input type="checkbox" ' + (fully ? 'checked' : '') + ' onchange="fifoToggleListRollFull(' + layer + ', \'' + r.id + '\')"> potpuno';
       html += '</label>';
     } else {
-      html += '<div style="color:#ccc;font-size:12px;">—</div>';
-      html += '<div style="color:#ccc;font-size:12px;">—</div>';
+      html += '<div style="color:var(--border);font-size:12px;">—</div>';
+      html += '<div style="color:var(--border);font-size:12px;">—</div>';
     }
     html += '</div>';
   });
@@ -3230,11 +3230,11 @@ function fifoRenderKalkulacija() {
 
   if (rows.length === 0) { container.innerHTML = ''; return; }
 
-  var html = '<div style="background:#f5f5f5; border:1px solid #ddd; border-radius:6px; padding:12px;">';
-  html += '<div style="font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">🧮 Kalkulacija skidanja';
-  html += ' <span style="font-weight:normal; color:#666; font-size:12px;">(POP=' + pop.toLocaleString('hr-HR') + ', REZ=' + rez + ')</span></div>';
+  var html = '<div style="background:var(--remap-grey-bg); border:1px solid var(--border); border-radius:6px; padding:12px;">';
+  html += '<div style="font-weight:600; font-size:14px; margin-bottom:8px; color:var(--text-hi);">🧮 Kalkulacija skidanja';
+  html += ' <span style="font-weight:normal; color:var(--text-mid); font-size:12px;">(POP=' + pop.toLocaleString('hr-HR') + ', REZ=' + rez + ')</span></div>';
   html += '<table style="width:100%; font-size:13px; border-collapse:collapse;">';
-  html += '<thead><tr style="border-bottom:1px solid #ccc; color:#666;">';
+  html += '<thead><tr style="border-bottom:1px solid var(--border); color:var(--text-mid);">';
   html += '<th style="text-align:left; padding:4px 6px;">Sloj</th>';
   html += '<th style="text-align:right; padding:4px 6px;">Potrebno (kg)</th>';
   html += '<th style="text-align:right; padding:4px 6px;">Označeno (kg)</th>';
@@ -3244,7 +3244,7 @@ function fifoRenderKalkulacija() {
 
   rows.forEach(function(r) {
     html += '<tr>';
-    html += '<td style="padding:4px 6px;"><strong>S' + r.layer + '</strong> <span style="color:#888; font-size:11px;">' + r.code + '</span></td>';
+    html += '<td style="padding:4px 6px;"><strong>S' + r.layer + '</strong> <span style="color:var(--text-lo); font-size:11px;">' + r.code + '</span></td>';
     html += '<td style="text-align:right; padding:4px 6px; font-variant-numeric:tabular-nums;">' + r.needed.toFixed(2) + '</td>';
     html += '<td style="text-align:right; padding:4px 6px; font-variant-numeric:tabular-nums; font-weight:600;">' + r.marked.toFixed(2) + '</td>';
     html += '<td style="text-align:right; padding:4px 6px; font-variant-numeric:tabular-nums; color:' + (r.diff < 0 ? '#c62828' : (r.diff > 0 ? '#e65100' : '#2e7d32')) + ';">' + (r.diff > 0 ? '+' : '') + r.diff.toFixed(2) + '</td>';
@@ -3253,7 +3253,7 @@ function fifoRenderKalkulacija() {
   });
 
   // Totals
-  html += '<tr style="border-top:2px solid #999; font-weight:bold;">';
+  html += '<tr style="border-top:2px solid var(--text-lo); font-weight:bold;">';
   html += '<td style="padding:6px;">UKUPNO</td>';
   html += '<td style="text-align:right; padding:6px; font-variant-numeric:tabular-nums;">' + totalNeeded.toFixed(2) + '</td>';
   html += '<td style="text-align:right; padding:6px; font-variant-numeric:tabular-nums;">' + totalMarked.toFixed(2) + '</td>';
@@ -3271,98 +3271,147 @@ function fifoRenderKalkulacija() {
 // ========================================================
 fifoState.manualByLayer = fifoState.manualByLayer || { 1: [], 2: [], 3: [], 4: [] };
 
+// Helper: pretraga rola po šifri s 3 fallback varijante (original + Billerud rotacija + pozicije 2-10)
+// Vraća { rollData, sourceTable, matchedCode } ili null ako ništa ne nađe.
+async function fifoFindRollByCode(code) {
+  function build(rec, source) {
+    if (source === 'rolls') {
+      return {
+        source: 'rolls', id: rec.id, code: rec.roll_code,
+        label: rec.roll_code + (rec.manufacturer ? ' · ' + rec.manufacturer : ''),
+        weight_kg: rec.initial_weight_kg, consumed_kg: rec.consumed_kg || 0,
+        remaining_kg: parseFloat(rec.remaining_kg || 0), status: rec.status,
+        manufacturer: rec.manufacturer, width_cm: rec.width_cm, grammage: rec.grammage, color: rec.color,
+        internal_id: rec.internal_id, _raw: rec
+      };
+    } else if (source === 'printed') {
+      return {
+        source: 'printed', id: rec.id, code: rec.printed_roll_code,
+        label: rec.printed_roll_code + (rec.parent_roll_code ? ' (iz ' + rec.parent_roll_code + ')' : ''),
+        weight_kg: rec.weight_kg, consumed_kg: rec.consumed_kg || 0,
+        remaining_kg: parseFloat(rec.remaining_kg || 0), status: rec.status,
+        work_order_number: rec.work_order_number, _raw: rec
+      };
+    } else { // strips
+      return {
+        source: 'strips', id: rec.id, code: rec.strip_code,
+        label: rec.strip_code + ' (traka' + (rec.parent_roll_code ? ', iz ' + rec.parent_roll_code : '') + ')',
+        weight_kg: rec.weight_kg, consumed_kg: rec.consumed_kg || 0,
+        remaining_kg: parseFloat(rec.remaining_kg || 0), status: rec.status,
+        width_cm: rec.width_cm, grammage: rec.grammage, color: rec.color,
+        parent_roll_code: rec.parent_roll_code, _raw: rec
+      };
+    }
+  }
+
+  // Generiraj varijante šifre (kao u pronadiMaterijal — Billerud transform + pozicije 2-10)
+  var varijante = [code];
+  if (code.length >= 4) {
+    var temp = code.slice(-2) + code.slice(0, -2);
+    varijante.push(temp.slice(0, -2));   // Billerud rotacija
+  }
+  if (code.length >= 10) {
+    varijante.push(code.substring(1, 10));   // pozicije 2-10
+  }
+  // dedupe
+  varijante = varijante.filter(function(v, i, a) { return v && a.indexOf(v) === i; });
+
+  for (var i = 0; i < varijante.length; i++) {
+    var v = varijante[i];
+    try {
+      var rolls = await SB.select('prod_inventory_rolls', { eq: { roll_code: v }, limit: 1, silent: true });
+      if (rolls && rolls.length > 0) return { rollData: build(rolls[0], 'rolls'), matchedCode: v, variantIndex: i };
+    } catch (e) {}
+    try {
+      var printed = await SB.select('prod_inventory_printed', { eq: { printed_roll_code: v }, limit: 1, silent: true });
+      if (printed && printed.length > 0) return { rollData: build(printed[0], 'printed'), matchedCode: v, variantIndex: i };
+    } catch (e) {}
+    try {
+      var strips = await SB.select('prod_inventory_strips', { eq: { strip_code: v }, limit: 1, silent: true });
+      if (strips && strips.length > 0) return { rollData: build(strips[0], 'strips'), matchedCode: v, variantIndex: i };
+    } catch (e) {}
+  }
+  return null;
+}
+
 window.fifoManualAddRoll = async function(layer) {
   var input = document.getElementById('fifoInput_' + layer);
   var code = (input.value || '').trim();
   if (!code) return;
   input.value = '';
 
-  // Prvo pokušaj pronaći u prod_inventory_rolls po roll_code
-  var rollRes = await initSupabase()
-    .from('prod_inventory_rolls')
-    .select('*')
-    .eq('roll_code', code)
-    .limit(1);
+  // Pretraga s Billerud transformacijama
+  var hit = await fifoFindRollByCode(code);
+  var rollData = hit ? hit.rollData : null;
 
-  var rollData = null;
-  var sourceTable = null;
-
-  if (rollRes.data && rollRes.data.length > 0) {
-    var r = rollRes.data[0];
-    rollData = {
-      source: 'rolls', id: r.id, code: r.roll_code,
-      label: r.roll_code + (r.manufacturer ? ' · ' + r.manufacturer : ''),
-      weight_kg: r.initial_weight_kg, consumed_kg: r.consumed_kg || 0,
-      remaining_kg: parseFloat(r.remaining_kg || 0), status: r.status,
-      manufacturer: r.manufacturer, width_cm: r.width_cm, grammage: r.grammage, color: r.color,
-      _raw: r
-    };
-    sourceTable = 'prod_inventory_rolls';
-  } else {
-    // Pokušaj u prod_inventory_printed
-    var printedRes = await initSupabase()
-      .from('prod_inventory_printed')
-      .select('*')
-      .eq('printed_roll_code', code)
-      .limit(1);
-    if (printedRes.data && printedRes.data.length > 0) {
-      var p = printedRes.data[0];
-      rollData = {
-        source: 'printed', id: p.id, code: p.printed_roll_code,
-        label: p.printed_roll_code + (p.parent_roll_code ? ' (iz ' + p.parent_roll_code + ')' : ''),
-        weight_kg: p.weight_kg, consumed_kg: p.consumed_kg || 0,
-        remaining_kg: parseFloat(p.remaining_kg || 0), status: p.status,
-        work_order_number: p.work_order_number,
-        _raw: p
-      };
-      sourceTable = 'prod_inventory_printed';
-    } else {
-      // Pokušaj u prod_inventory_strips
-      var stripRes = await initSupabase()
-        .from('prod_inventory_strips')
-        .select('*')
-        .eq('strip_code', code)
-        .limit(1);
-      if (stripRes.data && stripRes.data.length > 0) {
-        var st = stripRes.data[0];
-        rollData = {
-          source: 'strips', id: st.id, code: st.strip_code,
-          label: st.strip_code + ' (traka' + (st.parent_roll_code ? ', iz ' + st.parent_roll_code : '') + ')',
-          weight_kg: st.weight_kg, consumed_kg: st.consumed_kg || 0,
-          remaining_kg: parseFloat(st.remaining_kg || 0), status: st.status,
-          width_cm: st.width_cm, grammage: st.grammage, color: st.color,
-          parent_roll_code: st.parent_roll_code,
-          _raw: st
-        };
-        sourceTable = 'prod_inventory_strips';
-      }
-    }
+  if (rollData && hit.variantIndex > 0) {
+    console.log('🔄 Rola pronađena kroz transformaciju #' + hit.variantIndex + ': ' + code + ' → ' + hit.matchedCode);
   }
 
+  // Ako nije pronađena → otvori "nova / postojeća" modal (samo ako je v2)
   if (!rollData) {
-    showMessage('Rola sa šifrom "' + code + '" nije pronađena u bazi', 'warning');
-    return;
-  }
-  if (rollData.remaining_kg <= 0) {
-    showMessage('Rola "' + code + '" nema preostalog papira (' + rollData.remaining_kg + ' kg)', 'warning');
+    var v2On = false;
+    try { v2On = window.RollConsumption && await window.RollConsumption.isV2Enabled('tuber'); } catch (e) {}
+    if (v2On && window.RollConsumption.promptUnknownRoll) {
+      var hints = {
+        internalId: (fifoState.article && fifoState.article['paper_s' + layer + '_code']) || '',
+        manufacturer: ''
+      };
+      var ans = await window.RollConsumption.promptUnknownRoll(code, hints);
+      if (!ans) return;  // operater odustao
+
+      if (ans.isNewRoll) {
+        // Lokalna placeholder rola — RPC će je kreirati u skladištu pri save-u (is_new_roll=true)
+        var virtualId = 'newrole_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        rollData = {
+          source: 'manual', id: virtualId, code: code,
+          label: code + ' (nova rola, kreira se u skladištu)' + (ans.manualManufacturer ? ' · ' + ans.manualManufacturer : ''),
+          weight_kg: ans.manualInitialKg, consumed_kg: 0, remaining_kg: ans.manualInitialKg,
+          status: 'New', manufacturer: ans.manualManufacturer || null,
+          internal_id: ans.manualInternalId || hints.internalId || null,
+          _isNewRoll: true,
+          _manualInitialKg: ans.manualInitialKg,
+          _manualInternalId: ans.manualInternalId || hints.internalId || null,
+          _manualManufacturer: ans.manualManufacturer || null
+        };
+      } else {
+        // "Postojeća — samo poveži" → RPC će logirati discrepancy unknown_roll_existing
+        var virtualId2 = 'orphan_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        rollData = {
+          source: 'manual', id: virtualId2, code: code,
+          label: code + ' (samo poveži s RN-om, skladište ne dira)',
+          weight_kg: 0, consumed_kg: 0, remaining_kg: 9999,  // veliki broj da operater može unijeti kg
+          status: 'Orphan', manufacturer: null,
+          _isNewRoll: false
+        };
+      }
+    } else {
+      showMessage('Rola sa šifrom "' + code + '" nije pronađena u bazi (probao i Billerud rotacije).', 'warning');
+      return;
+    }
+  } else if (rollData.remaining_kg <= 0) {
+    showMessage('Rola "' + (hit.matchedCode || code) + '" nema preostalog papira (' + rollData.remaining_kg + ' kg)', 'warning');
     return;
   }
 
-  // Dodaj u selectedByLayer direktno (kao da je operater kliknuo u list-pickeru)
+  // Dodaj u selectedByLayer direktno
   var selected = fifoState.selectedByLayer[layer] || (fifoState.selectedByLayer[layer] = {});
   if (selected[rollData.id]) {
-    showMessage('Rola "' + code + '" je već odabrana', 'info');
+    showMessage('Rola "' + rollData.code + '" je već odabrana', 'info');
     return;
   }
-  selected[rollData.id] = { kg: rollData.remaining_kg, fullyConsumed: true, source: rollData.source, data: rollData };
+  var defaultKg = rollData.remaining_kg && rollData.remaining_kg < 9000
+    ? rollData.remaining_kg
+    : 0;
+  selected[rollData.id] = { kg: defaultKg, fullyConsumed: rollData.remaining_kg < 9000, source: rollData.source, data: rollData };
 
-  // Dodaj u manualByLayer liste za vizualno razlikovanje
   if (!fifoState.manualByLayer[layer]) fifoState.manualByLayer[layer] = [];
   fifoState.manualByLayer[layer].push(rollData);
 
   fifoRenderManualList(layer);
   fifoRenderKalkulacija();
-  showMessage('✅ Rola "' + code + '" dodana (' + rollData.remaining_kg.toFixed(1) + ' kg preostalo)', 'success');
+  var matchNote = (hit && hit.variantIndex > 0) ? ' (Billerud rotacija)' : '';
+  showMessage('✅ Rola "' + rollData.code + '" dodana' + matchNote, 'success');
 };
 
 function fifoRenderManualList(layer) {
@@ -3372,15 +3421,15 @@ function fifoRenderManualList(layer) {
   if (manual.length === 0) { container.innerHTML = ''; return; }
 
   var selected = fifoState.selectedByLayer[layer] || {};
-  var html = '<div style="font-size:12px; color:#666; margin-bottom:4px;">Ručno dodane role:</div>';
+  var html = '<div style="font-size:12px; color:var(--text-mid); margin-bottom:4px;">Ručno dodane role:</div>';
   manual.forEach(function(r) {
     var sel = selected[r.id];
     if (!sel) return;
     var fully = sel.fullyConsumed !== false;
     var kg = sel.kg != null ? sel.kg : r.remaining_kg;
     html += '<div style="display:grid; grid-template-columns: 28px 1fr 110px 120px 130px 30px; gap:8px; align-items:center; padding:6px 8px; border-bottom:1px dashed #eee; background:' + (fully ? '#e8f5e9' : '#fff8e1') + ';">';
-    html += '<div style="color:#1976d2;font-size:16px;">✓</div>';
-    html += '<div><strong>' + r.code + '</strong> <span style="font-size:11px;color:#888;">(' + r.source + ')</span></div>';
+    html += '<div style="color:var(--primary);font-size:16px;">✓</div>';
+    html += '<div><strong>' + r.code + '</strong> <span style="font-size:11px;color:var(--text-lo);">(' + r.source + ')</span></div>';
     html += '<div style="text-align:right;">' + r.remaining_kg.toFixed(1) + ' kg</div>';
     html += '<div style="display:flex;align-items:center;gap:4px;">';
     html += '<input type="number" step="0.1" min="0" value="' + Number(kg).toFixed(2) + '" ' +
@@ -3390,7 +3439,7 @@ function fifoRenderManualList(layer) {
     html += '<label style="font-size:12px;display:flex;align-items:center;gap:3px;cursor:pointer;">';
     html += '<input type="checkbox" ' + (fully ? 'checked' : '') + ' onchange="fifoToggleListRollFull(' + layer + ', \'' + r.id + '\')"> potpuno';
     html += '</label>';
-    html += '<button onclick="fifoManualRemoveRoll(' + layer + ', \'' + r.id + '\')" style="background:none;border:none;cursor:pointer;color:#d32f2f;font-size:14px;" title="Ukloni">✕</button>';
+    html += '<button onclick="fifoManualRemoveRoll(' + layer + ', \'' + r.id + '\')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;" title="Ukloni">✕</button>';
     html += '</div>';
   });
   container.innerHTML = html;
@@ -3481,7 +3530,7 @@ function fifoRenderList(layer) {
   if (!container) return;
 
   if (items.length === 0) {
-    container.innerHTML = '<div style="color:#999; font-style:italic; padding:4px;">Nema skeniranih rola za ovaj sloj</div>';
+    container.innerHTML = '<div style="color:var(--text-lo); font-style:italic; padding:4px;">Nema skeniranih rola za ovaj sloj</div>';
     return;
   }
 
@@ -3500,7 +3549,7 @@ function fifoRenderList(layer) {
     if (!item.resolved.isPlaceholder) {
       html += '<label style="font-size:13px; cursor:pointer;"><input type="checkbox"' + (!item.fullyConsumed ? ' checked' : '') + ' onchange="fifoToggleConsumed(' + layer + ',' + idx + ')"> nije potpuno potrošena</label>';
     }
-    html += '<button onclick="fifoRemoveRoll(' + layer + ',' + idx + ')" style="background:none;border:none;cursor:pointer;color:#d32f2f;">🗑️</button>';
+    html += '<button onclick="fifoRemoveRoll(' + layer + ',' + idx + ')" style="background:none;border:none;cursor:pointer;color:var(--danger);">🗑️</button>';
     html += '</div></div>';
   });
   container.innerHTML = html;
@@ -3584,6 +3633,20 @@ async function fifoSave() {
     return;
   }
 
+  // V2 path: ako je feature flag uključen, koristi atomsku RPC
+  var v2Enabled = false;
+  try {
+    if (window.RollConsumption && typeof window.RollConsumption.isV2Enabled === 'function') {
+      v2Enabled = await window.RollConsumption.isV2Enabled('tuber');
+    }
+  } catch (e) {
+    console.warn('[fifoSave] flag check failed, fallback v1', e);
+  }
+  if (v2Enabled) {
+    return fifoSaveV2(rows);
+  }
+
+  // ----- LEGACY PATH (v1) — ostaje aktivan dok ne potvrdimo v2 u produkciji -----
   // Validacija: kg ne smije biti veći od remaining_kg (zaštitna provjera)
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].kg > rows[i].rollData.remaining_kg + 0.01) {
@@ -3727,14 +3790,142 @@ async function fifoSave() {
   }
 }
 
+// ============================================
+// fifoSaveV2 — atomski save kroz consume_rolls_for_work_order RPC
+// Aktivan samo kad je prod_settings.roll_consumption_v2_tuber = true
+// ============================================
+async function fifoSaveV2(rows) {
+  // Po sloju: izračunaj potrebno (formula) i označeno (suma kg)
+  var pop = Number(materijalKontekst.proizvedenoPOP || 0);
+  var rez = Number(materijalKontekst.rez || 0);
+  var perLayer = {};   // { sloj: { needed, marked, internalId, deficit } }
+  var underLayers = [];
+  for (var s = 1; s <= 4; s++) {
+    var code = fifoState.article['paper_s' + s + '_code'];
+    if (!code || code.charAt(0).toUpperCase() === 'F') continue;
+    var width = Number(fifoState.article['paper_s' + s + '_width'] || 0);
+    var gram = Number(fifoState.article['paper_s' + s + '_grammage'] || 0);
+    var needed = (pop * width * gram * rez) / 10000000;
+    var marked = 0;
+    var sel = fifoState.selectedByLayer[s] || {};
+    Object.keys(sel).forEach(function(id) { marked += parseFloat(sel[id].kg) || 0; });
+    var deficit = Math.max(0, needed - marked);
+    perLayer[s] = { needed: needed, marked: marked, internalId: code, deficit: deficit };
+    if (needed > 0 && deficit > 0.5) {
+      underLayers.push('S' + s + ' (potrebno ' + needed.toFixed(1) + ', označeno ' + marked.toFixed(1) + ' kg, fali ' + deficit.toFixed(1) + ' kg)');
+    }
+  }
+
+  // Informativni overdraft check
+  var overdrafts = rows.filter(function(r) {
+    return r.source !== 'manual' && r.rollData.remaining_kg !== undefined &&
+           r.kg > (Number(r.rollData.remaining_kg) || 0) + 0.01;
+  });
+
+  var confirmMsg = 'Spremi skidanje za ' + rows.length + ' ' + (rows.length === 1 ? 'rolu' : 'rola') + '?';
+  var infoLines = [];
+  if (underLayers.length > 0) {
+    infoLines.push('ℹ️ Označeno manje od izračunatog za:\n  • ' + underLayers.join('\n  • ') +
+                   '\n  Razlika će biti zabilježena kao "phantom" potrošnja (bilanca po internal_id ostaje točna).');
+  }
+  if (overdrafts.length > 0) {
+    infoLines.push('ℹ️ ' + overdrafts.length + ' rola: označeno više od preostalog stanja.\n  Razlika će ići u "Discrepancy log" (skladište).');
+  }
+  if (infoLines.length > 0) {
+    confirmMsg = infoLines.join('\n\n') + '\n\nSave će svejedno proći.\n\n' + confirmMsg;
+  }
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    if (typeof showLoading === 'function') showLoading('Spremanje skidanja...');
+
+    // Mapiraj rows u format za RollConsumption
+    var rpcRolls = rows.map(function(row) {
+      var isManual = row.source === 'manual';
+      var rd = row.rollData || {};
+      // Ako je manual i UI je označio _isNewRoll=false (operater odabrao "samo poveži"),
+      // ne kreiramo novu rolu — RPC samo logira discrepancy unknown_roll_existing.
+      var isNewRoll = isManual && rd._isNewRoll !== false;
+      return {
+        scannedCode: row.rollCode,
+        consumedKg: row.kg,
+        layerNumber: row.layer,
+        clientRowId: 's' + row.layer + '_' + String(row.rollId).slice(-8),
+        isNewRoll: isNewRoll,
+        manualInitialKg: isNewRoll ? (Number(rd._manualInitialKg || rd.weight_kg) || row.kg) : null,
+        manualInternalId: isNewRoll ? (rd._manualInternalId || fifoState.article['paper_s' + row.layer + '_code'] || null) : null,
+        manualManufacturer: isNewRoll ? (rd._manualManufacturer || rd.manufacturer || null) : null
+      };
+    });
+
+    // Dodaj phantom-redove za slojeve gdje je deficit > 0.5 kg
+    var phantomCount = 0;
+    Object.keys(perLayer).forEach(function(layerKey) {
+      var L = perLayer[layerKey];
+      if (L.deficit > 0.5) {
+        phantomCount++;
+        rpcRolls.push({
+          scannedCode: 'PHANTOM-S' + layerKey + '-' + (materijalKontekst.workOrderNumber || '').replace(/[^a-zA-Z0-9]/g, ''),
+          consumedKg: Number(L.deficit.toFixed(2)),
+          layerNumber: Number(layerKey),
+          clientRowId: 'phantom_s' + layerKey,
+          isPhantom: true,
+          phantomInternalId: L.internalId
+        });
+      }
+    });
+
+    if (phantomCount > 0) {
+      console.log('[fifoSaveV2] Dodano ' + phantomCount + ' phantom redova za under_marked slojeve');
+    }
+
+    var result = await window.RollConsumption.consume({
+      machine: 'tuber',
+      workOrderId: materijalKontekst.workOrderId,
+      workOrderNumber: materijalKontekst.workOrderNumber,
+      popIds: fifoState.popIds || [],
+      rolls: rpcRolls,
+      productionLine: materijalKontekst.linija
+    });
+
+    // Završi tuber status ako je tip === 'nalog' (RPC postavlja flag-ove na POP, ali ne na work_order)
+    if (materijalKontekst.tip === 'nalog' && materijalKontekst.workOrderId) {
+      try {
+        await SB.update('prod_work_orders',
+                        { tuber_status: 'Završeno' },
+                        { id: materijalKontekst.workOrderId },
+                        { silent: true });
+      } catch (e) {
+        console.warn('tuber_status update:', e);
+      }
+    }
+
+    if (typeof hideLoading === 'function') hideLoading();
+
+    var disc = (result && result.discrepancies) || 0;
+    var msg = '✅ Skidanje spremljeno (' + rows.length + ' ' + (rows.length === 1 ? 'rola' : 'rola') + ')';
+    if (disc > 0) msg += ' — ' + disc + ' za reviziju u skladištu';
+    showMessage(msg, disc > 0 ? 'warning' : 'success');
+
+    setTimeout(function() {
+      if (typeof natragSaSpremanjem === 'function') natragSaSpremanjem();
+    }, 1500);
+
+  } catch (e) {
+    if (typeof hideLoading === 'function') hideLoading();
+    console.error('fifoSaveV2:', e);
+    showMessage('Greška pri spremanju: ' + (e.message || e), 'error');
+  }
+}
+
 function fifoShowRemainderModal(plan) {
-  var html = '<p style="color:#666; margin-bottom:15px;">Neki slojevi imaju više rola koje nisu potpuno potrošene. Odaberi na koju rolu ide ostatak:</p>';
+  var html = '<p style="color:var(--text-mid); margin-bottom:15px;">Neki slojevi imaju više rola koje nisu potpuno potrošene. Odaberi na koju rolu ide ostatak:</p>';
 
   Object.keys(plan.layers).forEach(function(k) {
     var L = plan.layers[k];
     if (L.unmarkedCount <= 1 || L.remainder <= 0.01) return;
 
-    html += '<div style="background:#f5f5f5; padding:12px; border-radius:6px; margin-bottom:10px;">';
+    html += '<div style="background:var(--remap-grey-bg); padding:12px; border-radius:6px; margin-bottom:10px;">';
     html += '<strong>Sloj ' + k + '</strong> — ostatak: <strong>' + L.remainder.toFixed(1) + ' kg</strong>';
     html += '<div style="margin-top:8px;">';
     L.scannedResolved.forEach(function(r) {
@@ -3812,10 +4003,10 @@ window.fifoRemainderConfirm = fifoRemainderConfirm;
   <div class="select-popup" style="max-width: 550px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
       <h3 style="margin:0;">📦 Raspodjela ostatka po slojevima</h3>
-      <button onclick="closeModal('fifoRemainderModal')" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666;">×</button>
+      <button onclick="closeModal('fifoRemainderModal')" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-mid);">×</button>
     </div>
     <div id="fifoRemainderBody" style="max-height:50vh; overflow-y:auto;"></div>
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:15px; border-top:1px solid #e0e0e0;">
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
       <button class="btn btn-secondary" onclick="closeModal('fifoRemainderModal')">Odustani</button>
       <button class="btn btn-primary" onclick="fifoRemainderConfirm()">Nastavi →</button>
     </div>

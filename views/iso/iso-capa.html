@@ -1,0 +1,650 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-refresh-cw svg-icon-lg"></span>
+  CAPA radnje (Korektivne i preventivne)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Workflow: <strong>Otvoreno → U tijeku → Implementirano → Verificirano → Zatvoreno</strong>.
+  Status "Zatvoreno" zahtijeva potvrdu djelotvornosti (effectiveness gate — ISO 9001:2015 cl. 10.2).
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-refresh-cw svg-icon-lg"></span></div>
+    <div class="status-card-value" id="capaKpiOpen">-</div>
+    <div class="status-card-label">U procesu</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="capaKpiOverdue">-</div>
+    <div class="status-card-label">Past due</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-target svg-icon-lg"></span></div>
+    <div class="status-card-value" id="capaKpiAwaitVer">-</div>
+    <div class="status-card-label">Čeka effectiveness</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="capaKpiClosed30">-</div>
+    <div class="status-card-label">Zatvoreno (30d)</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="capaFilterSearch" placeholder="Pretraga po CAPA broju, opisu..." class="doc-input">
+    <select id="capaFilterStatus" class="doc-input">
+      <option value="open" selected>U procesu (sve osim zatvorenih)</option>
+      <option value="">Sve</option>
+      <option value="Otvoreno">Otvoreno</option>
+      <option value="U_tijeku">U tijeku</option>
+      <option value="Implementirano">Implementirano</option>
+      <option value="Verificirano">Verificirano</option>
+      <option value="Zatvoreno">Zatvoreno</option>
+      <option value="Otkazano">Otkazano</option>
+    </select>
+    <select id="capaFilterType" class="doc-input">
+      <option value="">Svi tipovi</option>
+      <option value="korektivna">Korektivna</option>
+      <option value="preventivna">Preventivna</option>
+    </select>
+    <select id="capaFilterAssignee" class="doc-input">
+      <option value="">Svi izvršitelji</option>
+    </select>
+  </div>
+  <button class="btn-primary doc-btn-add" onclick="capaOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova CAPA
+  </button>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>CAPA br.</th>
+        <th>Tip</th>
+        <th>Opis</th>
+        <th>Iz NC</th>
+        <th>Izvršitelj</th>
+        <th>Rok</th>
+        <th>Status</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="capaTableBody">
+      <tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="capaModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="capaModalTitle">Nova CAPA</h3>
+      <button class="doc-modal-close" onclick="capaCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="capaFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Tip *</label>
+          <select id="capaFType" class="doc-input">
+            <option value="korektivna" selected>Korektivna (reagiranje na nastalu nesukladnost)</option>
+            <option value="preventivna">Preventivna (sprečavanje potencijalne nesukladnosti)</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Vezana nesukladnost (NC)</label>
+          <select id="capaFNc" class="doc-input">
+            <option value="">— bez NC —</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Kratki opis CAPA *</label>
+        <input type="text" id="capaFDescription" class="doc-input" placeholder="Što se rješava (1 rečenica)">
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Metoda analize uzroka</label>
+          <select id="capaFRootMethod" class="doc-input">
+            <option value="">— odaberi —</option>
+            <option value="5-Why">5-Why (5 zašto)</option>
+            <option value="Ishikawa">Ishikawa (riblja kost)</option>
+            <option value="FMEA">FMEA</option>
+            <option value="Other">Ostalo</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Datum roka *</label>
+          <input type="date" id="capaFDueDate" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Korijenski uzrok (popuni nakon analize)</label>
+        <textarea id="capaFRootCause" rows="2" class="doc-input" placeholder="Stvarni uzrok problema, ne samo simptom..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Akcijski plan *</label>
+        <textarea id="capaFActionPlan" rows="3" class="doc-input" placeholder="Konkretni koraci kako će se uzrok ukloniti / spriječiti..."></textarea>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Izvršitelj (zaposlenik)</label>
+          <select id="capaFAssignee" class="doc-input">
+            <option value="">— neraspoređeno —</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Status</label>
+          <select id="capaFStatus" class="doc-input">
+            <option value="Otvoreno" selected>Otvoreno</option>
+            <option value="U_tijeku">U tijeku</option>
+            <option value="Implementirano">Implementirano</option>
+            <option value="Verificirano">Verificirano</option>
+            <option value="Zatvoreno">Zatvoreno (zahtijeva effectiveness)</option>
+            <option value="Otkazano">Otkazano</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Planirani datum provjere djelotvornosti</label>
+          <input type="date" id="capaFEffPlanned" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Datum stvarne provjere</label>
+          <input type="date" id="capaFEffDone" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="capaFEffVerified">
+          <strong>Effectiveness potvrđena</strong>
+          <span style="font-size:11px; color:var(--text-lo);">(potrebno prije statusa "Zatvoreno")</span>
+        </label>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Bilješke o provjeri djelotvornosti</label>
+        <textarea id="capaFEffNotes" rows="2" class="doc-input" placeholder="Kako je potvrđeno da CAPA stvarno rješava problem..."></textarea>
+      </div>
+      <div id="capaModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="capaCloseModal()">Odustani</button>
+      <button class="btn-primary" id="capaSaveBtn" onclick="capaSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="capaDetailOverlay" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-detail-panel">
+    <div class="doc-modal-header">
+      <h3 id="capaDetailTitle">—</h3>
+      <button class="doc-modal-close" onclick="capaCloseDetail()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body" id="capaDetailBody">
+      <div style="text-align:center; padding: 40px; color: var(--text-lo);">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.capa-status { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.capa-status-Otvoreno { background: #fff3e0; color: #e65100; }
+.capa-status-U_tijeku { background: #e3f2fd; color: #1565c0; }
+.capa-status-Implementirano { background: #ede7f6; color: #5e35b1; }
+.capa-status-Verificirano { background: #e0f2f1; color: #00695c; }
+.capa-status-Zatvoreno { background: #e8f5e9; color: #2e7d32; }
+.capa-status-Otkazano { background: #eceff1; color: #455a64; }
+
+.capa-type-korektivna { background: #fff8e1; color: #f57f17; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.capa-type-preventivna { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.capa-due-overdue { color: #c62828; font-weight: 700; }
+.capa-due-soon { color: #f57f17; font-weight: 600; }
+.capa-due-ok { color: #2e7d32; }
+
+.capa-progress { display: flex; gap: 4px; margin: 14px 0; }
+.capa-progress-step { flex: 1; padding: 8px 4px; text-align: center; font-size: 11px; background: #f5f5f5; color: #666; border-radius: 4px; font-weight: 600; }
+.capa-progress-step.done { background: #c8e6c9; color: #2e7d32; }
+.capa-progress-step.current { background: #1565c0; color: white; }
+.capa-progress-step.gate { background: #ffe0b2; color: #e65100; }
+</style>
+
+<script>
+(async function initIsoCapaView() {
+  console.log('[iso-capa] init');
+  let allCapas = [], allEmployees = [], allNcs = [];
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function fmtDateTime(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('hr-HR') + ' ' + dt.toLocaleTimeString('hr-HR', { hour:'2-digit', minute:'2-digit' });
+  }
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function statusPill(s) { return `<span class="capa-status capa-status-${s || 'Otvoreno'}">${(s||'Otvoreno').replace('_',' ')}</span>`; }
+  function typePill(t) { return `<span class="capa-type-${t || 'korektivna'}">${t || 'korektivna'}</span>`; }
+
+  function dueBadge(d, status) {
+    if (!d) return '<span style="color:var(--text-lo);">—</span>';
+    if (status === 'Zatvoreno' || status === 'Otkazano') return `<span style="color:var(--text-lo);">${fmtDate(d)}</span>`;
+    const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+    const cls = days < 0 ? 'capa-due-overdue' : days <= 7 ? 'capa-due-soon' : 'capa-due-ok';
+    const txt = days < 0 ? `${fmtDate(d)} (prošlo ${-days}d)` : `${fmtDate(d)} (za ${days}d)`;
+    return `<span class="${cls}">${txt}</span>`;
+  }
+
+  function findEmployee(id) { return allEmployees.find(e => e.id === id); }
+  function findNc(id) { return allNcs.find(n => n.id === id); }
+
+  function progressBar(c) {
+    const order = ['Otvoreno','U_tijeku','Implementirano','Verificirano','Zatvoreno'];
+    if (c.status === 'Otkazano') return `<div class="capa-progress"><div class="capa-progress-step current" style="background:#eceff1; color:#455a64;">Otkazano</div></div>`;
+    const idx = order.indexOf(c.status);
+    return `<div class="capa-progress">` + order.map((s, i) => {
+      let cls = 'capa-progress-step';
+      if (i < idx) cls += ' done';
+      else if (i === idx) cls += ' current';
+      // Gate: Verificirano needs effectiveness_verified=true
+      if (s === 'Zatvoreno' && idx < 4 && !c.effectiveness_verified) cls += ' gate';
+      return `<div class="${cls}">${i + 1}. ${s.replace('_',' ')}${(s === 'Zatvoreno' && !c.effectiveness_verified) ? ' 🔒' : ''}</div>`;
+    }).join('') + `</div>`;
+  }
+
+  // ========== KPI ==========
+  function computeKpi() {
+    const open = allCapas.filter(c => !['Zatvoreno','Otkazano'].includes(c.status));
+    document.getElementById('capaKpiOpen').textContent = open.length;
+    const today = new Date(); today.setHours(0,0,0,0);
+    document.getElementById('capaKpiOverdue').textContent = open.filter(c => c.due_date && new Date(c.due_date) < today).length;
+    document.getElementById('capaKpiAwaitVer').textContent = allCapas.filter(c => c.status === 'Implementirano' && !c.effectiveness_verified).length;
+    const since = new Date(); since.setDate(since.getDate() - 30);
+    document.getElementById('capaKpiClosed30').textContent = allCapas.filter(c => c.status === 'Zatvoreno' && c.closed_at && new Date(c.closed_at) >= since).length;
+  }
+
+  // ========== LOOKUP ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true }, columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' }, silent: true
+      });
+      const sel1 = document.getElementById('capaFAssignee');
+      const sel2 = document.getElementById('capaFilterAssignee');
+      allEmployees.forEach(e => {
+        const txt = `${e.first_name || ''} ${e.last_name || ''}`.trim() + (e.position ? ` (${e.position})` : '');
+        const o1 = document.createElement('option'); o1.value = e.id; o1.textContent = txt; sel1.appendChild(o1);
+        const o2 = document.createElement('option'); o2.value = e.id; o2.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim(); sel2.appendChild(o2);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadNcs() {
+    try {
+      allNcs = await SB.select('iso_nonconformities', {
+        columns: 'id, nc_number, description, severity, status',
+        order: { occurred_at: 'desc' },
+        silent: true
+      });
+      const sel = document.getElementById('capaFNc');
+      allNcs.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.textContent = `${n.nc_number} (${n.severity}) — ${(n.description || '').slice(0, 60)}`;
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== TABLE ==========
+  function applyFilters() {
+    const q = document.getElementById('capaFilterSearch').value.trim().toLowerCase();
+    const status = document.getElementById('capaFilterStatus').value;
+    const tip = document.getElementById('capaFilterType').value;
+    const assignee = document.getElementById('capaFilterAssignee').value;
+    return allCapas.filter(c => {
+      if (q && !((c.capa_number + ' ' + (c.description||'') + ' ' + (c.action_plan||'')).toLowerCase().includes(q))) return false;
+      if (status === 'open') {
+        if (['Zatvoreno','Otkazano'].includes(c.status)) return false;
+      } else if (status && c.status !== status) return false;
+      if (tip && c.capa_type !== tip) return false;
+      if (assignee && c.assigned_to_employee_id !== assignee) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('capaTableBody');
+    const filtered = applyFilters();
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:30px;">Nema CAPA radnji po filteru.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(c => {
+      const emp = findEmployee(c.assigned_to_employee_id);
+      const empName = emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '<span style="color:var(--text-lo);">—</span>';
+      const nc = findNc(c.nc_id);
+      return `
+        <tr>
+          <td><strong>${c.capa_number}</strong></td>
+          <td>${typePill(c.capa_type)}</td>
+          <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(c.description)}">${escapeHtml(c.description)}</td>
+          <td style="font-size:12px;">${nc ? '<strong>' + nc.nc_number + '</strong>' : '<span style="color:var(--text-lo);">—</span>'}</td>
+          <td style="font-size:12px;">${empName}</td>
+          <td style="font-size:12px;">${dueBadge(c.due_date, c.status)}</td>
+          <td>${statusPill(c.status)}</td>
+          <td>
+            <button class="doc-action-btn" onclick="capaOpenDetail('${c.id}')" title="Detalj"><span class="svg-icon svg-icon-eye"></span></button>
+            <button class="doc-action-btn" onclick="capaOpenEdit('${c.id}')" title="Uredi"><span class="svg-icon svg-icon-pencil"></span></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadCapas() {
+    try {
+      allCapas = await SB.select('iso_capa', { order: { opened_at: 'desc' }, silent: true });
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('capaTableBody').innerHTML = `<tr><td colspan="8" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['capaFilterSearch','capaFilterStatus','capaFilterType','capaFilterAssignee'].forEach(id =>
+    document.getElementById(id).addEventListener('input', renderTable)
+  );
+
+  // ========== MODAL ==========
+  window.capaOpenAddModal = function(prefillNcId) {
+    document.getElementById('capaModalTitle').textContent = 'Nova CAPA';
+    document.getElementById('capaFId').value = '';
+    document.getElementById('capaFType').value = 'korektivna';
+    document.getElementById('capaFNc').value = prefillNcId || '';
+    ['capaFDescription','capaFRootCause','capaFActionPlan','capaFEffNotes','capaFEffPlanned','capaFEffDone']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('capaFRootMethod').value = '';
+    document.getElementById('capaFAssignee').value = '';
+    document.getElementById('capaFStatus').value = 'Otvoreno';
+    document.getElementById('capaFEffVerified').checked = false;
+    // Default rok: +30 dana
+    const due = new Date(); due.setDate(due.getDate() + 30);
+    document.getElementById('capaFDueDate').value = due.toISOString().slice(0,10);
+
+    // Pre-fill iz NC ako je dan
+    if (prefillNcId) {
+      const nc = findNc(prefillNcId);
+      if (nc) {
+        document.getElementById('capaFDescription').value = `CAPA za ${nc.nc_number}: ${(nc.description || '').slice(0, 100)}`;
+      }
+    }
+    document.getElementById('capaModalError').style.display = 'none';
+    document.getElementById('capaModal').style.display = 'flex';
+  };
+
+  window.capaOpenEdit = function(id) {
+    const c = allCapas.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('capaModalTitle').textContent = `Uredi ${c.capa_number}`;
+    document.getElementById('capaFId').value = id;
+    document.getElementById('capaFType').value = c.capa_type || 'korektivna';
+    document.getElementById('capaFNc').value = c.nc_id || '';
+    document.getElementById('capaFDescription').value = c.description || '';
+    document.getElementById('capaFRootMethod').value = c.root_cause_method || '';
+    document.getElementById('capaFRootCause').value = c.root_cause || '';
+    document.getElementById('capaFActionPlan').value = c.action_plan || '';
+    document.getElementById('capaFAssignee').value = c.assigned_to_employee_id || '';
+    document.getElementById('capaFDueDate').value = c.due_date || '';
+    document.getElementById('capaFStatus').value = c.status || 'Otvoreno';
+    document.getElementById('capaFEffPlanned').value = c.effectiveness_check_planned_date || '';
+    document.getElementById('capaFEffDone').value = c.effectiveness_check_date || '';
+    document.getElementById('capaFEffVerified').checked = !!c.effectiveness_verified;
+    document.getElementById('capaFEffNotes').value = c.effectiveness_notes || '';
+    document.getElementById('capaModalError').style.display = 'none';
+    document.getElementById('capaModal').style.display = 'flex';
+  };
+
+  window.capaCloseModal = function() {
+    document.getElementById('capaModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('capaModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.capaSave = async function() {
+    const btn = document.getElementById('capaSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const desc = document.getElementById('capaFDescription').value.trim();
+      const plan = document.getElementById('capaFActionPlan').value.trim();
+      const due = document.getElementById('capaFDueDate').value;
+      const status = document.getElementById('capaFStatus').value;
+      const effVer = document.getElementById('capaFEffVerified').checked;
+
+      if (!desc) throw new Error('Opis je obavezan');
+      if (!plan) throw new Error('Akcijski plan je obavezan');
+      if (!due) throw new Error('Rok (due date) je obavezan');
+
+      // GATE: Zatvoreno zahtijeva effectiveness_verified
+      if (status === 'Zatvoreno' && !effVer) {
+        throw new Error('Status "Zatvoreno" zahtijeva potvrđenu djelotvornost (effectiveness gate). Označi checkbox.');
+      }
+
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+
+      const data = {
+        capa_type: document.getElementById('capaFType').value,
+        nc_id: document.getElementById('capaFNc').value || null,
+        description: desc,
+        root_cause_method: document.getElementById('capaFRootMethod').value || null,
+        root_cause: document.getElementById('capaFRootCause').value.trim() || null,
+        action_plan: plan,
+        assigned_to_employee_id: document.getElementById('capaFAssignee').value || null,
+        due_date: due,
+        status,
+        effectiveness_check_planned_date: document.getElementById('capaFEffPlanned').value || null,
+        effectiveness_check_date: document.getElementById('capaFEffDone').value || null,
+        effectiveness_verified: effVer,
+        effectiveness_verified_by: effVer ? (user && user.id || null) : null,
+        effectiveness_notes: document.getElementById('capaFEffNotes').value.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      // Status-specific timestamps
+      if (status === 'Implementirano' || status === 'Verificirano' || status === 'Zatvoreno') {
+        if (!data.completed_at) data.completed_at = new Date().toISOString();
+        data.completed_by = user && user.id || null;
+      }
+      if (status === 'Zatvoreno') {
+        data.closed_at = new Date().toISOString();
+        data.closed_by = user && user.id || null;
+      }
+
+      const id = document.getElementById('capaFId').value;
+      if (id) {
+        await SB.update('iso_capa', data, { id });
+      } else {
+        const { data: numData, error: numErr } = await initSupabase().rpc('iso_next_capa_number');
+        if (numErr) throw new Error('Generiranje CAPA broja: ' + numErr.message);
+        data.capa_number = numData;
+        data.opened_by = user && user.id || null;
+        await SB.insert('iso_capa', data);
+      }
+      capaCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'CAPA ažurirana' : 'CAPA dodana', 'success');
+      await loadCapas();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== DETAIL ==========
+  window.capaOpenDetail = async function(id) {
+    document.getElementById('capaDetailOverlay').style.display = 'flex';
+    const body = document.getElementById('capaDetailBody');
+    body.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>';
+    try {
+      const c = allCapas.find(x => x.id === id);
+      if (!c) throw new Error('CAPA nije pronađena');
+      document.getElementById('capaDetailTitle').textContent = c.capa_number;
+
+      const emp = findEmployee(c.assigned_to_employee_id);
+      const empName = emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '—';
+      const nc = findNc(c.nc_id);
+
+      let html = progressBar(c) + `
+        <div class="doc-detail-meta">
+          <div><strong>Tip:</strong> ${typePill(c.capa_type)}</div>
+          <div><strong>Status:</strong> ${statusPill(c.status)}</div>
+          <div><strong>Izvršitelj:</strong> ${escapeHtml(empName)}</div>
+          <div><strong>Rok:</strong> ${dueBadge(c.due_date, c.status)}</div>
+          ${nc ? `<div style="grid-column: 1 / -1;"><strong>Veza NC:</strong> ${nc.nc_number} — ${escapeHtml((nc.description || '').slice(0, 100))}</div>` : ''}
+          <div><strong>Otvoreno:</strong> ${fmtDateTime(c.opened_at)}</div>
+          ${c.completed_at ? `<div><strong>Implementirano:</strong> ${fmtDateTime(c.completed_at)}</div>` : ''}
+          ${c.closed_at ? `<div><strong>Zatvoreno:</strong> ${fmtDateTime(c.closed_at)}</div>` : ''}
+        </div>
+
+        <div class="doc-section-title"><span class="svg-icon svg-icon-file-text svg-icon-sm"></span> Opis</div>
+        <div style="background:var(--remap-grey-bg); padding:12px; border-radius:6px; font-size:13px; white-space:pre-wrap;">${escapeHtml(c.description)}</div>
+
+        ${c.root_cause ? `
+        <div class="doc-section-title"><span class="svg-icon svg-icon-target svg-icon-sm"></span> Korijenski uzrok ${c.root_cause_method ? '('+c.root_cause_method+')' : ''}</div>
+        <div style="background:var(--remap-info-bg); padding:12px; border-radius:6px; font-size:13px; white-space:pre-wrap;">${escapeHtml(c.root_cause)}</div>
+        ` : ''}
+
+        <div class="doc-section-title"><span class="svg-icon svg-icon-clipboard-list svg-icon-sm"></span> Akcijski plan</div>
+        <div style="background:var(--remap-warning-bg); padding:12px; border-radius:6px; font-size:13px; white-space:pre-wrap;">${escapeHtml(c.action_plan)}</div>
+
+        <div class="doc-section-title"><span class="svg-icon svg-icon-check-circle svg-icon-sm"></span> Provjera djelotvornosti</div>
+        <div style="background:${c.effectiveness_verified ? '#e8f5e9' : '#f5f5f5'}; padding:12px; border-radius:6px; font-size:13px;">
+          <strong>Status:</strong> ${c.effectiveness_verified ? '✓ Potvrđena' : '○ Nije potvrđena (gate za zatvaranje)'}<br>
+          <strong>Planirano:</strong> ${fmtDate(c.effectiveness_check_planned_date)}<br>
+          <strong>Stvarno:</strong> ${fmtDate(c.effectiveness_check_date)}
+          ${c.effectiveness_notes ? `<br><strong>Bilješke:</strong><br><em>${escapeHtml(c.effectiveness_notes)}</em>` : ''}
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="capaOpenEdit('${c.id}')">
+            <span class="svg-icon svg-icon-pencil svg-icon-sm"></span> Uredi
+          </button>
+          ${c.status === 'Otvoreno' ? `
+          <button class="btn-secondary" onclick="capaQuickStatus('${c.id}','U_tijeku')">
+            <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Pokreni (U tijeku)
+          </button>` : ''}
+          ${c.status === 'U_tijeku' ? `
+          <button class="btn-secondary" onclick="capaQuickStatus('${c.id}','Implementirano')">
+            <span class="svg-icon svg-icon-check svg-icon-sm"></span> Označi implementirano
+          </button>` : ''}
+          ${c.status === 'Implementirano' && !c.effectiveness_verified ? `
+          <button class="btn-secondary" onclick="capaVerifyEff('${c.id}')" style="background:var(--remap-warning-bg); color:#e65100;">
+            <span class="svg-icon svg-icon-target svg-icon-sm"></span> Provjeri djelotvornost
+          </button>` : ''}
+          ${(c.status === 'Verificirano' || (c.status === 'Implementirano' && c.effectiveness_verified)) ? `
+          <button class="btn-secondary" onclick="capaQuickStatus('${c.id}','Zatvoreno')" style="background:var(--remap-success-bg); color:var(--success);">
+            <span class="svg-icon svg-icon-check-circle svg-icon-sm"></span> Zatvori
+          </button>` : ''}
+        </div>
+      `;
+      body.innerHTML = html;
+    } catch (e) {
+      body.innerHTML = `<div style="color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+    }
+  };
+
+  window.capaCloseDetail = function() {
+    document.getElementById('capaDetailOverlay').style.display = 'none';
+  };
+
+  window.capaQuickStatus = async function(id, newStatus) {
+    const c = allCapas.find(x => x.id === id);
+    if (!c) return;
+    if (newStatus === 'Zatvoreno' && !c.effectiveness_verified) {
+      alert('Ne možeš zatvoriti CAPA bez potvrđene djelotvornosti. Klikni "Provjeri djelotvornost" prvo.');
+      return;
+    }
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      const updates = { status: newStatus, updated_at: new Date().toISOString() };
+      if (newStatus === 'Implementirano' || newStatus === 'Verificirano' || newStatus === 'Zatvoreno') {
+        if (!c.completed_at) updates.completed_at = new Date().toISOString();
+        if (!c.completed_by) updates.completed_by = user && user.id || null;
+      }
+      if (newStatus === 'Zatvoreno') {
+        updates.closed_at = new Date().toISOString();
+        updates.closed_by = user && user.id || null;
+      }
+      await SB.update('iso_capa', updates, { id });
+      if (typeof showMessage === 'function') showMessage('Status: ' + newStatus, 'success');
+      await loadCapas();
+      capaOpenDetail(id);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  window.capaVerifyEff = async function(id) {
+    const c = allCapas.find(x => x.id === id);
+    if (!c) return;
+    const notes = prompt('Bilješke o provjeri djelotvornosti — kako je potvrđeno da CAPA stvarno rješava problem?\n\n(Ova bilješka je gate za zatvaranje — auditor će je tražiti.)');
+    if (notes === null) return;
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      await SB.update('iso_capa', {
+        effectiveness_verified: true,
+        effectiveness_verified_by: user && user.id || null,
+        effectiveness_check_date: new Date().toISOString().slice(0, 10),
+        effectiveness_notes: notes || c.effectiveness_notes,
+        status: 'Verificirano',
+        updated_at: new Date().toISOString()
+      }, { id });
+      if (typeof showMessage === 'function') showMessage('Djelotvornost potvrđena. Sad možeš zatvoriti CAPA.', 'success');
+      await loadCapas();
+      capaOpenDetail(id);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  document.getElementById('capaModal').addEventListener('click', e => {
+    if (e.target.id === 'capaModal') capaCloseModal();
+  });
+  document.getElementById('capaDetailOverlay').addEventListener('click', e => {
+    if (e.target.id === 'capaDetailOverlay') capaCloseDetail();
+  });
+
+  // Support deep-link from NC: ?prefill_nc=UUID
+  const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const prefillNc = params.get('prefill_nc');
+
+  await Promise.all([loadEmployees(), loadNcs(), loadCapas()]);
+  if (prefillNc) capaOpenAddModal(prefillNc);
+  console.log('[iso-capa] ready');
+})();
+</script>

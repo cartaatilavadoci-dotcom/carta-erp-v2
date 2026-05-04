@@ -993,7 +993,7 @@ function pvndShowShiftPopup(dataKey) {
   if (grandTotal > 0) {
     html += `<div class="shift-popup-total"><span>UKUPNO</span><span>${formatBroj(grandTotal)}</span></div>`;
   } else {
-    html = '<div style="text-align:center; padding:20px; color:#999;"><div style="font-size:2em;">📭</div>Nema podataka o smjenama</div>';
+    html = '<div style="text-align:center; padding:20px; color:var(--text-lo);"><div style="font-size:2em;">📭</div>Nema podataka o smjenama</div>';
   }
   
   body.innerHTML = html;
@@ -1181,7 +1181,7 @@ function pvndRenderDayDetail(year, month, day) {
     </div>`;
 
   if (dayRecords.length === 0) {
-    html += `<div class="section-card" style="text-align:center; padding:40px; color:#999;">
+    html += `<div class="section-card" style="text-align:center; padding:40px; color:var(--text-lo);">
       <div style="font-size:2em;">📭</div>Nema podataka za ${day}. ${monthNames[month]} ${year}
     </div>`;
     document.getElementById('pvndContent').innerHTML = html;
@@ -1329,7 +1329,7 @@ function pvndRenderDayRNSummary(dayRecords) {
       <td>${lineBadge}</td>
       <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.kupac}">${r.kupac}</td>
       <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.artikl}">${r.artikl}</td>
-      <td style="font-size:0.85em; color:#666;">${r.sifra}</td>
+      <td style="font-size:0.85em; color:var(--text-mid);">${r.sifra}</td>
       <td class="number">${formatBroj(r.s1)}</td>
       <td class="number">${formatBroj(r.s2)}</td>
       <td class="number">${formatBroj(r.s3)}</td>
@@ -1451,7 +1451,7 @@ function pvndRenderDayManualReports() {
           </table>
         </div>`;
     } else {
-      reportContent = '<div style="color:#999; padding:10px;">Nema detaljnih podataka u izvještaju</div>';
+      reportContent = '<div style="color:var(--text-lo); padding:10px;">Nema detaljnih podataka u izvještaju</div>';
     }
 
     sections += `
@@ -1698,7 +1698,7 @@ function pvndRenderMonth(month) {
         <td><span class="rn-badge">${rn}</span> ${lineBadge}</td>
         <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.kupac}">${r.kupac}</td>
         <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.artikl}">${r.artikl}</td>
-        <td style="font-size:0.85em; color:#666;">${r.sifra}</td>
+        <td style="font-size:0.85em; color:var(--text-mid);">${r.sifra}</td>
         <td class="number">${formatBroj(r.nli)}</td>
         <td class="number">${formatBroj(r.wh)}</td>
         <td class="number"><strong>${formatBroj(total)}</strong></td>
@@ -1708,7 +1708,7 @@ function pvndRenderMonth(month) {
   });
   
   if (sortedDays.length === 0) {
-    tableHtml = `<tr><td colspan="9" style="text-align:center; padding:40px; color:#999;">
+    tableHtml = `<tr><td colspan="9" style="text-align:center; padding:40px; color:var(--text-lo);">
       <div style="font-size:2em;">📭</div>Nema podataka za ${monthNames[month]} ${pvndCurrentYear}
     </td></tr>`;
   }
@@ -1768,7 +1768,7 @@ function pvndRenderMonth(month) {
       </div>
     </div>
     
-    <div style="background: #e3f2fd; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; color: #1565c0;">
+    <div style="background: var(--remap-info-bg); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; color: var(--primary);">
       💡 <strong>Tip:</strong> Klikni na dan (sivi red) za detaljan dnevni pregled, ili na nalog za pregled po smjenama
     </div>
     
@@ -1912,9 +1912,9 @@ function pvndRenderYearly() {
     rows += `<tr onclick="pvndSelectMonth(${m})" style="cursor:pointer; ${total === 0 && !planTotal ? 'opacity:0.5;' : ''}">
       <td><strong>${monthNames[m]}</strong></td>
       <td class="number">${formatBroj(d.nli)}</td>
-      <td class="number" style="font-size:0.8em; color:#666;">${mNliH}h / ${formatBroj(mNliKomH)}</td>
+      <td class="number" style="font-size:0.8em; color:var(--text-mid);">${mNliH}h / ${formatBroj(mNliKomH)}</td>
       <td class="number">${formatBroj(d.wh)}</td>
-      <td class="number" style="font-size:0.8em; color:#666;">${mWhH}h / ${formatBroj(mWhKomH)}</td>
+      <td class="number" style="font-size:0.8em; color:var(--text-mid);">${mWhH}h / ${formatBroj(mWhKomH)}</td>
       <td class="number"><strong>${formatBroj(total)}</strong></td>
       <td class="number" style="color:#7b1fa2;">${planTotal ? formatBroj(planTotal) : '-'}</td>
       <td class="number"><span class="kpi-percent ${pctClass}" style="font-size:0.85em;">${pct}${planTotal ? '%' : ''}</span></td>
@@ -2044,7 +2044,7 @@ function pvndRenderPlanTab() {
   document.getElementById('pvndPlanContent').innerHTML = `
     <h2 style="margin-bottom: 20px;">📋 Plan proizvodnje ${pvndCurrentYear}</h2>
     
-    ${!canEdit ? `<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #e65100;">
+    ${!canEdit ? `<div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #e65100;">
       ⚠️ Samo administratori mogu uređivati plan proizvodnje.
     </div>` : ''}
     
@@ -2071,7 +2071,7 @@ function pvndRenderPlanTab() {
             <tr>
               <th style="width:150px;">Mjesec</th>
               <th class="number" style="background:#e65100;">🟠 NLI plan</th>
-              <th class="number" style="background:#2e7d32;">🟢 W&H plan</th>
+              <th class="number" style="background:var(--success);">🟢 W&H plan</th>
               <th class="number">Ukupno</th>
             </tr>
           </thead>
@@ -2080,7 +2080,7 @@ function pvndRenderPlanTab() {
             <tr class="total-row">
               <td><strong>GODIŠNJI PLAN</strong></td>
               <td class="number" style="color:#e65100;"><strong id="footerNli">${formatBroj(totNli)}</strong></td>
-              <td class="number" style="color:#2e7d32;"><strong id="footerWh">${formatBroj(totWh)}</strong></td>
+              <td class="number" style="color:var(--success);"><strong id="footerWh">${formatBroj(totWh)}</strong></td>
               <td class="number"><strong id="footerTotal">${formatBroj(totNli + totWh)}</strong></td>
             </tr>
           </tfoot>

@@ -80,7 +80,7 @@
 .krediti-kpi-row .status-card .status-card-label,
 .krediti-payment-kpi .status-card .status-card-label {
   font-size: 0.78em;
-  color: #555;
+  color: var(--text-mid);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -88,21 +88,21 @@
 }
 
 /* Payment tracking KPI (drugi red) — tintana pozadina za raspoznavanje */
-.krediti-payment-kpi .status-card.info    { background: #f0f7ff; }
-.krediti-payment-kpi .status-card.info .status-card-value    { color: #1565c0; }
-.krediti-payment-kpi .status-card.warning { background: #fff8ef; }
-.krediti-payment-kpi .status-card.warning .status-card-value { color: #e65100; }
-.krediti-payment-kpi .status-card.danger  { background: #fff0f0; }
-.krediti-payment-kpi .status-card.danger .status-card-value  { color: #c62828; }
-.krediti-payment-kpi .status-card.success { background: #f0faf1; }
-.krediti-payment-kpi .status-card.success .status-card-value { color: #2e7d32; }
+.krediti-payment-kpi .status-card.info    { background: var(--remap-info-bg); }
+.krediti-payment-kpi .status-card.info .status-card-value    { color: var(--info); }
+.krediti-payment-kpi .status-card.warning { background: var(--remap-warning-bg); }
+.krediti-payment-kpi .status-card.warning .status-card-value { color: var(--warning); }
+.krediti-payment-kpi .status-card.danger  { background: var(--remap-danger-bg); }
+.krediti-payment-kpi .status-card.danger .status-card-value  { color: var(--danger); }
+.krediti-payment-kpi .status-card.success { background: var(--remap-success-bg); }
+.krediti-payment-kpi .status-card.success .status-card-value { color: var(--success); }
 
 /* Timeline SVG */
 .krediti-timeline-card { margin-bottom: 20px; }
 .krediti-timeline-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
 .krediti-timeline-title { font-size: 1.1em; font-weight: 600; color: var(--primary); }
 .krediti-timeline-scroll { overflow-x: auto; padding-bottom: 10px; }
-#kreditiTimelineSvg { display: block; min-width: 900px; background: white; }
+#kreditiTimelineSvg { display: block; min-width: 900px; background: var(--bg-card); border-radius: 8px; }
 .krediti-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 13px; }
 .krediti-legend-item { display: flex; align-items: center; gap: 6px; }
 .krediti-legend-color { width: 16px; height: 12px; border-radius: 3px; }
@@ -112,88 +112,56 @@
 .krediti-periods-wrap h4 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 .krediti-periods-wrap .table-scroll { overflow-x: auto; }
 .krediti-periods { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
-.krediti-periods thead th { background: #eef2f7; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; color: #2c3e50; border-radius: 0 !important; }
-.krediti-periods tbody td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.krediti-periods tbody tr:hover { background: #fafafa; }
-.krediti-periods tbody tr.current-period { background: #fff3e0; }
-.krediti-periods tbody tr.current-period td { font-weight: 600; }
-.krediti-periods tbody tr.current-period td:first-child::before { content: "› "; color: #e65100; font-weight: bold; }
+.krediti-periods thead th { background: var(--bg-thead); padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-hi); border-radius: 0 !important; }
+.krediti-periods tbody td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-hi); }
+.krediti-periods tbody tr:hover td { background: var(--bg-table-row-hover); }
+.krediti-periods tbody tr.current-period td { background: var(--remap-warning-bg); font-weight: 600; }
+.krediti-periods tbody tr.current-period td:first-child::before { content: "› "; color: var(--warning); font-weight: bold; }
 .krediti-periods .period-cell { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.krediti-periods .amount-cell { text-align: right; color: #2e7d32; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.krediti-periods .num-cell { text-align: right; color: #666; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.krediti-periods .amount-cell { text-align: right; color: var(--success); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.krediti-periods .num-cell { text-align: right; color: var(--text-mid); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .krediti-periods .badges { display: flex; gap: 4px; flex-wrap: wrap; }
-.krediti-periods .period-badge { display: inline-block; padding: 3px 9px; font-size: 11px; border-radius: 10px; color: white; font-weight: 600; white-space: nowrap; }
+.krediti-periods .period-badge { display: inline-block; padding: 3px 9px; font-size: 11px; border-radius: 10px; color: #fff; font-weight: 600; white-space: nowrap; }
 
 /* Glavna tablica kredita */
 .krediti-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .krediti-table thead th {
-  background: #eef2f7;
-  color: #2c3e50;
+  background: var(--bg-thead);
+  color: var(--text-hi);
   padding: 12px 10px;
   text-align: left;
   font-weight: 600;
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  border-bottom: 2px solid #cbd5e1;
-  border-top: 1px solid #cbd5e1;
+  border-bottom: 2px solid var(--border);
+  border-top: 1px solid var(--border);
   white-space: nowrap;
   position: sticky;
   top: 0;
   border-radius: 0 !important;
 }
-.krediti-table thead th:first-child { border-left: 1px solid #cbd5e1; border-radius: 0 !important; }
-.krediti-table thead th:last-child { border-right: 1px solid #cbd5e1; border-radius: 0 !important; }
-.krediti-table tbody td { padding: 11px 10px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+.krediti-table thead th:first-child { border-left: 1px solid var(--border); border-radius: 0 !important; }
+.krediti-table thead th:last-child { border-right: 1px solid var(--border); border-radius: 0 !important; }
+.krediti-table tbody td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-hi); }
 .krediti-table tbody tr { transition: background 0.15s ease; }
-.krediti-table tbody tr:hover { background: #f5f9fc; }
+.krediti-table tbody tr:hover td { background: var(--bg-table-row-hover); }
 .krediti-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Akcijski gumbi - tekstualni, mali, interaktivni (radi u obje tablice) */
 .actions { display: flex; gap: 6px; }
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 11px;
-  border: 1px solid #d5dbe3;
-  background: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  color: #556070;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-.action-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-.action-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
-}
-.action-btn.action-edit:hover { background: #17a2b8; border-color: #17a2b8; }
+
+.action-btn.action-edit:hover { background: var(--info); border-color: var(--info); }
 .action-btn.action-delete:hover { background: var(--danger); border-color: var(--danger); }
 
 /* Status / tip badgevi */
 .krediti-status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
-.krediti-status-badge.aktivan { background: #e3f2fd; color: #1565c0; }
-.krediti-status-badge.otplacen { background: #e8f5e9; color: #2e7d32; }
-.krediti-status-badge.refinanciran { background: #fff3e0; color: #e65100; }
+.krediti-status-badge.aktivan { background: var(--remap-info-bg); color: var(--info); }
+.krediti-status-badge.otplacen { background: var(--remap-success-bg); color: var(--success); }
+.krediti-status-badge.refinanciran { background: var(--remap-warning-bg); color: var(--warning); }
 
-.krediti-tip-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #f0f0f0; color: #666; }
-.krediti-tip-badge.var { background: #fff3e0; color: #e65100; }
+.krediti-tip-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: var(--remap-grey-bg); color: var(--text-mid); }
+.krediti-tip-badge.var { background: var(--remap-warning-bg); color: var(--warning); }
 
 /* Status pil u planu otplate */
 .krediti-status-pill {
@@ -204,19 +172,19 @@
   font-weight: 600;
   white-space: nowrap;
 }
-.krediti-status-pill.paid    { background: #e8f5e9; color: #2e7d32; }
-.krediti-status-pill.overdue { background: #ffebee; color: #c62828; }
-.krediti-status-pill.soon    { background: #fff3e0; color: #e65100; }
-.krediti-status-pill.future  { background: #f5f5f5; color: #9e9e9e; }
+.krediti-status-pill.paid    { background: var(--remap-success-bg); color: var(--success); }
+.krediti-status-pill.overdue { background: var(--remap-danger-bg); color: var(--danger); }
+.krediti-status-pill.soon    { background: var(--remap-warning-bg); color: var(--warning); }
+.krediti-status-pill.future  { background: var(--remap-grey-bg); color: var(--text-lo); }
 
 /* Amortizacija tablica */
 .amort-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.amort-table thead th { background: #366092; color: white; padding: 8px; text-align: right; }
+.amort-table thead th { background: var(--primary); color: #fff; padding: 8px; text-align: right; }
 .amort-table thead th:first-child, .amort-table thead th:nth-child(2) { text-align: left; }
-.amort-table tbody td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right; font-variant-numeric: tabular-nums; }
+.amort-table tbody td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: right; font-variant-numeric: tabular-nums; color: var(--text-hi); }
 .amort-table tbody td:first-child, .amort-table tbody td:nth-child(2) { text-align: left; }
-.amort-table tbody tr:nth-child(even) { background: #fafafa; }
-.amort-summary { background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+.amort-table tbody tr:nth-child(even) td { background: var(--bg-table-row-hover); }
+.amort-summary { background: var(--remap-info-bg); color: var(--text-hi); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
 .amort-summary strong { color: var(--primary); }
 
 .krediti-filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 15px; }
@@ -289,7 +257,7 @@
           </tr>
         </thead>
         <tbody id="kreditiTableBody">
-          <tr><td colspan="11" style="text-align: center; color: #999; padding: 30px;">Učitavanje...</td></tr>
+          <tr><td colspan="11" style="text-align: center; color: var(--text-lo); padding: 30px;">Učitavanje...</td></tr>
         </tbody>
       </table>
     </div>
@@ -399,7 +367,7 @@
       <div id="amortSummary" class="amort-summary"></div>
 
       <!-- Filter (prikazuje se samo kad postoji stvarni plan otplate) -->
-      <div id="amortFilter" style="display:none; margin:10px 0; padding:8px 10px; background:#f5f5f5; border-radius:6px;">
+      <div id="amortFilter" style="display:none; margin:10px 0; padding:8px 10px; background:var(--remap-grey-bg); border-radius:6px;">
         <strong style="margin-right:10px;">Prikaži:</strong>
         <label style="margin-right:12px;"><input type="radio" name="scheduleFilter" value="all" checked onchange="kreditiRenderSchedule()"> Sve</label>
         <label style="margin-right:12px;"><input type="radio" name="scheduleFilter" value="unpaid" onchange="kreditiRenderSchedule()"> Neplaćene</label>
@@ -437,7 +405,7 @@
       <span class="modal-close" onclick="closeModal('markPaidModal')">&times;</span>
     </div>
     <div class="modal-body">
-      <div id="markPaidInfo" style="background:#f5f5f5;padding:10px;border-radius:6px;margin-bottom:15px;font-size:13px;"></div>
+      <div id="markPaidInfo" style="background:var(--remap-grey-bg);padding:10px;border-radius:6px;margin-bottom:15px;font-size:13px;"></div>
       <div class="form-group">
         <label>Datum plaćanja *</label>
         <input type="date" id="markPaidDate" class="form-control">
@@ -454,7 +422,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('markPaidModal')">Odustani</button>
-      <button class="btn" id="markPaidUndoBtn" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:none;" onclick="kreditiUndoPayment()">Poništi plaćanje</button>
+      <button class="btn" id="markPaidUndoBtn" style="background:var(--remap-danger-bg);color:var(--danger);border:1px solid #ef9a9a;display:none;" onclick="kreditiUndoPayment()">Poništi plaćanje</button>
       <button class="btn btn-success" onclick="kreditiSavePayment()">Spremi</button>
     </div>
   </div>
@@ -587,7 +555,7 @@ function kreditiPrikaziTablicu() {
 
   const tbody = document.getElementById('kreditiTableBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #999; padding: 30px;">Nema kredita za prikaz</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: var(--text-lo); padding: 30px;">Nema kredita za prikaz</td></tr>';
     return;
   }
 
@@ -598,7 +566,7 @@ function kreditiPrikaziTablicu() {
     const boja = kreditiGetColor(k.davatelj);
     return '<tr>' +
       '<td><span style="display:inline-block;width:4px;height:16px;background:' + boja + ';vertical-align:middle;margin-right:6px;border-radius:2px;"></span>' + (k.sifra || '-') + '</td>' +
-      '<td>' + (k.naziv || '-') + (k.svrha ? '<div style="font-size:11px;color:#999;">' + k.svrha + '</div>' : '') + '</td>' +
+      '<td>' + (k.naziv || '-') + (k.svrha ? '<div style="font-size:11px;color:var(--text-lo);">' + k.svrha + '</div>' : '') + '</td>' +
       '<td><strong>' + (k.davatelj || '-') + '</strong></td>' +
       '<td class="num">' + kreditiFmtEur(k.iznos_ukupni_eur) + '</td>' +
       '<td class="num">' + kreditiFmtEur(k.preostala_glavnica_eur) + '</td>' +
@@ -625,10 +593,18 @@ function kreditiPrikaziTimeline() {
   const periodsWrap = document.getElementById('kreditiPeriodsTable');
   if (!svg) return;
 
+  // Theme-aware boje (dohvat iz CSS varijabli)
+  const cs = getComputedStyle(document.documentElement);
+  const txtHi = cs.getPropertyValue('--text-hi').trim() || '#333';
+  const txtLo = cs.getPropertyValue('--text-lo').trim() || '#999';
+  const gridLine = cs.getPropertyValue('--border').trim() || '#cbd5e1';
+  const dangerColor = cs.getPropertyValue('--danger').trim() || '#e74c3c';
+  const labelOnBar = cs.getPropertyValue('--postava-text').trim() || '#fff';
+
   const aktivni = window.kreditiData.filter(k => k.status === 'Aktivan');
   if (aktivni.length === 0) {
     svg.setAttribute('viewBox', '0 0 800 100');
-    svg.innerHTML = '<text x="400" y="50" text-anchor="middle" fill="#999" font-size="14">Nema aktivnih kredita za prikaz</text>';
+    svg.innerHTML = '<text x="400" y="50" text-anchor="middle" fill="' + txtLo + '" font-size="14">Nema aktivnih kredita za prikaz</text>';
     legend.innerHTML = '';
     if (periodsWrap) periodsWrap.innerHTML = '';
     return;
@@ -699,23 +675,21 @@ function kreditiPrikaziTimeline() {
   keyDates.forEach(d => {
     const x = xForDate(d);
     const isToday = Math.abs(d - today) < 86400000;
-    const stroke = isToday ? '#e74c3c' : '#cbd5e1';
+    const stroke = isToday ? dangerColor : gridLine;
     const strokeDash = isToday ? '' : 'stroke-dasharray="3,3"';
     svgParts.push(
       '<line x1="' + x + '" y1="' + padTop + '" x2="' + x + '" y2="' + (height - axisHeight) + '" stroke="' + stroke + '" stroke-width="' + (isToday ? 2 : 1) + '" ' + strokeDash + '/>'
     );
-    // Datum: rotirano -40° oko tocke vrha (izbjegava preklapanje)
     const labelY = height - axisHeight + 14;
-    const fill = isToday ? '#e74c3c' : '#333';
+    const fill = isToday ? dangerColor : txtHi;
     const weight = isToday ? 'font-weight="bold"' : '';
     svgParts.push(
       '<text x="' + x + '" y="' + labelY + '" transform="rotate(-40 ' + x + ' ' + labelY + ')" text-anchor="end" font-size="11" fill="' + fill + '" ' + weight + '>' +
       kreditiFmtDatum(d.toISOString().slice(0, 10)) + '</text>'
     );
-    // Mali "DANAS" indikator iznad crvene linije
     if (isToday) {
       svgParts.push(
-        '<text x="' + x + '" y="' + (padTop - 8) + '" text-anchor="middle" font-size="10" fill="#e74c3c" font-weight="bold">DANAS</text>'
+        '<text x="' + x + '" y="' + (padTop - 8) + '" text-anchor="middle" font-size="10" fill="' + dangerColor + '" font-weight="bold">DANAS</text>'
       );
     }
   });
@@ -729,7 +703,7 @@ function kreditiPrikaziTimeline() {
     const boja = kreditiGetColor(k.davatelj);
 
     svgParts.push(
-      '<text x="' + (chartLeft - 10) + '" y="' + (y + rowHeight / 2 + 4) + '" text-anchor="end" font-size="12" fill="#333" font-weight="bold">' +
+      '<text x="' + (chartLeft - 10) + '" y="' + (y + rowHeight / 2 + 4) + '" text-anchor="end" font-size="12" fill="' + txtHi + '" font-weight="bold">' +
       (k.sifra || k.naziv || '') + '</text>'
     );
 
@@ -744,7 +718,7 @@ function kreditiPrikaziTimeline() {
 
     if (x2 - x1 > 100) {
       svgParts.push(
-        '<text x="' + (x1 + 8) + '" y="' + (y + rowHeight / 2 + 4) + '" font-size="11" fill="white" font-weight="bold">' +
+        '<text x="' + (x1 + 8) + '" y="' + (y + rowHeight / 2 + 4) + '" font-size="11" fill="' + labelOnBar + '" font-weight="bold">' +
         (k.naziv || '') + ' (' + kreditiFmtEur(k.mjesecna_rata_eur) + '/mj)</text>'
       );
     }
@@ -752,7 +726,7 @@ function kreditiPrikaziTimeline() {
 
   // Horizontalna os ispod traka
   const axisY = padTop + sorted.length * (rowHeight + rowGap) + 5;
-  svgParts.push('<line x1="' + chartLeft + '" y1="' + axisY + '" x2="' + chartRight + '" y2="' + axisY + '" stroke="#333" stroke-width="2"/>');
+  svgParts.push('<line x1="' + chartLeft + '" y1="' + axisY + '" x2="' + chartRight + '" y2="' + axisY + '" stroke="' + txtHi + '" stroke-width="2"/>');
 
   svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
   svg.setAttribute('width', '100%');
@@ -798,7 +772,7 @@ function kreditiPrikaziTimeline() {
 
   if (periodsWrap) {
     periodsWrap.innerHTML =
-      '<h4>Mjesečne obveze kroz vrijeme <span style="font-weight:normal;color:#999;font-size:12px;">(kako krediti dospijevaju, obveza pada)</span></h4>' +
+      '<h4>Mjesečne obveze kroz vrijeme <span style="font-weight:normal;color:var(--text-lo);font-size:12px;">(kako krediti dospijevaju, obveza pada)</span></h4>' +
       '<div class="table-scroll">' +
       '<table class="krediti-periods">' +
         '<thead><tr>' +
@@ -1000,9 +974,9 @@ function kreditiRenderRealSchedule(k, schedule) {
       '<div><strong>Ukupno za platiti:</strong> ' + kreditiFmtEur(ukupnoRata) + '</div>' +
       '<div><strong>Od toga kamate:</strong> ' + kreditiFmtEur(ukupnoKamate) + '</div>' +
       '<div><strong>Glavnica:</strong> ' + kreditiFmtEur(ukupnoGlavnica) + '</div>' +
-      '<div style="color:#2e7d32;"><strong>Plaćeno:</strong> ' + placenoCnt + ' rata (' + kreditiFmtEur(placenoSum) + ')</div>' +
+      '<div style="color:var(--success);"><strong>Plaćeno:</strong> ' + placenoCnt + ' rata (' + kreditiFmtEur(placenoSum) + ')</div>' +
     '</div>' +
-    '<div style="color:#1565c0;margin-top:8px;font-size:12px;">Plan iz HBOR PDF-ova (prod_loan_payment_schedule). Klikni gumb uz retka za evidenciju plaćanja.</div>';
+    '<div style="color:var(--primary);margin-top:8px;font-size:12px;">Plan iz HBOR PDF-ova (prod_loan_payment_schedule). Klikni gumb uz retka za evidenciju plaćanja.</div>';
 
   // Zamijeni header - dodaj Status + Akcije kolone
   document.getElementById('amortTableHead').innerHTML =
@@ -1049,7 +1023,7 @@ function kreditiRenderSchedule() {
 
   const tbody = document.getElementById('amortTableBody');
   if (rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#999;">Nema rata za ovaj filter</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--text-lo);">Nema rata za ovaj filter</td></tr>';
     return;
   }
 
@@ -1058,16 +1032,16 @@ function kreditiRenderSchedule() {
     let bg = '', statusLabel;
 
     if (r.placeno) {
-      bg = 'background:#f0faf1;';
+      bg = 'background:var(--remap-success-bg);';
       const placenoDatumStr = r.placeno_datum ? kreditiFmtDatum(r.placeno_datum) : '';
       const placenoIznosStr = r.placeno_iznos_eur != null ? kreditiFmtEur(r.placeno_iznos_eur) : '';
       statusLabel = '<span class="krediti-status-pill paid">Plaćeno</span>' +
-        (placenoDatumStr ? '<div style="font-size:11px;color:#666;margin-top:2px;">' + placenoDatumStr + ' · ' + placenoIznosStr + '</div>' : '');
+        (placenoDatumStr ? '<div style="font-size:11px;color:var(--text-mid);margin-top:2px;">' + placenoDatumStr + ' · ' + placenoIznosStr + '</div>' : '');
     } else if (datum < today) {
-      bg = 'background:#fff0f0;';
+      bg = 'background:var(--remap-danger-bg);';
       statusLabel = '<span class="krediti-status-pill overdue">Prekoračeno</span>';
     } else if (datum <= soon) {
-      bg = 'background:#fff8ef;';
+      bg = 'background:var(--remap-warning-bg);';
       statusLabel = '<span class="krediti-status-pill soon">Uskoro</span>';
     } else {
       statusLabel = '<span class="krediti-status-pill future">—</span>';
@@ -1315,7 +1289,7 @@ function kreditiRenderCalculatedPlan(k) {
   }
   // Total redak
   rows.push(
-    '<tr style="background:#e3f2fd;font-weight:bold;">' +
+    '<tr style="background:var(--remap-info-bg);font-weight:bold;">' +
       '<td colspan="2">UKUPNO</td>' +
       '<td>' + kreditiFmtEur(ukupnoRata) + '</td>' +
       '<td>' + kreditiFmtEur(preostalaGlavnica) + '</td>' +

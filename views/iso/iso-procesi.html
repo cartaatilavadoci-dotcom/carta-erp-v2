@@ -1,0 +1,348 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-workflow svg-icon-lg"></span>
+  Procesi (OB_20 — Analiza procesa)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  11 ključnih procesa Cartine organizacije s definiranim ulazima/izlazima, vlasnikom i mjerljivim karakteristikama.
+  KPI vrijednosti dolaze iz <strong>Ciljeva kvalitete</strong> modula.
+</div>
+
+<div style="margin-bottom: 18px;">
+  <button class="btn-primary doc-btn-add" onclick="procOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi proces
+  </button>
+</div>
+
+<div id="procGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 14px;">
+  <div style="grid-column: 1 / -1; text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="procModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="procModalTitle">Novi proces</h3>
+      <button class="doc-modal-close" onclick="procCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="procFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Šifra procesa *</label>
+          <input type="text" id="procFCode" class="doc-input" placeholder="1.2, 5, 11...">
+        </div>
+        <div class="doc-field">
+          <label>Naziv *</label>
+          <input type="text" id="procFName" class="doc-input" placeholder="Vođenje, Nabava, Proizvodnja...">
+        </div>
+        <div class="doc-field">
+          <label>Vlasnik (uloga)</label>
+          <input type="text" id="procFOwnerRole" class="doc-input" placeholder="Predsjednica uprave, PUK, Voditelj proizvodnje...">
+        </div>
+        <div class="doc-field">
+          <label>Vlasnik (zaposlenik)</label>
+          <select id="procFOwner" class="doc-input">
+            <option value="">— bez konkretne osobe —</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Frekvencija mjerenja</label>
+          <select id="procFFrequency" class="doc-input">
+            <option value="">— odaberi —</option>
+            <option value="Mjesečno">Mjesečno</option>
+            <option value="Polugodišnje" selected>Polugodišnje</option>
+            <option value="Godišnje">Godišnje</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Aktivan</label>
+          <select id="procFActive" class="doc-input">
+            <option value="true" selected>Aktivan</option>
+            <option value="false">Neaktivan</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opis</label>
+        <textarea id="procFDescription" rows="2" class="doc-input"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Ulazi u proces</label>
+        <textarea id="procFInputs" rows="2" class="doc-input" placeholder="Što proces dobiva (dokumenti, materijali, podaci...)"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Izlazi iz procesa</label>
+        <textarea id="procFOutputs" rows="2" class="doc-input" placeholder="Što proces stvara"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Metoda mjerenja</label>
+        <input type="text" id="procFMethod" class="doc-input" placeholder="Analiza ciljeva, Analiza poslovanja...">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Resursi (oprema, ljudi, sustavi)</label>
+        <textarea id="procFResources" rows="2" class="doc-input"></textarea>
+      </div>
+      <div class="doc-field-grid" style="margin-top: 10px;">
+        <div class="doc-field">
+          <label>Zadnja revizija procesa</label>
+          <input type="date" id="procFLastReview" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Sljedeća revizija</label>
+          <input type="date" id="procFNextReview" class="doc-input">
+        </div>
+      </div>
+      <div id="procModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="procCloseModal()">Odustani</button>
+      <button class="btn-primary" id="procSaveBtn" onclick="procSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.proc-card {
+  background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid var(--primary); display: flex; flex-direction: column; gap: 10px;
+}
+.proc-card.inactive { opacity: 0.55; border-left-color: #999; }
+.proc-card-header { display: flex; align-items: flex-start; gap: 10px; justify-content: space-between; }
+.proc-code {
+  background: var(--primary); color: white; font-size: 12px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px; min-width: 28px; text-align: center;
+}
+.proc-name { font-size: 16px; font-weight: 700; color: var(--primary); flex: 1; }
+.proc-row { display: flex; gap: 6px; font-size: 12px; line-height: 1.5; }
+.proc-row strong { color: #555; min-width: 80px; }
+.proc-row span { color: #333; flex: 1; }
+.proc-kpi-list {
+  border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 4px;
+}
+.proc-kpi-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #fafafa;
+  border-radius: 6px; margin-bottom: 4px; font-size: 12px;
+}
+.proc-kpi-name { flex: 1; color: #555; }
+.proc-kpi-value { font-weight: 700; }
+.proc-kpi-value.ok { color: #2e7d32; }
+.proc-kpi-value.miss { color: #c62828; }
+.proc-kpi-value.pending { color: #aaa; }
+.proc-no-kpi { font-size: 11px; color: #999; padding: 6px 8px; font-style: italic; }
+.proc-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+</style>
+
+<script>
+(async function initIsoProcesiView() {
+  console.log('[iso-procesi] init');
+  let allProcs = [], allEmployees = [], allObjs = [], allResults = {};
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+
+  // ========== EMPLOYEES ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true }, columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' }, silent: true
+      });
+      const sel = document.getElementById('procFOwner');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option'); opt.value = e.id;
+        opt.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== KPI loading (svi 2026 KPI ciljevi) ==========
+  async function loadKpis() {
+    try {
+      allObjs = await SB.select('iso_quality_objectives', {
+        eq: { year: new Date().getFullYear(), objective_type: 'KPI', active: true },
+        silent: true
+      });
+      if (allObjs.length > 0) {
+        const ids = allObjs.map(o => o.id);
+        const results = await SB.select('iso_quality_objective_results', {
+          in: { objective_id: ids },
+          order: { period_end: 'desc' },
+          silent: true
+        });
+        allResults = {};
+        results.forEach(r => {
+          if (!allResults[r.objective_id]) allResults[r.objective_id] = r;
+        });
+      }
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== RENDER ==========
+  function renderGrid() {
+    const grid = document.getElementById('procGrid');
+    if (allProcs.length === 0) {
+      grid.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; color:var(--text-lo); padding:30px;">Nema procesa.</div>';
+      return;
+    }
+    grid.innerHTML = allProcs.map(p => {
+      const owner = allEmployees.find(e => e.id === p.owner_employee_id);
+      const ownerName = owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() : '';
+      const linkedKpis = allObjs.filter(o => o.process_id === p.id);
+      let kpiHtml = '';
+      if (linkedKpis.length === 0) {
+        kpiHtml = '<div class="proc-no-kpi">Nema povezanih KPI ciljeva. (Dodaj kroz Ciljevi kvalitete → odaberi process_id)</div>';
+      } else {
+        kpiHtml = linkedKpis.map(o => {
+          const r = allResults[o.id];
+          const val = r ? Number(r.measured_value).toFixed(1) : '—';
+          const cls = r ? (r.achieved ? 'ok' : 'miss') : 'pending';
+          const sym = r ? (r.achieved ? '✓' : '✗') : '○';
+          return `
+            <div class="proc-kpi-item">
+              <span class="proc-kpi-name">${escapeHtml(o.name)}</span>
+              <span class="proc-kpi-value ${cls}">${sym} ${val} ${o.target_unit || ''} / ${o.target_value} ${o.target_unit || ''}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      return `
+        <div class="proc-card ${p.active === false ? 'inactive' : ''}">
+          <div class="proc-card-header">
+            <div class="proc-code">${p.code}</div>
+            <div class="proc-name">${escapeHtml(p.name)}</div>
+          </div>
+          ${p.owner_role ? `<div class="proc-row"><strong>Vlasnik:</strong> <span>${escapeHtml(p.owner_role)}${ownerName ? ' (' + escapeHtml(ownerName) + ')' : ''}</span></div>` : ''}
+          ${p.inputs ? `<div class="proc-row"><strong>Ulazi:</strong> <span>${escapeHtml(p.inputs)}</span></div>` : ''}
+          ${p.outputs ? `<div class="proc-row"><strong>Izlazi:</strong> <span>${escapeHtml(p.outputs)}</span></div>` : ''}
+          ${p.measurement_frequency ? `<div class="proc-row"><strong>Frekvencija:</strong> <span>${escapeHtml(p.measurement_frequency)}</span></div>` : ''}
+          ${p.measurement_method ? `<div class="proc-row"><strong>Metoda:</strong> <span>${escapeHtml(p.measurement_method)}</span></div>` : ''}
+          <div class="proc-kpi-list">
+            <div style="font-size:11px; color:var(--text-lo); text-transform:uppercase; font-weight:600; margin-bottom:4px;">KPI ciljevi (${linkedKpis.length})</div>
+            ${kpiHtml}
+          </div>
+          <div class="proc-actions">
+            <button class="btn-secondary" style="flex:1; font-size:12px;" onclick="procOpenEdit('${p.id}')">
+              <span class="svg-icon svg-icon-pencil svg-icon-sm"></span> Uredi
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadProcs() {
+    try {
+      allProcs = await SB.select('iso_processes', { order: { code: 'asc' }, silent: true });
+      renderGrid();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('procGrid').innerHTML = `<div style="grid-column: 1 / -1; color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+    }
+  }
+
+  // ========== MODAL ==========
+  window.procOpenAddModal = function() {
+    document.getElementById('procModalTitle').textContent = 'Novi proces';
+    document.getElementById('procFId').value = '';
+    ['procFCode','procFName','procFOwnerRole','procFInputs','procFOutputs','procFDescription','procFMethod','procFResources','procFLastReview','procFNextReview']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('procFOwner').value = '';
+    document.getElementById('procFFrequency').value = 'Polugodišnje';
+    document.getElementById('procFActive').value = 'true';
+    document.getElementById('procModalError').style.display = 'none';
+    document.getElementById('procModal').style.display = 'flex';
+  };
+
+  window.procOpenEdit = function(id) {
+    const p = allProcs.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('procModalTitle').textContent = `Uredi: ${p.code} ${p.name}`;
+    document.getElementById('procFId').value = id;
+    document.getElementById('procFCode').value = p.code;
+    document.getElementById('procFName').value = p.name;
+    document.getElementById('procFOwnerRole').value = p.owner_role || '';
+    document.getElementById('procFOwner').value = p.owner_employee_id || '';
+    document.getElementById('procFFrequency').value = p.measurement_frequency || '';
+    document.getElementById('procFActive').value = p.active === false ? 'false' : 'true';
+    document.getElementById('procFDescription').value = p.description || '';
+    document.getElementById('procFInputs').value = p.inputs || '';
+    document.getElementById('procFOutputs').value = p.outputs || '';
+    document.getElementById('procFMethod').value = p.measurement_method || '';
+    document.getElementById('procFResources').value = p.resources || '';
+    document.getElementById('procFLastReview').value = p.last_review_at || '';
+    document.getElementById('procFNextReview').value = p.next_review_at || '';
+    document.getElementById('procModalError').style.display = 'none';
+    document.getElementById('procModal').style.display = 'flex';
+  };
+
+  window.procCloseModal = function() {
+    document.getElementById('procModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('procModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.procSave = async function() {
+    const btn = document.getElementById('procSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const code = document.getElementById('procFCode').value.trim();
+      const name = document.getElementById('procFName').value.trim();
+      if (!code) throw new Error('Šifra je obavezna');
+      if (!name) throw new Error('Naziv je obavezan');
+
+      const data = {
+        code, name,
+        owner_role: document.getElementById('procFOwnerRole').value.trim() || null,
+        owner_employee_id: document.getElementById('procFOwner').value || null,
+        measurement_frequency: document.getElementById('procFFrequency').value || null,
+        active: document.getElementById('procFActive').value === 'true',
+        description: document.getElementById('procFDescription').value.trim() || null,
+        inputs: document.getElementById('procFInputs').value.trim() || null,
+        outputs: document.getElementById('procFOutputs').value.trim() || null,
+        measurement_method: document.getElementById('procFMethod').value.trim() || null,
+        resources: document.getElementById('procFResources').value.trim() || null,
+        last_review_at: document.getElementById('procFLastReview').value || null,
+        next_review_at: document.getElementById('procFNextReview').value || null,
+        updated_at: new Date().toISOString()
+      };
+
+      const id = document.getElementById('procFId').value;
+      if (id) {
+        await SB.update('iso_processes', data, { id });
+      } else {
+        await SB.insert('iso_processes', data);
+      }
+      procCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Proces ažuriran' : 'Proces dodan', 'success');
+      await loadProcs();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  document.getElementById('procModal').addEventListener('click', e => {
+    if (e.target.id === 'procModal') procCloseModal();
+  });
+
+  await Promise.all([loadEmployees(), loadKpis()]);
+  await loadProcs();
+  console.log('[iso-procesi] ready');
+})();
+</script>

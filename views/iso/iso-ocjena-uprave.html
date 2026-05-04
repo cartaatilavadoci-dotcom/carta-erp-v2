@@ -1,0 +1,478 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-briefcase svg-icon-lg"></span>
+  Ocjena uprave (OB_12)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Godišnja ocjena sustava upravljanja kvalitetom (clause 9.3). Strukturirana prema Cartinom postojećem OB_12 template-u
+  s 11 inputa (a, b, c1–c7, d, e, f). <strong>Auditor traži ocjenu jednom godišnje, potpisanu od Uprave.</strong>
+</div>
+
+<!-- TOOLBAR -->
+<div style="display: flex; gap: 12px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;">
+  <span style="font-size: 13px; color: var(--text-mid);">Godina:</span>
+  <div id="oprYearTabs" style="display: flex; gap: 4px;"></div>
+  <button class="btn-primary" style="margin-left: auto;" onclick="oprNewReview()" id="oprNewBtn">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova ocjena za <span id="oprNewYearLabel">2026</span>
+  </button>
+</div>
+
+<div id="oprContent">
+  <div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>
+</div>
+
+<style>
+.opr-team {
+  background: #f0f4f8; padding: 16px; border-radius: 10px; margin-bottom: 20px;
+}
+.opr-team h3 { margin: 0 0 10px; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+.opr-team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 13px; }
+.opr-team-grid div strong { color: #555; display: block; font-size: 11px; }
+
+.opr-input-section {
+  background: white; border-radius: 10px; padding: 16px; margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #e0e0e0;
+}
+.opr-input-section.score-3 { border-left-color: #2e7d32; }
+.opr-input-section.score-2 { border-left-color: #f57f17; }
+.opr-input-section.score-1 { border-left-color: #c62828; }
+.opr-input-section.score-N { border-left-color: #9e9e9e; opacity: 0.7; }
+
+.opr-input-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;
+}
+.opr-input-code { font-weight: 700; color: var(--primary); font-size: 14px; }
+.opr-input-title { flex: 1; font-weight: 600; color: #333; font-size: 13px; }
+.opr-score-buttons { display: flex; gap: 4px; }
+.opr-score-btn {
+  padding: 4px 10px; border: 1px solid #d0d0d0; background: white; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 700; color: #666; min-width: 32px;
+}
+.opr-score-btn:hover { background: #f5f5f5; }
+.opr-score-btn.active-1 { background: #c62828; color: white; border-color: #c62828; }
+.opr-score-btn.active-2 { background: #f57f17; color: white; border-color: #f57f17; }
+.opr-score-btn.active-3 { background: #2e7d32; color: white; border-color: #2e7d32; }
+.opr-score-btn.active-N { background: #9e9e9e; color: white; border-color: #9e9e9e; }
+
+.opr-textarea { width: 100%; min-height: 60px; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; font-family: inherit; resize: vertical; }
+.opr-textarea:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+
+.opr-summary-bar {
+  background: linear-gradient(90deg, #f0f4f8, #e3f2fd);
+  padding: 14px 18px; border-radius: 10px; margin-bottom: 16px;
+  display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+}
+.opr-summary-stat { display: flex; flex-direction: column; align-items: center; }
+.opr-summary-stat strong { font-size: 22px; color: var(--primary); }
+.opr-summary-stat span { font-size: 11px; color: #666; }
+
+.opr-output-section {
+  background: white; border-radius: 10px; padding: 16px; margin-top: 16px;
+  border: 2px dashed #d0d0d0;
+}
+
+.opr-sign-bar {
+  background: #fffaf0; border: 1px solid #ffe082; border-radius: 10px; padding: 14px 18px; margin-top: 18px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.opr-sign-bar.signed { background: #e8f5e9; border-color: #a5d6a7; }
+</style>
+
+<script>
+(async function initIsoOcjenaUpraveView() {
+  console.log('[iso-ocjena-uprave] init');
+
+  const NOW_YEAR = new Date().getFullYear();
+  let currentYear = NOW_YEAR;
+  let allReviews = [];
+  let currentReview = null;
+  let allEmployees = [];
+  let isoSettings = {};
+
+  function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+  function fmtDateTime(d) { return d ? new Date(d).toLocaleString('hr-HR') : '—'; }
+  function findEmp(id) { return allEmployees.find(e => e.id === id); }
+  function empName(emp) { return emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '—'; }
+
+  // ========== STRUKTURA OB_12 INPUTA ==========
+  const INPUTS = [
+    { code: 'a',  title: 'Status aktivnosti iz prethodnih ocjena sustava' },
+    { code: 'b',  title: 'Promjene u unutarnjim i vanjskim pitanjima koje su relevantne za sustav upravljanja' },
+    { code: 'c1', title: 'Povratne informacije zainteresiranih strana — zadovoljstvo kupaca' },
+    { code: 'c2', title: 'Opseg u kojem se ispunjavaju ciljevi i programi (KPI)' },
+    { code: 'c3', title: 'Pokazatelji procesa i usklađenost usluga, rezultati sustava upravljanja kvalitetom' },
+    { code: 'c4', title: 'Nesukladnosti i korektivne radnje (NC + CAPA)' },
+    { code: 'c6', title: 'Rezultati internih audita' },
+    { code: 'c7', title: 'Djelovanje vanjskih pružatelja usluga (kooperanata) i proizvoda (dobavljača)' },
+    { code: 'd',  title: 'Prikladnost resursa (ljudski, financijski, tehnološki)' },
+    { code: 'e',  title: 'Djelotvornost aktivnosti za određivanje rizika i prilika' },
+    { code: 'f',  title: 'Prilike za poboljšanje sustava upravljanja kvalitetom' }
+  ];
+
+  // ========== YEAR TABS ==========
+  function renderYearTabs() {
+    const years = [NOW_YEAR + 1, NOW_YEAR, NOW_YEAR - 1, NOW_YEAR - 2, NOW_YEAR - 3];
+    const wrap = document.getElementById('oprYearTabs');
+    wrap.innerHTML = years.map(y =>
+      `<button class="obj-year-tab ${y === currentYear ? 'active' : ''}" onclick="oprSetYear(${y})">${y}</button>`
+    ).join('');
+    document.getElementById('oprNewYearLabel').textContent = currentYear;
+  }
+  window.oprSetYear = function(y) { currentYear = y; renderYearTabs(); render(); };
+
+  // ========== LOAD ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', { eq: { active: true }, columns: 'id, first_name, last_name, position', silent: true });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadSettings() {
+    try {
+      const settings = await SB.select('settings', { eq: { category: 'ISO_9001' }, silent: true });
+      settings.forEach(s => { isoSettings[s.key] = s.text_value; });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadReviews() {
+    try {
+      allReviews = await SB.select('iso_management_reviews', { silent: true });
+      currentReview = allReviews.find(r => r.review_year === currentYear);
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadAll() {
+    await Promise.all([loadEmployees(), loadSettings(), loadReviews()]);
+    render();
+  }
+
+  // ========== RENDER ==========
+  function render() {
+    currentReview = allReviews.find(r => r.review_year === currentYear);
+    document.getElementById('oprNewBtn').style.display = currentReview ? 'none' : 'inline-flex';
+
+    if (!currentReview) {
+      document.getElementById('oprContent').innerHTML = `
+        <div class="iso-card" style="text-align:center; padding:40px;">
+          <div class="svg-icon svg-icon-briefcase" style="width:48px; height:48px; color:var(--border); margin: 0 auto 14px;"></div>
+          <h3 style="color: var(--text-lo); margin: 0 0 10px;">Nema ocjene uprave za ${currentYear}.</h3>
+          <p style="color: var(--text-lo); font-size: 13px; max-width: 500px; margin: 0 auto 20px;">
+            Klikni "Nova ocjena za ${currentYear}" da kreiraš strukturiran obrazac s 11 inputa
+            (a, b, c1–c7, d, e, f) za ocjenu sustava prema clause 9.3.
+          </p>
+          <button class="btn-primary" onclick="oprNewReview()">
+            <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova ocjena za ${currentYear}
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    const inputs = currentReview.inputs || {};
+    const conclusions = currentReview.conclusions || '';
+
+    // Score summary
+    const scores = INPUTS.map(i => (inputs[i.code] && inputs[i.code].score) || null).filter(s => s !== null && s !== 'N');
+    const numScores = scores.filter(s => typeof s === 'number' || /^\d+$/.test(s)).map(Number);
+    const avgScore = numScores.length ? (numScores.reduce((a, b) => a + b, 0) / numScores.length).toFixed(2) : '—';
+    const score3 = numScores.filter(s => s === 3).length;
+    const score2 = numScores.filter(s => s === 2).length;
+    const score1 = numScores.filter(s => s === 1).length;
+
+    let html = `
+      <div class="opr-team">
+        <h3><span class="svg-icon svg-icon-users svg-icon-sm"></span> Tim za ocjenu</h3>
+        <div class="opr-team-grid">
+          <div><strong>Predsjednica uprave</strong>${escapeHtml(empName(findEmp(isoSettings.iso_predsjednica_uprave_employee_id)))}</div>
+          <div><strong>PUK</strong>${escapeHtml(empName(findEmp(isoSettings.iso_puk_employee_id)))}</div>
+          <div><strong>Voditelj kontrolinga</strong>${escapeHtml(empName(findEmp(isoSettings.iso_voditelj_kontrolinga_employee_id)))}</div>
+          <div><strong>Vanjski konzultant</strong>${escapeHtml(isoSettings.iso_external_consultant_name || '—')}</div>
+        </div>
+      </div>
+
+      <div class="opr-summary-bar">
+        <div class="opr-summary-stat">
+          <strong>${avgScore}</strong>
+          <span>Prosječna ocjena</span>
+        </div>
+        <div class="opr-summary-stat">
+          <strong style="color:var(--success);">${score3}</strong>
+          <span>Potpuno (3)</span>
+        </div>
+        <div class="opr-summary-stat">
+          <strong style="color:var(--warning);">${score2}</strong>
+          <span>Djelomično (2)</span>
+        </div>
+        <div class="opr-summary-stat">
+          <strong style="color:var(--danger);">${score1}</strong>
+          <span>Nezadovoljni (1)</span>
+        </div>
+        <div class="opr-summary-stat">
+          <strong>${INPUTS.length - numScores.length}</strong>
+          <span>Nije ocijenjeno</span>
+        </div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn-secondary" onclick="oprAggregateData()" title="Auto-popuni komentar polja iz live podataka">
+            <span class="svg-icon svg-icon-bot svg-icon-sm"></span> Pre-popuni iz baze
+          </button>
+        </div>
+      </div>
+
+      <h2 class="iso-section-title-h2">
+        <span class="svg-icon svg-icon-clipboard-list"></span> 1. Inputi (a–f) — ocjena 1=loše, 2=djelomično, 3=potpuno, N=nije primjenjivo
+      </h2>
+    `;
+
+    INPUTS.forEach(i => {
+      const data = inputs[i.code] || {};
+      const score = data.score;
+      const notes = data.notes || '';
+      const cls = score ? ('score-' + score) : '';
+      html += `
+        <div class="opr-input-section ${cls}">
+          <div class="opr-input-header">
+            <div class="opr-input-code">${i.code}.</div>
+            <div class="opr-input-title">${i.title}</div>
+            <div class="opr-score-buttons">
+              ${[1,2,3,'N'].map(s => `
+                <button class="opr-score-btn ${score == s ? 'active-' + s : ''}"
+                  onclick="oprSetScore('${i.code}', ${typeof s === 'string' ? "'"+s+"'" : s})">
+                  ${s}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          <textarea class="opr-textarea" id="opr-notes-${i.code}"
+            onchange="oprSetNotes('${i.code}', this.value)"
+            placeholder="Komentar / analiza za ovaj input...">${escapeHtml(notes)}</textarea>
+        </div>
+      `;
+    });
+
+    html += `
+      <h2 class="iso-section-title-h2">
+        <span class="svg-icon svg-icon-target"></span> 2. Zaključci i akcijski plan
+      </h2>
+      <div class="opr-output-section">
+        <textarea class="opr-textarea" id="opr-conclusions" style="min-height:120px;"
+          onchange="oprSetConclusions(this.value)"
+          placeholder="Glavni zaključci ocjene + akcijski plan za sljedeće razdoblje (zaduženja, rokovi, resursi...)">${escapeHtml(conclusions)}</textarea>
+      </div>
+
+      <div class="opr-sign-bar ${currentReview.signed_by_management ? 'signed' : ''}">
+        ${currentReview.signed_by_management
+          ? `<span class="svg-icon svg-icon-check-circle" style="color:var(--success); width:32px; height:32px;"></span>
+             <div>
+               <strong>✓ Potpisano od strane Uprave</strong><br>
+               <span style="font-size:12px; color:var(--text-mid);">${fmtDateTime(currentReview.signed_at)}</span>
+             </div>`
+          : `<span class="svg-icon svg-icon-alert-triangle" style="color:var(--warning); width:32px; height:32px;"></span>
+             <div style="flex:1;">
+               <strong>Čeka potpis Uprave</strong><br>
+               <span style="font-size:12px; color:var(--text-mid);">Predsjednica uprave klikne gumb desno kad je ocjena spremna za audit.</span>
+             </div>
+             <button class="btn-primary" onclick="oprSign()" style="background:var(--success);">
+               <span class="svg-icon svg-icon-check-circle svg-icon-sm"></span> Potpiši i objavi
+             </button>`
+        }
+      </div>
+
+      <div style="margin-top: 14px; display:flex; gap:8px;">
+        <button class="btn-secondary" onclick="oprDelete()" style="background:var(--remap-danger-bg); color:var(--danger);">
+          <span class="svg-icon svg-icon-trash svg-icon-sm"></span> Obriši ocjenu
+        </button>
+      </div>
+    `;
+
+    document.getElementById('oprContent').innerHTML = html;
+  }
+
+  // ========== ACTIONS ==========
+  window.oprNewReview = async function() {
+    if (currentReview) { alert('Ocjena za ' + currentYear + ' već postoji.'); return; }
+    try {
+      // Tim iz settings
+      const team = [];
+      ['iso_predsjednica_uprave_employee_id','iso_puk_employee_id','iso_voditelj_kontrolinga_employee_id'].forEach(k => {
+        const id = isoSettings[k];
+        if (id) {
+          const e = findEmp(id);
+          if (e) team.push({ employee_id: id, name: empName(e), role: k.replace('iso_', '').replace('_employee_id', '') });
+        }
+      });
+
+      await SB.insert('iso_management_reviews', {
+        review_year: currentYear,
+        period_from: `${currentYear - 1}-12-01`,
+        period_to: `${currentYear}-12-31`,
+        team_members: team,
+        external_consultant_name: isoSettings.iso_external_consultant_name || null,
+        inputs: {},
+        conclusions: null,
+        signed_by_management: false
+      });
+      if (typeof showMessage === 'function') showMessage('Ocjena za ' + currentYear + ' kreirana', 'success');
+      await loadReviews();
+      render();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  // Local state buffer (debounce save-a)
+  let pendingInputs = null;
+  let saveTimer = null;
+
+  function ensureInputsLoaded() {
+    if (!pendingInputs) pendingInputs = JSON.parse(JSON.stringify(currentReview.inputs || {}));
+  }
+
+  function debouncedSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      if (currentReview && pendingInputs) {
+        try {
+          await SB.update('iso_management_reviews',
+            { inputs: pendingInputs, updated_at: new Date().toISOString() },
+            { id: currentReview.id }
+          );
+          currentReview.inputs = pendingInputs;
+          pendingInputs = null;
+        } catch (e) { console.warn('autosave err:', e); }
+      }
+    }, 600);
+  }
+
+  window.oprSetScore = function(code, score) {
+    if (!currentReview) return;
+    ensureInputsLoaded();
+    pendingInputs[code] = pendingInputs[code] || {};
+    pendingInputs[code].score = score;
+    debouncedSave();
+    // Update visual immediately
+    document.querySelectorAll(`.opr-input-section`).forEach(el => {
+      // re-render this section's class if matches
+    });
+    render(); // poziv re-rendera za vizualni feedback
+  };
+
+  window.oprSetNotes = function(code, notes) {
+    if (!currentReview) return;
+    ensureInputsLoaded();
+    pendingInputs[code] = pendingInputs[code] || {};
+    pendingInputs[code].notes = notes;
+    debouncedSave();
+  };
+
+  window.oprSetConclusions = async function(conclusions) {
+    if (!currentReview) return;
+    try {
+      await SB.update('iso_management_reviews',
+        { conclusions, updated_at: new Date().toISOString() },
+        { id: currentReview.id }
+      );
+      currentReview.conclusions = conclusions;
+    } catch (e) { console.warn(e); }
+  };
+
+  window.oprSign = async function() {
+    if (!currentReview) return;
+    if (!confirm(`Potpisati ocjenu uprave za ${currentYear}?\n\nNakon potpisa, ocjena postaje formalan dokument za audit.`)) return;
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      await SB.update('iso_management_reviews', {
+        signed_by_management: true,
+        signed_at: new Date().toISOString(),
+        signed_by: user && user.id || null,
+        updated_at: new Date().toISOString()
+      }, { id: currentReview.id });
+      if (typeof showMessage === 'function') showMessage('Ocjena potpisana ✓', 'success');
+      await loadReviews(); render();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  window.oprDelete = async function() {
+    if (!currentReview) return;
+    if (!confirm(`Obrisati ocjenu uprave za ${currentYear}? Ovo se ne može vratiti.`)) return;
+    try {
+      await SB.delete('iso_management_reviews', { id: currentReview.id });
+      if (typeof showMessage === 'function') showMessage('Ocjena obrisana', 'success');
+      await loadReviews(); render();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  // ========== AGGREGATE DATA FROM DB (pre-fill helper) ==========
+  window.oprAggregateData = async function() {
+    if (!currentReview) return;
+    if (!confirm('Pre-popuniti komentare iz live baze? Postojeći tekstovi će biti zamijenjeni samo ako su prazni.')) return;
+
+    try {
+      const yearStart = `${currentYear}-01-01`;
+      const yearEnd = `${currentYear}-12-31`;
+
+      // Skupi sve relevantne brojke
+      const ncs = await SB.select('iso_nonconformities', { gte: { occurred_at: yearStart }, lte: { occurred_at: yearEnd + 'T23:59:59' }, columns: 'id, severity, status', silent: true });
+      const capas = await SB.select('iso_capa', { silent: true });
+      const audits = await SB.select('iso_audits', { eq: { year: currentYear }, silent: true });
+      const findings = await SB.select('iso_audit_findings', { silent: true });
+      const objs = await SB.select('iso_quality_objectives', { eq: { year: currentYear, active: true }, silent: true });
+      const objIds = objs.map(o => o.id);
+      let lastResults = {};
+      if (objIds.length > 0) {
+        const results = await SB.select('iso_quality_objective_results', { in: { objective_id: objIds }, order: { period_end: 'desc' }, silent: true });
+        results.forEach(r => { if (!lastResults[r.objective_id]) lastResults[r.objective_id] = r; });
+      }
+      const suppliers = await SB.select('iso_supplier_evaluations', { eq: { year: currentYear }, silent: true });
+      const complaints = await SB.select('iso_customer_complaints', { gte: { complaint_date: yearStart }, lte: { complaint_date: yearEnd }, silent: true });
+
+      const auditFindings = findings.filter(f => audits.some(a => a.id === f.audit_id));
+      const major = auditFindings.filter(f => f.finding_type === 'major').length;
+      const minor = auditFindings.filter(f => f.finding_type === 'minor').length;
+      const obs = auditFindings.filter(f => f.finding_type === 'observation').length;
+      const prep = auditFindings.filter(f => f.finding_type === 'preporuka').length;
+
+      const kpiAchieved = objs.filter(o => lastResults[o.id] && lastResults[o.id].achieved).length;
+      const kpiTotal = objs.length;
+
+      const supplierA = suppliers.filter(s => s.classification === 'A').length;
+      const supplierC = suppliers.filter(s => s.classification === 'C').length;
+
+      // Ne overwriteam postojeće tekstove
+      ensureInputsLoaded();
+      const fill = (code, text) => {
+        pendingInputs[code] = pendingInputs[code] || {};
+        if (!pendingInputs[code].notes || pendingInputs[code].notes.trim().length < 20) {
+          pendingInputs[code].notes = text;
+        }
+      };
+
+      fill('c1', `Reklamacije kupaca u ${currentYear}: ${complaints.length}. Major: ${complaints.filter(c => c.severity === 'major').length}, minor: ${complaints.filter(c => c.severity === 'minor').length}. Zatvorene: ${complaints.filter(c => c.status === 'Zatvorena').length}.`);
+      fill('c2', `KPI ciljevi 2026: ${kpiAchieved}/${kpiTotal} zadovoljava target. ${objs.length === 0 ? 'NAPOMENA: nema definiranih ciljeva za godinu.' : ''}`);
+      fill('c3', `Sustav generira KPI metriku iz proizvodnih podataka (CARTA-ERP). ${kpiAchieved === kpiTotal && kpiTotal > 0 ? 'Svi pokazatelji unutar tolerancije.' : 'Pojedini pokazatelji ispod target-a — vidi modul Ciljevi kvalitete.'}`);
+      fill('c4', `Nesukladnosti u ${currentYear}: ${ncs.length} ukupno. Major: ${ncs.filter(n => n.severity === 'major').length}, minor: ${ncs.filter(n => n.severity === 'minor').length}. Otvoreno: ${ncs.filter(n => n.status === 'Otvoreno').length}.\n\nCAPA radnje: ${capas.length} ukupno, ${capas.filter(c => !['Zatvoreno','Otkazano'].includes(c.status)).length} u procesu, ${capas.filter(c => c.status === 'Zatvoreno').length} zatvoreno.`);
+      fill('c6', `Auditi proveden u ${currentYear}: ${audits.length}. Status: ${audits.filter(a => a.status === 'Provedeno' || a.status === 'Zatvoren').length} provedeno, ${audits.filter(a => a.status === 'Planiran').length} planirano. Nalazi: ${major} major, ${minor} minor, ${obs} observation, ${prep} preporuka.`);
+      fill('c7', `Ocjena dobavljača za ${currentYear}: ${suppliers.length} dobavljača bodovano. Klasa A: ${supplierA}, Klasa C: ${supplierC}.`);
+
+      await SB.update('iso_management_reviews',
+        { inputs: pendingInputs, updated_at: new Date().toISOString() },
+        { id: currentReview.id }
+      );
+      currentReview.inputs = pendingInputs;
+      pendingInputs = null;
+
+      if (typeof showMessage === 'function') showMessage('Komentari pre-popunjeni iz baze', 'success');
+      render();
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  renderYearTabs();
+  await loadAll();
+  console.log('[iso-ocjena-uprave] ready');
+})();
+</script>

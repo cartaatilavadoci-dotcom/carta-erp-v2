@@ -11,6 +11,10 @@ temp_*.ps1
 # Backup files
 *_backup.*
 *_backup_*
+*.bak
+
+# Migration / audit script outputs
+migration_report.txt
 
 # Claude Code settings
 .claude/
@@ -31,3 +35,11 @@ desktop.ini
 # IDE
 .vscode/
 .idea/
+
+# Wrangler / Cloudflare local cache
+.wrangler/
+**/.wrangler/
+
+# AI working dokumenti (privatni — NE commit u javni repo)
+CLAUDE_CODE_TASK.md
+Claude_master_kontekst.md

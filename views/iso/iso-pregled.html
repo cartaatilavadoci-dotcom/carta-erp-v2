@@ -1,0 +1,735 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-shield-check svg-icon-lg"></span>
+  ISO 9001 — Sustav kvalitete
+</h1>
+<div id="isoPregledCountdown" style="margin-bottom: 12px; color: var(--text-mid); font-size: 14px;"></div>
+
+<!-- AUDIT SPRINT MODE BANNER (vidi se samo ako je audit ≤90d) -->
+<div id="auditSprintBanner" style="display:none; margin-bottom: 18px; padding: 14px 18px; border-radius: 10px;
+     background: linear-gradient(90deg, #fff8e1, #ffe0b2); border-left: 5px solid #ef6c00;
+     display: flex; align-items: center; gap: 14px;">
+  <span class="svg-icon svg-icon-shield-check svg-icon-lg" style="color:#ef6c00;"></span>
+  <div style="flex: 1;">
+    <div style="font-weight: 700; color: #e65100;">Audit Sprint Mode aktivan — <span id="sprintDaysLeft">?</span> dana do eksternog audita</div>
+    <div style="font-size: 12px; color: var(--text-mid);">Provjeri pripremu — sustav prikazuje sve što auditor traži.</div>
+  </div>
+  <button class="btn-primary" onclick="auditSprintOpen()" style="background: #ef6c00;">
+    <span class="svg-icon svg-icon-clipboard-list svg-icon-sm"></span> Pokreni provjeru
+  </button>
+</div>
+
+<!-- AUDIT SPRINT MODE MODAL -->
+<div id="auditSprintOverlay" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-detail-panel" style="max-width: 920px;">
+    <div class="doc-modal-header">
+      <h3 style="display:flex; align-items:center; gap:8px;">
+        <span class="svg-icon svg-icon-shield-check"></span>
+        Audit Sprint Mode — pred-audit checklist
+      </h3>
+      <button class="doc-modal-close" onclick="auditSprintClose()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body" id="auditSprintBody">
+      <div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
+<!-- KPI KARTICE -->
+<div class="status-grid">
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiOpenNC">-</div>
+    <div class="status-card-label">Otvorene nesukladnosti</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-refresh-cw svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiOverdueCapa">-</div>
+    <div class="status-card-label">CAPA past due</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-file-text svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiDocsForReview">-</div>
+    <div class="status-card-label">Dokumenti za review (30d)</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-ruler svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiCalibrationSoon">-</div>
+    <div class="status-card-label">Kalibracije uskoro (30d)</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-graduation-cap svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiTrainingsExpiring">-</div>
+    <div class="status-card-label">Osposobljavanja isteci (60d)</div>
+  </div>
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-mail-warning svg-icon-lg"></span></div>
+    <div class="status-card-value" id="kpiOpenComplaints">-</div>
+    <div class="status-card-label">Otvorene reklamacije</div>
+  </div>
+</div>
+
+<!-- AUTO-NC ALERT -->
+<div id="autoNcAlert" class="iso-alert iso-alert-warning" style="display:none;">
+  <div class="iso-alert-icon"><span class="svg-icon svg-icon-bot svg-icon-lg"></span></div>
+  <div class="iso-alert-body">
+    <div class="iso-alert-title"><span id="autoNcCount">0</span> auto-generiranih nesukladnosti čeka pregled</div>
+    <div class="iso-alert-text">Sustav je automatski otvorio nesukladnosti iz proizvodnih trigger-a (otpisi rola, prijavljeni kvarovi). Trebaju ljudski review prije zatvaranja.</div>
+  </div>
+  <button class="btn-primary" onclick="Router.navigate('iso-nesukladnosti')">Otvori
+    <span class="svg-icon svg-icon-chevron-right svg-icon-sm" style="margin-left:4px;"></span>
+  </button>
+</div>
+
+<!-- SEKCIJA: BRZI PRISTUP -->
+<h2 class="iso-section-title">Brzi pristup po modulu</h2>
+<div class="iso-modules-grid">
+  <div class="iso-module-card" onclick="Router.navigate('iso-dokumenti')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-file-text svg-icon-lg"></span></div>
+    <div class="iso-module-title">Dokumenti</div>
+    <div class="iso-module-stat"><span id="modDocCount">-</span> aktivnih</div>
+    <div class="iso-module-desc">Politike, procedure, uputstva, obrasci s versioningom.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-nesukladnosti')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="iso-module-title">Nesukladnosti</div>
+    <div class="iso-module-stat"><span id="modNcCount">-</span> otvorenih</div>
+    <div class="iso-module-desc">Centralni log NC. Auto-generiran iz proizvodnje.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-capa')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-refresh-cw svg-icon-lg"></span></div>
+    <div class="iso-module-title">CAPA radnje</div>
+    <div class="iso-module-stat"><span id="modCapaCount">-</span> u tijeku</div>
+    <div class="iso-module-desc">Korektivne i preventivne radnje s effectiveness gate-om.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-ciljevi')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-target svg-icon-lg"></span></div>
+    <div class="iso-module-title">Ciljevi kvalitete</div>
+    <div class="iso-module-stat"><span id="modObjCount">-</span> ciljeva 2026</div>
+    <div class="iso-module-desc">KPI i projektni ciljevi s auto-praćenjem.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-procesi')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-workflow svg-icon-lg"></span></div>
+    <div class="iso-module-title">Procesi</div>
+    <div class="iso-module-stat"><span id="modProcCount">-</span> procesa (OB_20)</div>
+    <div class="iso-module-desc">11 ključnih procesa s mjerljivim karakteristikama.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-rizici')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-globe svg-icon-lg"></span></div>
+    <div class="iso-module-title">Registar rizika</div>
+    <div class="iso-module-stat"><span id="modRiskCount">-</span> visokih rizika</div>
+    <div class="iso-module-desc">Prob × Posljedica matrica (1–9), preventivne mjere.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-auditi')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-search svg-icon-lg"></span></div>
+    <div class="iso-module-title">Interni auditi</div>
+    <div class="iso-module-stat"><span id="modAuditCount">-</span> aktivnih</div>
+    <div class="iso-module-desc">Plan, program, izvršenje. AI checklist generator.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-mjerna-oprema')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-ruler svg-icon-lg"></span></div>
+    <div class="iso-module-title">Mjerna oprema</div>
+    <div class="iso-module-stat"><span id="modEqCount">-</span> kalibracija uskoro</div>
+    <div class="iso-module-desc">Kalibracijski registar s alertima.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-dobavljaci')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-building-2 svg-icon-lg"></span></div>
+    <div class="iso-module-title">Ocjena dobavljača</div>
+    <div class="iso-module-stat">Auto-bodovanje</div>
+    <div class="iso-module-desc">OB_10 — broj isporuka, reklamacija, kašnjenja.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-osposobljavanje')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-graduation-cap svg-icon-lg"></span></div>
+    <div class="iso-module-title">Osposobljavanja</div>
+    <div class="iso-module-stat"><span id="modTrainCount">-</span> isteci</div>
+    <div class="iso-module-desc">Training matrix po pozicijama, alerti za isteke.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-reklamacije')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-mail-warning svg-icon-lg"></span></div>
+    <div class="iso-module-title">Reklamacije kupaca</div>
+    <div class="iso-module-stat"><span id="modCompCount">-</span> otvorenih</div>
+    <div class="iso-module-desc">Workflow zaprimanja, tehničkog posjeta, rezolucije.</div>
+  </div>
+  <div class="iso-module-card" onclick="Router.navigate('iso-ocjena-uprave')">
+    <div class="iso-module-icon"><span class="svg-icon svg-icon-briefcase svg-icon-lg"></span></div>
+    <div class="iso-module-title">Ocjena uprave</div>
+    <div class="iso-module-stat">Godišnji</div>
+    <div class="iso-module-desc">OB_12 — strukturirana godišnja ocjena sustava.</div>
+  </div>
+</div>
+
+<!-- SEKCIJA: POSLJEDNJE NESUKLADNOSTI -->
+<h2 class="iso-section-title">Posljednje nesukladnosti</h2>
+<div class="iso-card">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>NC br.</th>
+        <th>Datum</th>
+        <th>Izvor</th>
+        <th>Severity</th>
+        <th>Kategorija</th>
+        <th>Opis</th>
+        <th>Status</th>
+        <th>Auto?</th>
+      </tr>
+    </thead>
+    <tbody id="recentNcTable">
+      <tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:20px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SEKCIJA: KPI CILJEVI 2026 -->
+<h2 class="iso-section-title">KPI ciljevi 2026</h2>
+<div class="iso-card">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Cilj</th>
+        <th>Frekvencija</th>
+        <th>Target</th>
+        <th>Smjer</th>
+        <th>Zadnja vrijednost</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="objectivesTable">
+      <tr><td colspan="6" style="text-align:center; color:var(--text-lo); padding:20px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+    <div style="font-size: 12px; color: var(--text-mid); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+      <span class="svg-icon svg-icon-clock svg-icon-sm" style="color:var(--success);"></span>
+      <span><strong>Automatika:</strong> nightly cron <code>iso_kpi_recompute_nightly</code> radi u 06:30 lokalno.</span>
+      <span id="lastKpiCompute" style="color:var(--text-lo); margin-left:4px;"></span>
+    </div>
+    <button class="btn-secondary" onclick="kpiRecompute()" id="kpiRecomputeBtn" style="font-size: 12px;">
+      <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Pokreni KPI recompute (trenutni mjesec)
+    </button>
+  </div>
+</div>
+
+<style>
+.iso-section-title { color: var(--primary); margin: 30px 0 15px; font-size: 1.2em; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+.iso-modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+.iso-module-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid var(--primary); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.iso-module-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+.iso-module-icon { color: var(--primary); margin-bottom: 8px; line-height: 1; }
+.iso-module-title { font-weight: 700; font-size: 16px; color: var(--primary); margin-bottom: 4px; }
+.iso-module-stat { font-size: 14px; color: #555; margin-bottom: 8px; font-weight: 600; }
+.iso-module-stat span { color: #d32f2f; }
+.iso-module-desc { font-size: 12px; color: #888; line-height: 1.4; }
+
+.iso-alert { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 10px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.iso-alert-warning { background: #fff8e1; border-left: 5px solid #f9a825; }
+.iso-alert-success { background: #e8f5e9; border-left: 5px solid #2e7d32; }
+.iso-alert-danger { background: #ffebee; border-left: 5px solid #c62828; }
+.iso-alert-icon { color: #f57f17; line-height: 1; }
+.iso-alert-success .iso-alert-icon { color: #2e7d32; }
+.iso-alert-danger .iso-alert-icon { color: #c62828; }
+.iso-alert-body { flex: 1; }
+.iso-alert-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.iso-alert-text { font-size: 13px; color: #555; }
+
+.iso-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+.iso-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.iso-table thead { background: #f5f5f5; }
+.iso-table th { text-align: left; padding: 10px 8px; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; font-size: 12px; text-transform: uppercase; }
+.iso-table td { padding: 10px 8px; border-bottom: 1px solid #eee; }
+.iso-table tr:hover { background: #fafafa; }
+
+.iso-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.iso-pill-major { background: #ffebee; color: #c62828; }
+.iso-pill-minor { background: #fff8e1; color: #f57f17; }
+.iso-pill-observation { background: #e3f2fd; color: #1565c0; }
+.iso-pill-status-otvoreno { background: #fff3e0; color: #e65100; }
+.iso-pill-status-uobradi, .iso-pill-status-u_obradi { background: #e3f2fd; color: #1565c0; }
+.iso-pill-status-zatvoreno { background: #e8f5e9; color: #2e7d32; }
+.iso-pill-status-default { background: #f5f5f5; color: #555; }
+
+.iso-source { display: inline-flex; align-items: center; gap: 6px; }
+.iso-source .svg-icon { width: 14px; height: 14px; }
+.iso-source-rola { color: #6a1b9a; }
+.iso-source-stroj { color: #d84315; }
+.iso-source-reklam { color: #ad1457; }
+.iso-source-rucno { color: #455a64; }
+.iso-source-audit { color: #1565c0; }
+.iso-source-skart { color: #f57f17; }
+.iso-source-dobavljac { color: #6a1b9a; }
+
+.iso-countdown-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 13px; }
+.iso-countdown-ok { background: #e8f5e9; color: #2e7d32; }
+.iso-countdown-warn { background: #fff8e1; color: #f57f17; }
+.iso-countdown-danger { background: #ffebee; color: #c62828; }
+
+@media (max-width: 768px) {
+  .iso-modules-grid { grid-template-columns: 1fr; }
+  .iso-table { font-size: 12px; }
+  .iso-table th, .iso-table td { padding: 7px 5px; }
+}
+</style>
+
+<script>
+(async function initIsoPregledView() {
+  console.log('[iso-pregled] init');
+
+  function pillSeverity(s) {
+    const cls = s === 'major' ? 'iso-pill-major' :
+                s === 'observation' ? 'iso-pill-observation' : 'iso-pill-minor';
+    return `<span class="iso-pill ${cls}">${s || 'minor'}</span>`;
+  }
+
+  function pillStatus(s) {
+    const slug = (s || '').toLowerCase().replace(/\s/g, '_');
+    const cls = slug === 'otvoreno' ? 'iso-pill-status-otvoreno' :
+                slug === 'zatvoreno' ? 'iso-pill-status-zatvoreno' :
+                (slug === 'u_obradi' || slug === 'uobradi') ? 'iso-pill-status-uobradi' :
+                'iso-pill-status-default';
+    return `<span class="iso-pill ${cls}">${s || '-'}</span>`;
+  }
+
+  function fmtDate(d) {
+    if (!d) return '-';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+
+  function sourceLabel(src) {
+    const map = {
+      'rola_otpis':       { cls:'iso-source-rola',     icon:'file-text',      txt:'Rola otpis' },
+      'stroj_kvar':       { cls:'iso-source-stroj',    icon:'wrench',         txt:'Kvar stroja' },
+      'reklamacija_kupca':{ cls:'iso-source-reklam',   icon:'mail-warning',   txt:'Reklamacija' },
+      'interni_audit':    { cls:'iso-source-audit',    icon:'search',         txt:'Interni audit' },
+      'smjenski_skart':   { cls:'iso-source-skart',    icon:'alert-triangle', txt:'Smjenski škart' },
+      'rucno':            { cls:'iso-source-rucno',    icon:'pencil',         txt:'Ručno' },
+      'dobavljac':        { cls:'iso-source-dobavljac',icon:'building-2',     txt:'Dobavljač' }
+    };
+    const m = map[src];
+    if (!m) return src || '-';
+    return `<span class="iso-source ${m.cls}"><span class="svg-icon svg-icon-${m.icon}"></span>${m.txt}</span>`;
+  }
+
+  // 1) Učitaj v_iso_pregled
+  let pregled = null;
+  try {
+    pregled = await SB.select('v_iso_pregled', { single: true, silent: true });
+  } catch (e) {
+    console.warn('[iso-pregled] v_iso_pregled error:', e.message);
+  }
+
+  if (pregled) {
+    document.getElementById('kpiOpenNC').textContent = pregled.otvoreni_nc ?? 0;
+    document.getElementById('kpiOverdueCapa').textContent = pregled.overdue_capa ?? 0;
+    document.getElementById('kpiDocsForReview').textContent = pregled.dokumenti_za_review ?? 0;
+    document.getElementById('kpiCalibrationSoon').textContent = pregled.oprema_kalibracija_uskoro ?? 0;
+    document.getElementById('kpiTrainingsExpiring').textContent = pregled.osposobljavanja_isteci_60d ?? 0;
+    document.getElementById('kpiOpenComplaints').textContent = pregled.otvorene_reklamacije ?? 0;
+
+    document.getElementById('modDocCount').textContent = pregled.aktivni_dokumenti ?? 0;
+    document.getElementById('modNcCount').textContent = pregled.otvoreni_nc ?? 0;
+    document.getElementById('modCapaCount').textContent = pregled.otvoreni_capa ?? 0;
+    document.getElementById('modRiskCount').textContent = pregled.visoki_rizici ?? 0;
+    document.getElementById('modAuditCount').textContent = pregled.aktivni_auditi ?? 0;
+    document.getElementById('modEqCount').textContent = pregled.oprema_kalibracija_uskoro ?? 0;
+    document.getElementById('modTrainCount').textContent = pregled.osposobljavanja_isteci_60d ?? 0;
+    document.getElementById('modCompCount').textContent = pregled.otvorene_reklamacije ?? 0;
+
+    const autoCnt = pregled.auto_nc_za_review ?? 0;
+    if (autoCnt > 0) {
+      document.getElementById('autoNcCount').textContent = autoCnt;
+      document.getElementById('autoNcAlert').style.display = 'flex';
+    }
+
+    const nextAudit = pregled.next_external_audit;
+    if (nextAudit) {
+      const daysLeft = Math.ceil((new Date(nextAudit) - new Date()) / 86400000);
+      const cls = daysLeft <= 30 ? 'iso-countdown-danger' :
+                  daysLeft <= 90 ? 'iso-countdown-warn' : 'iso-countdown-ok';
+      const txt = daysLeft > 0 ? `za ${daysLeft} dana` : `prošao prije ${-daysLeft} dana!`;
+      document.getElementById('isoPregledCountdown').innerHTML =
+        `Sljedeći eksterni nadzorni audit: <strong>${fmtDate(nextAudit)}</strong> ` +
+        `<span class="iso-countdown-badge ${cls}">${txt}</span>`;
+
+      // Audit Sprint Mode banner (vidljiv ako ≤90d do audita)
+      if (daysLeft > 0 && daysLeft <= 90) {
+        document.getElementById('sprintDaysLeft').textContent = daysLeft;
+        document.getElementById('auditSprintBanner').style.display = 'flex';
+      }
+    }
+  }
+
+  try {
+    const objectivesCount = await SB.select('iso_quality_objectives', {
+      eq: { year: 2026, active: true }, columns: 'id', silent: true
+    });
+    document.getElementById('modObjCount').textContent = objectivesCount.length;
+  } catch (e) { console.warn(e); }
+
+  try {
+    const procs = await SB.select('iso_processes', {
+      eq: { active: true }, columns: 'id', silent: true
+    });
+    document.getElementById('modProcCount').textContent = procs.length;
+  } catch (e) { console.warn(e); }
+
+  try {
+    const recentNc = await SB.select('iso_nonconformities', {
+      columns: 'nc_number, occurred_at, source_type, severity, category, description, status, auto_generated',
+      order: { occurred_at: 'desc' },
+      limit: 10,
+      silent: true
+    });
+    const tbody = document.getElementById('recentNcTable');
+    if (recentNc.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-lo); padding:20px;">Nema nesukladnosti — sustav je čist.</td></tr>';
+    } else {
+      tbody.innerHTML = recentNc.map(nc => `
+        <tr>
+          <td><strong>${nc.nc_number}</strong></td>
+          <td>${fmtDate(nc.occurred_at)}</td>
+          <td>${sourceLabel(nc.source_type)}</td>
+          <td>${pillSeverity(nc.severity)}</td>
+          <td style="font-size:12px; color:var(--text-mid);">${nc.category || '-'}</td>
+          <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${(nc.description || '').replace(/"/g,'&quot;')}">${nc.description || '-'}</td>
+          <td>${pillStatus(nc.status)}</td>
+          <td>${nc.auto_generated
+              ? '<span class="svg-icon svg-icon-bot" style="color:#7e57c2;width:18px;height:18px"></span>'
+              : '<span class="svg-icon svg-icon-user" style="color:var(--text-lo);width:18px;height:18px"></span>'}</td>
+        </tr>
+      `).join('');
+    }
+  } catch (e) { console.warn('[iso-pregled] NC fetch error:', e); }
+
+  try {
+    const objs = await SB.select('iso_quality_objectives', {
+      eq: { year: 2026, active: true, objective_type: 'KPI' },
+      order: { name: 'asc' },
+      silent: true
+    });
+    const tbody = document.getElementById('objectivesTable');
+    if (objs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-lo); padding:20px;">Nema KPI ciljeva za 2026.</td></tr>';
+    } else {
+      const objIds = objs.map(o => o.id);
+      let lastResults = {};
+      try {
+        const results = await SB.select('iso_quality_objective_results', {
+          in: { objective_id: objIds },
+          order: { period_end: 'desc' },
+          silent: true
+        });
+        results.forEach(r => {
+          if (!lastResults[r.objective_id]) lastResults[r.objective_id] = r;
+        });
+      } catch (e) {/* ok */}
+
+      tbody.innerHTML = objs.map(o => {
+        const r = lastResults[o.id];
+        const val = r ? Number(r.measured_value).toFixed(1) : '—';
+        const dirIcon = o.target_direction === 'higher_better' ? 'trending-up' :
+                        o.target_direction === 'lower_better'  ? 'trending-up' : 'target';
+        const dirRotate = o.target_direction === 'lower_better' ? 'transform:scaleY(-1)' : '';
+        const status = r
+          ? (r.achieved
+              ? '<span class="iso-pill iso-pill-status-zatvoreno"><span class="svg-icon svg-icon-check" style="width:12px;height:12px"></span> Zadovoljava</span>'
+              : '<span class="iso-pill iso-pill-major"><span class="svg-icon svg-icon-x" style="width:12px;height:12px"></span> Ispod target-a</span>')
+          : '<span class="iso-pill iso-pill-status-default">Čeka cron</span>';
+        return `
+          <tr>
+            <td><strong>${o.name}</strong><br><span style="font-size:11px; color:var(--text-lo);">${o.description || ''}</span></td>
+            <td style="font-size:12px;">${o.measurement_frequency || '-'}</td>
+            <td><strong>${o.target_value} ${o.target_unit || ''}</strong></td>
+            <td><span class="svg-icon svg-icon-${dirIcon} svg-icon-sm" style="${dirRotate}; color:var(--text-mid);"></span></td>
+            <td>${val} ${o.target_unit || ''}</td>
+            <td>${status}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  } catch (e) { console.warn('[iso-pregled] objectives fetch error:', e); }
+
+  // Posljednji automatski/ručni KPI recompute (zaduzen u sesiji 9, 3.5.2026)
+  try {
+    const lastRun = await SB.select('iso_quality_objective_results', {
+      order: { computed_at: 'desc' },
+      limit: 1,
+      silent: true
+    });
+    const el = document.getElementById('lastKpiCompute');
+    if (el && lastRun && lastRun.length) {
+      const r = lastRun[0];
+      const dt = new Date(r.computed_at);
+      const now = new Date();
+      const ageH = Math.floor((now - dt) / 3600000);
+      const ageStr = ageH < 1 ? 'maloprije' :
+                     ageH < 24 ? `prije ${ageH} h` :
+                     `prije ${Math.floor(ageH/24)} d`;
+      const tag = r.computed_by === 'iso_recompute_kpis' ? '' : ` (ručno)`;
+      el.innerHTML = `• Posljednji recompute: <strong>${dt.toLocaleString('hr-HR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}</strong> (${ageStr})${tag}`;
+    } else if (el) {
+      el.innerHTML = '• Još nema mjerenja — pokreni ručno ili pričekaj sutrašnji cron.';
+    }
+  } catch (e) { /* tihi failover */ }
+
+  // ========== AUDIT SPRINT MODE ==========
+  window.auditSprintOpen = async function() {
+    document.getElementById('auditSprintOverlay').style.display = 'flex';
+    const body = document.getElementById('auditSprintBody');
+    body.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Provjeravam stanje sustava...</div>';
+
+    try {
+      const sb = initSupabase();
+      const today = new Date(); today.setHours(0,0,0,0);
+      const todayStr = today.toISOString().slice(0, 10);
+      const yearStart = `${today.getFullYear()}-01-01`;
+
+      // Sve queries paralelno
+      const [
+        autoNcUnreviewed, capaOverdue, capaPending,
+        docsNoOwner, docsReviewDue, docsTotal,
+        equipmentExpired, equipmentSoon,
+        suppliersTotal, suppliersEvaluated,
+        objsTotal, objsWithResults,
+        auditsThisYear, auditsDone,
+        mgmtReview, polDoc, complaints
+      ] = await Promise.all([
+        sb.from('iso_nonconformities').select('id', { count: 'exact', head: true }).eq('auto_generated', true).is('reviewed_at', null).eq('status', 'Otvoreno'),
+        sb.from('iso_capa').select('id', { count: 'exact', head: true }).not('status', 'in', '(Zatvoreno,Otkazano)').lt('due_date', todayStr),
+        sb.from('iso_capa').select('id', { count: 'exact', head: true }).eq('status', 'Implementirano').eq('effectiveness_verified', false),
+        sb.from('iso_documents').select('id', { count: 'exact', head: true }).is('owner_employee_id', null).eq('status', 'Published'),
+        sb.from('iso_documents').select('id', { count: 'exact', head: true }).eq('status', 'Published').lte('next_review_date', todayStr),
+        sb.from('iso_documents').select('id', { count: 'exact', head: true }).eq('status', 'Published'),
+        sb.from('iso_measuring_equipment').select('id', { count: 'exact', head: true }).eq('status', 'Aktivan').lt('next_calibration_date', todayStr),
+        sb.from('iso_measuring_equipment').select('id', { count: 'exact', head: true }).eq('status', 'Aktivan').gte('next_calibration_date', todayStr).lte('next_calibration_date', new Date(today.getTime() + 30*86400000).toISOString().slice(0,10)),
+        sb.rpc('iso_supplier_metrics', { p_year: today.getFullYear() }),
+        sb.from('iso_supplier_evaluations').select('id', { count: 'exact', head: true }).eq('year', today.getFullYear()).not('signed_at', 'is', null),
+        sb.from('iso_quality_objectives').select('id', { count: 'exact', head: true }).eq('year', today.getFullYear()).eq('active', true).eq('objective_type', 'KPI'),
+        sb.from('iso_quality_objective_results').select('id, objective_id', { count: 'exact', head: false }).gte('period_end', yearStart),
+        sb.from('iso_audits').select('id', { count: 'exact', head: true }).eq('year', today.getFullYear()).eq('audit_type', 'interni'),
+        sb.from('iso_audits').select('id', { count: 'exact', head: true }).eq('year', today.getFullYear()).eq('audit_type', 'interni').in('status', ['Provedeno','Izvjesce_izradeno','Zatvoren']),
+        sb.from('iso_management_reviews').select('id, signed_by_management').eq('review_year', today.getFullYear()).maybeSingle(),
+        sb.from('iso_documents').select('current_version').eq('code', 'POL-01').maybeSingle(),
+        sb.from('iso_customer_complaints').select('id', { count: 'exact', head: true }).gte('complaint_date', yearStart)
+      ]);
+
+      // Pripremi checklist stavke
+      const items = [];
+
+      function add(status, kategorija, naslov, detalji, link, count) {
+        items.push({ status, kategorija, naslov, detalji, link, count });
+      }
+
+      // Auto-NC za pregled
+      const ncReviewCnt = autoNcUnreviewed.count || 0;
+      add(ncReviewCnt === 0 ? 'ok' : 'warning', 'Nesukladnosti',
+          'Auto-NC pregledani od strane PUK-a',
+          ncReviewCnt > 0 ? `${ncReviewCnt} auto-generiranih NC čeka pregled` : 'Sve auto-NC pregledane',
+          'iso-nesukladnosti', ncReviewCnt);
+
+      // CAPA past due
+      const capaOverdueCnt = capaOverdue.count || 0;
+      add(capaOverdueCnt === 0 ? 'ok' : 'critical', 'CAPA',
+          'CAPA past due (zaostale)',
+          capaOverdueCnt > 0 ? `${capaOverdueCnt} CAPA past due — auditor će pitati` : 'Nema past due CAPA',
+          'iso-capa', capaOverdueCnt);
+
+      // CAPA pending effectiveness verification
+      const capaPendingCnt = capaPending.count || 0;
+      add(capaPendingCnt === 0 ? 'ok' : 'warning', 'CAPA',
+          'CAPA čekaju effectiveness verification',
+          capaPendingCnt > 0 ? `${capaPendingCnt} CAPA implementirano ali djelotvornost neprovjerena` : 'Sve verificirane',
+          'iso-capa', capaPendingCnt);
+
+      // Dokumenti bez vlasnika
+      const docsTotalCnt = docsTotal.count || 0;
+      const docsNoOwnerCnt = docsNoOwner.count || 0;
+      add(docsNoOwnerCnt === 0 ? 'ok' : (docsNoOwnerCnt > 5 ? 'warning' : 'ok'), 'Dokumenti',
+          'Svi dokumenti imaju dodijeljenog vlasnika',
+          docsNoOwnerCnt > 0 ? `${docsNoOwnerCnt} od ${docsTotalCnt} dokumenata bez vlasnika` : `Svih ${docsTotalCnt} dokumenata ima vlasnika`,
+          'iso-dokumenti', docsNoOwnerCnt);
+
+      // Dokumenti za review
+      const docsReviewCnt = docsReviewDue.count || 0;
+      add(docsReviewCnt === 0 ? 'ok' : 'warning', 'Dokumenti',
+          'Dokumenti za periodičnu reviziju',
+          docsReviewCnt > 0 ? `${docsReviewCnt} dokumenata s prošlim/uskoro datumom revizije` : 'Svi dokumenti unutar review ciklusa',
+          'iso-dokumenti', docsReviewCnt);
+
+      // Mjerna oprema istekle
+      const eqExpiredCnt = equipmentExpired.count || 0;
+      const eqSoonCnt = equipmentSoon.count || 0;
+      add(eqExpiredCnt === 0 ? (eqSoonCnt > 0 ? 'warning' : 'ok') : 'critical', 'Mjerna oprema',
+          'Kalibracije važeće',
+          eqExpiredCnt > 0 ? `${eqExpiredCnt} kalibracija ISTEKLA${eqSoonCnt > 0 ? `, ${eqSoonCnt} uskoro` : ''}`
+            : (eqSoonCnt > 0 ? `${eqSoonCnt} kalibracija ističe ≤30d` : 'Sve kalibracije važeće'),
+          'iso-mjerna-oprema', eqExpiredCnt);
+
+      // Dobavljači bodovani
+      const suppliersTotalCnt = (suppliersTotal.data || []).length;
+      const suppliersEvaluatedCnt = suppliersEvaluated.count || 0;
+      add(suppliersEvaluatedCnt >= suppliersTotalCnt && suppliersTotalCnt > 0 ? 'ok' : 'warning', 'Dobavljači',
+          'Dobavljači bodovani za godinu',
+          `${suppliersEvaluatedCnt} od ${suppliersTotalCnt} dobavljača bodovano i potpisano (auditor traži ovo godinama!)`,
+          'iso-dobavljaci', suppliersTotalCnt - suppliersEvaluatedCnt);
+
+      // KPI ciljevi popunjeni
+      const objsTotalCnt = objsTotal.count || 0;
+      const objsWithResultsCnt = new Set((objsWithResults.data || []).map(r => r.objective_id)).size;
+      add(objsWithResultsCnt >= objsTotalCnt && objsTotalCnt > 0 ? 'ok' : 'warning', 'Ciljevi',
+          'KPI ciljevi imaju mjerenja za godinu',
+          `${objsWithResultsCnt} od ${objsTotalCnt} KPI ciljeva ima rezultate. ${objsWithResultsCnt < objsTotalCnt ? 'Pokreni "KPI recompute" gumb.' : ''}`,
+          'iso-ciljevi', objsTotalCnt - objsWithResultsCnt);
+
+      // Interni audit za godinu
+      const auditsThisYearCnt = auditsThisYear.count || 0;
+      const auditsDoneCnt = auditsDone.count || 0;
+      add(auditsDoneCnt > 0 ? 'ok' : (auditsThisYearCnt > 0 ? 'warning' : 'critical'), 'Auditi',
+          'Interni audit odrađen za godinu (KRITIČNO za eksterni!)',
+          auditsDoneCnt > 0 ? `Odrađeno ${auditsDoneCnt} internih audita`
+            : (auditsThisYearCnt > 0 ? `${auditsThisYearCnt} planirano, 0 provedeno` : 'NIJEDAN interni audit za godinu — auditor će ga eksplicitno tražiti!'),
+          'iso-auditi', auditsDoneCnt > 0 ? 0 : 1);
+
+      // Ocjena uprave
+      const mgmtData = mgmtReview.data;
+      const mgmtSigned = mgmtData && mgmtData.signed_by_management;
+      add(mgmtSigned ? 'ok' : 'critical', 'Ocjena uprave',
+          'Godišnja ocjena uprave potpisana',
+          mgmtSigned ? 'Ocjena potpisana od Uprave'
+            : (mgmtData ? 'Ocjena postoji ali NIJE potpisana — Branka mora potpisati' : 'NEMA ocjene uprave za godinu — kreiraj kroz modul'),
+          'iso-ocjena-uprave', mgmtSigned ? 0 : 1);
+
+      // Politika kvalitete v2.0
+      const polData = polDoc.data;
+      const polV2 = polData && polData.current_version && parseFloat(polData.current_version) >= 2.0;
+      add(polV2 ? 'ok' : 'warning', 'Politika',
+          'Politika kvalitete osvježena za 2026 (climate change klauzula)',
+          polV2 ? `Politika v${polData.current_version} aktivna`
+            : `Politika ${polData ? 'v' + polData.current_version : 'NEPOSTOJI'} — preporuka v2.0 s climate change klauzulom (draft postoji)`,
+          'iso-dokumenti', polV2 ? 0 : 1);
+
+      // Reklamacije evidentirane
+      const complaintsCnt = complaints.count || 0;
+      add(complaintsCnt > 0 ? 'ok' : 'warning', 'Reklamacije',
+          'Reklamacije kupaca evidentirane',
+          complaintsCnt > 0 ? `${complaintsCnt} reklamacija evidentirano`
+            : 'Nema reklamacija u sustavu — uvezi Moravacem reklamaciju kroz "Import iz Drive"',
+          'iso-reklamacije', complaintsCnt > 0 ? 0 : 1);
+
+      // Sortiranje: critical → warning → ok
+      const order = { 'critical': 0, 'warning': 1, 'ok': 2 };
+      items.sort((a, b) => (order[a.status] - order[b.status]));
+
+      // Sumarne brojke
+      const cntCritical = items.filter(i => i.status === 'critical').length;
+      const cntWarning = items.filter(i => i.status === 'warning').length;
+      const cntOk = items.filter(i => i.status === 'ok').length;
+
+      let html = `
+        <div style="display:flex; gap:20px; margin-bottom:20px; padding:14px; background:var(--remap-grey-bg); border-radius:10px;">
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:28px; font-weight:700; color:var(--danger);">${cntCritical}</div>
+            <div style="font-size:12px; color:var(--text-mid);">Kritično</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:28px; font-weight:700; color:var(--warning);">${cntWarning}</div>
+            <div style="font-size:12px; color:var(--text-mid);">Treba pažnju</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:28px; font-weight:700; color:var(--success);">${cntOk}</div>
+            <div style="font-size:12px; color:var(--text-mid);">U redu</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:28px; font-weight:700; color:var(--primary);">${items.length}</div>
+            <div style="font-size:12px; color:var(--text-mid);">Ukupno</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-lo); margin-bottom:10px;">
+          Sortirano po prioritetu. Klik na red → otvara modul.
+        </div>
+
+        <div class="sprint-checklist">
+      `;
+
+      items.forEach(item => {
+        const icon = item.status === 'ok' ? 'check-circle' : item.status === 'warning' ? 'alert-triangle' : 'x';
+        const color = item.status === 'ok' ? '#2e7d32' : item.status === 'warning' ? '#f57f17' : '#c62828';
+        const bg = item.status === 'ok' ? '#f1f8f4' : item.status === 'warning' ? '#fff8e1' : '#ffebee';
+
+        html += `
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; margin-bottom:6px; background:${bg};
+                      border-radius:8px; border-left:4px solid ${color}; cursor:pointer;"
+               onclick="auditSprintGoTo('${item.link}')">
+            <span class="svg-icon svg-icon-${icon} svg-icon-md" style="color:${color};"></span>
+            <div style="flex:1;">
+              <div style="font-weight:600; font-size:14px; color:var(--text-hi);">${item.kategorija}: ${item.naslov}</div>
+              <div style="font-size:12px; color:var(--text-mid); margin-top:2px;">${item.detalji}</div>
+            </div>
+            ${item.count > 0 ? `<span style="background:${color}; color:white; font-weight:700; padding:3px 10px; border-radius:12px; font-size:12px;">${item.count}</span>` : ''}
+            <span class="svg-icon svg-icon-chevron-right" style="color:var(--text-lo);"></span>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+
+      if (cntCritical === 0 && cntWarning === 0) {
+        html += `
+          <div style="margin-top:20px; padding:16px; background:var(--remap-success-bg); border-radius:10px; text-align:center; border-left:4px solid var(--success);">
+            <span class="svg-icon svg-icon-check-circle svg-icon-lg" style="color:var(--success);"></span>
+            <h3 style="margin:8px 0; color:var(--success);">Sustav je spreman za audit ✓</h3>
+            <p style="margin:0; color:var(--text-mid); font-size:13px;">Nema kritičnih ni warning stavki. Auditor neće imati ozbiljnih nalaza.</p>
+          </div>
+        `;
+      } else if (cntCritical > 0) {
+        html += `
+          <div style="margin-top:20px; padding:16px; background:var(--remap-danger-bg); border-radius:10px; text-align:center; border-left:4px solid var(--danger);">
+            <span class="svg-icon svg-icon-alert-triangle svg-icon-lg" style="color:var(--danger);"></span>
+            <h3 style="margin:8px 0; color:var(--danger);">${cntCritical} kritičnih stavki — riješi ih prije audita!</h3>
+            <p style="margin:0; color:var(--text-mid); font-size:13px;">Auditor će svaku od ovih stavki tražiti. Klikni na red da otvoriš modul.</p>
+          </div>
+        `;
+      }
+
+      body.innerHTML = html;
+    } catch (e) {
+      body.innerHTML = `<div style="color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+      console.error(e);
+    }
+  };
+
+  window.auditSprintClose = function() {
+    document.getElementById('auditSprintOverlay').style.display = 'none';
+  };
+
+  window.auditSprintGoTo = function(viewId) {
+    auditSprintClose();
+    if (typeof Router !== 'undefined') Router.navigate(viewId);
+  };
+
+  document.getElementById('auditSprintOverlay').addEventListener('click', e => {
+    if (e.target.id === 'auditSprintOverlay') auditSprintClose();
+  });
+
+  // Manual KPI recompute (poziva PL/pgSQL funkciju iso_recompute_kpis)
+  window.kpiRecompute = async function() {
+    const btn = document.getElementById('kpiRecomputeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Računam...';
+    try {
+      const { data, error } = await initSupabase().rpc('iso_recompute_kpis');
+      if (error) throw error;
+      const cnt = (data || []).length;
+      if (typeof showMessage === 'function')
+        showMessage(`KPI recompute izvršen — ${cnt} ciljeva ažurirano. Refresham pregled...`, 'success');
+      setTimeout(() => location.reload(), 1200);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Pokreni KPI recompute (trenutni mjesec)';
+    }
+  };
+
+  console.log('[iso-pregled] ready');
+})();
+</script>

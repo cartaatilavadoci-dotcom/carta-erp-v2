@@ -3,16 +3,7 @@
 <link rel="stylesheet" href="../../css/styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  .btn { display: inline-block; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; border: 1px solid transparent; padding: 8px 16px; font-size: 14px; line-height: 1.5; border-radius: 6px; transition: all 0.15s ease-in-out; }
-  .btn:hover { opacity: 0.85; }
-  .btn-primary { color: #fff; background-color: #007bff; border-color: #007bff; }
-  .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
-  .btn-success { color: #fff; background-color: #28a745; border-color: #28a745; }
-  .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
-  .btn-warning { color: #212529; background-color: #ffc107; border-color: #ffc107; }
-  .btn-info { color: #fff; background-color: #17a2b8; border-color: #17a2b8; }
-  .btn-sm { padding: 4px 8px; font-size: 12px; }
-  .btn-lg { padding: 12px 24px; font-size: 18px; }
+  /* Base .btn klase — naslijeđuju iz globalnog css/styles.css. */
 
   :root { --linija-primary: #4a6785; --linija-secondary: #5a7a9a; }
   .linija-nli { --linija-primary: #e65100; --linija-secondary: #ff9800; }
@@ -41,13 +32,9 @@
   .kpi-value { font-size: 2em; font-weight: 700; }
   .kpi-label { opacity: 0.9; font-size: 0.9em; }
 
-  .card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; }
-  .card-header { background: linear-gradient(135deg, var(--linija-primary) 0%, var(--linija-secondary) 100%); color: white; padding: 15px 20px; font-weight: 600; }
-  .table-container { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #f8f9fa; font-weight: 600; color: #333; }
-  tr:hover { background: #f5f5f5; }
+  /* Base .card / table — naslijeđuju iz globalnog css/styles.css.
+     Card-header ovdje zadržava linija-specifični gradient (zeleno=WH / narančasto=NLI). */
+  .card-header.linija-tinted { background: linear-gradient(135deg, var(--linija-primary) 0%, var(--linija-secondary) 100%); color: white; padding: 15px 20px; font-weight: 600; }
   .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
   .status-pending { background: #fff3cd; color: #856404; }
   .status-active { background: #cce5ff; color: #004085; }
@@ -83,18 +70,18 @@
   .palete-agregat-value { font-size: 1.3em; font-weight: 700; }
   .palete-agregat-label { font-size: 0.8em; opacity: 0.9; }
 
-  .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; }
+  
   .modal.active { display: flex; }
-  .modal-content { background: white; border-radius: 15px; max-width: 450px; width: 90%; overflow: hidden; }
-  .modal-header { padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+  
+  
   .modal-header h2 { margin: 0; font-size: 1.2em; }
-  .modal-close { background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; opacity: 0.8; }
-  .modal-close:hover { opacity: 1; }
-  .modal-body { padding: 20px; }
-  .modal-actions { padding: 15px 20px; background: #f5f5f5; display: flex; gap: 10px; justify-content: flex-end; }
-  .form-group { margin-bottom: 15px; }
+  
+  
+  
+  
+  
   .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
-  .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1em; box-sizing: border-box; }
+  
 
   .etiketa-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; overflow-y: auto; }
   .etiketa-container.show { display: block; }
@@ -321,11 +308,11 @@
         <div class="info-label">KOM / PALETA ✏️</div>
         <div class="info-value" id="currentKomPaleta">-</div>
         <div id="komPaletaEditBox" style="display:none; margin-top:8px;">
-          <input type="number" id="inputKomPaletaOverride" style="width:80px; padding:6px 8px; border-radius:6px; border:1px solid #555; background:#1e1e2f; color:#fff; font-size:15px; text-align:center;" onclick="event.stopPropagation()">
+          <input type="number" id="inputKomPaletaOverride" style="width:80px; padding:6px 8px; border-radius:6px; border:1px solid var(--text-mid); background:#1e1e2f; color:#fff; font-size:15px; text-align:center;" onclick="event.stopPropagation()">
           <div style="margin-top:6px; display:flex; gap:6px; justify-content:center;">
-            <button onclick="event.stopPropagation(); window.spremiKomPaletaOverride()" style="padding:4px 10px; border-radius:5px; border:none; background:#4caf50; color:#fff; font-size:13px; cursor:pointer;">Spremi</button>
-            <button onclick="event.stopPropagation(); window.ponistiKomPaletaOverride()" style="padding:4px 10px; border-radius:5px; border:none; background:#ff9800; color:#fff; font-size:13px; cursor:pointer;">Vrati orig.</button>
-            <button onclick="event.stopPropagation(); window.zatvoriKomPaletaEdit()" style="padding:4px 10px; border-radius:5px; border:none; background:#666; color:#fff; font-size:13px; cursor:pointer;">Odustani</button>
+            <button onclick="event.stopPropagation(); window.spremiKomPaletaOverride()" style="padding:4px 10px; border-radius:5px; border:none; background:var(--success); color:#fff; font-size:13px; cursor:pointer;">Spremi</button>
+            <button onclick="event.stopPropagation(); window.ponistiKomPaletaOverride()" style="padding:4px 10px; border-radius:5px; border:none; background:var(--warning); color:#fff; font-size:13px; cursor:pointer;">Vrati orig.</button>
+            <button onclick="event.stopPropagation(); window.zatvoriKomPaletaEdit()" style="padding:4px 10px; border-radius:5px; border:none; background:var(--text-mid); color:#fff; font-size:13px; cursor:pointer;">Odustani</button>
           </div>
         </div>
       </div>
@@ -515,7 +502,7 @@
         <button class="btn-note btn-note-article" onclick="openArticleNoteModal()">🏷️ Napomena o artiklu</button>
         <button class="btn-note btn-note-shift" onclick="openShiftNoteModal()">📋 Napomena za sljedeću smjenu</button>
       </div>
-      <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+      <p style="margin-top: 15px; color: var(--text-mid); font-size: 0.9em;">
         <strong>Napomena o artiklu:</strong> Problem s klišejom, maziljkom, grafičkom pripremom...<br>
         <strong>Napomena o smjeni:</strong> Opće informacije za sljedeću smjenu
       </p>
@@ -549,26 +536,26 @@
       </div>
       
       <!-- Info o odabranoj paleti -->
-      <div id="pokrpanoPaletaInfo" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <div id="pokrpanoPaletaInfo" style="display: none; background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
           <div>
-            <div style="font-size: 0.85em; color: #666;">Artikl</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Artikl</div>
             <div style="font-weight: 600;" id="pokrpanoInfoArtikl">-</div>
           </div>
           <div>
-            <div style="font-size: 0.85em; color: #666;">Kupac</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Kupac</div>
             <div style="font-weight: 600;" id="pokrpanoInfoKupac">-</div>
           </div>
           <div>
-            <div style="font-size: 0.85em; color: #666;">Trenutna količina</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Trenutna količina</div>
             <div style="font-weight: 600; color: var(--linija-primary);" id="pokrpanoInfoKolicina">-</div>
           </div>
           <div>
-            <div style="font-size: 0.85em; color: #666;">Dimenzija</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Dimenzija</div>
             <div style="font-weight: 600;" id="pokrpanoInfoDimenzija">-</div>
           </div>
           <div>
-            <div style="font-size: 0.85em; color: #666;">Status</div>
+            <div style="font-size: 0.85em; color: var(--text-mid);">Status</div>
             <div style="font-weight: 600;" id="pokrpanoInfoStatus">-</div>
           </div>
         </div>
@@ -609,7 +596,7 @@
             </tr>
           </thead>
           <tbody id="pokrpanoPovijestBody">
-            <tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Učitavam...</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-mid);">Učitavam...</td></tr>
           </tbody>
         </table>
       </div>
@@ -684,7 +671,7 @@
         </select>
       </div>
       <div id="odabirRNIspisPalete" style="display: none; margin-top: 15px;">
-        <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; padding: 12px; background: #fff3e0; border-radius: 8px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; padding: 12px; background: var(--remap-warning-bg); border-radius: 8px; flex-wrap: wrap;">
           <div class="form-group" style="margin: 0; flex: 1; min-width: 120px;">
             <label style="font-size: 0.85em; margin-bottom: 4px;">Kom po paleti:</label>
             <input type="number" id="ispisKomPopaleti" class="form-control" min="1" placeholder="npr. 5000" style="padding: 8px; font-size: 0.95em;">
@@ -711,7 +698,7 @@
             <tbody id="ispisPaleteTableBody"></tbody>
           </table>
         </div>
-        <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 600;">
+        <div style="margin-top: 10px; padding: 10px; background: var(--remap-info-bg); border-radius: 8px; display: flex; justify-content: space-between; font-weight: 600;">
           <span>Odabrano: <span id="ispisBrojOdabranih">0</span> paleta</span>
           <span>Ukupno: <span id="ispisUkupnoKolicina">0</span> kom</span>
         </div>
@@ -735,7 +722,7 @@
     </div>
     <div class="modal-body">
       <!-- Info o paleti -->
-      <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <div style="background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div><strong>RN:</strong> <span id="paletaDetaljiRN">-</span></div>
           <div><strong>Artikl:</strong> <span id="paletaDetaljiArtikl">-</span></div>
@@ -760,7 +747,7 @@
           <tbody id="paletaDetaljiTableBody">
             <tr><td colspan="5" style="text-align: center;">Učitavam...</td></tr>
           </tbody>
-          <tfoot style="background: #e8f5e9; font-weight: bold;">
+          <tfoot style="background: var(--remap-success-bg); font-weight: bold;">
             <tr>
               <td colspan="2">UKUPNO:</td>
               <td id="paletaDetaljiSuma">0</td>
@@ -797,7 +784,7 @@
             <input type="checkbox" id="azurirajGOPPriDodavanju" style="width: 18px; height: 18px;">
             <span style="font-size: 0.9em;">Ažuriraj količinu na paleti (GOP) pri dodavanju</span>
           </label>
-          <p style="margin: 5px 0 0 26px; font-size: 0.8em; color: #666;">
+          <p style="margin: 5px 0 0 26px; font-size: 0.8em; color: var(--text-mid);">
             Uključi ako želiš promijeniti stvarnu količinu na paleti, isključi ako samo evidentiraš postojeće podatke
           </p>
         </div>
@@ -844,7 +831,7 @@
           <input type="checkbox" id="urediAzurirajNarudzbu" checked style="width: 18px; height: 18px;">
           <span style="font-size: 0.9em;">Ažuriraj razliku u narudžbi</span>
         </label>
-        <p style="margin: 4px 0 0 26px; font-size: 0.8em; color: #666;">Kad je uključeno, promjena količine automatski ažurira i proizvedenu količinu u narudžbi</p>
+        <p style="margin: 4px 0 0 26px; font-size: 0.8em; color: var(--text-mid);">Kad je uključeno, promjena količine automatski ažurira i proizvedenu količinu u narudžbi</p>
       </div>
     </div>
     <div class="modal-actions">
@@ -870,7 +857,7 @@
         </select>
       </div>
       <!-- Info o nalogu -->
-      <div id="adminUnosNalogInfo" style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none;">
+      <div id="adminUnosNalogInfo" style="background: var(--remap-grey-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em;">
           <div><strong>Artikl:</strong> <span id="adminUnosArtikl">-</span></div>
           <div><strong>Kupac:</strong> <span id="adminUnosKupac">-</span></div>
@@ -880,7 +867,7 @@
       </div>
 
       <!-- Vremenski parametri -->
-      <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe0b2;">
+      <div style="background: var(--remap-warning-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--remap-warning-bg);">
         <h4 style="margin: 0 0 12px 0; color: #e65100;">📅 Vremenski parametri</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group" style="margin: 0;">
@@ -921,7 +908,7 @@
       </div>
 
       <!-- Opcije -->
-      <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9;">
+      <div style="background: var(--remap-success-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--remap-success-bg);">
         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
           <input type="checkbox" id="adminUnosAzurirajNarudzbu" checked style="width: 18px; height: 18px;">
           <span style="font-size: 0.9em;">Ažuriraj proizvedenu količinu u narudžbi</span>
@@ -947,13 +934,13 @@
       </div>
 
       <!-- Log unesenih paleta u ovoj sesiji -->
-      <div id="adminUnosLog" style="display: none; margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9; max-height: 120px; overflow-y: auto;">
-        <div style="font-weight: 600; font-size: 0.85em; color: #2e7d32; margin-bottom: 5px;">Unesene palete u ovoj sesiji:</div>
+      <div id="adminUnosLog" style="display: none; margin-top: 15px; padding: 10px; background: var(--remap-success-bg); border-radius: 8px; border: 1px solid var(--remap-success-bg); max-height: 120px; overflow-y: auto;">
+        <div style="font-weight: 600; font-size: 0.85em; color: var(--success); margin-bottom: 5px;">Unesene palete u ovoj sesiji:</div>
         <div id="adminUnosLogSadrzaj" style="font-size: 0.85em;"></div>
       </div>
     </div>
     <div class="modal-actions" style="flex-shrink: 0;">
-      <span id="adminUnosBrojac" style="font-size: 0.85em; color: #666; margin-right: auto;"></span>
+      <span id="adminUnosBrojac" style="font-size: 0.85em; color: var(--text-mid); margin-right: auto;"></span>
       <button class="btn btn-secondary" onclick="window.closeModal('adminUnosPaletaModal')">Zatvori</button>
       <button class="btn btn-warning" onclick="window.adminDodajPaletu()" style="font-weight: 600;">🔧 Spremi i nastavi</button>
     </div>
@@ -968,7 +955,7 @@
       <button class="modal-close" onclick="window.closeModal('povijesniUnosiModal')">&times;</button>
     </div>
     <div class="modal-body" style="overflow-y: auto; flex: 1;">
-      <p style="margin-bottom: 15px; color: #666;">
+      <p style="margin-bottom: 15px; color: var(--text-mid);">
         Ovdje možete brzo dodati povijesne unose za palete koje nemaju evidenciju po smjenama.
         Unesite količinu i odaberite smjenu za svaku paletu.
       </p>
@@ -1008,7 +995,7 @@
         </div>
       </div>
 
-      <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
         <table class="gop-table" style="font-size: 0.9em; margin: 0;">
           <thead style="position: sticky; top: 0; z-index: 1;">
             <tr>
@@ -1027,7 +1014,7 @@
         </table>
       </div>
       
-      <div style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+      <div style="margin-top: 15px; padding: 15px; background: var(--remap-success-bg); border-radius: 8px;">
         <h4 style="margin: 0 0 10px 0;">⚡ Brzo popunjavanje</h4>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end;">
           <div>
@@ -1298,7 +1285,7 @@ window.renderRN = function() {
     // Badge za slagač završen (prikazuje se samo ako je slagač završio)
     var slagacBadge = '';
     if (slagacStatus === 'Završeno') {
-      slagacBadge = '<span class="status-badge" style="font-size:0.7em; margin-left:5px; background:#c8e6c9; color:#2e7d32;" title="Vi ste završili ovaj nalog">✓ Vi</span>';
+      slagacBadge = '<span class="status-badge" style="font-size:0.7em; margin-left:5px; background:var(--remap-success-bg); color:var(--success);" title="Vi ste završili ovaj nalog">✓ Vi</span>';
     }
     
     var akcija = '';
@@ -1318,7 +1305,7 @@ window.renderRN = function() {
     html += '<td><strong>' + (rn.wo_number || '-') + '</strong></td>';
     html += '<td>' + (rn.customer_name || '-') + '</td>';
     html += '<td>' + (rn.article_name || '-') + '</td>';
-    html += '<td style="font-size:0.85em; color:#666;">' + articleCode + '</td>';
+    html += '<td style="font-size:0.85em; color:var(--text-mid);">' + articleCode + '</td>';
     html += '<td>' + window.formatBroj(rn.quantity || 0) + '</td>';
     html += '<td style="color: ' + (pop > 0 ? '#28a745' : '#dc3545') + '; font-weight: 600;">' + window.formatBroj(pop) + '</td>';
     html += '<td>' + window.formatBroj(gop) + '</td>';
@@ -1445,8 +1432,8 @@ window.otvoriRN = async function(id) {
   if (overrideKomPaleta && overrideKomPaleta > 0) {
     window.aktivniKomPaleta = overrideKomPaleta;
     document.getElementById('currentKomPaleta').innerHTML =
-      '<span style="color: #ffb74d; font-weight: bold;">' + window.formatBroj(overrideKomPaleta) + '</span>' +
-      '<span style="font-size: 11px; color: #999; display: block;">Original: ' + (window.artiklData ? window.artiklData.pcs_per_pallet : '-') + '</span>';
+      '<span style="color: var(--warning); font-weight: bold;">' + window.formatBroj(overrideKomPaleta) + '</span>' +
+      '<span style="font-size: 11px; color: var(--text-lo); display: block;">Original: ' + (window.artiklData ? window.artiklData.pcs_per_pallet : '-') + '</span>';
   } else {
     window.aktivniKomPaleta = origKomPaleta;
     document.getElementById('currentKomPaleta').textContent = window.artiklData ? window.artiklData.pcs_per_pallet : '-';
@@ -1567,8 +1554,8 @@ window.spremiKomPaletaOverride = async function() {
     // Ažuriraj prikaz
     var origVrijednost = window.artiklData ? window.artiklData.pcs_per_pallet : '-';
     document.getElementById('currentKomPaleta').innerHTML =
-      '<span style="color: #ffb74d; font-weight: bold;">' + window.formatBroj(novaVrijednost) + '</span>' +
-      '<span style="font-size: 11px; color: #999; display: block;">Original: ' + origVrijednost + '</span>';
+      '<span style="color: var(--warning); font-weight: bold;">' + window.formatBroj(novaVrijednost) + '</span>' +
+      '<span style="font-size: 11px; color: var(--text-lo); display: block;">Original: ' + origVrijednost + '</span>';
 
     // Ažuriraj input količine
     document.getElementById('inputKolicina').value = novaVrijednost;
@@ -1741,21 +1728,20 @@ window.renderPalete = async function() {
     var datum = d.vrijeme_unosa ? new Date(d.vrijeme_unosa).toLocaleString('hr-HR') : '-';
     
     html += '<tr>';
-    html += '<td><strong style="color: #1565c0;">' + (d.work_order_number || '-') + '</strong></td>';
+    html += '<td><strong style="color: var(--primary);">' + (d.work_order_number || '-') + '</strong></td>';
     html += '<td>' + (d.referenca || '-') + '</td>';
     html += '<td><strong>' + window.formatBroj(d.kolicina || 0) + '</strong></td>';
     html += '<td>' + (d.article_code || '-') + '</td>';
     html += '<td>' + (d.operater || d.postava_naziv || '-') + '</td>';
     html += '<td>' + datum + '</td>';
-    html += '<td>';
+    html += '<td style="white-space:nowrap;">';
     // Akcije - ispis etikete ako imamo work_order_id
     if (d.work_order_id) {
       html += '<button class="btn btn-sm btn-info" onclick="window.ispisiEtiketuPoReferenci(\'' + d.referenca + '\', \'' + d.work_order_id + '\')" title="Ispis etikete">🏷️</button> ';
     }
-    // Gumb za brisanje - samo za admina
-    if (window.mozeObrisatiPaletu && window.mozeObrisatiPaletu()) {
-      html += '<button class="btn btn-sm btn-danger" onclick="window.obrisiShiftDetail(\'' + d.id + '\')" title="Obriši unos">🗑️</button>';
-    }
+    // Uredi i obriši — vidljivo svim operaterima (provodi se u prod_shift_details + prod_inventory_gop + prod_orders)
+    html += '<button class="btn btn-sm btn-warning" onclick="window.urediShiftDetailIzPregleda(\'' + d.id + '\')" title="Uredi količinu">✏️</button> ';
+    html += '<button class="btn btn-sm btn-danger" onclick="window.obrisiShiftDetailIzPregleda(\'' + d.id + '\')" title="Obriši unos i ažuriraj paletu">🗑️</button>';
     html += '</td>';
     html += '</tr>';
   });
@@ -1779,20 +1765,62 @@ window.ispisiEtiketuPoReferenci = async function(referenca, workOrderId) {
   }
 };
 
-// Funkcija za brisanje shift detail unosa
-window.obrisiShiftDetail = async function(id) {
-  if (!confirm('Jeste li sigurni da želite obrisati ovaj unos?')) return;
-  
-  var result = await initSupabase()
+// ============================================
+// EDIT/DELETE iz "Pregled smjene" tablice (operaterima dostupno)
+// Wrapperi koji pre-postave kontekst palete pa rutiraju kroz urediUnos / obrisiUnos
+// (oni već ažuriraju OBJE tablice: prod_shift_details + prod_inventory_gop + prod_orders)
+// ============================================
+window._postaviKontekstPaleteIzUnosa = async function(unosId) {
+  var detRes = await initSupabase()
     .from('prod_shift_details')
-    .delete()
-    .eq('id', id);
-  
-  if (result.error) {
-    alert('Greška: ' + result.error.message);
-  } else {
-    await window.renderPalete();
+    .select('referenca, work_order_id')
+    .eq('id', unosId)
+    .maybeSingle();
+
+  if (detRes.error || !detRes.data) {
+    showMessage('Greška dohvaćanja unosa: ' + (detRes.error ? detRes.error.message : 'unos nije pronađen'), 'error');
+    return null;
   }
+
+  var ref = detRes.data.referenca;
+  var woId = detRes.data.work_order_id;
+
+  // Probaj iz cache (sveGOP), inače dohvati iz baze
+  var paleta = (window.sveGOP || []).find(function(g) {
+    return g.pallet_number === ref && g.work_order_id === woId;
+  });
+
+  if (!paleta) {
+    var gopRes = await initSupabase()
+      .from('prod_inventory_gop')
+      .select('*')
+      .eq('pallet_number', ref)
+      .eq('work_order_id', woId)
+      .maybeSingle();
+    paleta = gopRes.data;
+  }
+
+  if (!paleta) {
+    showMessage('⚠️ Paleta za ovaj unos nije pronađena u GOP tablici. Možda je već obrisana.', 'warning');
+    return null;
+  }
+
+  window.trenutnaPaletaZaDetalje = paleta;
+  return paleta;
+};
+
+window.urediShiftDetailIzPregleda = async function(unosId) {
+  var paleta = await window._postaviKontekstPaleteIzUnosa(unosId);
+  if (!paleta) return;
+  await window.urediUnos(unosId);
+};
+
+window.obrisiShiftDetailIzPregleda = async function(unosId) {
+  var paleta = await window._postaviKontekstPaleteIzUnosa(unosId);
+  if (!paleta) return;
+  await window.obrisiUnos(unosId);
+  // Osvježi pregled smjene (urediUnos/obrisiUnos to rade za RN modal, ne za Pregled tablicu)
+  if (typeof window.renderPalete === 'function') await window.renderPalete();
 };
 
 // Reset filter paleta - vrati na proizvodni datum i trenutnu smjenu
@@ -2228,7 +2256,7 @@ window.adminDodajPaletu = async function() {
     var logSadrzaj = document.getElementById('adminUnosLogSadrzaj');
     logDiv.style.display = 'block';
     logSadrzaj.innerHTML = window._adminUnosLogStavke.map(function(s, i) {
-      return '<div style="padding: 2px 0; border-bottom: 1px solid #c8e6c9;">' +
+      return '<div style="padding: 2px 0; border-bottom: 1px solid var(--remap-success-bg);">' +
         '<strong>' + (i + 1) + '.</strong> ' + s.rn + ' / ' + s.paleta + ' - ' +
         window.formatBroj(s.kolicina) + ' kom (' + s.datum + ', sm.' + s.smjena + ')' +
         '</div>';
@@ -2584,14 +2612,13 @@ window.ucitajDetaljepalete = async function(paleta) {
     var detalji = result.data || [];
     
     if (detalji.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;"><em>Nema unosa - paleta je vjerojatno napravljena prije uvođenja praćenja po smjenama</em></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-lo);"><em>Nema unosa - paleta je vjerojatno napravljena prije uvođenja praćenja po smjenama</em></td></tr>';
       document.getElementById('paletaDetaljiSuma').textContent = '0';
       return;
     }
     
     var suma = 0;
     var html = '';
-    var imaAdminPrava = window.imaAdminUlogu();
     detalji.forEach(function(d) {
       suma += d.kolicina || 0;
       html += '<tr>';
@@ -2600,12 +2627,8 @@ window.ucitajDetaljepalete = async function(paleta) {
       html += '<td><strong>' + window.formatBroj(d.kolicina || 0) + '</strong></td>';
       html += '<td>' + (d.postava_naziv || d.operater || '-') + '</td>';
       html += '<td>';
-      if (imaAdminPrava) {
-        html += '<button class="btn btn-sm btn-info" onclick="window.urediUnos(\'' + d.id + '\')" title="Uredi">✏️</button> ';
-        html += '<button class="btn btn-sm btn-danger" onclick="window.obrisiUnos(\'' + d.id + '\')" title="Obriši">🗑️</button>';
-      } else {
-        html += '-';
-      }
+      html += '<button class="btn btn-sm btn-info" onclick="window.urediUnos(\'' + d.id + '\')" title="Uredi">✏️</button> ';
+      html += '<button class="btn btn-sm btn-danger" onclick="window.obrisiUnos(\'' + d.id + '\')" title="Obriši">🗑️</button>';
       html += '</td>';
       html += '</tr>';
     });
@@ -2614,7 +2637,7 @@ window.ucitajDetaljepalete = async function(paleta) {
     
     // Upozori ako suma ne odgovara ukupnoj količini na paleti
     if (suma !== paleta.quantity) {
-      tbody.innerHTML += '<tr style="background: #fff3cd;"><td colspan="5" style="color: #856404; font-size: 0.85em;">⚠️ Suma unosa (' + window.formatBroj(suma) + ') ne odgovara količini na paleti (' + window.formatBroj(paleta.quantity) + ')</td></tr>';
+      tbody.innerHTML += '<tr style="background: var(--remap-warning-bg);"><td colspan="5" style="color: #856404; font-size: 0.85em;">⚠️ Suma unosa (' + window.formatBroj(suma) + ') ne odgovara količini na paleti (' + window.formatBroj(paleta.quantity) + ')</td></tr>';
     }
     
   } catch (e) {
@@ -2807,14 +2830,14 @@ window.otvoriPovijesneDodavanje = async function() {
   if (window.trenutniRN) {
     await window.ucitajPaletePovijest(window.trenutniRN);
   } else {
-    document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;"><em>Odaberite radni nalog</em></td></tr>';
+    document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-lo); padding: 30px;"><em>Odaberite radni nalog</em></td></tr>';
   }
 };
 
 // Učitaj palete za odabrani RN
 window.ucitajPaletePovijest = async function(rnId) {
   if (!rnId) {
-    document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;"><em>Odaberite radni nalog</em></td></tr>';
+    document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-lo); padding: 30px;"><em>Odaberite radni nalog</em></td></tr>';
     return;
   }
 
@@ -2824,7 +2847,7 @@ window.ucitajPaletePovijest = async function(rnId) {
     var paleteZaRN = window.sveGOP.filter(function(g) { return g.work_order_id === rnId; });
     
     if (paleteZaRN.length === 0) {
-      document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;"><em>Nema paleta za ovaj nalog</em></td></tr>';
+      document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-lo); padding: 30px;"><em>Nema paleta za ovaj nalog</em></td></tr>';
       hideLoading();
       return;
     }
@@ -2912,7 +2935,7 @@ window.ucitajPaletePovijestSvi = async function(mjesec, godina) {
     });
 
     if (sveGopPalete.length === 0) {
-      document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;"><em>Nema paleta za ' + mjesecNazivi[mjesec] + ' ' + godina + '</em></td></tr>';
+      document.getElementById('povijesniUnosiTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-lo); padding: 30px;"><em>Nema paleta za ' + mjesecNazivi[mjesec] + ' ' + godina + '</em></td></tr>';
       hideLoading();
       return;
     }
@@ -3000,7 +3023,7 @@ window.ucitajPaletePovijestSvi = async function(mjesec, godina) {
     });
 
     if (!html) {
-      html = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;"><em>Nema paleta za unos</em></td></tr>';
+      html = '<tr><td colspan="7" style="text-align: center; color: var(--text-lo); padding: 30px;"><em>Nema paleta za unos</em></td></tr>';
     }
 
     tbody.innerHTML = html;
@@ -3186,12 +3209,6 @@ window.spremiSvePovijestneUnose = async function() {
 };
 
 window.urediUnos = async function(unosId) {
-  // Provjera ovlasti
-  if (!window.imaAdminUlogu()) {
-    showMessage('❌ Nemate ovlasti za uređivanje unosa!', 'error');
-    return;
-  }
-  
   showLoading('Učitavam...');
   try {
     var result = await initSupabase()
@@ -3247,12 +3264,6 @@ window.prikaziDeltaUnosa = function() {
 };
 
 window.spremiUredeniUnos = async function() {
-  // Provjera ovlasti
-  if (!window.imaAdminUlogu()) {
-    showMessage('❌ Nemate ovlasti za uređivanje unosa!', 'error');
-    return;
-  }
-
   var unosId = document.getElementById('urediUnosId').value;
   var datum = document.getElementById('urediUnosDatum').value;
   var smjena = parseInt(document.getElementById('urediUnosSmjena').value);
@@ -3312,6 +3323,7 @@ window.spremiUredeniUnos = async function() {
     }
     await window.loadData();
     if (window.trenutniRN) await window.otvoriRN(window.trenutniRN);
+    if (typeof window.renderPalete === 'function') await window.renderPalete();
 
   } catch (e) {
     showMessage('❌ Greška: ' + e.message, 'error');
@@ -3321,13 +3333,7 @@ window.spremiUredeniUnos = async function() {
 };
 
 window.obrisiUnos = async function(unosId) {
-  // Provjera ovlasti
-  if (!window.imaAdminUlogu()) {
-    showMessage('❌ Nemate ovlasti za brisanje unosa!', 'error');
-    return;
-  }
-
-  if (!confirm('Jeste li sigurni da želite obrisati ovaj unos?\n\nOvo će:\n- Smanjiti količinu na paleti (GOP)\n- Smanjiti proizvedenu količinu u narudžbi')) return;
+  if (!confirm('Jeste li sigurni da želite obrisati ovaj unos?\n\nOvo će:\n- Smanjiti količinu na paleti (GOP) — ili obrisati paletu ako je ovo zadnji unos\n- Smanjiti proizvedenu količinu u narudžbi')) return;
 
   showLoading('Brišem...');
   try {
@@ -3366,11 +3372,13 @@ window.obrisiUnos = async function(unosId) {
 
     showMessage('✅ Unos obrisan! Narudžba ažurirana za -' + window.formatBroj(obrisanaKolicina) + ' kom.', 'success');
 
-    if (paleta) {
+    if (paleta && window.trenutnaPaletaZaDetalje) {
+      // Modal može biti zatvoren ako je paleta obrisana — ucitajDetaljepalete je tada no-op
       await window.ucitajDetaljepalete(paleta);
     }
     await window.loadData();
     if (window.trenutniRN) await window.otvoriRN(window.trenutniRN);
+    if (typeof window.renderPalete === 'function') await window.renderPalete();
 
   } catch (e) {
     showMessage('❌ Greška: ' + e.message, 'error');
@@ -3393,27 +3401,44 @@ window.azurirajGOPIzDetalja = async function(paleta) {
     
     var detalji = result.data || [];
     var novaKolicina = detalji.reduce(function(sum, d) { return sum + (d.kolicina || 0); }, 0);
-    
-    // Ažuriraj GOP samo ako ima detalja
+
     if (detalji.length > 0) {
       var targetKolicina = window.aktivniKomPaleta || 0;
       var noviStatus = (targetKolicina > 0 && novaKolicina >= targetKolicina) ? 'Na skladištu' : 'U tijeku';
-      
+
       // Ako je količina 0, postavi status na "U tijeku"
       if (novaKolicina === 0) noviStatus = 'U tijeku';
-      
+
       await initSupabase()
         .from('prod_inventory_gop')
         .update({ quantity: novaKolicina, status: noviStatus })
         .eq('id', paleta.id);
-      
+
       console.log('📦 GOP ažuriran:', paleta.pallet_number, '→', novaKolicina, 'kom, status:', noviStatus);
-      
+
       // Ažuriraj lokalni objekt
-      window.trenutnaPaletaZaDetalje.quantity = novaKolicina;
-      window.trenutnaPaletaZaDetalje.status = noviStatus;
-      document.getElementById('paletaDetaljiUkupno').textContent = window.formatBroj(novaKolicina) + ' kom';
-      document.getElementById('paletaDetaljiStatus').textContent = noviStatus;
+      if (window.trenutnaPaletaZaDetalje && window.trenutnaPaletaZaDetalje.id === paleta.id) {
+        window.trenutnaPaletaZaDetalje.quantity = novaKolicina;
+        window.trenutnaPaletaZaDetalje.status = noviStatus;
+        var ukEl = document.getElementById('paletaDetaljiUkupno');
+        var stEl = document.getElementById('paletaDetaljiStatus');
+        if (ukEl) ukEl.textContent = window.formatBroj(novaKolicina) + ' kom';
+        if (stEl) stEl.textContent = noviStatus;
+      }
+    } else {
+      // Nema više detalja → obriši paletu iz GOP-a (inače ostaje orphan zapis s krivom količinom)
+      await initSupabase()
+        .from('prod_inventory_gop')
+        .delete()
+        .eq('id', paleta.id);
+
+      console.log('🗑️ GOP paleta obrisana (nema više detalja):', paleta.pallet_number);
+
+      // Zatvori detalje modal ako je otvoren za ovu paletu (više ne postoji)
+      if (window.trenutnaPaletaZaDetalje && window.trenutnaPaletaZaDetalje.id === paleta.id) {
+        window.trenutnaPaletaZaDetalje = null;
+        if (typeof window.closeModal === 'function') window.closeModal('paletaDetaljiModal');
+      }
     }
   } catch (e) {
     console.error('❌ Greška ažuriranja GOP:', e);
@@ -4059,18 +4084,18 @@ window.otvoriPregledArtikla = async function() {
   var artikl = window.artiklData || {};
   var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
   html += '<div><h4>📋 Osnovni podaci</h4><table style="width:100%">';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">RN:</td><td style="padding:8px">' + (nalog.wo_number || '-') + '</td></tr>';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Kupac:</td><td style="padding:8px">' + (nalog.customer_name || '-') + '</td></tr>';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Artikl:</td><td style="padding:8px">' + (nalog.article_name || '-') + '</td></tr>';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Količina:</td><td style="padding:8px">' + window.formatBroj(nalog.quantity || 0) + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">RN:</td><td style="padding:8px">' + (nalog.wo_number || '-') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Kupac:</td><td style="padding:8px">' + (nalog.customer_name || '-') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Artikl:</td><td style="padding:8px">' + (nalog.article_name || '-') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Količina:</td><td style="padding:8px">' + window.formatBroj(nalog.quantity || 0) + '</td></tr>';
   html += '</table></div>';
   html += '<div><h4>📦 Pakiranje</h4><table style="width:100%">';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Kom/paleta:</td><td style="padding:8px">' + (artikl.pcs_per_pallet || '-') + (window.trenutniRNData && window.trenutniRNData.pcs_per_pallet_override ? ' <span style="color:#ff9800;font-weight:bold;">(Override: ' + window.trenutniRNData.pcs_per_pallet_override + ')</span>' : '') + '</td></tr>';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Kom/paket:</td><td style="padding:8px">' + (artikl.pcs_per_package || '-') + '</td></tr>';
-  html += '<tr><td style="background:#f5f5f5;font-weight:600;padding:8px">Vrsta palete:</td><td style="padding:8px">' + (artikl.pallet_type || '-') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Kom/paleta:</td><td style="padding:8px">' + (artikl.pcs_per_pallet || '-') + (window.trenutniRNData && window.trenutniRNData.pcs_per_pallet_override ? ' <span style="color:var(--warning);font-weight:bold;">(Override: ' + window.trenutniRNData.pcs_per_pallet_override + ')</span>' : '') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Kom/paket:</td><td style="padding:8px">' + (artikl.pcs_per_package || '-') + '</td></tr>';
+  html += '<tr><td style="background:var(--remap-grey-bg);font-weight:600;padding:8px">Vrsta palete:</td><td style="padding:8px">' + (artikl.pallet_type || '-') + '</td></tr>';
   html += '</table></div></div>';
   if (artikl.notes) {
-    html += '<div style="margin-top:20px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107"><strong>📝 Napomena:</strong> ' + artikl.notes + '</div>';
+    html += '<div style="margin-top:20px;padding:15px;background:var(--remap-warning-bg);border-radius:8px;border-left:4px solid var(--warning)"><strong>📝 Napomena:</strong> ' + artikl.notes + '</div>';
   }
   document.getElementById('pregledArtiklaBody').innerHTML = html;
   window.openModal('pregledArtiklaModal');
@@ -4438,7 +4463,7 @@ window.generirajEtiketuHTML = function(paleta, jezik) {
   var brojPalete = paleta.pallet_number || 'P0000';
   
   // Indikator jezika na etiketi (mali badge u kutu)
-  var jezikBadge = jezik === 'EN' ? '<span style="position:absolute;top:5px;right:5px;background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:10px;font-size:0.6em;font-weight:600;">EN</span>' : '';
+  var jezikBadge = jezik === 'EN' ? '<span style="position:absolute;top:5px;right:5px;background:var(--remap-warning-bg);color:#e65100;padding:2px 8px;border-radius:10px;font-size:0.6em;font-weight:600;">EN</span>' : '';
   
   var html = '<div class="etiketa-page" style="position:relative;">';
   html += jezikBadge;
@@ -4842,7 +4867,7 @@ window.ucitajPregledPoSmjeni = async function() {
         Object.keys(g.nalozi).forEach(function(rn) {
           var n = g.nalozi[rn];
           html += '<tr>';
-          if (prviRed) { html += '<td rowspan="' + Object.keys(g.nalozi).length + '" style="background:#f8f9fa;"><strong>' + g.datum + '</strong></td><td rowspan="' + Object.keys(g.nalozi).length + '" style="background:#f8f9fa;">' + g.smjena + '. smjena</td>'; prviRed = false; }
+          if (prviRed) { html += '<td rowspan="' + Object.keys(g.nalozi).length + '" style="background:var(--remap-grey-bg);"><strong>' + g.datum + '</strong></td><td rowspan="' + Object.keys(g.nalozi).length + '" style="background:var(--remap-grey-bg);">' + g.smjena + '. smjena</td>'; prviRed = false; }
           html += '<td>' + rn + '</td><td>' + (n.artikl || '-') + '</td><td><strong>' + window.formatBroj(n.kolicina) + '</strong></td><td>' + n.paleta + '</td></tr>';
         });
       });
@@ -5173,7 +5198,7 @@ async function loadPokrpanoPovijest() {
     var unosi = result.data || [];
     
     if (unosi.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Nema unosa pokrpanih količina</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-mid);">Nema unosa pokrpanih količina</td></tr>';
       return;
     }
     
@@ -5185,7 +5210,7 @@ async function loadPokrpanoPovijest() {
         '<td>' + (u.article_name || '-') + '</td>' +
         '<td><strong style="color: var(--linija-primary);">+' + formatBroj(u.kolicina, 0) + '</strong></td>' +
         '<td>' + (u.operater || '-') + '</td>' +
-        '<td style="font-size: 0.85em; color: #666;">' + (u.napomena || '-') + '</td>' +
+        '<td style="font-size: 0.85em; color: var(--text-mid);">' + (u.napomena || '-') + '</td>' +
         '</tr>';
     }).join('');
     

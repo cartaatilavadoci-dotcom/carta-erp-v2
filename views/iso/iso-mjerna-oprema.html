@@ -1,0 +1,508 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-ruler svg-icon-lg"></span>
+  Mjerna oprema i kalibracije
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Registar mjerne opreme s kalibracijskim ciklusima. Pokriva i posude pod tlakom, vatrogasne aparate, hidrante i ostalu opremu s obveznim periodičkim pregledom (OB_14).
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-ruler svg-icon-lg"></span></div>
+    <div class="status-card-value" id="eqKpiTotal">-</div>
+    <div class="status-card-label">Ukupno opreme</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="eqKpiCalSoon">-</div>
+    <div class="status-card-label">Kalibracije ≤30d</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="eqKpiCalOverdue">-</div>
+    <div class="status-card-label">Istekle kalibracije</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-search svg-icon-lg"></span></div>
+    <div class="status-card-value" id="eqKpiInspSoon">-</div>
+    <div class="status-card-label">Inspekcije ≤30d</div>
+  </div>
+</div>
+
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="eqFilterSearch" placeholder="Pretraga po šifri, nazivu, lokaciji..." class="doc-input">
+    <select id="eqFilterStatus" class="doc-input">
+      <option value="">Svi statusi</option>
+      <option value="Aktivan" selected>Aktivan</option>
+      <option value="U_kvaru">U kvaru</option>
+      <option value="Povucen">Povučen</option>
+      <option value="Otpisan">Otpisan</option>
+    </select>
+    <select id="eqFilterDue" class="doc-input">
+      <option value="">Sve (sve datume)</option>
+      <option value="overdue">Isteklo (kalibracija ili inspekcija)</option>
+      <option value="soon30">Uskoro (≤30 dana)</option>
+      <option value="soon90">Uskoro (≤90 dana)</option>
+      <option value="ok">U redu (>90 dana)</option>
+    </select>
+  </div>
+  <button class="btn-primary doc-btn-add" onclick="eqOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Nova oprema
+  </button>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Šifra</th>
+        <th>Naziv</th>
+        <th>Proizvođač / Model</th>
+        <th>Serijski br.</th>
+        <th>Lokacija</th>
+        <th>Sljedeća kalibracija</th>
+        <th>Sljedeća inspekcija</th>
+        <th>Status</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="eqTableBody">
+      <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="eqModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="eqModalTitle">Nova mjerna oprema</h3>
+      <button class="doc-modal-close" onclick="eqCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="eqFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Šifra *</label>
+          <input type="text" id="eqFCode" placeholder="MJ-001, VATA-01..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Naziv *</label>
+          <input type="text" id="eqFName" placeholder="Vaga laboratorijska, Vatrogasni aparat..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Proizvođač</label>
+          <input type="text" id="eqFManufacturer" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Model</label>
+          <input type="text" id="eqFModel" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Serijski broj</label>
+          <input type="text" id="eqFSerial" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Inventarni broj</label>
+          <input type="text" id="eqFInventory" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Lokacija</label>
+          <input type="text" id="eqFLocation" placeholder="Hala 1, ured PUK..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Datum nabave</label>
+          <input type="date" id="eqFPurchase" class="doc-input">
+        </div>
+      </div>
+
+      <div class="doc-section-title">
+        <span class="svg-icon svg-icon-target svg-icon-sm"></span> Kalibracija
+      </div>
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>
+            <input type="checkbox" id="eqFCalReq" checked> Kalibracija obavezna
+          </label>
+        </div>
+        <div class="doc-field">
+          <label>Interval (mjeseci)</label>
+          <input type="number" id="eqFCalInterval" value="12" min="1" max="120" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Zadnja kalibracija</label>
+          <input type="date" id="eqFCalLast" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Sljedeća kalibracija (auto-izračun)</label>
+          <input type="date" id="eqFCalNext" class="doc-input">
+        </div>
+        <div class="doc-field" style="grid-column: 1 / -1;">
+          <label>Tijelo koje vrši kalibraciju</label>
+          <input type="text" id="eqFCalAuthority" placeholder="Ardenter d.o.o., METRON Zagreb..." class="doc-input">
+        </div>
+      </div>
+
+      <div class="doc-section-title">
+        <span class="svg-icon svg-icon-search svg-icon-sm"></span> Periodički pregled / inspekcija (vatrogasni aparati, posude pod tlakom, hidranti)
+      </div>
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>
+            <input type="checkbox" id="eqFInspReq"> Inspekcija obavezna
+          </label>
+        </div>
+        <div class="doc-field">
+          <label>Interval (mjeseci)</label>
+          <input type="number" id="eqFInspInterval" placeholder="12, 24, 60..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Zadnja inspekcija</label>
+          <input type="date" id="eqFInspLast" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Sljedeća inspekcija (auto-izračun)</label>
+          <input type="date" id="eqFInspNext" class="doc-input">
+        </div>
+      </div>
+
+      <div class="doc-field-grid" style="margin-top: 14px;">
+        <div class="doc-field">
+          <label>Status</label>
+          <select id="eqFStatus" class="doc-input">
+            <option value="Aktivan" selected>Aktivan</option>
+            <option value="U_kvaru">U kvaru</option>
+            <option value="Povucen">Povučen</option>
+            <option value="Otpisan">Otpisan</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Odgovorni zaposlenik</label>
+          <select id="eqFResponsible" class="doc-input">
+            <option value="">— bez odgovornog —</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Bilješke</label>
+        <textarea id="eqFNotes" rows="2" class="doc-input"></textarea>
+      </div>
+      <div id="eqModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="eqCloseModal()">Odustani</button>
+      <button class="btn-primary" id="eqSaveBtn" onclick="eqSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.eq-due-overdue { color: #c62828; font-weight: 700; }
+.eq-due-soon30 { color: #f57f17; font-weight: 600; }
+.eq-due-soon90 { color: #f9a825; }
+.eq-due-ok { color: #2e7d32; }
+.eq-due-na { color: #aaa; font-style: italic; }
+
+.eq-status-Aktivan { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.eq-status-U_kvaru { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.eq-status-Povucen { background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.eq-status-Otpisan { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+</style>
+
+<script>
+(async function initIsoMjernaOpremaView() {
+  console.log('[iso-mjerna-oprema] init');
+  let allEq = [], allEmployees = [];
+
+  function fmtDate(d) {
+    if (!d) return '<span class="eq-due-na">—</span>';
+    return new Date(d).toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function dueClass(d) {
+    if (!d) return 'eq-due-na';
+    const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+    if (days < 0) return 'eq-due-overdue';
+    if (days <= 30) return 'eq-due-soon30';
+    if (days <= 90) return 'eq-due-soon90';
+    return 'eq-due-ok';
+  }
+  function dueBadge(d) {
+    if (!d) return '<span class="eq-due-na">—</span>';
+    const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+    const cls = dueClass(d);
+    const txt = days < 0 ? `${fmtDate(d)} (prošlo ${-days}d)` :
+                days === 0 ? `${fmtDate(d)} (DANAS!)` :
+                `${fmtDate(d)} (za ${days}d)`;
+    return `<span class="${cls}">${txt}</span>`;
+  }
+
+  // ========== KPI ==========
+  function computeKpi() {
+    const active = allEq.filter(e => e.status === 'Aktivan');
+    document.getElementById('eqKpiTotal').textContent = allEq.length;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in30 = new Date(today.getTime() + 30 * 86400000);
+    document.getElementById('eqKpiCalSoon').textContent = active.filter(e =>
+      e.calibration_required && e.next_calibration_date &&
+      new Date(e.next_calibration_date) <= in30 && new Date(e.next_calibration_date) >= today
+    ).length;
+    document.getElementById('eqKpiCalOverdue').textContent = active.filter(e =>
+      e.calibration_required && e.next_calibration_date && new Date(e.next_calibration_date) < today
+    ).length;
+    document.getElementById('eqKpiInspSoon').textContent = active.filter(e =>
+      e.inspection_required && e.next_inspection_date && new Date(e.next_inspection_date) <= in30
+    ).length;
+  }
+
+  // ========== EMPLOYEES ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true },
+        columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' },
+        silent: true
+      });
+      const sel = document.getElementById('eqFResponsible');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== TABLE ==========
+  function applyFilters() {
+    const q = document.getElementById('eqFilterSearch').value.trim().toLowerCase();
+    const status = document.getElementById('eqFilterStatus').value;
+    const due = document.getElementById('eqFilterDue').value;
+    return allEq.filter(e => {
+      if (q) {
+        const blob = (e.code + ' ' + (e.name||'') + ' ' + (e.location||'') + ' ' + (e.manufacturer||'') + ' ' + (e.model||'')).toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      if (status && e.status !== status) return false;
+      if (due) {
+        const dCal = e.next_calibration_date ? dueClass(e.next_calibration_date) : null;
+        const dInsp = e.next_inspection_date ? dueClass(e.next_inspection_date) : null;
+        const has = (cls) => dCal === cls || dInsp === cls;
+        if (due === 'overdue' && !has('eq-due-overdue')) return false;
+        if (due === 'soon30' && !has('eq-due-soon30') && !has('eq-due-overdue')) return false;
+        if (due === 'soon90' && !has('eq-due-soon90') && !has('eq-due-soon30') && !has('eq-due-overdue')) return false;
+        if (due === 'ok' && !has('eq-due-ok') && !has('eq-due-na')) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('eqTableBody');
+    const filtered = applyFilters();
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema opreme po filteru. Klikni "Nova oprema" da dodaš prvu.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(e => `
+      <tr>
+        <td><strong>${escapeHtml(e.code)}</strong></td>
+        <td>${escapeHtml(e.name)}<br><span style="font-size:11px; color:var(--text-lo);">${escapeHtml(e.notes || '')}</span></td>
+        <td style="font-size:12px;">${escapeHtml(e.manufacturer || '')} ${escapeHtml(e.model || '')}</td>
+        <td style="font-size:12px;">${escapeHtml(e.serial_number || '—')}</td>
+        <td style="font-size:12px;">${escapeHtml(e.location || '—')}</td>
+        <td style="font-size:12px;">${e.calibration_required ? dueBadge(e.next_calibration_date) : '<span class="eq-due-na">nije obavezno</span>'}</td>
+        <td style="font-size:12px;">${e.inspection_required ? dueBadge(e.next_inspection_date) : '<span class="eq-due-na">nije obavezno</span>'}</td>
+        <td><span class="eq-status-${e.status || 'Aktivan'}">${e.status || 'Aktivan'}</span></td>
+        <td>
+          <button class="doc-action-btn" onclick="eqOpenEdit('${e.id}')" title="Uredi">
+            <span class="svg-icon svg-icon-pencil"></span>
+          </button>
+          <button class="doc-action-btn" onclick="eqQuickRecal('${e.id}')" title="Označi kalibraciju kao izvršenu">
+            <span class="svg-icon svg-icon-check"></span>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadEq() {
+    try {
+      allEq = await SB.select('iso_measuring_equipment', {
+        order: { code: 'asc' },
+        silent: true
+      });
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('eqTableBody').innerHTML =
+        `<tr><td colspan="9" style="text-align:center; color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['eqFilterSearch','eqFilterStatus','eqFilterDue'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTable);
+  });
+
+  // Auto-compute next dates
+  function computeNextDate(lastInputId, intervalInputId, nextInputId) {
+    const last = document.getElementById(lastInputId).value;
+    const months = parseInt(document.getElementById(intervalInputId).value) || 12;
+    if (!last) return;
+    const next = new Date(last);
+    next.setMonth(next.getMonth() + months);
+    document.getElementById(nextInputId).value = next.toISOString().slice(0, 10);
+  }
+
+  ['eqFCalLast','eqFCalInterval'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => computeNextDate('eqFCalLast','eqFCalInterval','eqFCalNext'))
+  );
+  ['eqFInspLast','eqFInspInterval'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => computeNextDate('eqFInspLast','eqFInspInterval','eqFInspNext'))
+  );
+
+  // ========== MODAL ==========
+  window.eqOpenAddModal = function() {
+    document.getElementById('eqModalTitle').textContent = 'Nova mjerna oprema';
+    document.getElementById('eqFId').value = '';
+    ['eqFCode','eqFName','eqFManufacturer','eqFModel','eqFSerial','eqFInventory','eqFLocation',
+     'eqFPurchase','eqFCalLast','eqFCalNext','eqFInspLast','eqFInspNext','eqFCalAuthority','eqFNotes']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('eqFCalReq').checked = true;
+    document.getElementById('eqFInspReq').checked = false;
+    document.getElementById('eqFCalInterval').value = 12;
+    document.getElementById('eqFInspInterval').value = '';
+    document.getElementById('eqFStatus').value = 'Aktivan';
+    document.getElementById('eqFResponsible').value = '';
+    document.getElementById('eqModalError').style.display = 'none';
+    document.getElementById('eqModal').style.display = 'flex';
+  };
+
+  window.eqOpenEdit = function(id) {
+    const e = allEq.find(x => x.id === id);
+    if (!e) return;
+    document.getElementById('eqModalTitle').textContent = `Uredi ${e.code} — ${e.name}`;
+    document.getElementById('eqFId').value = id;
+    document.getElementById('eqFCode').value = e.code || '';
+    document.getElementById('eqFName').value = e.name || '';
+    document.getElementById('eqFManufacturer').value = e.manufacturer || '';
+    document.getElementById('eqFModel').value = e.model || '';
+    document.getElementById('eqFSerial').value = e.serial_number || '';
+    document.getElementById('eqFInventory').value = e.inventory_number || '';
+    document.getElementById('eqFLocation').value = e.location || '';
+    document.getElementById('eqFPurchase').value = e.purchase_date || '';
+    document.getElementById('eqFCalReq').checked = !!e.calibration_required;
+    document.getElementById('eqFCalInterval').value = e.calibration_interval_months || 12;
+    document.getElementById('eqFCalLast').value = e.last_calibration_date || '';
+    document.getElementById('eqFCalNext').value = e.next_calibration_date || '';
+    document.getElementById('eqFCalAuthority').value = e.calibration_authority || '';
+    document.getElementById('eqFInspReq').checked = !!e.inspection_required;
+    document.getElementById('eqFInspInterval').value = e.inspection_interval_months || '';
+    document.getElementById('eqFInspLast').value = e.last_inspection_date || '';
+    document.getElementById('eqFInspNext').value = e.next_inspection_date || '';
+    document.getElementById('eqFStatus').value = e.status || 'Aktivan';
+    document.getElementById('eqFResponsible').value = e.responsible_employee_id || '';
+    document.getElementById('eqFNotes').value = e.notes || '';
+    document.getElementById('eqModalError').style.display = 'none';
+    document.getElementById('eqModal').style.display = 'flex';
+  };
+
+  window.eqCloseModal = function() {
+    document.getElementById('eqModal').style.display = 'none';
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('eqModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  window.eqSave = async function() {
+    const btn = document.getElementById('eqSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const code = document.getElementById('eqFCode').value.trim();
+      const name = document.getElementById('eqFName').value.trim();
+      if (!code) throw new Error('Šifra je obavezna');
+      if (!name) throw new Error('Naziv je obavezan');
+
+      const data = {
+        code, name,
+        manufacturer: document.getElementById('eqFManufacturer').value.trim() || null,
+        model: document.getElementById('eqFModel').value.trim() || null,
+        serial_number: document.getElementById('eqFSerial').value.trim() || null,
+        inventory_number: document.getElementById('eqFInventory').value.trim() || null,
+        location: document.getElementById('eqFLocation').value.trim() || null,
+        purchase_date: document.getElementById('eqFPurchase').value || null,
+        calibration_required: document.getElementById('eqFCalReq').checked,
+        calibration_interval_months: parseInt(document.getElementById('eqFCalInterval').value) || 12,
+        last_calibration_date: document.getElementById('eqFCalLast').value || null,
+        next_calibration_date: document.getElementById('eqFCalNext').value || null,
+        calibration_authority: document.getElementById('eqFCalAuthority').value.trim() || null,
+        inspection_required: document.getElementById('eqFInspReq').checked,
+        inspection_interval_months: parseInt(document.getElementById('eqFInspInterval').value) || null,
+        last_inspection_date: document.getElementById('eqFInspLast').value || null,
+        next_inspection_date: document.getElementById('eqFInspNext').value || null,
+        status: document.getElementById('eqFStatus').value,
+        responsible_employee_id: document.getElementById('eqFResponsible').value || null,
+        notes: document.getElementById('eqFNotes').value.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      const id = document.getElementById('eqFId').value;
+      if (id) {
+        await SB.update('iso_measuring_equipment', data, { id });
+      } else {
+        await SB.insert('iso_measuring_equipment', data);
+      }
+      eqCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Oprema ažurirana' : 'Oprema dodana', 'success');
+      await loadEq();
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  window.eqQuickRecal = async function(id) {
+    const e = allEq.find(x => x.id === id);
+    if (!e) return;
+    if (!confirm(`Označiti kalibraciju za "${e.name}" kao izvršenu danas? Sljedeća kalibracija će biti za ${e.calibration_interval_months || 12} mjeseci.`)) return;
+    try {
+      const today = new Date();
+      const next = new Date(today);
+      next.setMonth(next.getMonth() + (e.calibration_interval_months || 12));
+      await SB.update('iso_measuring_equipment', {
+        last_calibration_date: today.toISOString().slice(0, 10),
+        next_calibration_date: next.toISOString().slice(0, 10),
+        updated_at: new Date().toISOString()
+      }, { id });
+      if (typeof showMessage === 'function') showMessage('Kalibracija ažurirana', 'success');
+      await loadEq();
+    } catch (err) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + err.message, 'error');
+    }
+  };
+
+  document.getElementById('eqModal').addEventListener('click', e => {
+    if (e.target.id === 'eqModal') eqCloseModal();
+  });
+
+  await Promise.all([loadEmployees(), loadEq()]);
+  console.log('[iso-mjerna-oprema] ready');
+})();
+</script>

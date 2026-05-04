@@ -1,0 +1,663 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-search svg-icon-lg"></span>
+  Interni auditi (OB_02 / OB_03 / OB_09)
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Plan internih audita, izvršenje s checklist-om i evidencija nalaza. <strong>Auditor zahtjeva da je interni audit odrađen
+  prije eksternog</strong> (clause 9.2). AI generator checklist-a iz ISO klauzula.
+</div>
+
+<!-- YEAR SWITCHER -->
+<div style="display: flex; gap: 6px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;">
+  <span style="font-size: 13px; color: var(--text-mid);">Godina:</span>
+  <div id="auditYearTabs" style="display: flex; gap: 4px;"></div>
+  <button class="btn-primary" style="margin-left: auto;" onclick="auditOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi audit
+  </button>
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-search svg-icon-lg"></span></div>
+    <div class="status-card-value" id="auditKpiTotal">-</div>
+    <div class="status-card-label">Auditi ove godine</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="auditKpiPlanned">-</div>
+    <div class="status-card-label">Planirani / U tijeku</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="auditKpiDone">-</div>
+    <div class="status-card-label">Provedeno / Zatvoreno</div>
+  </div>
+  <div class="status-card danger">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-alert-triangle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="auditKpiFindingsOpen">-</div>
+    <div class="status-card-label">Otvoreni nalazi</div>
+  </div>
+</div>
+
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Br.</th>
+        <th>Tip</th>
+        <th>Opseg</th>
+        <th>Plan. datum</th>
+        <th>Provedeno</th>
+        <th>Lead auditor</th>
+        <th>Nalazi</th>
+        <th>Status</th>
+        <th style="width: 90px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="auditTableBody">
+      <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="auditModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="auditModalTitle">Novi audit</h3>
+      <button class="doc-modal-close" onclick="auditCloseModal()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body">
+      <input type="hidden" id="auditFId">
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Tip *</label>
+          <select id="auditFType" class="doc-input">
+            <option value="interni" selected>Interni</option>
+            <option value="eksterni">Eksterni (certifikator)</option>
+            <option value="dobavljaca">Audit dobavljača</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Godina *</label>
+          <input type="number" id="auditFYear" class="doc-input" min="2020" max="2030">
+        </div>
+        <div class="doc-field">
+          <label>Planirani datum *</label>
+          <input type="date" id="auditFPlannedDate" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Stvarni datum izvršenja</label>
+          <input type="date" id="auditFExecutedDate" class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Status *</label>
+          <select id="auditFStatus" class="doc-input">
+            <option value="Planiran" selected>Planiran</option>
+            <option value="U_tijeku">U tijeku</option>
+            <option value="Provedeno">Provedeno</option>
+            <option value="Izvjesce_izradeno">Izvješće izrađeno</option>
+            <option value="Zatvoren">Zatvoren</option>
+            <option value="Otkazan">Otkazan</option>
+          </select>
+        </div>
+        <div class="doc-field">
+          <label>Lead auditor (zaposlenik)</label>
+          <select id="auditFLeadEmp" class="doc-input">
+            <option value="">— bez —</option>
+          </select>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Vanjski auditor (ako primjenjivo, slobodan tekst)</label>
+        <input type="text" id="auditFLeadExt" class="doc-input" placeholder="Krunoslav Matočec / Ivan Marković (TÜV NORD)...">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>
+          <input type="checkbox" id="auditFExternalConsultant"> Vanjski konzultant prisutan (npr. Krunoslav Matočec)
+        </label>
+        <input type="text" id="auditFExternalConsultantName" class="doc-input" style="margin-top:6px;" placeholder="Ime vanjskog konzultanta (ako prisutan)">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opseg audita (procesi)</label>
+        <div id="auditFProcesses" style="background:var(--remap-grey-bg); padding:10px; border-radius:6px; max-height:200px; overflow-y:auto; border:1px solid var(--border);">
+          <div style="color:var(--text-lo);">Učitavanje procesa...</div>
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Opseg (slobodan tekst)</label>
+        <textarea id="auditFScopeText" rows="2" class="doc-input" placeholder="Dopuna ako neki proces nije u listi gore..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Auditiranji (zarez odvojeno)</label>
+        <input type="text" id="auditFAuditees" class="doc-input" placeholder="Branka Hitner, Kristina Čubela, Vedrana Tomljanović...">
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Sažetak nalaza (po izvršenju)</label>
+        <textarea id="auditFFindingsSummary" rows="2" class="doc-input"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Zaključak</label>
+        <textarea id="auditFConclusion" rows="2" class="doc-input"></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>
+          <input type="checkbox" id="auditFNormCompliant"> Sustav zadovoljava zahtjeve norme
+        </label>
+      </div>
+      <div id="auditModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="auditCloseModal()">Odustani</button>
+      <button class="btn-primary" id="auditSaveBtn" onclick="auditSave()">
+        <span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="auditDetailOverlay" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-detail-panel" style="max-width: 1000px;">
+    <div class="doc-modal-header">
+      <h3 id="auditDetailTitle">—</h3>
+      <button class="doc-modal-close" onclick="auditCloseDetail()" aria-label="Zatvori"><span class="svg-icon svg-icon-x"></span></button>
+    </div>
+    <div class="doc-modal-body" id="auditDetailBody">
+      <div style="text-align:center; padding: 40px; color: var(--text-lo);">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.audit-status-Planiran { background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-status-U_tijeku { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-status-Provedeno { background: #ede7f6; color: #5e35b1; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-status-Izvjesce_izradeno { background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-status-Zatvoren { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-status-Otkazan { background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.audit-type-interni { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-type-eksterni { background: #fce4ec; color: #ad1457; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.audit-type-dobavljaca { background: #ede7f6; color: #5e35b1; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+.audit-finding { background: white; border-left: 4px solid #ccc; padding: 10px 14px; margin-bottom: 8px; border-radius: 6px; }
+.audit-finding-major { border-left-color: #c62828; background: #fff5f5; }
+.audit-finding-minor { border-left-color: #f57f17; background: #fff8e1; }
+.audit-finding-observation { border-left-color: #1565c0; background: #e3f2fd; }
+.audit-finding-preporuka { border-left-color: #5e35b1; background: #ede7f6; }
+.audit-finding-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: 600; }
+
+.audit-checklist-item { background: white; border: 1px solid #e0e0e0; padding: 10px 14px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; }
+.audit-checklist-item .clause-pill { display: inline-block; padding: 2px 6px; background: #1565c0; color: white; font-size: 10px; font-weight: 700; border-radius: 4px; margin-right: 6px; }
+
+.ai-banner {
+  background: linear-gradient(90deg, #f3e5f5, #e1f5fe);
+  border-left: 4px solid #5e35b1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ai-banner-icon { color: #5e35b1; }
+.ai-banner-body { flex: 1; font-size: 13px; }
+.ai-banner-body strong { color: #5e35b1; }
+</style>
+
+<script>
+(async function initIsoAuditiView() {
+  console.log('[iso-auditi] init');
+  let allAudits = [], allEmployees = [], allProcesses = [], allFindings = [];
+  let currentYear = new Date().getFullYear();
+
+  function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('hr-HR') : '—'; }
+  function findEmp(id) { return allEmployees.find(e => e.id === id); }
+  function empName(emp) { return emp ? `${emp.first_name || ''} ${emp.last_name || ''}`.trim() : '—'; }
+
+  function statusPill(s) { return `<span class="audit-status-${s || 'Planiran'}">${(s||'Planiran').replace('_',' ')}</span>`; }
+  function typePill(t) { return `<span class="audit-type-${t || 'interni'}">${t || 'interni'}</span>`; }
+
+  // ========== YEAR TABS ==========
+  function renderYearTabs() {
+    const NOW = new Date().getFullYear();
+    const years = [NOW + 1, NOW, NOW - 1, NOW - 2, NOW - 3];
+    const wrap = document.getElementById('auditYearTabs');
+    wrap.innerHTML = years.map(y =>
+      `<button class="obj-year-tab ${y === currentYear ? 'active' : ''}" onclick="auditSetYear(${y})">${y}</button>`
+    ).join('');
+  }
+  window.auditSetYear = function(y) { currentYear = y; renderYearTabs(); loadAll(); };
+
+  // ========== KPI ==========
+  function computeKpi() {
+    const yearAudits = allAudits.filter(a => a.year === currentYear);
+    document.getElementById('auditKpiTotal').textContent = yearAudits.length;
+    document.getElementById('auditKpiPlanned').textContent = yearAudits.filter(a => ['Planiran','U_tijeku'].includes(a.status)).length;
+    document.getElementById('auditKpiDone').textContent = yearAudits.filter(a => ['Provedeno','Izvjesce_izradeno','Zatvoren'].includes(a.status)).length;
+
+    const auditIds = yearAudits.map(a => a.id);
+    document.getElementById('auditKpiFindingsOpen').textContent = allFindings.filter(f => auditIds.includes(f.audit_id) && f.status !== 'Zatvoren').length;
+  }
+
+  // ========== LOAD ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true }, columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' }, silent: true
+      });
+      const sel = document.getElementById('auditFLeadEmp');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option'); opt.value = e.id;
+        opt.textContent = empName(e) + (e.position ? ` (${e.position})` : '');
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadProcesses() {
+    try {
+      allProcesses = await SB.select('iso_processes', {
+        eq: { active: true }, order: { code: 'asc' }, silent: true
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadAll() {
+    try {
+      allAudits = await SB.select('iso_audits', { order: { planned_date: 'desc' }, silent: true });
+      allFindings = await SB.select('iso_audit_findings', { silent: true });
+      computeKpi();
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('auditTableBody').innerHTML = `<tr><td colspan="9" style="color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('auditTableBody');
+    const filtered = allAudits.filter(a => a.year === currentYear);
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema audita za ${currentYear}. Klikni "Novi audit" da planiraš prvi (npr. interni audit pred eksterni u 09/2026).</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(a => {
+      const lead = findEmp(a.lead_auditor_employee_id);
+      const leadName = lead ? empName(lead) : (a.lead_auditor_external_name || '—');
+      const findingsCnt = allFindings.filter(f => f.audit_id === a.id).length;
+      const openFindings = allFindings.filter(f => f.audit_id === a.id && f.status !== 'Zatvoren').length;
+      return `
+        <tr>
+          <td><strong>${a.audit_number}</strong></td>
+          <td>${typePill(a.audit_type)}</td>
+          <td style="font-size:12px; max-width: 200px;">${escapeHtml(a.scope_text || '—')}</td>
+          <td style="font-size:12px;">${fmtDate(a.planned_date)}</td>
+          <td style="font-size:12px;">${fmtDate(a.executed_date)}</td>
+          <td style="font-size:12px;">${escapeHtml(leadName)}</td>
+          <td style="font-size:12px;">${findingsCnt > 0 ? `<strong>${findingsCnt}</strong> ${openFindings > 0 ? `<span style="color:var(--danger);">(${openFindings} otvoreno)</span>` : ''}` : '—'}</td>
+          <td>${statusPill(a.status)}</td>
+          <td>
+            <button class="doc-action-btn" onclick="auditOpenDetail('${a.id}')" title="Detalj"><span class="svg-icon svg-icon-eye"></span></button>
+            <button class="doc-action-btn" onclick="auditOpenEdit('${a.id}')" title="Uredi"><span class="svg-icon svg-icon-pencil"></span></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ========== MODAL ==========
+  function renderProcessCheckboxes(selectedIds) {
+    const sel = new Set(selectedIds || []);
+    const box = document.getElementById('auditFProcesses');
+    if (allProcesses.length === 0) { box.innerHTML = '<div style="color:var(--text-lo);">Nema procesa</div>'; return; }
+    box.innerHTML = allProcesses.map(p => `
+      <label style="display:flex; align-items:center; gap:8px; padding:4px 0; cursor:pointer; font-size:13px;">
+        <input type="checkbox" data-proc-id="${p.id}" ${sel.has(p.id) ? 'checked' : ''}>
+        <strong>${p.code}</strong> ${escapeHtml(p.name)}
+      </label>
+    `).join('');
+  }
+
+  function selectedProcessIds() {
+    return Array.from(document.querySelectorAll('#auditFProcesses input[data-proc-id]:checked'))
+      .map(el => el.getAttribute('data-proc-id'));
+  }
+
+  window.auditOpenAddModal = function() {
+    document.getElementById('auditModalTitle').textContent = 'Novi audit';
+    document.getElementById('auditFId').value = '';
+    document.getElementById('auditFType').value = 'interni';
+    document.getElementById('auditFYear').value = currentYear;
+    // Default planirani datum: za 2 mjeseca
+    const pd = new Date(); pd.setMonth(pd.getMonth() + 2);
+    document.getElementById('auditFPlannedDate').value = pd.toISOString().slice(0, 10);
+    document.getElementById('auditFExecutedDate').value = '';
+    document.getElementById('auditFStatus').value = 'Planiran';
+    document.getElementById('auditFLeadEmp').value = '';
+    document.getElementById('auditFLeadExt').value = '';
+    document.getElementById('auditFExternalConsultant').checked = false;
+    document.getElementById('auditFExternalConsultantName').value = '';
+    document.getElementById('auditFScopeText').value = 'Svi procesi (1.2, 1.3, 4, 5, 6, 7, 8, 9, 10, 11)';
+    document.getElementById('auditFAuditees').value = '';
+    document.getElementById('auditFFindingsSummary').value = '';
+    document.getElementById('auditFConclusion').value = '';
+    document.getElementById('auditFNormCompliant').checked = false;
+    renderProcessCheckboxes(allProcesses.map(p => p.id)); // default: svi procesi
+    document.getElementById('auditModalError').style.display = 'none';
+    document.getElementById('auditModal').style.display = 'flex';
+  };
+
+  window.auditOpenEdit = function(id) {
+    const a = allAudits.find(x => x.id === id);
+    if (!a) return;
+    document.getElementById('auditModalTitle').textContent = `Uredi: ${a.audit_number}`;
+    document.getElementById('auditFId').value = id;
+    document.getElementById('auditFType').value = a.audit_type || 'interni';
+    document.getElementById('auditFYear').value = a.year;
+    document.getElementById('auditFPlannedDate').value = a.planned_date || '';
+    document.getElementById('auditFExecutedDate').value = a.executed_date || '';
+    document.getElementById('auditFStatus').value = a.status || 'Planiran';
+    document.getElementById('auditFLeadEmp').value = a.lead_auditor_employee_id || '';
+    document.getElementById('auditFLeadExt').value = a.lead_auditor_external_name || '';
+    document.getElementById('auditFExternalConsultant').checked = !!a.external_consultant_present;
+    document.getElementById('auditFExternalConsultantName').value = a.external_consultant_name || '';
+    document.getElementById('auditFScopeText').value = a.scope_text || '';
+    document.getElementById('auditFAuditees').value = (a.auditees || []).join(', ');
+    document.getElementById('auditFFindingsSummary').value = a.findings_summary || '';
+    document.getElementById('auditFConclusion').value = a.conclusion || '';
+    document.getElementById('auditFNormCompliant').checked = !!a.norm_compliant;
+    renderProcessCheckboxes(a.scope_processes || []);
+    document.getElementById('auditModalError').style.display = 'none';
+    document.getElementById('auditModal').style.display = 'flex';
+  };
+
+  window.auditCloseModal = function() { document.getElementById('auditModal').style.display = 'none'; };
+
+  function showError(msg) { const el = document.getElementById('auditModalError'); el.textContent = msg; el.style.display = 'block'; }
+
+  window.auditSave = async function() {
+    const btn = document.getElementById('auditSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const year = parseInt(document.getElementById('auditFYear').value);
+      const plannedDate = document.getElementById('auditFPlannedDate').value;
+      if (!year) throw new Error('Godina je obavezna');
+      if (!plannedDate) throw new Error('Planirani datum je obavezan');
+
+      const auditeesRaw = document.getElementById('auditFAuditees').value.trim();
+
+      const data = {
+        audit_type: document.getElementById('auditFType').value,
+        year,
+        scope_processes: selectedProcessIds(),
+        scope_text: document.getElementById('auditFScopeText').value.trim() || null,
+        planned_date: plannedDate,
+        executed_date: document.getElementById('auditFExecutedDate').value || null,
+        status: document.getElementById('auditFStatus').value,
+        lead_auditor_employee_id: document.getElementById('auditFLeadEmp').value || null,
+        lead_auditor_external_name: document.getElementById('auditFLeadExt').value.trim() || null,
+        external_consultant_present: document.getElementById('auditFExternalConsultant').checked,
+        external_consultant_name: document.getElementById('auditFExternalConsultantName').value.trim() || null,
+        auditees: auditeesRaw ? auditeesRaw.split(',').map(s => s.trim()).filter(Boolean) : null,
+        findings_summary: document.getElementById('auditFFindingsSummary').value.trim() || null,
+        conclusion: document.getElementById('auditFConclusion').value.trim() || null,
+        norm_compliant: document.getElementById('auditFNormCompliant').checked,
+        updated_at: new Date().toISOString()
+      };
+
+      const id = document.getElementById('auditFId').value;
+      if (id) {
+        await SB.update('iso_audits', data, { id });
+      } else {
+        const { data: numData, error: numErr } = await initSupabase().rpc('iso_next_audit_number');
+        if (numErr) throw new Error('Generiranje broja: ' + numErr.message);
+        data.audit_number = numData;
+        await SB.insert('iso_audits', data);
+      }
+
+      auditCloseModal();
+      if (typeof showMessage === 'function') showMessage(id ? 'Audit ažuriran' : 'Audit dodan', 'success');
+      await loadAll();
+    } catch (e) { showError(e.message); }
+    finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-check svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== DETAIL PANEL ==========
+  window.auditOpenDetail = async function(id) {
+    document.getElementById('auditDetailOverlay').style.display = 'flex';
+    const body = document.getElementById('auditDetailBody');
+    body.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>';
+    try {
+      const a = allAudits.find(x => x.id === id);
+      if (!a) throw new Error('Audit nije pronađen');
+      document.getElementById('auditDetailTitle').textContent = a.audit_number;
+
+      const lead = findEmp(a.lead_auditor_employee_id);
+      const leadName = lead ? empName(lead) : (a.lead_auditor_external_name || '—');
+      const findings = allFindings.filter(f => f.audit_id === id);
+      const checklist = await SB.select('iso_audit_checklist', {
+        eq: { audit_id: id }, order: { question_number: 'asc' }, silent: true
+      });
+
+      const scopeProcs = (a.scope_processes || []).map(pid => {
+        const p = allProcesses.find(x => x.id === pid);
+        return p ? `${p.code} ${p.name}` : pid.slice(0,8) + '…';
+      }).join(', ');
+
+      let html = `
+        <div class="doc-detail-meta">
+          <div><strong>Tip:</strong> ${typePill(a.audit_type)}</div>
+          <div><strong>Status:</strong> ${statusPill(a.status)}</div>
+          <div><strong>Planirano:</strong> ${fmtDate(a.planned_date)}</div>
+          <div><strong>Provedeno:</strong> ${fmtDate(a.executed_date)}</div>
+          <div><strong>Lead auditor:</strong> ${escapeHtml(leadName)}</div>
+          ${a.external_consultant_present ? `<div><strong>Vanjski konzultant:</strong> ${escapeHtml(a.external_consultant_name || '—')}</div>` : ''}
+          <div style="grid-column: 1 / -1;"><strong>Opseg:</strong> ${escapeHtml(scopeProcs || a.scope_text || '—')}</div>
+          ${a.auditees && a.auditees.length ? `<div style="grid-column: 1 / -1;"><strong>Auditiranji:</strong> ${(a.auditees || []).map(escapeHtml).join(', ')}</div>` : ''}
+        </div>
+
+        <!-- AI BANNER -->
+        <div class="ai-banner">
+          <div class="ai-banner-icon"><span class="svg-icon svg-icon-bot svg-icon-lg"></span></div>
+          <div class="ai-banner-body">
+            <strong>AI Checklist Generator</strong> — Gemini može pripremiti pitanja po ISO klauzulama uvjetovanim trenutnim brojkama iz tvoje baze.
+            <br><span style="font-size:12px; color:var(--text-mid);">Setup: Cloudflare Pages Function + Gemini free tier (vidi scripts/gemini-proxy/README.md)</span>
+          </div>
+          <button class="btn-primary" onclick="auditGenerateChecklist('${id}')" id="genChecklistBtn-${id}">
+            <span class="svg-icon svg-icon-zap svg-icon-sm"></span> Generiraj checklist (AI)
+          </button>
+        </div>
+
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-clipboard-list svg-icon-sm"></span> Checklist (${checklist.length} pitanja)
+        </div>
+      `;
+
+      if (checklist.length === 0) {
+        html += '<div style="color:var(--text-lo); padding:20px; text-align:center;">Nema checklist pitanja. Klikni "Generiraj checklist (AI)" gore ili dodaj ručno preko AI-banner gumba.</div>';
+      } else {
+        html += checklist.map(q => `
+          <div class="audit-checklist-item">
+            ${q.iso_clause ? `<span class="clause-pill">cl. ${q.iso_clause}</span>` : ''}
+            <strong>${escapeHtml(q.question)}</strong>
+            ${q.expected_evidence ? `<br><span style="font-size:12px; color:var(--text-lo);">Očekivani dokaz: ${escapeHtml(q.expected_evidence)}</span>` : ''}
+            ${q.answer ? `<br><span style="font-size:12px;"><strong>Odgovor:</strong> ${escapeHtml(q.answer)}</span>` : ''}
+            ${q.finding_text ? `<br><span style="font-size:12px; color:var(--danger);"><strong>Nalaz:</strong> ${escapeHtml(q.finding_text)}</span>` : ''}
+          </div>
+        `).join('');
+      }
+
+      html += `
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-alert-triangle svg-icon-sm"></span> Nalazi (${findings.length})
+          <button class="btn-secondary" style="margin-left:auto; font-size:12px;" onclick="auditAddFinding('${id}')">
+            <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Dodaj nalaz
+          </button>
+        </div>
+      `;
+
+      if (findings.length === 0) {
+        html += '<div style="color:var(--text-lo); padding:20px; text-align:center;">Nema nalaza. Dodaj prvi (npr. preporuka za poboljšanje, nesukladnost...)</div>';
+      } else {
+        html += findings.map(f => `
+          <div class="audit-finding audit-finding-${f.finding_type}">
+            <div class="audit-finding-header">
+              <span><strong>${f.finding_type.toUpperCase()}</strong> ${f.iso_clause ? `· cl. ${f.iso_clause}` : ''} ${f.finding_number ? `#${f.finding_number}` : ''}</span>
+              <span style="font-size:12px;">${f.status}</span>
+            </div>
+            <div style="font-size:13px;">${escapeHtml(f.description)}</div>
+            ${f.evidence ? `<div style="font-size:12px; color:var(--text-mid); margin-top:4px;"><strong>Dokaz:</strong> ${escapeHtml(f.evidence)}</div>` : ''}
+            ${!f.capa_id && f.finding_type !== 'preporuka' ? `
+              <button class="btn-secondary" style="font-size:11px; margin-top:6px;" onclick="auditFindingToCapa('${f.id}')">
+                <span class="svg-icon svg-icon-refresh-cw svg-icon-sm"></span> Otvori CAPA
+              </button>` : ''}
+          </div>
+        `).join('');
+      }
+
+      html += `
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="auditOpenEdit('${a.id}')">
+            <span class="svg-icon svg-icon-pencil svg-icon-sm"></span> Uredi audit
+          </button>
+        </div>
+      `;
+      body.innerHTML = html;
+    } catch (e) {
+      body.innerHTML = `<div style="color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+    }
+  };
+
+  window.auditCloseDetail = function() { document.getElementById('auditDetailOverlay').style.display = 'none'; };
+
+  // ========== AI CHECKLIST GENERATOR (Gemini stub) ==========
+  window.auditGenerateChecklist = async function(auditId) {
+    const btn = document.getElementById('genChecklistBtn-' + auditId);
+    const a = allAudits.find(x => x.id === auditId);
+    if (!a) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Pozivam Gemini...';
+
+    try {
+      // Skupi context za AI
+      const scopeProcs = (a.scope_processes || []).map(pid => allProcesses.find(p => p.id === pid))
+        .filter(Boolean).map(p => `${p.code} ${p.name}`);
+
+      // Real-time brojke iz baze (kontekst za AI)
+      const ncCount = await initSupabase().from('iso_nonconformities').select('id', { count: 'exact', head: true })
+        .gte('occurred_at', `${a.year}-01-01`).lte('occurred_at', `${a.year}-12-31`);
+      const capaOpen = await initSupabase().from('iso_capa').select('id', { count: 'exact', head: true })
+        .not('status', 'in', '(Zatvoreno,Otkazano)');
+      const docsCount = await initSupabase().from('iso_documents').select('id', { count: 'exact', head: true })
+        .eq('status', 'Published');
+
+      const context = {
+        audit_year: a.year,
+        scope_processes: scopeProcs,
+        nc_total: ncCount.count || 0,
+        capa_open: capaOpen.count || 0,
+        documents_published: docsCount.count || 0
+      };
+
+      // Pokušaj poziva Cloudflare proxy endpoint
+      const proxyUrl = (window.CONFIG && window.CONFIG.AI_PROXY_URL) || '/api/iso/gemini';
+      let response;
+      try {
+        response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            feature: 'audit_checklist',
+            context,
+            audit_id: auditId
+          })
+        });
+      } catch (fetchErr) {
+        throw new Error('AI proxy nije dostupan. Postavi Cloudflare Pages Function (vidi scripts/gemini-proxy/). Privremeno možeš ručno dodati pitanja preko "Dodaj nalaz" gumba.');
+      }
+
+      if (!response.ok) throw new Error('AI vratio status ' + response.status);
+      const result = await response.json();
+
+      if (!result.questions || result.questions.length === 0) throw new Error('AI nije vratio pitanja');
+
+      // Spremi pitanja u iso_audit_checklist
+      const rows = result.questions.map((q, i) => ({
+        audit_id: auditId,
+        process_id: q.process_id || null,
+        iso_clause: q.iso_clause || null,
+        question_number: i + 1,
+        question: q.question,
+        expected_evidence: q.expected_evidence || null,
+        ai_generated: true,
+        ai_data_context: context
+      }));
+      await SB.insert('iso_audit_checklist', rows);
+
+      // Update audit metadata
+      await SB.update('iso_audits', {
+        checklist_ai_generated: true,
+        checklist_generated_at: new Date().toISOString()
+      }, { id: auditId });
+
+      if (typeof showMessage === 'function') showMessage(`Generirano ${rows.length} pitanja`, 'success');
+      auditOpenDetail(auditId);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage(e.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-zap svg-icon-sm"></span> Generiraj checklist (AI)';
+    }
+  };
+
+  // ========== ADD FINDING ==========
+  window.auditAddFinding = async function(auditId) {
+    const desc = prompt('Opis nalaza:');
+    if (!desc) return;
+    const type = prompt('Tip: major / minor / observation / preporuka', 'preporuka');
+    if (!type) return;
+    const clause = prompt('ISO klauzula (opcionalno, npr. 9.2.2):') || null;
+
+    try {
+      const findings = await SB.select('iso_audit_findings', { eq: { audit_id: auditId }, columns: 'finding_number', silent: true });
+      const nextNum = (findings.reduce((max, f) => Math.max(max, f.finding_number || 0), 0)) + 1;
+
+      await SB.insert('iso_audit_findings', {
+        audit_id: auditId,
+        finding_number: nextNum,
+        finding_type: type,
+        iso_clause: clause,
+        description: desc,
+        status: 'Otvoren'
+      });
+      if (typeof showMessage === 'function') showMessage('Nalaz dodan', 'success');
+      await loadAll();
+      auditOpenDetail(auditId);
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  // Otvori CAPA iz finding-a (deep link)
+  window.auditFindingToCapa = function(findingId) {
+    window.location.hash = `iso-capa?prefill_finding=${findingId}`;
+  };
+
+  document.getElementById('auditModal').addEventListener('click', e => { if (e.target.id === 'auditModal') auditCloseModal(); });
+  document.getElementById('auditDetailOverlay').addEventListener('click', e => { if (e.target.id === 'auditDetailOverlay') auditCloseDetail(); });
+
+  renderYearTabs();
+  await Promise.all([loadEmployees(), loadProcesses()]);
+  await loadAll();
+  console.log('[iso-auditi] ready');
+})();
+</script>

@@ -68,13 +68,7 @@
   
   .action-btns { display: flex; gap: 5px; }
   
-  .btn-sm {
-    padding: 5px 10px;
-    font-size: 11px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-  }
+  
   
   .btn-edit { background: #e3f2fd; color: #1565c0; }
   .btn-edit:hover { background: #bbdefb; }
@@ -104,7 +98,7 @@
 
   #userModal .modal-content { max-width: 500px; }
   
-  .form-row { display: flex; gap: 15px; }
+  
   .form-row .form-group { flex: 1; }
 </style>
 
@@ -151,7 +145,7 @@
         </tr>
       </thead>
       <tbody id="usersTableBody">
-        <tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Ucitavam...</td></tr>
+        <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-lo);">Ucitavam...</td></tr>
       </tbody>
     </table>
   </div>
@@ -275,7 +269,7 @@ function renderKorisnici(korisnici) {
   var tbody = document.getElementById('usersTableBody');
   
   if (korisnici.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Nema korisnika</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-lo);">Nema korisnika</td></tr>';
     return;
   }
   

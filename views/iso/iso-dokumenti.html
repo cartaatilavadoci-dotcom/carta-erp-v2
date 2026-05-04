@@ -1,0 +1,864 @@
+<h1 style="margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+  <span class="svg-icon svg-icon-file-text svg-icon-lg"></span>
+  Document Control
+</h1>
+<div style="margin-bottom: 18px; color: var(--text-mid); font-size: 13px;">
+  Politike, priručnici, procedure, uputstva, obrasci i radne upute s versioningom i e-potpisom.
+</div>
+
+<!-- KPI -->
+<div class="status-grid">
+  <div class="status-card info">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-file-text svg-icon-lg"></span></div>
+    <div class="status-card-value" id="docKpiTotal">-</div>
+    <div class="status-card-label">Ukupno dokumenata</div>
+  </div>
+  <div class="status-card success">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-check-circle svg-icon-lg"></span></div>
+    <div class="status-card-value" id="docKpiPublished">-</div>
+    <div class="status-card-label">Published</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-pencil svg-icon-lg"></span></div>
+    <div class="status-card-value" id="docKpiDraft">-</div>
+    <div class="status-card-label">Draft / Review</div>
+  </div>
+  <div class="status-card warning">
+    <div class="status-card-icon"><span class="svg-icon svg-icon-clock svg-icon-lg"></span></div>
+    <div class="status-card-value" id="docKpiReview">-</div>
+    <div class="status-card-label">Za review (30d)</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="doc-toolbar">
+  <div class="doc-filters">
+    <input type="text" id="docFilterSearch" placeholder="Pretraga po šifri ili naslovu..." class="doc-input">
+    <select id="docFilterType" class="doc-input">
+      <option value="">Svi tipovi</option>
+      <option value="Politika">Politika</option>
+      <option value="Prirucnik">Priručnik (PK)</option>
+      <option value="Procedura">Procedura (PP)</option>
+      <option value="Uputstvo">Uputstvo (UP)</option>
+      <option value="Obrazac">Obrazac (OB)</option>
+      <option value="Radna_uputa">Radna uputa (RU)</option>
+      <option value="Plan">Plan</option>
+      <option value="Izvjesce">Izvješće</option>
+      <option value="Drugo">Drugo</option>
+    </select>
+    <select id="docFilterStatus" class="doc-input">
+      <option value="">Svi statusi</option>
+      <option value="Draft">Draft</option>
+      <option value="Review">U pregledu</option>
+      <option value="Published" selected>Published</option>
+      <option value="Superseded">Superseded</option>
+      <option value="Archived">Archived</option>
+    </select>
+    <select id="docFilterCategory" class="doc-input">
+      <option value="">Sve kategorije</option>
+      <option value="kvaliteta">Kvaliteta</option>
+      <option value="sigurnost">Sigurnost</option>
+      <option value="okolis">Okoliš</option>
+      <option value="administracija">Administracija</option>
+      <option value="proizvodnja">Proizvodnja</option>
+      <option value="odrzavanje">Održavanje</option>
+    </select>
+  </div>
+  <button class="btn-primary doc-btn-add" onclick="docOpenAddModal()">
+    <span class="svg-icon svg-icon-plus svg-icon-sm"></span> Novi dokument
+  </button>
+</div>
+
+<!-- LISTA DOKUMENATA -->
+<div class="iso-card" style="padding: 0; overflow: hidden;">
+  <table class="iso-table">
+    <thead>
+      <tr>
+        <th>Šifra</th>
+        <th>Naslov</th>
+        <th>Tip</th>
+        <th>Kategorija</th>
+        <th>Verzija</th>
+        <th>Status</th>
+        <th>Vlasnik</th>
+        <th>Sljedeći review</th>
+        <th style="width: 110px;">Akcije</th>
+      </tr>
+    </thead>
+    <tbody id="docTableBody">
+      <tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Učitavanje...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL: NOVI DOKUMENT / NOVA VERZIJA -->
+<div id="docModal" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <h3 id="docModalTitle">Novi dokument</h3>
+      <button class="doc-modal-close" onclick="docCloseModal()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body">
+      <div id="docModalMode" style="display:none;"></div>
+
+      <!-- Metapodaci (samo za novi dokument) -->
+      <div id="docFieldsNew">
+        <div class="doc-field-grid">
+          <div class="doc-field">
+            <label>Šifra dokumenta *</label>
+            <input type="text" id="docFCode" placeholder="OB-05, UP-04, PK-01..." class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Naslov *</label>
+            <input type="text" id="docFTitle" placeholder="Evidencija nesukladnosti" class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Tip *</label>
+            <select id="docFType" class="doc-input">
+              <option value="Politika">Politika</option>
+              <option value="Prirucnik">Priručnik (PK)</option>
+              <option value="Procedura">Procedura (PP)</option>
+              <option value="Uputstvo">Uputstvo (UP)</option>
+              <option value="Obrazac" selected>Obrazac (OB)</option>
+              <option value="Radna_uputa">Radna uputa (RU)</option>
+              <option value="Plan">Plan</option>
+              <option value="Izvjesce">Izvješće</option>
+              <option value="Drugo">Drugo</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Kategorija</label>
+            <select id="docFCategory" class="doc-input">
+              <option value="kvaliteta" selected>Kvaliteta</option>
+              <option value="sigurnost">Sigurnost</option>
+              <option value="okolis">Okoliš</option>
+              <option value="administracija">Administracija</option>
+              <option value="proizvodnja">Proizvodnja</option>
+              <option value="odrzavanje">Održavanje</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Vlasnik (zaposlenik)</label>
+            <select id="docFOwner" class="doc-input">
+              <option value="">— bez vlasnika —</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Klasifikacija</label>
+            <select id="docFClassification" class="doc-input">
+              <option value="Interni" selected>Interni</option>
+              <option value="Javni">Javni</option>
+              <option value="Povjerljivi">Povjerljivi</option>
+            </select>
+          </div>
+          <div class="doc-field">
+            <label>Frekvencija pregleda (mjeseci)</label>
+            <input type="number" id="docFReviewMonths" value="12" min="1" max="60" class="doc-input">
+          </div>
+          <div class="doc-field">
+            <label>Status pri kreiranju</label>
+            <select id="docFStatus" class="doc-input">
+              <option value="Draft" selected>Draft (radna verzija)</option>
+              <option value="Published">Published (odmah aktivan)</option>
+            </select>
+          </div>
+        </div>
+        <div class="doc-field" style="margin-top: 10px;">
+          <label>Opis (opcionalno)</label>
+          <textarea id="docFDescription" rows="2" class="doc-input" placeholder="Kratki opis svrhe dokumenta..."></textarea>
+        </div>
+      </div>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+
+      <!-- Verzija (uvijek) -->
+      <div class="doc-field-grid">
+        <div class="doc-field">
+          <label>Oznaka verzije *</label>
+          <input type="text" id="docFVersion" value="1.0" placeholder="1.0, 1.1, 2.0..." class="doc-input">
+        </div>
+        <div class="doc-field">
+          <label>Vrijedi od (datum)</label>
+          <input type="date" id="docFEffectiveFrom" class="doc-input">
+        </div>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Što je promijenjeno (changelog)</label>
+        <textarea id="docFChangelog" rows="2" class="doc-input" placeholder="Početna verzija / Dodano poglavlje X / Ispravljen format..."></textarea>
+      </div>
+      <div class="doc-field" style="margin-top: 10px;">
+        <label>Datoteka (PDF, DOCX, XLSX, ODT, slika; max 50 MB)</label>
+        <input type="file" id="docFFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.png,.jpg,.jpeg" class="doc-input">
+        <div id="docFileInfo" style="font-size:12px; color:var(--text-lo); margin-top:4px;"></div>
+      </div>
+
+      <div id="docModalError" class="doc-error" style="display:none;"></div>
+    </div>
+    <div class="doc-modal-footer">
+      <button class="btn-secondary" onclick="docCloseModal()">Odustani</button>
+      <button class="btn-primary" id="docSaveBtn" onclick="docSave()">
+        <span class="svg-icon svg-icon-upload svg-icon-sm"></span> Spremi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL (slide-in) -->
+<div id="docDetailOverlay" class="doc-modal-overlay" style="display:none;">
+  <div class="doc-detail-panel">
+    <div class="doc-modal-header">
+      <h3 id="docDetailTitle">—</h3>
+      <button class="doc-modal-close" onclick="docCloseDetail()" aria-label="Zatvori">
+        <span class="svg-icon svg-icon-x"></span>
+      </button>
+    </div>
+    <div class="doc-modal-body" id="docDetailBody">
+      <div style="text-align:center; padding: 40px; color: var(--text-lo);">Učitavanje...</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.doc-toolbar { display: flex; gap: 12px; margin: 18px 0; align-items: center; flex-wrap: wrap; }
+.doc-filters { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
+.doc-input { padding: 8px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; background: white; }
+.doc-input:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+input.doc-input { min-width: 180px; }
+select.doc-input { min-width: 140px; cursor: pointer; }
+textarea.doc-input { width: 100%; resize: vertical; font-family: inherit; }
+.doc-btn-add { display: inline-flex; align-items: center; gap: 6px; }
+
+.doc-action-btn {
+  background: transparent; border: none; color: var(--primary); cursor: pointer; padding: 4px 6px;
+  border-radius: 4px; transition: background 0.15s;
+}
+.doc-action-btn:hover { background: #f0f4f8; }
+.doc-action-btn .svg-icon { width: 16px; height: 16px; }
+
+.doc-status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.doc-status-Draft { background: #f5f5f5; color: #666; }
+.doc-status-Review { background: #fff8e1; color: #f57f17; }
+.doc-status-Published { background: #e8f5e9; color: #2e7d32; }
+.doc-status-Superseded { background: #fce4ec; color: #ad1457; }
+.doc-status-Archived { background: #eceff1; color: #455a64; }
+
+.doc-type-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #e3f2fd; color: #1565c0; }
+
+.doc-modal-overlay {
+  position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45);
+  z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.doc-modal {
+  background: white; border-radius: 10px; width: 100%; max-width: 760px; max-height: 90vh;
+  display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.doc-detail-panel {
+  background: white; border-radius: 10px; width: 100%; max-width: 880px; max-height: 90vh;
+  display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.doc-modal-header {
+  padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between;
+  align-items: center;
+}
+.doc-modal-header h3 { margin: 0; color: var(--primary); font-size: 18px; }
+.doc-modal-close { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: #666; }
+.doc-modal-close:hover { background: #f5f5f5; color: #c62828; }
+.doc-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.doc-modal-footer { padding: 14px 20px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; justify-content: flex-end; }
+
+.doc-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.doc-field { display: flex; flex-direction: column; gap: 4px; }
+.doc-field label { font-size: 12px; font-weight: 600; color: #555; }
+
+.doc-error { background: #ffebee; color: #c62828; padding: 10px 14px; border-radius: 6px; margin-top: 14px; font-size: 13px; }
+
+.doc-detail-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; background: #f9fafb; border-radius: 8px; font-size: 13px; }
+.doc-detail-meta strong { color: #555; font-weight: 600; }
+
+.doc-versions-list { margin-top: 14px; }
+.doc-version-row {
+  border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.doc-version-row.current { border-color: #2e7d32; background: #f1f8f4; }
+.doc-version-tag { font-weight: 700; color: var(--primary); font-size: 14px; min-width: 56px; }
+.doc-version-row.current .doc-version-tag { color: #2e7d32; }
+.doc-version-meta { flex: 1; font-size: 12px; color: #666; }
+.doc-version-meta strong { color: #333; }
+.doc-version-actions { display: flex; gap: 6px; }
+
+.doc-ack-list { margin-top: 16px; }
+.doc-ack-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f9fafb;
+  border-radius: 6px; font-size: 13px; margin-bottom: 6px;
+}
+
+.doc-section-title {
+  margin: 18px 0 10px; font-weight: 600; color: var(--primary); font-size: 14px;
+  text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .doc-field-grid { grid-template-columns: 1fr; }
+  .doc-toolbar { flex-direction: column; align-items: stretch; }
+  .doc-filters { flex-direction: column; }
+  input.doc-input, select.doc-input { min-width: 0; width: 100%; }
+}
+</style>
+
+<script>
+(async function initIsoDokumentiView() {
+  console.log('[iso-dokumenti] init');
+
+  const supabase = initSupabase();
+  let allEmployees = [];
+  let allDocs = [];
+  let allUsers = [];
+
+  // ========== HELPERS ==========
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('hr-HR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+
+  function fmtBytes(n) {
+    if (!n) return '—';
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1048576).toFixed(1) + ' MB';
+  }
+
+  function statusPill(s) {
+    return `<span class="doc-status-pill doc-status-${s || 'Draft'}">${s || 'Draft'}</span>`;
+  }
+
+  function typePill(t) {
+    const labels = { 'Politika':'POL', 'Prirucnik':'PK', 'Procedura':'PP', 'Uputstvo':'UP',
+                     'Obrazac':'OB', 'Radna_uputa':'RU', 'Plan':'Plan', 'Izvjesce':'IZV', 'Drugo':'—' };
+    return `<span class="doc-type-pill" title="${t}">${labels[t] || t || '—'}</span>`;
+  }
+
+  function reviewBadge(d) {
+    if (!d) return '<span style="color:var(--text-lo);">—</span>';
+    const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+    let cls = '#2e7d32';
+    if (days < 0) cls = '#c62828';
+    else if (days <= 30) cls = '#f57f17';
+    return `<span style="color:${cls}; font-weight:600;" title="${days} dana">${fmtDate(d)}</span>`;
+  }
+
+  function findEmployee(id) {
+    return allEmployees.find(e => e.id === id);
+  }
+
+  function resolveAckName(ack) {
+    // ack ima ili user_id ili employee_id; resolva preko cachea
+    if (ack.user_id) {
+      const u = allUsers.find(x => x.id === ack.user_id);
+      if (u) return u.ime || u.email || ack.user_id.slice(0, 8) + '…';
+    }
+    if (ack.employee_id) {
+      const e = allEmployees.find(x => x.id === ack.employee_id);
+      if (e) return `${e.first_name || ''} ${e.last_name || ''}`.trim() || ack.employee_id.slice(0, 8) + '…';
+    }
+    return '— anoniman —';
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ========== KPI ==========
+  async function loadKpi() {
+    try {
+      const all = await SB.select('iso_documents', { columns: 'status, next_review_date', silent: true });
+      document.getElementById('docKpiTotal').textContent = all.length;
+      document.getElementById('docKpiPublished').textContent = all.filter(d => d.status === 'Published').length;
+      document.getElementById('docKpiDraft').textContent = all.filter(d => d.status === 'Draft' || d.status === 'Review').length;
+      const today = new Date();
+      const in30 = new Date(today.getTime() + 30*86400000);
+      document.getElementById('docKpiReview').textContent = all.filter(d =>
+        d.status === 'Published' && d.next_review_date && new Date(d.next_review_date) <= in30
+      ).length;
+    } catch (e) { console.warn(e); }
+  }
+
+  // ========== EMPLOYEE + USER LOOKUP ==========
+  async function loadEmployees() {
+    try {
+      allEmployees = await SB.select('employees', {
+        eq: { active: true },
+        columns: 'id, first_name, last_name, position',
+        order: { last_name: 'asc' },
+        silent: true
+      });
+      const sel = document.getElementById('docFOwner');
+      allEmployees.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.first_name || ''} ${e.last_name || ''}`.trim() + (e.position ? ` (${e.position})` : '');
+        sel.appendChild(opt);
+      });
+    } catch (e) { console.warn(e); }
+  }
+
+  async function loadUsers() {
+    try {
+      allUsers = await SB.select('prod_users', {
+        columns: 'id, ime, email',
+        silent: true
+      });
+    } catch (e) { console.warn('[iso-dokumenti] users fetch:', e); }
+  }
+
+  // ========== TABLE ==========
+  function applyFilters() {
+    const q = document.getElementById('docFilterSearch').value.trim().toLowerCase();
+    const tip = document.getElementById('docFilterType').value;
+    const status = document.getElementById('docFilterStatus').value;
+    const cat = document.getElementById('docFilterCategory').value;
+
+    return allDocs.filter(d => {
+      if (q && !((d.code || '').toLowerCase().includes(q) || (d.title || '').toLowerCase().includes(q))) return false;
+      if (tip && d.doc_type !== tip) return false;
+      if (status && d.status !== status) return false;
+      if (cat && d.category !== cat) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('docTableBody');
+    const filtered = applyFilters();
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-lo); padding:30px;">Nema dokumenata po filteru. Klikni "Novi dokument" da dodaš prvi.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(d => {
+      const owner = findEmployee(d.owner_employee_id);
+      const ownerName = owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() : '—';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(d.code)}</strong></td>
+          <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(d.title)}">${escapeHtml(d.title)}</td>
+          <td>${typePill(d.doc_type)}</td>
+          <td style="font-size:12px; color:var(--text-mid);">${d.category || '—'}</td>
+          <td><strong>${d.current_version || '—'}</strong></td>
+          <td>${statusPill(d.status)}</td>
+          <td style="font-size:12px;">${escapeHtml(ownerName)}</td>
+          <td style="font-size:12px;">${reviewBadge(d.next_review_date)}</td>
+          <td>
+            <button class="doc-action-btn" onclick="docOpenDetail('${d.id}')" title="Detalji">
+              <span class="svg-icon svg-icon-eye"></span>
+            </button>
+            <button class="doc-action-btn" onclick="docOpenEditMeta('${d.id}')" title="Uredi metapodatke">
+              <span class="svg-icon svg-icon-pencil"></span>
+            </button>
+            <button class="doc-action-btn" onclick="docOpenAddVersion('${d.id}')" title="Nova verzija">
+              <span class="svg-icon svg-icon-upload"></span>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadDocs() {
+    try {
+      allDocs = await SB.select('iso_documents', {
+        order: { code: 'asc' },
+        silent: true
+      });
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('docTableBody').innerHTML =
+        `<tr><td colspan="9" style="text-align:center; color:var(--danger); padding:30px;">Greška: ${e.message}</td></tr>`;
+    }
+  }
+
+  ['docFilterSearch','docFilterType','docFilterStatus','docFilterCategory'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTable);
+  });
+
+  // ========== ADD MODAL ==========
+  window.docOpenAddModal = function() {
+    document.getElementById('docModalTitle').textContent = 'Novi dokument';
+    document.getElementById('docModalMode').textContent = 'new';
+    document.getElementById('docFieldsNew').style.display = 'block';
+    // Reset
+    ['docFCode','docFTitle','docFDescription','docFChangelog','docFFile','docFEffectiveFrom']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('docFType').value = 'Obrazac';
+    document.getElementById('docFCategory').value = 'kvaliteta';
+    document.getElementById('docFClassification').value = 'Interni';
+    document.getElementById('docFOwner').value = '';
+    document.getElementById('docFReviewMonths').value = '12';
+    document.getElementById('docFStatus').value = 'Draft';
+    document.getElementById('docFVersion').value = '1.0';
+    document.getElementById('docFileInfo').textContent = '';
+    document.getElementById('docModalError').style.display = 'none';
+    document.getElementById('docModal').style.display = 'flex';
+  };
+
+  // ========== EDIT METAPODATAKA (bez file upload-a) ==========
+  window.docOpenEditMeta = function(docId) {
+    const d = allDocs.find(x => x.id === docId);
+    if (!d) return;
+    document.getElementById('docModalTitle').textContent = `Uredi metapodatke — ${d.code} ${d.title}`;
+    document.getElementById('docModalMode').textContent = 'editmeta:' + docId;
+    document.getElementById('docFieldsNew').style.display = 'block';
+
+    document.getElementById('docFCode').value = d.code || '';
+    document.getElementById('docFTitle').value = d.title || '';
+    document.getElementById('docFType').value = d.doc_type || 'Obrazac';
+    document.getElementById('docFCategory').value = d.category || 'kvaliteta';
+    document.getElementById('docFOwner').value = d.owner_employee_id || '';
+    document.getElementById('docFClassification').value = d.classification || 'Interni';
+    document.getElementById('docFReviewMonths').value = d.review_interval_months || 12;
+    document.getElementById('docFStatus').value = d.status || 'Draft';
+    document.getElementById('docFDescription').value = d.description || '';
+
+    // Sakrij version fields (ne treba ih edit)
+    document.getElementById('docFVersion').closest('.doc-field-grid').style.display = 'none';
+    document.getElementById('docFChangelog').closest('.doc-field').style.display = 'none';
+    document.getElementById('docFFile').closest('.doc-field').style.display = 'none';
+    document.querySelector('hr').style.display = 'none';
+
+    document.getElementById('docFileInfo').textContent = '';
+    document.getElementById('docModalError').style.display = 'none';
+    document.getElementById('docModal').style.display = 'flex';
+  };
+
+  // Reset version fields when modal is reopened for new doc / new version
+  const origCloseModal = window.docCloseModal;
+  window.docCloseModal = function() {
+    document.getElementById('docFVersion').closest('.doc-field-grid').style.display = 'grid';
+    document.getElementById('docFChangelog').closest('.doc-field').style.display = 'block';
+    document.getElementById('docFFile').closest('.doc-field').style.display = 'block';
+    document.querySelector('hr').style.display = 'block';
+    if (origCloseModal) origCloseModal();
+    else document.getElementById('docModal').style.display = 'none';
+  };
+
+  window.docOpenAddVersion = function(docId) {
+    const d = allDocs.find(x => x.id === docId);
+    if (!d) return;
+    document.getElementById('docModalTitle').textContent = `Nova verzija — ${d.code} ${d.title}`;
+    document.getElementById('docModalMode').textContent = 'version:' + docId;
+    document.getElementById('docFieldsNew').style.display = 'none';
+    // suggest next version
+    const cur = d.current_version || '1.0';
+    const parts = cur.split('.');
+    const next = parts.length >= 2 ? `${parts[0]}.${parseInt(parts[1])+1}` : (parseFloat(cur) + 0.1).toFixed(1);
+    document.getElementById('docFVersion').value = next;
+    document.getElementById('docFEffectiveFrom').value = '';
+    document.getElementById('docFChangelog').value = '';
+    document.getElementById('docFFile').value = '';
+    document.getElementById('docFileInfo').textContent = '';
+    document.getElementById('docModalError').style.display = 'none';
+    document.getElementById('docModal').style.display = 'flex';
+  };
+
+  window.docCloseModal = function() {
+    document.getElementById('docModal').style.display = 'none';
+  };
+
+  document.getElementById('docFFile').addEventListener('change', e => {
+    const f = e.target.files[0];
+    document.getElementById('docFileInfo').textContent = f
+      ? `${f.name} — ${fmtBytes(f.size)}`
+      : '';
+  });
+
+  // ========== SAVE ==========
+  function showError(msg) {
+    const el = document.getElementById('docModalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function slugify(s) {
+    return (s || '').toLowerCase()
+      .replace(/[čć]/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'d')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0, 60);
+  }
+
+  window.docSave = async function() {
+    const btn = document.getElementById('docSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="svg-icon svg-icon-clock svg-icon-sm"></span> Spremam...';
+    try {
+      const mode = document.getElementById('docModalMode').textContent;
+      const isNew = mode === 'new';
+      const isEditMeta = mode.startsWith('editmeta:');
+      const docId = isEditMeta ? mode.replace('editmeta:', '') : (isNew ? null : mode.replace('version:', ''));
+
+      // Edit metapodataka — kratka grana
+      if (isEditMeta) {
+        const code = document.getElementById('docFCode').value.trim();
+        const title = document.getElementById('docFTitle').value.trim();
+        if (!code) throw new Error('Šifra je obavezna');
+        if (!title) throw new Error('Naslov je obavezan');
+
+        const reviewMonths = parseInt(document.getElementById('docFReviewMonths').value) || 12;
+        const meta = {
+          code,
+          title,
+          doc_type: document.getElementById('docFType').value,
+          category: document.getElementById('docFCategory').value || null,
+          owner_employee_id: document.getElementById('docFOwner').value || null,
+          classification: document.getElementById('docFClassification').value,
+          review_interval_months: reviewMonths,
+          description: document.getElementById('docFDescription').value.trim() || null,
+          status: document.getElementById('docFStatus').value,
+          updated_at: new Date().toISOString()
+        };
+        await SB.update('iso_documents', meta, { id: docId });
+        docCloseModal();
+        if (typeof showMessage === 'function') showMessage('Metapodaci ažurirani', 'success');
+        await Promise.all([loadDocs(), loadKpi()]);
+        return;
+      }
+
+      const version = document.getElementById('docFVersion').value.trim();
+      const file = document.getElementById('docFFile').files[0];
+      const changelog = document.getElementById('docFChangelog').value.trim();
+      const effectiveFrom = document.getElementById('docFEffectiveFrom').value || null;
+
+      if (!version) throw new Error('Verzija je obavezna');
+      if (!file) throw new Error('Datoteka je obavezna');
+
+      let documentRow;
+
+      if (isNew) {
+        const code = document.getElementById('docFCode').value.trim();
+        const title = document.getElementById('docFTitle').value.trim();
+        if (!code) throw new Error('Šifra dokumenta je obavezna');
+        if (!title) throw new Error('Naslov je obavezan');
+
+        const reviewMonths = parseInt(document.getElementById('docFReviewMonths').value) || 12;
+        const nextReview = new Date();
+        nextReview.setMonth(nextReview.getMonth() + reviewMonths);
+
+        const newDoc = {
+          code,
+          title,
+          doc_type: document.getElementById('docFType').value,
+          category: document.getElementById('docFCategory').value || null,
+          owner_employee_id: document.getElementById('docFOwner').value || null,
+          classification: document.getElementById('docFClassification').value,
+          review_interval_months: reviewMonths,
+          next_review_date: nextReview.toISOString().slice(0, 10),
+          description: document.getElementById('docFDescription').value.trim() || null,
+          status: document.getElementById('docFStatus').value,
+          current_version: version,
+          storage_folder: slugify(code)
+        };
+        const inserted = await SB.insert('iso_documents', newDoc);
+        documentRow = inserted[0];
+      } else {
+        documentRow = allDocs.find(d => d.id === docId);
+        if (!documentRow) throw new Error('Dokument nije pronađen');
+      }
+
+      // Upload file to Storage: {storage_folder}/{version}/{filename}
+      const folder = documentRow.storage_folder || slugify(documentRow.code);
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${folder}/v${version}/${safeName}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('iso-documents')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+      if (upErr) throw new Error('Upload: ' + upErr.message);
+
+      // Mark previous current_version as not current
+      if (!isNew) {
+        await SB.update('iso_document_versions', { is_current: false }, { document_id: documentRow.id, is_current: true }, { silent: true }).catch(()=>{});
+      }
+
+      // Insert version row
+      await SB.insert('iso_document_versions', {
+        document_id: documentRow.id,
+        version,
+        file_path: filePath,
+        file_size_bytes: file.size,
+        file_mime_type: file.type || null,
+        changelog: changelog || (isNew ? 'Početna verzija' : null),
+        effective_from: effectiveFrom,
+        is_current: true,
+        uploaded_at: new Date().toISOString()
+      });
+
+      // Update parent doc
+      await SB.update('iso_documents', { current_version: version, updated_at: new Date().toISOString() }, { id: documentRow.id });
+
+      docCloseModal();
+      if (typeof showMessage === 'function') showMessage(isNew ? 'Dokument kreiran' : 'Nova verzija dodana', 'success');
+      await Promise.all([loadDocs(), loadKpi()]);
+
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="svg-icon svg-icon-upload svg-icon-sm"></span> Spremi';
+    }
+  };
+
+  // ========== DETAIL PANEL ==========
+  window.docOpenDetail = async function(docId) {
+    document.getElementById('docDetailOverlay').style.display = 'flex';
+    const body = document.getElementById('docDetailBody');
+    body.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Učitavanje...</div>';
+
+    try {
+      const d = allDocs.find(x => x.id === docId);
+      if (!d) throw new Error('Dokument nije pronađen');
+      document.getElementById('docDetailTitle').textContent = `${d.code} — ${d.title}`;
+
+      const [versions, acks] = await Promise.all([
+        SB.select('iso_document_versions', { eq: { document_id: docId }, order: { uploaded_at: 'desc' }, silent: true }),
+        SB.select('iso_document_acknowledgements', { eq: { document_id: docId }, order: { ack_at: 'desc' }, silent: true })
+      ]);
+
+      const owner = findEmployee(d.owner_employee_id);
+      const ownerName = owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() : '—';
+      const currentVersion = versions.find(v => v.is_current) || versions[0];
+
+      let html = `
+        <div class="doc-detail-meta">
+          <div><strong>Tip:</strong> ${d.doc_type}</div>
+          <div><strong>Status:</strong> ${statusPill(d.status)}</div>
+          <div><strong>Kategorija:</strong> ${d.category || '—'}</div>
+          <div><strong>Klasifikacija:</strong> ${d.classification || '—'}</div>
+          <div><strong>Vlasnik:</strong> ${escapeHtml(ownerName)}</div>
+          <div><strong>Sljedeći review:</strong> ${reviewBadge(d.next_review_date)}</div>
+          <div style="grid-column: 1 / -1;"><strong>Opis:</strong> ${escapeHtml(d.description) || '<span style="color:var(--text-lo);">—</span>'}</div>
+        </div>
+
+        <div class="doc-section-title">
+          <span class="svg-icon svg-icon-file-text svg-icon-sm"></span>
+          Verzije (${versions.length})
+        </div>
+        <div class="doc-versions-list">
+      `;
+
+      if (versions.length === 0) {
+        html += '<div style="color:var(--text-lo); padding:14px; text-align:center;">Nema verzija. Dodaj prvu kroz "Nova verzija" gumb.</div>';
+      } else {
+        for (const v of versions) {
+          html += `
+            <div class="doc-version-row ${v.is_current ? 'current' : ''}">
+              <div class="doc-version-tag">v${v.version}</div>
+              <div class="doc-version-meta">
+                <strong>${fmtDate(v.uploaded_at)}</strong>
+                ${v.is_current ? ' · <span style="color:var(--success); font-weight:600;">aktivna</span>' : ''}
+                ${v.effective_from ? ' · vrijedi od ' + fmtDate(v.effective_from) : ''}
+                ${v.file_size_bytes ? ' · ' + fmtBytes(v.file_size_bytes) : ''}
+                <br>
+                ${v.changelog ? '<em>' + escapeHtml(v.changelog) + '</em>' : '<span style="color:var(--text-lo);">— bez changelog —</span>'}
+              </div>
+              <div class="doc-version-actions">
+                <button class="doc-action-btn" onclick="docDownload('${v.file_path}')" title="Preuzmi">
+                  <span class="svg-icon svg-icon-download"></span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      html += `</div>`;
+
+      // ACK section
+      if (currentVersion) {
+        const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+        const myAck = acks.find(a => a.version_id === currentVersion.id && (a.user_id === (user && user.id)));
+        html += `
+          <div class="doc-section-title">
+            <span class="svg-icon svg-icon-check-circle svg-icon-sm"></span>
+            E-potpisi za aktivnu verziju (v${currentVersion.version})
+          </div>
+        `;
+        if (!myAck && user) {
+          html += `<div style="margin-bottom: 10px;">
+            <button class="btn-primary" onclick="docAck('${docId}','${currentVersion.id}')">
+              <span class="svg-icon svg-icon-check svg-icon-sm"></span> Označi da sam pročitao/la v${currentVersion.version}
+            </button>
+          </div>`;
+        }
+        const acksThisVersion = acks.filter(a => a.version_id === currentVersion.id);
+        if (acksThisVersion.length === 0) {
+          html += '<div style="color:var(--text-lo); padding:10px;">Još nitko nije e-potpisao ovu verziju.</div>';
+        } else {
+          html += '<div class="doc-ack-list">';
+          for (const a of acksThisVersion) {
+            html += `<div class="doc-ack-item">
+              <span class="svg-icon svg-icon-user" style="color:var(--text-mid);"></span>
+              <strong>${escapeHtml(resolveAckName(a))}</strong>
+              <span style="color:var(--text-lo); margin-left:auto;">${fmtDate(a.ack_at)} ${new Date(a.ack_at).toLocaleTimeString('hr-HR')}</span>
+            </div>`;
+          }
+          html += '</div>';
+        }
+      }
+
+      body.innerHTML = html;
+
+    } catch (e) {
+      body.innerHTML = `<div style="color:var(--danger); padding:14px;">Greška: ${e.message}</div>`;
+    }
+  };
+
+  window.docCloseDetail = function() {
+    document.getElementById('docDetailOverlay').style.display = 'none';
+  };
+
+  window.docDownload = async function(filePath) {
+    if (!filePath) {
+      if (typeof showMessage === 'function') showMessage('Datoteka nedostaje za ovu verziju', 'error');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.storage
+        .from('iso-documents')
+        .createSignedUrl(filePath, 60); // 60s
+      if (error) throw error;
+      window.open(data.signedUrl, '_blank');
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška pri preuzimanju: ' + e.message, 'error');
+    }
+  };
+
+  window.docAck = async function(docId, versionId) {
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+      await SB.insert('iso_document_acknowledgements', {
+        document_id: docId,
+        version_id: versionId,
+        user_id: user && user.id,
+        employee_id: user && user.employee_id || null
+      });
+      if (typeof showMessage === 'function') showMessage('E-potpisano. Hvala.', 'success');
+      docOpenDetail(docId); // refresh
+    } catch (e) {
+      if (typeof showMessage === 'function') showMessage('Greška: ' + e.message, 'error');
+    }
+  };
+
+  // Close modal on overlay click (but not inner)
+  document.getElementById('docModal').addEventListener('click', e => {
+    if (e.target.id === 'docModal') docCloseModal();
+  });
+  document.getElementById('docDetailOverlay').addEventListener('click', e => {
+    if (e.target.id === 'docDetailOverlay') docCloseDetail();
+  });
+
+  // INIT
+  await Promise.all([loadEmployees(), loadUsers(), loadDocs(), loadKpi()]);
+  console.log('[iso-dokumenti] ready');
+})();
+</script>

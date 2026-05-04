@@ -19,6 +19,37 @@ const Notifications = {
     await this.load();
     this.subscribeRealtime();
     this.startPolling();  // fallback ako realtime padne
+    this.maybeGenerateIsoAlerts();  // ISO 9001 alerts (1× po sesiji)
+  },
+
+  // ISO 9001 alerts — pokreni iso_generate_alerts() RPC najviše 1× dnevno per browser sesija.
+  // Funkcija je idempotentna na DB strani (cooldown 24-48h po notif tipu) pa nema rizika spam-a.
+  async maybeGenerateIsoAlerts() {
+    try {
+      var key = 'iso_alerts_last_run';
+      var last = localStorage.getItem(key);
+      var now = Date.now();
+      // Pokreni svakih 6h najviše
+      if (last && (now - parseInt(last)) < 6 * 60 * 60 * 1000) {
+        console.log('🔔 ISO alerts: skipping (last run < 6h ago)');
+        return;
+      }
+      var sb = initSupabase();
+      var result = await sb.rpc('iso_generate_alerts');
+      if (result.error) {
+        console.warn('🔔 ISO alerts error:', result.error.message);
+        return;
+      }
+      var totalCreated = (result.data || []).reduce(function(sum, r) { return sum + (r.alerts_created || 0); }, 0);
+      console.log('🔔 ISO alerts: ' + totalCreated + ' new alerts created');
+      localStorage.setItem(key, String(now));
+      if (totalCreated > 0) {
+        // Refresh notif list da vidimo nove odmah
+        await this.load();
+      }
+    } catch (e) {
+      console.warn('🔔 ISO alerts exception:', e);
+    }
   },
 
   // Realtime subscription na prod_notifications
@@ -128,6 +159,14 @@ const Notifications = {
   async handleClick(id, relatedType, relatedId) {
     await this.markRead(id);
 
+    // ISO module routing (overrides default routeMap)
+    var isoRoute = this._viewForRelatedType(relatedType);
+    if (isoRoute) {
+      this.toggle(false);
+      if (typeof Router !== 'undefined') Router.navigate(isoRoute);
+      return;
+    }
+
     // Navigate based on related_type
     var routeMap = {
       'dispatch': 'otpreme',
@@ -212,9 +251,28 @@ const Notifications = {
       'work_order_rejected': '❌',
       'maintenance_alert': '🔧',
       'stock_low': '📦',
-      'quality_alert': '⚠️'
+      'quality_alert': '⚠️',
+      // ISO 9001 alerts
+      'iso_nc_auto': '🤖',
+      'iso_nc_pending_review': '🤖',
+      'iso_capa_overdue': '⏰',
+      'iso_calibration_due': '📏',
+      'iso_external_audit_soon': '🛡️',
+      'iso_doc_review_due': '📑'
     };
     return map[type] || '📌';
+  },
+
+  // Routing klikom na ISO notifikaciju → odgovarajući modul
+  _viewForRelatedType(relatedType) {
+    var map = {
+      'iso_nonconformities': 'iso-nesukladnosti',
+      'iso_capa': 'iso-capa',
+      'iso_measuring_equipment': 'iso-mjerna-oprema',
+      'iso_documents': 'iso-dokumenti',
+      'iso_audits': 'iso-auditi'
+    };
+    return map[relatedType] || null;
   },
 
   _formatTime(iso) {

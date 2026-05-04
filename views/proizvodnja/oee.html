@@ -1,14 +1,13 @@
 <!-- ============================================
-     CARTA ERP - OEE (Overall Equipment Effectiveness)
+     CARTA ERP - OEE Dashboard (v2)
+     Izvor: prod_shift_reports (smjenski izvještaji)
+     View-ovi: v_shift_reports_oee, v_oee_daily_summary
      ============================================ -->
 
 <style>
-/* ============================================
-   OEE STYLES
-   ============================================ */
 .oee-container {
   padding: 15px;
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
 }
 
@@ -17,932 +16,2578 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   padding: 15px;
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 .oee-header h2 {
   margin: 0;
   font-size: 1.4em;
-  color: #1565c0;
+  color: var(--primary);
   flex: 1;
 }
+.oee-header .source-info {
+  font-size: 0.85em;
+  color: var(--text-mid);
+  background: var(--remap-grey-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
 
-.oee-filters {
+.oee-filter-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
+  background: var(--bg-card);
+  padding: 12px 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 15px;
 }
-
-.oee-filters select,
-.oee-filters input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
+.oee-filter-bar .filter-group { display: flex; align-items: center; gap: 6px; }
+.oee-filter-bar label { font-size: 0.85em; color: var(--text-mid); font-weight: 600; }
+.oee-filter-bar select,
+.oee-filter-bar input[type="date"] {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
+  background: var(--bg-card);
 }
-
-.oee-filters button {
+.oee-load-btn {
   padding: 8px 16px;
-  background: #1565c0;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 13px;
 }
+.oee-load-btn:hover { background: var(--primary-dark); }
 
-.oee-filters button:hover {
-  background: #0d47a1;
-}
-
-/* Gauge cards */
-.oee-gauges {
+.oee-kpi-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
 }
+.kpi-card {
+  background: var(--bg-card);
+  padding: 14px 18px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid #1565c0;
+}
+.kpi-card.warn { border-left-color: var(--warning); }
+.kpi-label { font-size: 0.78em; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi-value { font-size: 1.8em; font-weight: 700; color: var(--text-hi); line-height: 1.1; }
+.kpi-card.warn .kpi-value { color: #e65100; }
+.kpi-sub { font-size: 0.75em; color: var(--text-lo); margin-top: 2px; }
 
+.oee-gauges-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
 .gauge-card {
-  background: white;
+  background: var(--bg-card);
+  padding: 18px;
   border-radius: 12px;
-  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 .gauge-card.oee-main {
   background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
   color: white;
 }
+.gauge-title { font-size: 0.9em; color: var(--text-mid); margin-bottom: 8px; font-weight: 600; }
+.gauge-card.oee-main .gauge-title { color: rgba(255,255,255,0.85); font-size: 1em; }
+.gauge-value { font-size: 2.4em; font-weight: 700; line-height: 1; color: var(--text-hi); }
+.gauge-card.oee-main .gauge-value { color: white; font-size: 3em; }
+.gauge-bar { background: rgba(0,0,0,0.08); height: 8px; border-radius: 4px; overflow: hidden; margin-top: 12px; }
+.gauge-card.oee-main .gauge-bar { background: rgba(255,255,255,0.2); height: 10px; }
+.gauge-bar-fill { height: 100%; background: var(--primary); transition: width 0.6s ease; border-radius: 4px; }
+.gauge-card.oee-main .gauge-bar-fill { background: #fff; }
+.gauge-bar-fill.availability { background: #4caf50; }
+.gauge-bar-fill.performance { background: #2196f3; }
+.gauge-bar-fill.quality { background: var(--warning); }
+.gauge-sub { font-size: 0.75em; color: var(--text-lo); margin-top: 8px; }
 
-.gauge-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 0.9em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.8;
-}
-
-.gauge-value {
-  font-size: 3em;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.gauge-card.oee-main .gauge-value {
-  font-size: 3.5em;
-}
-
-.gauge-bar {
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  margin-top: 15px;
-  overflow: hidden;
-}
-
-.gauge-card.oee-main .gauge-bar {
-  background: rgba(255,255,255,0.3);
-}
-
-.gauge-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.gauge-fill.green { background: #4caf50; }
-.gauge-fill.yellow { background: #ff9800; }
-.gauge-fill.red { background: #f44336; }
-.gauge-fill.blue { background: #2196f3; }
-.gauge-fill.white { background: rgba(255,255,255,0.9); }
-
-.gauge-subtitle {
-  font-size: 0.85em;
-  opacity: 0.7;
-  margin-top: 10px;
-}
-
-/* Charts section */
-.oee-charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 1000px) {
-  .oee-charts {
-    grid-template-columns: 1fr;
-  }
-}
-
-.chart-card {
-  background: white;
+.oee-section {
+  background: var(--bg-card);
+  padding: 18px;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  margin-bottom: 15px;
 }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.section-header h3 { margin: 0; font-size: 1.05em; color: var(--primary); }
 
-.chart-card h3 {
-  margin: 0 0 15px 0;
-  font-size: 1.1em;
-  color: #333;
-}
-
-.chart-container {
-  height: 250px;
-  position: relative;
-}
-
-/* Speed chart (simple CSS version) */
-.speed-chart {
-  display: flex;
-  align-items: flex-end;
-  height: 200px;
-  gap: 2px;
-  padding: 10px 0;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.speed-bar {
-  flex: 1;
-  background: linear-gradient(to top, #1565c0, #42a5f5);
-  border-radius: 2px 2px 0 0;
-  min-width: 4px;
-  max-width: 20px;
-  transition: height 0.3s ease;
-  position: relative;
-}
-
-.speed-bar:hover {
-  background: linear-gradient(to top, #0d47a1, #1976d2);
-}
-
-.speed-bar:hover::after {
-  content: attr(data-value) ' kom/min';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  white-space: nowrap;
-  z-index: 10;
-}
-
+.chart-wrap { position: relative; }
+#oeeTrendChart { width: 100% !important; height: 320px !important; display: block; }
 .chart-legend {
   display: flex;
-  justify-content: space-between;
-  font-size: 0.75em;
-  color: #666;
-  margin-top: 5px;
-}
-
-/* Downtime breakdown */
-.downtime-list {
-  max-height: 250px;
-  overflow-y: auto;
-}
-
-.downtime-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 10px;
-}
-
-.downtime-item:last-child {
-  border-bottom: none;
-}
-
-.downtime-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-.downtime-info {
-  flex: 1;
-}
-
-.downtime-name {
-  font-weight: 500;
-  font-size: 0.95em;
-}
-
-.downtime-count {
-  font-size: 0.8em;
-  color: #666;
-}
-
-.downtime-duration {
-  font-weight: bold;
-  font-size: 1.1em;
-  color: #333;
-}
-
-.downtime-percent {
+  gap: 18px;
+  justify-content: center;
+  margin-top: 8px;
   font-size: 0.85em;
-  color: #666;
-  width: 50px;
-  text-align: right;
+  color: var(--text-mid);
 }
+.legend-dot { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.legend-dot.oee { background: var(--primary); height: 6px; }
+.legend-dot.a { background: #4caf50; }
+.legend-dot.p { background: #2196f3; }
+.legend-dot.q { background: var(--warning); }
 
-/* Events table */
-.events-section {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-.events-section h3 {
-  margin: 0 0 15px 0;
-  font-size: 1.1em;
-  color: #333;
-}
-
-.events-table-container {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.events-table {
+.oee-table-wrap { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+.oee-shifts-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
-
-.events-table th {
-  background: #f5f5f5;
-  padding: 10px;
-  text-align: left;
-  font-weight: 600;
+.oee-shifts-table thead th {
+  background: var(--primary);
+  color: white;
+  padding: 8px 6px;
   position: sticky;
   top: 0;
-  z-index: 5;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
 }
-
-.events-table td {
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
+.oee-shifts-table thead th[data-sort]:hover { background: var(--primary-dark); }
+.oee-shifts-table tbody td {
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--border);
 }
+.oee-shifts-table tbody tr:hover td { background: var(--bg-table-row-hover); }
+.oee-shifts-table tbody tr.suspicious td:first-child { box-shadow: inset 3px 0 0 0 var(--warning); }
+.oee-shifts-table tbody tr.suspicious:hover td { background: var(--remap-warning-bg); }
+.oee-shifts-table .oee-good { color: var(--success); font-weight: 700; }
+.oee-shifts-table .oee-ok { color: #f57c00; font-weight: 700; }
+.oee-shifts-table .oee-bad { color: var(--danger); font-weight: 700; }
+.badge-warn { color: #e65100; font-size: 1.2em; cursor: help; }
+.badge-ok { color: #4caf50; }
 
-.events-table tr:hover {
-  background: #f8f9fa;
-}
+/* EPU kolone (samo NLI Bottomer) */
+.oee-shifts-table.hide-epu .epu-col,
+.oee-shifts-table.hide-epu td.epu-col { display: none; }
+.gate-pass { color: var(--success); font-weight: 700; }
+.gate-fail { color: var(--danger); font-weight: 700; }
+.epu-na { color: var(--text-lo); font-style: italic; }
 
-.event-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-}
-
-.event-badge.stop { background: #ffebee; color: #c62828; }
-.event-badge.start { background: #e8f5e9; color: #2e7d32; }
-.event-badge.mikro { background: #eceff1; color: #546e7a; }
-
-/* Summary stats */
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: white;
+/* Tabs */
+.oee-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  padding: 6px;
   border-radius: 10px;
-  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+.oee-tab {
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--text-mid);
+  transition: all 0.15s;
+}
+.oee-tab:hover { background: var(--remap-grey-bg); color: var(--primary); }
+.oee-tab.active { background: var(--primary); color: white; }
+.oee-tab-content { display: none; }
+.oee-tab-content.active { display: block; }
+
+/* Po stroju cards */
+.machine-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 18px;
+  margin-bottom: 18px;
+  border-top: 4px solid #1565c0;
+}
+.machine-card.line-nli { border-top-color: #e65100; }
+.machine-card.line-wh { border-top-color: var(--success); }
+.machine-card.line-tisak { border-top-color: #6a1b9a; }
+.machine-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.machine-title {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: var(--text-hi);
+}
+.machine-line-pill {
+  background: var(--primary);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.78em;
+  font-weight: 600;
+}
+.machine-line-pill.nli { background: #e65100; }
+.machine-line-pill.wh { background: var(--success); }
+.machine-line-pill.tisak { background: #6a1b9a; }
+.machine-stats {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+  font-size: 0.85em;
+}
+.machine-stats span { color: var(--text-mid); }
+.machine-stats strong { color: var(--text-hi); }
+.machine-empty {
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  color: var(--text-lo);
+  padding: 25px;
+  font-style: italic;
 }
-
-.stat-card .stat-value {
-  font-size: 1.8em;
-  font-weight: bold;
-  color: #1565c0;
+.rank-pos {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--remap-info-bg);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85em;
 }
+.rank-pos.gold { background: var(--remap-warning-bg); color: #f57c00; }
+.rank-pos.silver { background: var(--remap-grey-bg); color: #616161; }
+.rank-pos.bronze { background: #fbe9e7; color: #d84315; }
 
-.stat-card .stat-label {
-  font-size: 0.8em;
-  color: #666;
-  margin-top: 5px;
+/* Kako se mjeri tab */
+.howto-section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 22px 26px;
+  margin-bottom: 16px;
 }
+.howto-section h3 {
+  margin: 0 0 12px;
+  font-size: 1.15em;
+  color: var(--primary);
+  border-bottom: 2px solid #e3f2fd;
+  padding-bottom: 8px;
+}
+.howto-section h4 {
+  margin: 16px 0 8px;
+  font-size: 1em;
+  color: var(--text-hi);
+}
+.howto-section p, .howto-section li {
+  font-size: 0.92em;
+  line-height: 1.55;
+  color: var(--text-hi);
+}
+.howto-section code {
+  background: var(--remap-grey-bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: var(--danger);
+}
+.howto-formula {
+  background: var(--remap-info-bg);
+  border-left: 4px solid #1565c0;
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95em;
+}
+.howto-tip {
+  background: var(--remap-success-bg);
+  border-left: 4px solid #4caf50;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+.howto-warn {
+  background: var(--remap-warning-bg);
+  border-left: 4px solid #ff9800;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+.howto-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.9em;
+}
+.howto-table th { background: var(--primary); color: white; padding: 8px; text-align: left; }
+.howto-table td { padding: 8px; border-bottom: 1px solid var(--border); }
+.howto-table tr:nth-child(even) { background: var(--remap-grey-bg); }
 
-/* Loading state */
+/* Izvjestaji tab */
+.report-row-clickable { cursor: pointer; }
+.report-row-clickable:hover { background: var(--remap-info-bg) !important; }
+.report-locked-icon { color: var(--text-lo); font-size: 0.95em; }
+.report-edit-icon { color: var(--primary); font-weight: 700; font-size: 0.95em; }
+
+/* Edit modal */
+.oee-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9998;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+}
+.oee-modal-backdrop.active { display: flex; }
+.oee-modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  max-width: 1200px;
+  width: 100%;
+  margin: auto;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+.oee-modal-header {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.oee-modal-header h3 { margin: 0; font-size: 1.05em; flex: 1; }
+.oee-modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+.oee-modal-close:hover { background: rgba(255,255,255,0.35); }
+.oee-modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+.oee-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.oee-modal-info {
+  background: var(--remap-grey-bg);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.88em;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+.oee-modal-info span { color: var(--text-mid); }
+.oee-modal-info strong { color: var(--text-hi); }
+.oee-modal-permission {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.88em;
+}
+.oee-modal-permission.editable { background: var(--remap-success-bg); border-left: 4px solid #4caf50; }
+.oee-modal-permission.readonly { background: var(--remap-warning-bg); border-left: 4px solid #ff9800; }
+.report-edit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+.report-edit-table th {
+  background: var(--primary);
+  color: white;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+.report-edit-table td { padding: 4px 3px; border-bottom: 1px solid var(--border); }
+.report-edit-table input[type="text"], .report-edit-table input[type="number"] {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 0.9em;
+  text-align: center;
+  box-sizing: border-box;
+}
+.report-edit-table input:disabled, .report-edit-table input[readonly] {
+  background: var(--remap-grey-bg); color: var(--text-mid); cursor: not-allowed;
+}
+.report-edit-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9em;
+  box-sizing: border-box;
+}
+.report-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.report-meta-grid label {
+  display: block;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin-bottom: 4px;
+}
+.report-meta-grid input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9em;
+  box-sizing: border-box;
+}
+.btn-save {
+  background: var(--success); color: white; border: none; padding: 8px 18px;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn-save:hover { background: #1b5e20; }
+.btn-save:disabled { background: #aaa; cursor: not-allowed; }
+.btn-cancel {
+  background: #757575; color: white; border: none; padding: 8px 18px;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn-cancel:hover { background: #424242; }
+
 .oee-loading {
-  text-align: center;
-  padding: 50px;
-  color: #666;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.7);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
+.oee-loading .spinner {
+  width: 40px; height: 40px;
+  border: 4px solid #e3f2fd;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: oee-spin 0.8s linear infinite;
+}
+@keyframes oee-spin { to { transform: rotate(360deg); } }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .oee-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .oee-filters {
-    flex-direction: column;
-  }
-  
-  .oee-filters select,
-  .oee-filters input,
-  .oee-filters button {
-    width: 100%;
-  }
-  
-  .gauge-value {
-    font-size: 2.5em;
-  }
-  
-  .gauge-card.oee-main .gauge-value {
-    font-size: 2.8em;
-  }
+@media (max-width: 1000px) {
+  .oee-gauges-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .oee-gauges-row { grid-template-columns: 1fr; }
+  .oee-shifts-table { font-size: 0.75em; }
 }
 </style>
 
 <div class="oee-container">
-  <!-- Header s filterima -->
   <div class="oee-header">
-    <h2>📊 OEE - Učinkovitost strojeva</h2>
-    <div class="oee-filters">
+    <h2>📊 OEE Dashboard</h2>
+    <span class="source-info">Izvor: smjenski izvještaji (ESP32 brojači trenutno offline)</span>
+  </div>
+
+  <div class="oee-tabs">
+    <button class="oee-tab active" data-tab="pregled">📊 Pregled</button>
+    <button class="oee-tab" data-tab="po-stroju">👥 Po stroju</button>
+    <button class="oee-tab" data-tab="izvjestaji">📝 Izvještaji</button>
+    <button class="oee-tab" data-tab="bonusi" id="oeeTabBonusi" style="display:none;">💰 OEE Bonusi</button>
+    <button class="oee-tab" data-tab="kako">📚 Kako se mjeri</button>
+  </div>
+
+  <!-- Filter bar je ZAJEDNIČKI za sve tabove (osim "Kako se mjeri") -->
+  <div class="oee-filter-bar" id="oeeFilterBar">
+    <div class="filter-group">
+      <label>Period:</label>
+      <select id="oeePeriod">
+        <option value="today">Danas</option>
+        <option value="week">Ovaj tjedan</option>
+        <option value="month" selected>Ovaj mjesec</option>
+        <option value="prev_month">Prošli mjesec</option>
+        <option value="custom">Prilagođeno</option>
+      </select>
+    </div>
+    <div class="filter-group" id="oeeCustomDates" style="display:none;">
+      <label>Od:</label>
+      <input type="date" id="oeeDateFrom">
+      <label>Do:</label>
+      <input type="date" id="oeeDateTo">
+    </div>
+    <div class="filter-group">
+      <label>Linija:</label>
+      <select id="oeeLinija">
+        <option value="">Sve</option>
+        <option value="NLI">NLI</option>
+        <option value="WH">W&amp;H</option>
+        <option value="TISAK">Tisak</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Stroj:</label>
       <select id="oeeStroj">
-        <option value="NLI-1">NLI-1 (Tuber)</option>
-        <option value="NLI-2">NLI-2 (Bottomer)</option>
-        <option value="WH-T1">WH-T1 (Tuber)</option>
-        <option value="WH-B1">WH-B1 (Bottomer)</option>
+        <option value="">Svi</option>
+        <option value="Bottomer">Bottomer</option>
+        <option value="Tuber">Tuber</option>
+        <option value="Tisak">Tisak</option>
       </select>
-      <input type="date" id="oeeDatum" />
-      <select id="oeeSmjena">
-        <option value="">Sve smjene</option>
-        <option value="1">1. smjena (06-14)</option>
-        <option value="2">2. smjena (14-22)</option>
-        <option value="3">3. smjena (22-06)</option>
+    </div>
+    <div class="filter-group">
+      <label>Strojar:</label>
+      <select id="oeeStrojar">
+        <option value="">Svi</option>
       </select>
-      <button onclick="oeeUcitajPodatke()">🔄 Učitaj</button>
+    </div>
+    <button class="oee-load-btn" onclick="OEE.loadData()">🔄 Učitaj</button>
+    <span id="oeePeriodInfo" style="font-size:0.85em; color:var(--text-mid); margin-left:auto;"></span>
+  </div>
+
+  <div class="oee-tab-content active" data-tab-content="pregled">
+
+  <div class="oee-kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Proizvedeno</div>
+      <div class="kpi-value" id="oeeKpiKom">-</div>
+      <div class="kpi-sub">kom</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Škart</div>
+      <div class="kpi-value" id="oeeKpiSkart">-</div>
+      <div class="kpi-sub">kg (sve smjene)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Smjena u periodu</div>
+      <div class="kpi-value" id="oeeKpiSmjena">-</div>
+      <div class="kpi-sub" id="oeeKpiSmjenaSub">-</div>
+    </div>
+    <div class="kpi-card warn">
+      <div class="kpi-label">⚠️ Sumnjive smjene</div>
+      <div class="kpi-value" id="oeeKpiSumnjive">-</div>
+      <div class="kpi-sub">za pregled (typo / fali škart)</div>
     </div>
   </div>
 
-  <!-- OEE Gauges -->
-  <div class="oee-gauges">
+  <div class="oee-gauges-row">
     <div class="gauge-card oee-main">
-      <h3>OEE</h3>
-      <div class="gauge-value" id="oeeValue">--%</div>
-      <div class="gauge-bar">
-        <div class="gauge-fill white" id="oeeFill" style="width: 0%"></div>
-      </div>
-      <div class="gauge-subtitle">Overall Equipment Effectiveness</div>
+      <div class="gauge-title">OEE</div>
+      <div class="gauge-value" id="gaugeOEE">-</div>
+      <div class="gauge-bar"><div class="gauge-bar-fill" id="gaugeBarOEE" style="width:0%;"></div></div>
     </div>
     <div class="gauge-card">
-      <h3>Dostupnost</h3>
-      <div class="gauge-value" id="availValue">--%</div>
-      <div class="gauge-bar">
-        <div class="gauge-fill green" id="availFill" style="width: 0%"></div>
-      </div>
-      <div class="gauge-subtitle">Runtime / Planirano</div>
+      <div class="gauge-title">Dostupnost (A)</div>
+      <div class="gauge-value" id="gaugeA">-</div>
+      <div class="gauge-bar"><div class="gauge-bar-fill availability" id="gaugeBarA" style="width:0%;"></div></div>
+      <div class="gauge-sub">Rad / planirano vrijeme</div>
     </div>
     <div class="gauge-card">
-      <h3>Performanse</h3>
-      <div class="gauge-value" id="perfValue">--%</div>
-      <div class="gauge-bar">
-        <div class="gauge-fill blue" id="perfFill" style="width: 0%"></div>
-      </div>
-      <div class="gauge-subtitle">Stvarna / Idealna brzina</div>
+      <div class="gauge-title">Performansa (P)</div>
+      <div class="gauge-value" id="gaugeP">-</div>
+      <div class="gauge-bar"><div class="gauge-bar-fill performance" id="gaugeBarP" style="width:0%;"></div></div>
+      <div class="gauge-sub">Stvarna brzina / nominalna</div>
     </div>
     <div class="gauge-card">
-      <h3>Kvaliteta</h3>
-      <div class="gauge-value" id="qualValue">--%</div>
-      <div class="gauge-bar">
-        <div class="gauge-fill yellow" id="qualFill" style="width: 0%"></div>
-      </div>
-      <div class="gauge-subtitle">Dobri / Ukupno</div>
+      <div class="gauge-title">Kvaliteta (Q)</div>
+      <div class="gauge-value" id="gaugeQ">-</div>
+      <div class="gauge-bar"><div class="gauge-bar-fill quality" id="gaugeBarQ" style="width:0%;"></div></div>
+      <div class="gauge-sub">(kom − škart) / kom</div>
     </div>
   </div>
 
-  <!-- Summary stats -->
-  <div class="summary-stats">
-    <div class="stat-card">
-      <div class="stat-value" id="statProizvedeno">--</div>
-      <div class="stat-label">Proizvedeno (kom)</div>
+  <div class="oee-section">
+    <div class="section-header">
+      <h3>📈 OEE trend kroz dane</h3>
+      <span id="oeeTrendSubtitle" style="color:var(--text-mid); font-size:0.85em;"></span>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statRuntime">--</div>
-      <div class="stat-label">Runtime</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statDowntime">--</div>
-      <div class="stat-label">Zastoji</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statBrzina">--</div>
-      <div class="stat-label">Prosj. brzina (kom/min)</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statZastoja">--</div>
-      <div class="stat-label">Broj zastoja</div>
-    </div>
-  </div>
-
-  <!-- Charts -->
-  <div class="oee-charts">
-    <!-- Speed chart -->
-    <div class="chart-card">
-      <h3>📈 Brzina kroz vrijeme</h3>
-      <div class="chart-container">
-        <div class="speed-chart" id="speedChart">
-          <div class="oee-loading">Učitavanje...</div>
-        </div>
-        <div class="chart-legend">
-          <span id="chartTimeStart">--:--</span>
-          <span>Vrijeme</span>
-          <span id="chartTimeEnd">--:--</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Downtime breakdown -->
-    <div class="chart-card">
-      <h3>⏱️ Zastoji po kategoriji</h3>
-      <div class="downtime-list" id="downtimeList">
-        <div class="oee-loading">Učitavanje...</div>
+    <div class="chart-wrap">
+      <canvas id="oeeTrendChart"></canvas>
+      <div class="chart-legend">
+        <span><span class="legend-dot oee"></span>OEE</span>
+        <span><span class="legend-dot a"></span>Dostupnost</span>
+        <span><span class="legend-dot p"></span>Performansa</span>
+        <span><span class="legend-dot q"></span>Kvaliteta</span>
       </div>
     </div>
   </div>
 
-  <!-- Events table -->
-  <div class="events-section">
-    <h3>📋 Popis događaja (STOP/START)</h3>
-    <div class="events-table-container">
-      <table class="events-table">
+  <div class="oee-section">
+    <div class="section-header">
+      <h3>📋 Smjene u periodu</h3>
+      <span id="oeeShiftsCount" style="color:var(--text-mid); font-size:0.85em;"></span>
+    </div>
+    <div class="oee-table-wrap">
+      <table class="oee-shifts-table">
         <thead>
           <tr>
-            <th>Vrijeme</th>
-            <th>Tip</th>
-            <th>Trajanje</th>
-            <th>Kategorija</th>
-            <th>Radni nalog</th>
-            <th>Brojač</th>
+            <th data-sort="shift_date">Datum</th>
+            <th data-sort="shift_number">Sm.</th>
+            <th data-sort="line_grouped">Linija</th>
+            <th data-sort="machine_type">Stroj</th>
+            <th data-sort="operator_name">Strojar</th>
+            <th data-sort="orders_count">RN</th>
+            <th data-sort="produced_quantity">Kom</th>
+            <th data-sort="scrap_kg" title="Škart u kilogramima (iz polja 'Škart kg' u izvještaju)">Škart kg</th>
+            <th data-sort="run_hours">Rad h</th>
+            <th data-sort="active_hours">Aktivni h</th>
+            <th data-sort="total_downtime_hours">Zastoji h</th>
+            <th data-sort="kom_per_h" title="Produktivnost = Kom / Rad h (samo radno vrijeme)">Kom/h</th>
+            <th data-sort="availability_pct">A %</th>
+            <th data-sort="performance_pct">P %</th>
+            <th data-sort="quality_pct">Q %</th>
+            <th data-sort="oee_pct">OEE %</th>
+            <th class="epu-col" data-sort="epu_proizvodnja" title="Equivalent Production Units (CLAUDE_CODE_TASK)">EPU</th>
+            <th class="epu-col" data-sort="speed_pct" title="Speed Gate: kom / (rad × ponderirana_nom_brzina) ≥ 85%">Speed %</th>
+            <th class="epu-col" data-sort="util_pct" title="Util Gate: rad / (rad + setup + waiting) ≥ 75% — BEZ kvara">Util %</th>
+            <th class="epu-col" data-sort="bonus_postavi_eur" title="Bonus za cijelu postavu (€)">Bonus €</th>
+            <th>Status</th>
           </tr>
         </thead>
-        <tbody id="eventsTableBody">
-          <tr><td colspan="6" class="oee-loading">Učitavanje...</td></tr>
+        <tbody id="oeeShiftsBody">
+          <tr><td colspan="21" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
+
+  <div class="oee-section">
+    <div class="section-header">
+      <h3>👤 Produktivnost po strojaru</h3>
+      <span id="oeeStrojariCount" style="color:var(--text-mid); font-size:0.85em;"></span>
+    </div>
+    <div style="font-size:0.8em; color:var(--text-mid); margin-bottom:10px;">
+      Produktivnost = Proizvedeno (kom) / (Rad + Priprema + Čekanje) h. Sortirano DESC po Kom/h.
+    </div>
+    <div class="oee-table-wrap" style="max-height:500px;">
+      <table class="oee-shifts-table">
+        <thead>
+          <tr>
+            <th data-strojar-sort="operator_name">Strojar</th>
+            <th data-strojar-sort="line_grouped">Linija</th>
+            <th data-strojar-sort="machine_type">Stroj</th>
+            <th data-strojar-sort="shifts_count">Smjena</th>
+            <th data-strojar-sort="total_kom">Ukupno kom</th>
+            <th data-strojar-sort="total_skart">Ukupno škart kg</th>
+            <th data-strojar-sort="total_active_h">Aktivni h</th>
+            <th data-strojar-sort="kom_per_h">Kom/h</th>
+            <th data-strojar-sort="avg_oee">Avg OEE %</th>
+            <th data-strojar-sort="suspicious_count">⚠️</th>
+          </tr>
+        </thead>
+        <tbody id="oeeStrojariBody">
+          <tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
+        </tbody>
+        <tfoot>
+          <tr id="oeeStrojariTotal" style="background:var(--remap-info-bg); font-weight:700;">
+            <td colspan="3"><strong>UKUPNO (svi strojari):</strong></td>
+            <td id="oeeStrojariTotalSmjena">-</td>
+            <td id="oeeStrojariTotalKom">-</td>
+            <td id="oeeStrojariTotalSkart">-</td>
+            <td id="oeeStrojariTotalActiveH">-</td>
+            <td id="oeeStrojariTotalKomH">-</td>
+            <td id="oeeStrojariTotalAvgOee">-</td>
+            <td id="oeeStrojariTotalSumnjive">-</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- EPU & OEE Bonus sažetak (samo NLI Bottomer) — admin only -->
+  <div class="oee-section" id="oeeEpuSection" style="display:none; border-top:4px solid var(--primary);">
+    <div class="section-header">
+      <h3>💰 EPU & OEE Bonus (NLI Bottomer)</h3>
+      <span style="font-size:0.8em; color:var(--text-mid);">Smjenski bonus po EPU-u (admin pregled). Klasični mjesečni bonus % je u HR Produktivnosti.</span>
+    </div>
+    <div class="oee-kpi-row" style="margin-bottom:12px;">
+      <div class="kpi-card" style="border-left-color:var(--primary);">
+        <div class="kpi-label">Avg EPU / smjena</div>
+        <div class="kpi-value" id="epuKpiAvg">-</div>
+        <div class="kpi-sub">Equivalent Production Units</div>
+      </div>
+      <div class="kpi-card" style="border-left-color:var(--success);">
+        <div class="kpi-label">% smjena s bonusom</div>
+        <div class="kpi-value" id="epuKpiPctBonus">-</div>
+        <div class="kpi-sub" id="epuKpiPctBonusSub">- / -</div>
+      </div>
+      <div class="kpi-card" style="border-left-color:var(--warning);">
+        <div class="kpi-label">Avg bonus / smjena</div>
+        <div class="kpi-value" id="epuKpiAvgBonus">-</div>
+        <div class="kpi-sub">€ po postavi (samo s bonusom)</div>
+      </div>
+      <div class="kpi-card" style="border-left-color:#9c27b0;">
+        <div class="kpi-label">Ukupno isplaćeno</div>
+        <div class="kpi-value" id="epuKpiTotal">-</div>
+        <div class="kpi-sub">€ u periodu</div>
+      </div>
+    </div>
+    <div style="font-size:0.82em; color:var(--text-mid); padding:8px 12px; background:var(--remap-grey-bg); border-radius:4px;">
+      <span id="epuComputableInfo"></span>
+    </div>
+  </div>
+
+  </div><!-- /tab-content pregled -->
+
+  <div class="oee-tab-content" data-tab-content="po-stroju">
+    <div style="background:var(--remap-warning-bg); border-left:4px solid var(--warning); padding:12px 18px; border-radius:8px; margin-bottom:15px;">
+      <strong>💡 Usporedba strojara po radnom mjestu</strong> — koristi iste filtere periodu kao Pregled. Strojari se rangiraju po <strong>Kom/h</strong>. Sortiranje: 🥇 najveći, 🥈 drugi, 🥉 treći.
+    </div>
+    <div id="oeePoStrojuContainer">
+      <div class="machine-empty">Učitavam...</div>
+    </div>
+  </div>
+
+  <div class="oee-tab-content" data-tab-content="izvjestaji">
+    <div id="oeeIzvjestajiPermBanner"></div>
+    <div class="oee-section">
+      <div class="section-header">
+        <h3>📝 Smjenski izvještaji</h3>
+        <span id="oeeIzvjestajiCount" style="color:var(--text-mid); font-size:0.85em;"></span>
+      </div>
+      <div style="font-size:0.85em; color:var(--text-mid); margin-bottom:10px;">
+        Klikni red za pregled / izmjenu izvještaja. Filteri (period, linija, stroj, strojar) iz Pregled tab-a vrijede.
+      </div>
+      <div class="oee-table-wrap">
+        <table class="oee-shifts-table">
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Sm.</th>
+              <th>Linija</th>
+              <th>Stroj</th>
+              <th>Strojar</th>
+              <th>Pomoćnici</th>
+              <th>Naloga</th>
+              <th>Kom</th>
+              <th title="Škart u kilogramima (iz polja 'Škart kg' u izvještaju)">Škart kg</th>
+              <th>OEE %</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="oeeIzvjestajiBody">
+            <tr><td colspan="12" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="oee-modal-backdrop" id="oeeEditModal">
+    <div class="oee-modal">
+      <div class="oee-modal-header">
+        <h3 id="oeeModalTitle">Izvještaj</h3>
+        <button class="oee-modal-close" onclick="OEE.closeEditModal()">×</button>
+      </div>
+      <div class="oee-modal-body">
+        <div class="oee-modal-info" id="oeeModalInfo"></div>
+        <div class="oee-modal-permission" id="oeeModalPermission"></div>
+        <div class="report-meta-grid">
+          <div>
+            <label>Strojar:</label>
+            <input type="text" id="oeeEditStrojar">
+          </div>
+          <div>
+            <label>Pomoćnici:</label>
+            <input type="text" id="oeeEditPomocnici">
+          </div>
+        </div>
+        <div id="oeeEditTableWrap"></div>
+        <div style="margin-top:14px;">
+          <label style="font-size:0.85em; font-weight:600; color:var(--text-mid);">Napomena:</label>
+          <textarea class="report-edit-textarea" id="oeeEditNapomena"></textarea>
+        </div>
+      </div>
+      <div class="oee-modal-footer">
+        <button class="btn-cancel" onclick="OEE.closeEditModal()">Odustani</button>
+        <button class="btn-save" id="oeeBtnSave" onclick="OEE.saveReport()">💾 Spremi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="oee-tab-content" data-tab-content="bonusi">
+    <div style="background:linear-gradient(135deg,#1565c0,#0d47a1); color:white; padding:16px 22px; border-radius:10px; margin-bottom:15px;">
+      <h3 style="margin:0 0 6px;">💰 OEE Bonus — mjesečni pregled po strojaru (NLI Bottomer)</h3>
+      <div style="font-size:0.88em; opacity:0.92;">
+        🔒 <strong>Admin pregled.</strong> EPU-bazirani smjenski bonus s gates-ima (Speed ≥85%, Util ≥75%). Različito od klasičnog mjesečnog bonusa % iz <em>HR Produktivnost</em> modula. Pragovi: <strong>Postavke → OEE & Bonus pravila</strong>.
+      </div>
+    </div>
+
+    <div class="oee-section" style="border-left:4px solid var(--primary);">
+      <div class="section-header">
+        <h3>💰 OEE Bonus — strojari/voditelji (smjenski → mjesečni zbroj)</h3>
+        <span id="oeeBonusiCount" style="color:var(--text-mid); font-size:0.85em;"></span>
+      </div>
+      <div style="font-size:0.82em; color:var(--text-mid); margin-bottom:10px;">
+        EPU-bazirani bonus, naknadno raspodijeljen po članovima postave (1/6 strojarima). Pokrivaju se samo voditelji NLI Bottomera.
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
+        <label style="font-size:0.85em; font-weight:600; color:var(--text-mid);">Mjesec:</label>
+        <select id="oeeBonusMonth" style="padding:6px 10px; border:1px solid var(--border); border-radius:6px;"></select>
+        <label style="font-size:0.85em; font-weight:600; color:var(--text-mid); margin-left:10px;">Postava:</label>
+        <select id="oeeBonusPostava" style="padding:6px 10px; border:1px solid var(--border); border-radius:6px;">
+          <option value="">Sve</option>
+        </select>
+        <span style="font-size:0.78em; color:var(--text-lo); margin-left:auto;">⚡ ima OEE bonus &nbsp;&nbsp; 📋 ima klasični bonus</span>
+      </div>
+      <div class="oee-table-wrap">
+        <table class="oee-shifts-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Strojar</th>
+              <th>Pozicija</th>
+              <th>Postava</th>
+              <th>Smjena</th>
+              <th>Oba gate-a</th>
+              <th>S bonusom</th>
+              <th>Avg bonus / smjena</th>
+              <th>Max bonus / smjena</th>
+              <th>Ukupno bonus €</th>
+            </tr>
+          </thead>
+          <tbody id="oeeBonusiBody">
+            <tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-lo);">Klikni Učitaj...</td></tr>
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--remap-info-bg); font-weight:700;">
+              <td colspan="9" style="text-align:right;">UKUPNI OEE BONUS (€):</td>
+              <td id="oeeBonusiTotal" style="text-align:right;">-</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- KLASIČNI BONUS po postavi (auto-izračun iz smjenskih izvještaja) -->
+    <div class="oee-section" style="border-left:4px solid var(--primary);">
+      <div class="section-header">
+        <h3>📋 Klasični mjesečni bonus po postavi <span style="font-size:0.6em; color:var(--primary); background:var(--remap-info-bg); padding:2px 8px; border-radius:4px; vertical-align:middle;">⚙️ AUTO</span></h3>
+        <span id="oeeKlasicniCount" style="color:var(--text-mid); font-size:0.85em;"></span>
+      </div>
+      <div style="font-size:0.82em; color:var(--text-mid); margin-bottom:10px;">
+        <strong>Auto-izračun iz smjenskih izvještaja.</strong> Formula: <code>(KOEF/2200) × (ostvareno − plan) + ŠKART_KOEF × (škart% − 1%)</code>.
+        Voditelj/Strojar = 25.5% koef, ostali = 12.5% koef. <strong>bonus € = bonus % × base_salary</strong>.
+        <strong>Bottomer/Tuber:</strong> kom/h. <strong>Tisak:</strong> m/h. Škart aproksimiran iz kg (postavke).
+      </div>
+      <div style="font-size:0.78em; color:var(--text-lo); padding:6px 12px; background:var(--remap-grey-bg); border-radius:4px; margin-bottom:10px;">
+        💡 <strong>Tip:</strong> Ako su brojke konstantno previsoke, plan u Postavkama je vjerojatno pre-konzervativan. Tisak prosjek je ~5500 m/h — plan 3500 m/h daje automatski +bonus svake smjene. Provjeri 📋 Klasični bonus → Plan produktivnosti.
+      </div>
+      <div id="oeeKlasicniSkartNote" style="display:none; font-size:0.85em; padding:8px 12px; background:var(--remap-warning-bg); border-left:4px solid var(--warning); border-radius:4px; margin-bottom:10px;">
+        ⚠️ <strong>Škart isključen iz izračuna</strong> (toggle u Postavkama). Bonus = samo produktivnost po (ostvareno − plan).
+      </div>
+      <div class="oee-table-wrap" style="max-height:500px;">
+        <table class="oee-shifts-table">
+          <thead>
+            <tr>
+              <th>Postava</th>
+              <th>Radnik</th>
+              <th>Pozicija</th>
+              <th title="Ostvareno po radnom satu (kom/h za Bottomer/Tuber, m/h za Tisak)">Ostvareno</th>
+              <th>Plan</th>
+              <th title="Razlika ostvareno - plan">Δ</th>
+              <th title="Da li je tu i OEE bonus za ovog radnika?">OEE?</th>
+              <th>Klasični %</th>
+              <th>Klasični €</th>
+              <th>+ OEE €</th>
+              <th>UKUPNO €</th>
+            </tr>
+          </thead>
+          <tbody id="oeeKlasicniBody">
+            <tr><td colspan="11" style="text-align:center; padding:20px; color:var(--text-lo);">Učitavam...</td></tr>
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--remap-info-bg); font-weight:700;">
+              <td colspan="8" style="text-align:right;">UKUPNI KLASIČNI BONUS (€):</td>
+              <td id="oeeKlasicniTotal" style="text-align:right;">-</td>
+              <td id="oeeKlasicniOeeTotal" style="text-align:right;">-</td>
+              <td id="oeeKlasicniGrandTotal" style="text-align:right;">-</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="oee-tab-content" data-tab-content="kako">
+
+    <!-- ====================================================================
+         SAŽETAK NA VRHU — što treba znati u 60 sekundi
+         ==================================================================== -->
+    <div class="howto-section" style="border-top:4px solid var(--primary);">
+      <h3>🎯 Sažetak — što trebate znati o OEE i bonusima</h3>
+
+      <p><strong>OEE</strong> (Overall Equipment Effectiveness) mjeri koliko efikasno stroj radi. Tri sastavnice se množe:</p>
+      <div class="howto-formula" style="font-size:1.05em;">OEE = Dostupnost × Performansa × Kvaliteta / 10.000</div>
+      <ul style="margin-top:12px;">
+        <li><strong>🟢 Dostupnost (A)</strong> — koliki dio smjene stroj stvarno radi (vs kvar, čekanje, preštel)</li>
+        <li><strong>🔵 Performansa (P)</strong> — koliko brzo radi vs nominalna brzina stroja</li>
+        <li><strong>🟠 Kvaliteta (Q)</strong> — koliko proizvoda je dobro (vs škart komada)</li>
+      </ul>
+
+      <h4 style="margin-top:18px;">📊 Što ulazi u OEE rezultat:</h4>
+      <p>Sve dolazi iz <strong>smjenskog izvještaja</strong> koji popunjavaš na kraju smjene. <strong>Što točnije unesete vrijeme i škart, to je OEE pošteniji.</strong></p>
+
+      <h4 style="margin-top:18px;">💰 Dva bonusa (nemojte miješati!)</h4>
+      <table class="howto-table">
+        <tr><th></th><th style="color:var(--primary);">Klasični bonus produktivnosti</th><th style="color:var(--primary);">OEE Bonus (NLI Bottomer)</th></tr>
+        <tr><td><strong>Tko ga dobiva</strong></td><td>Svi članovi postave (strojari + pomoćnici)</td><td><strong>Samo strojari/voditelji</strong></td></tr>
+        <tr><td><strong>Kad se računa</strong></td><td>Mjesečno</td><td>Po smjeni</td></tr>
+        <tr><td><strong>Što mjeri</strong></td><td>kom/h vs plan + škart %</td><td>EPU + 2 prag-uvjeta</td></tr>
+        <tr><td><strong>Iznos</strong></td><td>% od plaće (npr. 12% ostali, 25.5% voditelj)</td><td>€ po smjeni → € po članu</td></tr>
+        <tr><td><strong>Pokriva</strong></td><td>Sve strojeve</td><td>NLI Bottomer (zasad)</td></tr>
+      </table>
+      <div class="howto-tip">
+        ✅ <strong>Oba bonusa se kombiniraju.</strong> Ako si strojar na NLI Bottomeru i postava vam je dobro radila, dobit ćeš <em>i</em> klasični mjesečni bonus <em>i</em> OEE bonus po smjeni.
+      </div>
+
+      <h4 style="margin-top:18px;">🔑 Što napraviti za bolji bonus</h4>
+      <ul>
+        <li><strong>Točno upiši vrijeme</strong> u izvještaj (rad, kvar, čekanje, čišćenje) — sve u <strong>satima</strong>, ne minutama</li>
+        <li><strong>Upiši broj škart komada</strong> (uz kg) — bez toga Kvaliteta je 100% i smjena se vodi kao "sumnjiva"</li>
+        <li><strong>Razdvoji rad od pripreme</strong> — preštelavanje ide u svoju kategoriju, ne u "rad"</li>
+        <li><strong>Drži strojnu brzinu blizu nominalne</strong> — ne kreni "polako" ako stroj može više</li>
+        <li><strong>Prijavi sve zastoje</strong> u svoju kategoriju — kvar u "kvar", čekanje materijala u "čekanje"</li>
+      </ul>
+    </div>
+
+    <!-- Detalji ispod sažetka -->
+    <div class="howto-section">
+      <h3>📊 OEE razine — što tvoj broj znači</h3>
+      <table class="howto-table">
+        <tr><th>OEE %</th><th>Razina</th><th>Što to znači</th></tr>
+        <tr><td><strong style="color:var(--success);">≥ 85%</strong></td><td>World-class</td><td>Vrhunski rad, malo za poboljšati</td></tr>
+        <tr><td><strong style="color:var(--success);">70 – 85%</strong></td><td>Dobar</td><td>Solidan, fokus na zastoje i škart</td></tr>
+        <tr><td><strong style="color:var(--warning);">50 – 70%</strong></td><td>OK</td><td>Tipični rezultat, ima prostora</td></tr>
+        <tr><td><strong style="color:var(--danger);">&lt; 50%</strong></td><td>Loš</td><td>Treba akcija — kvar, čekanje, brzina</td></tr>
+      </table>
+    </div>
+
+    <div class="howto-section">
+      <h3>🟢 Dostupnost (A) — koliko vremena stroj stvarno radi</h3>
+      <div class="howto-formula">A = Rad / (Rad + Kvar + Priprema + Čekanje) × 100</div>
+      <p><strong>Što ulazi u izračun</strong> (planirano radno vrijeme):</p>
+      <ul>
+        <li><strong>Rad</strong> — stroj proizvodi (broji se kao "iskorišteno vrijeme")</li>
+        <li><strong>Kvar</strong> — stroj stoji zbog problema (smanjuje A)</li>
+        <li><strong>Priprema (preštelavanje)</strong> — postavljanje za novi RN (smanjuje A)</li>
+        <li><strong>Čekanje</strong> (tuljki / materijala / RN-a) — stroj može raditi ali nema posao (smanjuje A)</li>
+      </ul>
+      <p><strong>Što NE ulazi</strong>:</p>
+      <ul>
+        <li><strong>Rad van stroja</strong> — radiš nešto drugo, ne računa se ni za ni protiv</li>
+        <li><strong>Čišćenje</strong> — planirana aktivnost, ne kažnjava se</li>
+      </ul>
+      <div class="howto-tip">✅ <strong>Kako poboljšati Dostupnost:</strong> kraći setup (priprema posuđa unaprijed), manje kvarova (preventivno održavanje, prijavi simptome rano), brže rješavanje čekanja (komunikacija s skladištem/koordinatorom).</div>
+    </div>
+
+    <div class="howto-section">
+      <h3>🔵 Performansa (P) — koliko brzo stroj radi dok radi</h3>
+      <div class="howto-formula">P = Stvarna količina / (Rad h × 60 × Nominalna brzina) × 100</div>
+      <p>Uspoređujemo stvarni output s teoretskim maksimumom. Limit 100% (cap zbog mogućih typo-a).</p>
+      <p><strong>Nominalne brzine po stroju</strong> (postavljeno u admin postavkama):</p>
+      <table class="howto-table">
+        <tr><th>Stroj</th><th>Nominalna brzina</th><th>Jedinica</th></tr>
+        <tr><td>NLI Bottomer</td><td>100</td><td>kom/min</td></tr>
+        <tr><td>WH Bottomer</td><td>50</td><td>kom/min</td></tr>
+        <tr><td>NLI Tuber</td><td>100</td><td>kom/min</td></tr>
+        <tr><td>WH Tuber</td><td>50</td><td>kom/min</td></tr>
+        <tr><td>Tisak (Flexotecnica/Sciavi)</td><td>100</td><td>m/min (Tisak koristi metre)</td></tr>
+      </table>
+      <div class="howto-tip">✅ <strong>Kako poboljšati Performansu:</strong> drži brzinu blizu nominalne kroz cijelu smjenu, izbjegavaj usporene cikluse zbog problema s materijalom (npr. lijepilo, folija), prijavi voditelju ako stroj ne dosiže nominalu (signal za servis).</div>
+    </div>
+
+    <div class="howto-section">
+      <h3>🟠 Kvaliteta (Q) — koliko proizvedeno je dobro</h3>
+      <div class="howto-formula">Q = (Količina − Škart kom) / Količina × 100</div>
+      <div class="howto-warn">⚠️ <strong>VAŽNO:</strong> da bi Kvaliteta bila stvarna, MORA se unijeti broj <strong>škart komada</strong> u smjenski izvještaj. Ako se ne unese → Q = 100% (nije realno) i smjena se označava ⚠️ kao <strong>sumnjiva</strong>.</div>
+      <p>Postoji posebna kolona "Škart (kom)" uz "Škart (kg)" u izvještaju Tubera, Bottomera i Tiska. Težina (kg) je za vagu i obračun, broj komada (kom) je za OEE Kvalitetu.</p>
+      <div class="howto-tip">✅ <strong>Kako poboljšati Kvalitetu:</strong> kvalitetan ulazni materijal (rola, folija, ljepilo), pravilno postavljen stroj, redovita kontrola izlaza, brzo otkrivanje problema = manje škartiranih vreća.</div>
+    </div>
+
+    <div class="howto-section">
+      <h3>⚡ Produktivnost (Kom/h) — koristi se za klasični bonus</h3>
+      <div class="howto-formula">Produktivnost = Količina / Rad h (samo radno vrijeme)</div>
+      <p>Pokazuje brzinu rada — koliko komada/metara stroj proizvede po satu kad radi. <strong>Ne uračunava setup, čekanje, kvar.</strong></p>
+      <ul>
+        <li><strong>Bottomer/Tuber:</strong> kom/rad_h</li>
+        <li><strong>Tisak:</strong> m/rad_h (jer plan je u metrima)</li>
+      </ul>
+      <p>Koristimo ga za <strong>ranking strojara</strong> u tabu "Po stroju" i za <strong>klasični bonus</strong> u tabu "OEE Bonusi" — formule su usklađene.</p>
+      <div class="howto-tip">
+        💡 <strong>Što znači:</strong> kraće smjene s velikom proizvodnjom dobivaju veći Kom/h. Ako Slavko radi 7h i napravi 50.000 kom, ima Kom/h = 7.143. Ako Dino radi 8h i napravi 55.000 kom, ima Kom/h = 6.875. Slavko je brži po radnom satu — i dobiva veći bonus.
+      </div>
+    </div>
+
+    <div class="howto-section">
+      <h3>⚠️ Sumnjive smjene — što označavaju i kako ih izbjeći</h3>
+      <p>Smjena se automatski označava ⚠️ ako sustav prepoznaje moguć typo ili nepotpun unos. Sumnjive smjene se boje narančasto u tablici i izlistavaju u KPI kartici.</p>
+      <table class="howto-table">
+        <tr><th>Razlog</th><th>Što vjerojatno znači</th><th>Kako ispraviti</th></tr>
+        <tr><td>Ukupno upisano > 12h</td><td>Smjena je 8h, prevelik zbroj</td><td>Provjeri jesu li sva vremena u satima (h), ne minutama</td></tr>
+        <tr><td>Rad &lt; 0.5h ali kom > 1000</td><td>Rad upisan u h umjesto minuta?</td><td>Rad mora biti u <strong>satima</strong>, npr. 7.5</td></tr>
+        <tr><td>Kvar > 8h</td><td>Cijela smjena je kvar?</td><td>Provjeri vrijeme kvara u satima</td></tr>
+        <tr><td>Performansa > 150% (raw)</td><td>Premali target ili krivi rad</td><td>Provjeri admin postavke za nominalnu brzinu</td></tr>
+        <tr><td>Škart kom nije unesen</td><td>Voditelj zaboravio polje "Škart (kom)"</td><td>Uvijek upiši broj škart komada (može biti 0)</td></tr>
+      </table>
+    </div>
+
+    <div class="howto-section">
+      <h3>🏆 Kako raditi za najbolji bonus</h3>
+      <p>Bonus se računa po proizvedenoj količini i (u budućnosti) po OEE pragovima. Što bolji OEE i Kom/h — veći bonus.</p>
+      <h4>1. Točan unos = pošten rezultat</h4>
+      <ul>
+        <li>Vrijeme uvijek u <strong>satima</strong> (npr. 7.5 ne 450)</li>
+        <li>Razdvoji rad od pripreme — ne stavljaj sve u "rad"</li>
+        <li>Prijavi sve zastoje u svoju kategoriju (kvar, čekanje, čišćenje)</li>
+        <li>Uvijek upiši <strong>Škart (kom)</strong> — to je ključno za Kvalitetu</li>
+      </ul>
+      <h4>2. Smanji zastoje</h4>
+      <ul>
+        <li>Pripremaj sljedeći RN dok aktualan teče (preglej dokumentaciju)</li>
+        <li>Komuniciraj s skladištem o materijalu unaprijed</li>
+        <li>Prijavi simptome kvara prije nego stroj stane</li>
+      </ul>
+      <h4>3. Drži brzinu stabilnu</h4>
+      <ul>
+        <li>Nominalna brzina je referenca — radi blizu nje</li>
+        <li>Spriječi usporavanje (loš materijal, krivo postavljanje, neispravna parametrizacija)</li>
+        <li>Sva vrijeme nominale = maksimalna Performansa</li>
+      </ul>
+      <h4>4. Smanji škart</h4>
+      <ul>
+        <li>Prva 10 minuta provjera kvalitete (boja, pozicija, ljepljenje)</li>
+        <li>Periodična kontrola tijekom smjene</li>
+        <li>Brz reagiraj na promjene u materijalu / ambijent</li>
+      </ul>
+      <div class="howto-warn">⚠️ <strong>Pravilo zamjene:</strong> ako te netko mijenja na pola smjene, sustav uzima samo <strong>prvog strojara</strong> iz polja "Strojar". Ako želiš da se zamjena prepozna, voditi <strong>odvojen izvještaj</strong> za svoju polovicu smjene.</div>
+    </div>
+
+    <div class="howto-section">
+      <h3>💰 EPU + Speed Gate + Util Gate + OEE Bonus (NLI Bottomer)</h3>
+      <p><strong>OEE Bonus</strong> je <em>dodatan</em> bonus, drugačiji od klasičnog mjesečnog bonusa produktivnosti (HR Produktivnost modul). Razlikujemo:</p>
+      <table class="howto-table">
+        <tr><th></th><th>Klasični bonus (HR)</th><th>OEE Bonus (ovaj tab)</th></tr>
+        <tr><td><strong>Granularnost</strong></td><td>mjesečno po timu</td><td>po smjeni</td></tr>
+        <tr><td><strong>Metrika</strong></td><td>kom/h vs plan</td><td>EPU + 2 gate-a</td></tr>
+        <tr><td><strong>Output</strong></td><td>% od plaće</td><td>€ po smjeni / članu</td></tr>
+        <tr><td><strong>Koeficijenti</strong></td><td>voditelj 25.5, ostali 12</td><td>4.29 €/1000 EPU iznad praga</td></tr>
+        <tr><td><strong>Pokriva</strong></td><td>sve strojeve</td><td>NLI Bottomer (zasad)</td></tr>
+        <tr><td><strong>Pristup</strong></td><td>HR + obračun</td><td><strong>Admin only</strong> (OEE tab)</td></tr>
+      </table>
+      <div class="howto-tip">✅ Oba bonusa se mogu kombinirati — operater može dobiti i mjesečni % bonus i smjenske € bonuse istovremeno (računaju se neovisno).</div>
+
+      <h4>Što je EPU?</h4>
+      <div class="howto-formula">EPU = stvarni_komadi × (180 / nominalna_brzina_artikla)</div>
+      <p><strong>Equivalent Production Units</strong> — normalizirana mjera proizvodnje. 180 (kom/min) je referenta brzina (najbrži artikl). Spori artikl daje više EPU po komadu, brzi manje.</p>
+      <p>Primjer: VL 41x46x12 (180 kom/min) → 1 kom = 1 EPU. VL2n 41x46x12 (150 kom/min) → 1 kom = 1.2 EPU.</p>
+
+      <h4>🎯 Speed Gate — produktivnost</h4>
+      <div class="howto-formula">Speed % = total_kom / (rad × ponderirana_nom_brzina) ≥ <strong>85%</strong></div>
+      <p>Mjeri jeste li proizveli BAREM 85% od teoretskog maksimuma za artikle koje ste radili. <strong>Razlika od OEE Performance:</strong> koristi nominalnu brzinu PO ARTIKLU (ne po stroju).</p>
+
+      <h4>⏱️ Util Gate — iskorištenost</h4>
+      <div class="howto-formula">Util % = rad / (rad + setup + čekanje) ≥ <strong>75%</strong></div>
+      <div class="howto-warn">⚠️ <strong>BEZ kvara!</strong> Kvar nije u nazivniku jer nije krivnja postave. Razlika od OEE Availability koja UKLJUČUJE kvar.</div>
+
+      <h4>💵 Bonus formula</h4>
+      <div class="howto-formula">Bonus_postavi = MIN((total_EPU − 70.000) × 0.00429 ; 150 €) <em>ako oba gate-a prolaze</em></div>
+      <p>Bonus se dijeli na 6 članova postave (max <strong>25 €</strong> po radniku po smjeni). Bonus ide originalnim članovima postave — <strong>ne</strong> zamjenama.</p>
+
+      <h4>🔧 Pravila za nominalnu brzinu (kom/min)</h4>
+      <table class="howto-table">
+        <tr><th>Valve</th><th>Bazna (35-41 cm)</th><th>Korekcija</th></tr>
+        <tr><td>VL</td><td>180</td><td rowspan="4">−2 kom/min za svaki +1 cm iznad 41</td></tr>
+        <tr><td>VL2</td><td>165</td></tr>
+        <tr><td>VL2n</td><td>150 (135 ako &lt;36 cm)</td></tr>
+        <tr><td>VLRn</td><td>160 (150 ako &lt;36 cm)</td></tr>
+      </table>
+      <p>Primjeri: VL 45 cm = 180 + (−2 × 4) = <strong>172 kom/min</strong>. VL2n 55 cm = 150 + (−2 × 14) = <strong>122 kom/min</strong>.</p>
+
+      <div class="howto-tip">✅ <strong>Pragovi i koeficijenti</strong> mijenja superadmin u <em>Postavke → OEE & Bonus pravila</em>. Sva pravila se učitavaju iz <code>settings</code> tablice (kategorija OEE_BONUS) — promjene se odmah primjenjuju na sve smjene.</div>
+
+      <h4>⚠️ Kad smjena <em>nije</em> EPU-computable?</h4>
+      <p>Ako <strong>bilo koji RN</strong> ima artikl bez nominalne brzine (valve_type = NULL ili neparsirljiv), cijela smjena se isključuje iz Speed Gate izračuna. U Pregled drill-down to izgleda kao "—" u kolonama EPU/Speed/Bonus.</p>
+      <p><strong>Rješenje:</strong> popuni valve_type i bag_width za artikl u modulu <em>Artikli</em>.</p>
+    </div>
+
+    <div class="howto-section">
+      <h3>📐 Sažeti pregled formula</h3>
+      <table class="howto-table">
+        <tr><th>Metrika</th><th>Formula</th><th>Cilj</th></tr>
+        <tr><td><strong>Dostupnost (A)</strong></td><td>Rad / (Rad + Kvar + Priprema + Čekanje) × 100</td><td>≥ 85%</td></tr>
+        <tr><td><strong>Performansa (P)</strong></td><td>Kom / (Rad × 60 × Nom. brzina) × 100</td><td>≥ 90%</td></tr>
+        <tr><td><strong>Kvaliteta (Q)</strong></td><td>(Kom − Škart kom) / Kom × 100</td><td>≥ 99%</td></tr>
+        <tr><td><strong>OEE</strong></td><td>A × P × Q / 10.000</td><td>≥ 70%</td></tr>
+        <tr><td><strong>Produktivnost</strong></td><td>Kom / (Rad + Priprema + Čekanje)</td><td>što veće</td></tr>
+      </table>
+    </div>
+  </div><!-- /tab-content kako -->
+
+  <div id="oeeLoadingOverlay" class="oee-loading" style="display:none;">
+    <div class="spinner"></div>
+    <div>Učitavanje...</div>
+  </div>
 </div>
 
 <script>
-// ============================================
-// OEE MODULE
-// ============================================
+(function() {
+  'use strict';
 
-var OEE = {
-  data: {
-    syncs: [],
-    events: [],
-    categories: [],
-    machineCode: 'NLI-1',
-    datum: null,
-    smjena: null
-  },
+  var OEE = {
+    data: { daily: [], shifts: [], shiftsAll: [], rawReports: [], editing: null,
+            epuShifts: [], epuByShiftId: {}, monthlyBonus: [],
+            classicalBonuses: [],
+            validStrojariSet: null /* null = not loaded yet */ },
+    state: {
+      period: 'month', from: null, to: null,
+      linija: '', stroj: '', strojar: '',
+      sortKey: 'shift_date', sortDir: 'desc',
+      strojarSortKey: 'kom_per_h', strojarSortDir: 'desc',
+      bonusMonth: null, bonusPostava: ''
+    },
 
-  // Idealne brzine po stroju (kom/min) - TODO: dohvati iz baze
-  idealSpeed: {
-    'NLI-1': 120,
-    'NLI-2': 80,
-    'WH-T1': 150,
-    'WH-B1': 100
-  },
+    MACHINES: [
+      { line: 'NLI', machine: 'Bottomer', label: 'NLI Bottomer' },
+      { line: 'NLI', machine: 'Tuber', label: 'NLI Tuber' },
+      { line: 'WH', machine: 'Bottomer', label: 'WH Bottomer' },
+      { line: 'WH', machine: 'Tuber', label: 'WH Tuber' },
+      { line: 'TISAK', machine: 'Tisak', label: 'Tisak' }
+    ],
 
-  // Trajanje smjene u sekundama
-  shiftDuration: 8 * 60 * 60, // 8 sati
+    init: function() {
+      var self = this;
 
-  init: async function() {
-    console.log('OEE init');
-    
-    // Postavi današnji datum
-    var today = this.getProductionDate();
-    document.getElementById('oeeDatum').value = today;
-    
-    // Učitaj kategorije
-    await this.loadCategories();
-    
-    // Učitaj podatke
-    await this.loadData();
-  },
-
-  getProductionDate: function() {
-    var now = new Date();
-    if (now.getHours() < 6) {
-      now.setDate(now.getDate() - 1);
-    }
-    return now.toISOString().split('T')[0];
-  },
-
-  loadCategories: async function() {
-    try {
-      var result = await initSupabase()
-        .from('prod_downtime_categories')
-        .select('*')
-        .eq('aktivan', true)
-        .order('sort_order');
-      
-      if (result.data) {
-        this.data.categories = result.data;
-        console.log('Kategorije učitane:', result.data.length);
-      }
-    } catch (e) {
-      console.error('Greška učitavanja kategorija:', e);
-    }
-  },
-
-  loadData: async function() {
-    var machineCode = document.getElementById('oeeStroj').value;
-    var datum = document.getElementById('oeeDatum').value;
-    var smjena = document.getElementById('oeeSmjena').value;
-    
-    this.data.machineCode = machineCode;
-    this.data.datum = datum;
-    this.data.smjena = smjena;
-    
-    console.log('Učitavam OEE:', machineCode, datum, smjena || 'sve');
-    
-    showLoading('Učitavanje OEE podataka...');
-    
-    try {
-      // Učitaj sync podatke (za brzinu)
-      var syncQuery = initSupabase()
-        .from('prod_machine_counter_sync')
-        .select('*')
-        .eq('machine_code', machineCode)
-        .eq('production_date', datum)
-        .order('sync_timestamp', { ascending: true });
-      
-      if (smjena) {
-        syncQuery = syncQuery.eq('shift_number', parseInt(smjena));
-      }
-      
-      var syncResult = await syncQuery.limit(1000);
-      this.data.syncs = syncResult.data || [];
-      console.log('Sync podataka:', this.data.syncs.length);
-      
-      // Učitaj evente (STOP/START)
-      var eventQuery = initSupabase()
-        .from('prod_machine_events')
-        .select('*')
-        .eq('machine_code', machineCode)
-        .eq('production_date', datum)
-        .order('event_timestamp', { ascending: true });
-      
-      if (smjena) {
-        eventQuery = eventQuery.eq('shift_number', parseInt(smjena));
-      }
-      
-      var eventResult = await eventQuery.limit(1000);
-      this.data.events = eventResult.data || [];
-      console.log('Event podataka:', this.data.events.length);
-      
-      // Izračunaj i prikaži
-      this.calculate();
-      this.render();
-      
-    } catch (e) {
-      console.error('Greška učitavanja OEE:', e);
-      showMessage('Greška učitavanja podataka', 'error');
-    } finally {
-      hideLoading();
-    }
-  },
-
-  calculate: function() {
-    var syncs = this.data.syncs;
-    var events = this.data.events;
-    
-    // Ako nema podataka
-    if (syncs.length === 0 && events.length === 0) {
-      this.data.calculated = {
-        oee: 0,
-        availability: 0,
-        performance: 0,
-        quality: 100,
-        totalPieces: 0,
-        runtimeSec: 0,
-        downtimeSec: 0,
-        avgSpeed: 0,
-        stopCount: 0,
-        downtimeByCategory: {}
-      };
-      return;
-    }
-    
-    // Izračunaj proizvedeno (razlika prvog i zadnjeg sync-a)
-    var totalPieces = 0;
-    if (syncs.length >= 2) {
-      totalPieces = syncs[syncs.length - 1].count_at_sync - syncs[0].count_at_sync;
-    } else if (syncs.length === 1) {
-      totalPieces = 0; // Samo jedan sync, ne možemo izračunati
-    }
-    
-    // Izračunaj ukupni downtime iz START eventa (duration_seconds)
-    var totalDowntimeSec = 0;
-    var stopCount = 0;
-    var downtimeByCategory = {};
-    
-    events.forEach(function(e) {
-      if (e.event_type === 'START' && e.duration_seconds) {
-        totalDowntimeSec += e.duration_seconds;
-        stopCount++;
-        
-        // Kategoriziraj (< 60s = MIKRO)
-        var cat = e.duration_seconds < 60 ? 'MIKRO' : 'NEOP';
-        if (!downtimeByCategory[cat]) {
-          downtimeByCategory[cat] = { count: 0, duration: 0 };
-        }
-        downtimeByCategory[cat].count++;
-        downtimeByCategory[cat].duration += e.duration_seconds;
-      }
-    });
-    
-    // Trajanje promatranog perioda
-    var periodSec = this.shiftDuration;
-    if (this.data.smjena === '') {
-      // Sve smjene = 24h
-      periodSec = 24 * 60 * 60;
-    }
-    
-    // Planirani downtime (preštelavanje, čišćenje, mikro)
-    var plannedDowntime = downtimeByCategory['MIKRO'] ? downtimeByCategory['MIKRO'].duration : 0;
-    
-    // Planirano vrijeme = period - planirani zastoji
-    var plannedTime = periodSec - plannedDowntime;
-    
-    // Runtime = planirano - neplanirani zastoji
-    var unplannedDowntime = totalDowntimeSec - plannedDowntime;
-    var runtimeSec = Math.max(0, plannedTime - unplannedDowntime);
-    
-    // Availability
-    var availability = plannedTime > 0 ? (runtimeSec / plannedTime) * 100 : 0;
-    
-    // Performance (stvarna brzina vs idealna)
-    var idealSpeed = this.idealSpeed[this.data.machineCode] || 100;
-    var actualSpeed = runtimeSec > 0 ? (totalPieces / (runtimeSec / 60)) : 0;
-    var performance = idealSpeed > 0 ? (actualSpeed / idealSpeed) * 100 : 0;
-    performance = Math.min(performance, 100); // Cap at 100%
-    
-    // Quality (za sada 100%, trebamo podatke o škartu)
-    var quality = 100;
-    
-    // OEE
-    var oee = (availability * performance * quality) / 10000;
-    
-    this.data.calculated = {
-      oee: oee,
-      availability: availability,
-      performance: performance,
-      quality: quality,
-      totalPieces: totalPieces,
-      runtimeSec: runtimeSec,
-      downtimeSec: totalDowntimeSec,
-      avgSpeed: actualSpeed,
-      stopCount: stopCount,
-      downtimeByCategory: downtimeByCategory,
-      idealSpeed: idealSpeed
-    };
-    
-    console.log('OEE izračunat:', this.data.calculated);
-  },
-
-  render: function() {
-    var calc = this.data.calculated;
-    
-    // Gauges
-    this.setGauge('oee', calc.oee);
-    this.setGauge('avail', calc.availability);
-    this.setGauge('perf', calc.performance);
-    this.setGauge('qual', calc.quality);
-    
-    // Stats
-    document.getElementById('statProizvedeno').textContent = calc.totalPieces.toLocaleString('hr-HR');
-    document.getElementById('statRuntime').textContent = this.formatDuration(calc.runtimeSec);
-    document.getElementById('statDowntime').textContent = this.formatDuration(calc.downtimeSec);
-    document.getElementById('statBrzina').textContent = calc.avgSpeed.toFixed(1);
-    document.getElementById('statZastoja').textContent = calc.stopCount;
-    
-    // Speed chart
-    this.renderSpeedChart();
-    
-    // Downtime breakdown
-    this.renderDowntimeList();
-    
-    // Events table
-    this.renderEventsTable();
-  },
-
-  setGauge: function(id, value) {
-    var valueEl = document.getElementById(id + 'Value');
-    var fillEl = document.getElementById(id + 'Fill');
-    
-    if (valueEl) {
-      valueEl.textContent = value.toFixed(1) + '%';
-    }
-    
-    if (fillEl) {
-      fillEl.style.width = Math.min(value, 100) + '%';
-      
-      // Boja prema vrijednosti
-      if (id !== 'oee') {
-        fillEl.className = 'gauge-fill';
-        if (value >= 85) fillEl.classList.add('green');
-        else if (value >= 60) fillEl.classList.add('yellow');
-        else fillEl.classList.add('red');
-      }
-    }
-  },
-
-  renderSpeedChart: function() {
-    var container = document.getElementById('speedChart');
-    var syncs = this.data.syncs;
-    
-    if (syncs.length < 2) {
-      container.innerHTML = '<div class="oee-loading">Nedovoljno podataka za dijagram</div>';
-      return;
-    }
-    
-    // Izračunaj brzine između sync-ova
-    var speeds = [];
-    var maxSpeed = 0;
-    
-    for (var i = 1; i < syncs.length; i++) {
-      var prev = syncs[i - 1];
-      var curr = syncs[i];
-      
-      var pieces = curr.count_at_sync - prev.count_at_sync;
-      var timeDiff = (new Date(curr.sync_timestamp) - new Date(prev.sync_timestamp)) / 1000 / 60; // minute
-      
-      if (timeDiff > 0 && pieces >= 0) {
-        var speed = pieces / timeDiff;
-        speeds.push({
-          speed: speed,
-          time: new Date(curr.sync_timestamp)
+      document.querySelectorAll('.oee-tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var tab = btn.getAttribute('data-tab');
+          // Zaštita: OEE Bonus tab samo za admin
+          if (tab === 'bonusi' && !self.isAdmin()) {
+            if (typeof showMessage === 'function') showMessage('OEE Bonusi su dostupni samo administratoru', 'error');
+            return;
+          }
+          document.querySelectorAll('.oee-tab').forEach(function(b) { b.classList.toggle('active', b === btn); });
+          document.querySelectorAll('.oee-tab-content').forEach(function(c) {
+            c.classList.toggle('active', c.getAttribute('data-tab-content') === tab);
+          });
+          // Filter bar je nepotreban u "Kako se mjeri" tabu
+          var filterBar = document.getElementById('oeeFilterBar');
+          if (filterBar) filterBar.style.display = (tab === 'kako') ? 'none' : '';
+          if (tab === 'po-stroju') self.renderPerMachine();
+          if (tab === 'izvjestaji') self.loadAndRenderReports();
+          if (tab === 'bonusi') self.loadAndRenderBonusi();
+          if (tab === 'pregled') self.renderTrendChart(); // canvas treba re-paint nakon hide/show
         });
-        if (speed > maxSpeed) maxSpeed = speed;
+      });
+
+      document.getElementById('oeePeriod').addEventListener('change', function(e) {
+        self.state.period = e.target.value;
+        document.getElementById('oeeCustomDates').style.display = (e.target.value === 'custom') ? '' : 'none';
+        self.loadData();
+      });
+      document.getElementById('oeeLinija').addEventListener('change', function(e) {
+        self.state.linija = e.target.value; self.loadData();
+      });
+      document.getElementById('oeeStroj').addEventListener('change', function(e) {
+        self.state.stroj = e.target.value; self.loadData();
+      });
+      document.getElementById('oeeStrojar').addEventListener('change', function(e) {
+        // Strojar filter is client-side only — no reload
+        self.state.strojar = e.target.value;
+        self.applyStrojarFilter();
+        self.render();
+        // Refresh izvještaja ako je tab aktivan (server-side filter strojar)
+        var izvjAktiv = document.querySelector('.oee-tab-content[data-tab-content="izvjestaji"].active');
+        if (izvjAktiv) self.loadAndRenderReports();
+      });
+      document.getElementById('oeeDateFrom').addEventListener('change', function() {
+        if (self.state.period === 'custom') self.loadData();
+      });
+      document.getElementById('oeeDateTo').addEventListener('change', function() {
+        if (self.state.period === 'custom') self.loadData();
+      });
+
+      document.querySelectorAll('.oee-shifts-table th[data-sort]').forEach(function(th) {
+        th.addEventListener('click', function() {
+          var key = th.getAttribute('data-sort');
+          if (self.state.sortKey === key) {
+            self.state.sortDir = (self.state.sortDir === 'asc') ? 'desc' : 'asc';
+          } else {
+            self.state.sortKey = key;
+            self.state.sortDir = 'desc';
+          }
+          self.renderShiftsTable();
+        });
+      });
+
+      document.querySelectorAll('.oee-shifts-table th[data-strojar-sort]').forEach(function(th) {
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', function() {
+          var key = th.getAttribute('data-strojar-sort');
+          if (self.state.strojarSortKey === key) {
+            self.state.strojarSortDir = (self.state.strojarSortDir === 'asc') ? 'desc' : 'asc';
+          } else {
+            self.state.strojarSortKey = key;
+            self.state.strojarSortDir = 'desc';
+          }
+          self.renderStrojariTable();
+        });
+      });
+
+      window.addEventListener('resize', function() {
+        if (OEE.data.daily.length > 0) OEE.renderTrendChart();
+      });
+
+      this.loadValidStrojari();  // jednom dohvati listu strojara
+      this.applyAdminVisibility();  // sakrij OEE Bonus tab/sekciju za ne-admin
+      this.computePeriodDates();
+      this.loadData();
+    },
+
+    applyAdminVisibility: function() {
+      var isAdmin = this.isAdmin();
+      var bonusTab = document.getElementById('oeeTabBonusi');
+      if (bonusTab) bonusTab.style.display = isAdmin ? '' : 'none';
+      // EPU section toggle se ipak primijeni u renderShiftsTable (kombinacija filter NLI Bottomer + admin)
+    },
+
+    loadValidStrojari: async function() {
+      var sb = (typeof initSupabase === 'function') ? initSupabase() : null;
+      if (!sb) return;
+      try {
+        var res = await sb.from('v_oee_valid_strojari').select('norm_name, full_name, position, home_linija, home_stroj_tip').limit(500);
+        if (res.error) throw res.error;
+        var set = {};
+        (res.data || []).forEach(function(r) { if (r.norm_name) set[r.norm_name] = r; });
+        this.data.validStrojariSet = set;
+      } catch (e) {
+        console.warn('loadValidStrojari:', e);
+        this.data.validStrojariSet = {};  // empty → ne filtirajemo (fallback)
       }
-    }
-    
-    if (speeds.length === 0) {
-      container.innerHTML = '<div class="oee-loading">Nema podataka o brzini</div>';
-      return;
-    }
-    
-    // Generiraj barove
-    var html = '';
-    var idealSpeed = this.data.calculated.idealSpeed || 100;
-    
-    speeds.forEach(function(s) {
-      var heightPercent = maxSpeed > 0 ? (s.speed / maxSpeed) * 100 : 0;
-      var color = s.speed >= idealSpeed ? '#4caf50' : (s.speed >= idealSpeed * 0.7 ? '#ff9800' : '#f44336');
-      
-      html += '<div class="speed-bar" style="height: ' + heightPercent + '%; background: linear-gradient(to top, ' + color + ', ' + color + 'aa);" data-value="' + s.speed.toFixed(0) + '"></div>';
-    });
-    
-    container.innerHTML = html;
-    
-    // Time labels
-    if (speeds.length > 0) {
-      document.getElementById('chartTimeStart').textContent = speeds[0].time.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('chartTimeEnd').textContent = speeds[speeds.length - 1].time.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
-    }
-  },
+    },
 
-  renderDowntimeList: function() {
-    var container = document.getElementById('downtimeList');
-    var byCategory = this.data.calculated.downtimeByCategory;
-    var categories = this.data.categories;
-    var totalDowntime = this.data.calculated.downtimeSec;
-    
-    if (Object.keys(byCategory).length === 0) {
-      container.innerHTML = '<div class="oee-loading">Nema zabilježenih zastoja</div>';
-      return;
-    }
-    
-    var html = '';
-    var self = this;
-    
-    // Sortiraj po trajanju
-    var sorted = Object.entries(byCategory).sort(function(a, b) {
-      return b[1].duration - a[1].duration;
-    });
-    
-    sorted.forEach(function(entry) {
-      var code = entry[0];
-      var data = entry[1];
-      
-      // Nađi kategoriju
-      var cat = categories.find(function(c) { return c.code === code; }) || { naziv: code, boja: '#999' };
-      var percent = totalDowntime > 0 ? (data.duration / totalDowntime * 100) : 0;
-      
-      html += '<div class="downtime-item">';
-      html += '<div class="downtime-color" style="background: ' + cat.boja + '"></div>';
-      html += '<div class="downtime-info">';
-      html += '<div class="downtime-name">' + cat.naziv + '</div>';
-      html += '<div class="downtime-count">' + data.count + ' zastoja</div>';
-      html += '</div>';
-      html += '<div class="downtime-duration">' + self.formatDuration(data.duration) + '</div>';
-      html += '<div class="downtime-percent">' + percent.toFixed(1) + '%</div>';
-      html += '</div>';
-    });
-    
-    container.innerHTML = html;
-  },
+    // Provjera: je li operator validan strojar/voditelj iz employees?
+    isValidStrojar: function(operatorName) {
+      if (!operatorName) return false;
+      // Ako još nije load-ano, dopusti sve (fallback)
+      if (this.data.validStrojariSet === null) return true;
+      var norm = operatorName.toUpperCase()
+        .replace(/Č/g, 'C').replace(/Ć/g, 'C').replace(/Š/g, 'S')
+        .replace(/Ž/g, 'Z').replace(/Đ/g, 'D');
+      return !!this.data.validStrojariSet[norm];
+    },
 
-  renderEventsTable: function() {
-    var tbody = document.getElementById('eventsTableBody');
-    var events = this.data.events;
-    
-    if (events.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="oee-loading">Nema događaja</td></tr>';
-      return;
-    }
-    
-    var html = '';
-    var self = this;
-    
-    // Reverse - najnoviji prvi
-    events.slice().reverse().forEach(function(e) {
-      var time = new Date(e.event_timestamp).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      var typeBadge = e.event_type === 'STOP' ? 'stop' : 'start';
-      var duration = e.duration_seconds ? self.formatDuration(e.duration_seconds) : '-';
-      
-      // Kategorija
-      var category = '-';
-      if (e.event_type === 'START' && e.duration_seconds) {
-        if (e.duration_seconds < 60) {
-          category = '<span class="event-badge mikro">MIKRO</span>';
-        } else {
-          category = '<span class="event-badge" style="background:#fff3e0;color:#e65100;">Nekat.</span>';
+    computePeriodDates: function() {
+      var today = new Date();
+      var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+      var fmt = function(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+
+      var period = this.state.period;
+      var from, to;
+
+      if (period === 'today') {
+        from = to = fmt(today);
+      } else if (period === 'week') {
+        var dow = today.getDay() || 7;
+        var monday = new Date(today);
+        monday.setDate(today.getDate() - (dow - 1));
+        from = fmt(monday);
+        to = fmt(today);
+      } else if (period === 'month') {
+        from = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+        to = fmt(today);
+      } else if (period === 'prev_month') {
+        from = fmt(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+        to = fmt(new Date(today.getFullYear(), today.getMonth(), 0));
+      } else if (period === 'custom') {
+        from = document.getElementById('oeeDateFrom').value;
+        to = document.getElementById('oeeDateTo').value;
+        if (!from || !to) {
+          from = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+          to = fmt(today);
         }
       }
-      
-      html += '<tr>';
-      html += '<td>' + time + '</td>';
-      html += '<td><span class="event-badge ' + typeBadge + '">' + e.event_type + '</span></td>';
-      html += '<td>' + duration + '</td>';
-      html += '<td>' + category + '</td>';
-      html += '<td>' + (e.work_order_number || '-') + '</td>';
-      html += '<td>' + (e.count_at_event || '-') + '</td>';
-      html += '</tr>';
-    });
-    
-    tbody.innerHTML = html;
-  },
 
-  formatDuration: function(seconds) {
-    if (!seconds || seconds < 0) return '0s';
-    
-    var h = Math.floor(seconds / 3600);
-    var m = Math.floor((seconds % 3600) / 60);
-    var s = seconds % 60;
-    
-    if (h > 0) {
-      return h + 'h ' + m + 'm';
-    } else if (m > 0) {
-      return m + 'm ' + s + 's';
-    } else {
-      return s + 's';
+      this.state.from = from;
+      this.state.to = to;
+      document.getElementById('oeePeriodInfo').textContent = 'od ' + from + ' do ' + to;
+
+      if (period !== 'custom') {
+        document.getElementById('oeeDateFrom').value = from;
+        document.getElementById('oeeDateTo').value = to;
+      }
+    },
+
+    loadData: async function() {
+      this.computePeriodDates();
+      this.showLoading(true);
+      try {
+        var sb = (typeof initSupabase === 'function') ? initSupabase() : null;
+        if (!sb) {
+          console.warn('Supabase not initialized');
+          this.showLoading(false);
+          return;
+        }
+
+        var from = this.state.from, to = this.state.to;
+        var linija = this.state.linija, stroj = this.state.stroj;
+
+        var dailyQ = sb.from('v_oee_daily_summary')
+          .select('*')
+          .gte('shift_date', from)
+          .lte('shift_date', to)
+          .order('shift_date', { ascending: true });
+        if (linija) dailyQ = dailyQ.eq('production_line', linija);
+        if (stroj) dailyQ = dailyQ.eq('machine_type', stroj);
+
+        var shiftsQ = sb.from('v_shift_reports_oee')
+          .select('*')
+          .gte('shift_date', from)
+          .lte('shift_date', to)
+          .order('shift_date', { ascending: false })
+          .order('shift_number', { ascending: true })
+          .limit(2000);
+        if (linija) shiftsQ = shiftsQ.eq('line_grouped', linija);
+        if (stroj) shiftsQ = shiftsQ.eq('machine_type', stroj);
+
+        // EPU view (samo NLI Bottomer) — paralelno
+        var epuQ = sb.from('v_oee_epu_shift')
+          .select('*')
+          .gte('shift_date', from)
+          .lte('shift_date', to)
+          .order('shift_date', { ascending: false })
+          .limit(2000);
+
+        var results = await Promise.all([dailyQ, shiftsQ, epuQ]);
+        if (results[0].error) throw results[0].error;
+        if (results[1].error) throw results[1].error;
+        // EPU error toleriraj — ako view ne postoji ili je problem s podacima, ostavi prazno
+        this.data.epuShifts = (results[2] && !results[2].error) ? (results[2].data || []) : [];
+        this.data.epuByShiftId = {};
+        var self2 = this;
+        this.data.epuShifts.forEach(function(e) {
+          if (e.shift_report_id) self2.data.epuByShiftId[e.shift_report_id] = e;
+        });
+
+        this.data.daily = results[0].data || [];
+        this.data.shiftsAll = (results[1].data || []).map(function(s) {
+          var run = parseFloat(s.run_hours) || 0;
+          var setup = parseFloat(s.setup_hours) || 0;
+          var wait = (parseFloat(s.waiting_hours) || 0) + (parseFloat(s.waiting_tuljke_hours) || 0);
+          s.active_hours = run + setup + wait;  // informativno (rad + priprema + čekanje)
+          var kom = parseInt(s.produced_quantity, 10) || 0;
+          // Kom/h = po SATU RADA (usklađeno s klasičnim bonus formulom)
+          s.kom_per_h = run > 0 ? Math.round(kom / run) : 0;
+          return s;
+        });
+
+        this.populateStrojarDropdown();
+        this.applyStrojarFilter();
+        this.render();
+      } catch (e) {
+        console.error('OEE loadData error:', e);
+        if (typeof showMessage === 'function') {
+          showMessage('Greška: ' + (e.message || e), 'error');
+        }
+      } finally {
+        this.showLoading(false);
+      }
+    },
+
+    populateStrojarDropdown: function() {
+      var sel = document.getElementById('oeeStrojar');
+      if (!sel) return;
+      var current = this.state.strojar;
+      var names = {};
+      this.data.shiftsAll.forEach(function(s) {
+        if (s.operator_name) names[s.operator_name] = true;
+      });
+      var sorted = Object.keys(names).sort(function(a, b) { return a.localeCompare(b, 'hr'); });
+      var html = '<option value="">Svi (' + sorted.length + ')</option>';
+      sorted.forEach(function(n) {
+        html += '<option value="' + n.replace(/"/g, '&quot;') + '"' + (n === current ? ' selected' : '') + '>' + n + '</option>';
+      });
+      sel.innerHTML = html;
+    },
+
+    applyStrojarFilter: function() {
+      var s = this.state.strojar;
+      this.data.shifts = s
+        ? this.data.shiftsAll.filter(function(sh) { return sh.operator_name === s; })
+        : this.data.shiftsAll.slice();
+    },
+
+    render: function() {
+      this.renderKPI();
+      this.renderGauges();
+      this.renderTrendChart();
+      this.renderShiftsTable();
+      this.renderStrojariTable();
+      // Po-stroju render samo kad je tab aktivan
+      var poStrojuActive = document.querySelector('.oee-tab-content[data-tab-content="po-stroju"].active');
+      if (poStrojuActive) this.renderPerMachine();
+      // Izvještaji isto re-load ako je tab aktivan (filter promjena)
+      var izvjAktiv = document.querySelector('.oee-tab-content[data-tab-content="izvjestaji"].active');
+      if (izvjAktiv) this.loadAndRenderReports();
+    },
+
+    renderPerMachine: function() {
+      var container = document.getElementById('oeePoStrojuContainer');
+      if (!container) return;
+      var self = this;
+      var html = '';
+
+      this.MACHINES.forEach(function(m) {
+        var lineKey = m.line.toLowerCase() === 'tisak' ? 'tisak' : m.line.toLowerCase();
+        // Filter shifts za ovu (linija, stroj) kombinaciju
+        // PLUS: samo smjene gdje je operator validan strojar/voditelj iz Djelatnici tablice
+        // (sprečava da se pomoćnici i pogrešno upisani nositelji pojavljuju u rankingu)
+        var shifts = self.data.shifts.filter(function(s) {
+          var sl = (s.line_grouped || s.production_line || '').toUpperCase();
+          var sm = s.machine_type || '';
+          if (sl !== m.line.toUpperCase() || sm.toLowerCase() !== m.machine.toLowerCase()) return false;
+          return self.isValidStrojar(s.operator_name);
+        });
+
+        html += '<div class="machine-card line-' + lineKey + '">';
+        html += '<div class="machine-card-header">';
+        html += '<span class="machine-title">' + m.label + '</span>';
+        html += '<span class="machine-line-pill ' + lineKey + '">' + m.line + '</span>';
+
+        if (shifts.length === 0) {
+          html += '</div><div class="machine-empty">Nema smjena za odabrani period i filtere</div></div>';
+          return;
+        }
+
+        // Agregat
+        var totalKom = 0, totalSkartKg = 0, totalActiveH = 0, oeeSum = 0, oeeN = 0, sumnjive = 0;
+        shifts.forEach(function(s) {
+          totalKom += parseInt(s.produced_quantity, 10) || 0;
+          totalSkartKg += parseFloat(s.scrap_kg) || 0;
+          totalActiveH += parseFloat(s.active_hours) || 0;
+          var oee = parseFloat(s.oee_pct) || 0;
+          if (oee > 0) { oeeSum += oee; oeeN++; }
+          if (s.is_suspicious) sumnjive++;
+        });
+        var totalKomH = totalActiveH > 0 ? Math.round(totalKom / totalActiveH) : 0;
+        var avgOee = oeeN > 0 ? oeeSum / oeeN : 0;
+
+        html += '<div class="machine-stats">';
+        html += '<span>Smjena: <strong>' + shifts.length + '</strong></span>';
+        html += '<span>Kom: <strong>' + self.formatBroj(totalKom) + '</strong></span>';
+        html += '<span>Škart: <strong>' + totalSkartKg.toFixed(1) + ' kg</strong></span>';
+        html += '<span>Aktivni h: <strong>' + totalActiveH.toFixed(1) + '</strong></span>';
+        html += '<span>Kom/h: <strong style="color:var(--primary);">' + self.formatBroj(totalKomH) + '</strong></span>';
+        html += '<span>Avg OEE: <strong class="' + self.colorClass(avgOee) + '">' + avgOee.toFixed(1) + '%</strong></span>';
+        if (sumnjive > 0) html += '<span>⚠️ <strong>' + sumnjive + '</strong></span>';
+        html += '</div>';
+        html += '</div>'; // /header
+
+        // Group by operator
+        var groups = {};
+        shifts.forEach(function(s) {
+          if (!s.operator_name) return;
+          var key = s.operator_name;
+          if (!groups[key]) {
+            groups[key] = {
+              operator_name: s.operator_name,
+              shifts_count: 0,
+              total_kom: 0, total_skart: 0,
+              total_active_h: 0, total_run_h: 0,
+              a_sum: 0, p_sum: 0, q_sum: 0, oee_sum: 0, oee_n: 0,
+              suspicious_count: 0,
+              skart_entered_count: 0
+            };
+          }
+          var g = groups[key];
+          g.shifts_count++;
+          g.total_kom += parseInt(s.produced_quantity, 10) || 0;
+          g.total_skart += parseFloat(s.scrap_kg) || 0;
+          if ((parseFloat(s.scrap_kg) || 0) > 0) g.skart_entered_count++;
+          g.total_active_h += parseFloat(s.active_hours) || 0;
+          g.total_run_h += parseFloat(s.run_hours) || 0;
+          g.a_sum += parseFloat(s.availability_pct) || 0;
+          g.p_sum += parseFloat(s.performance_pct) || 0;
+          g.q_sum += parseFloat(s.quality_pct) || 0;
+          var oee = parseFloat(s.oee_pct) || 0;
+          if (oee > 0) { g.oee_sum += oee; g.oee_n++; }
+          if (s.is_suspicious) g.suspicious_count++;
+        });
+
+        var rows = Object.values(groups).map(function(g) {
+          g.kom_per_h = g.total_active_h > 0 ? Math.round(g.total_kom / g.total_active_h) : 0;
+          g.avg_a = g.shifts_count > 0 ? g.a_sum / g.shifts_count : 0;
+          g.avg_p = g.shifts_count > 0 ? g.p_sum / g.shifts_count : 0;
+          g.avg_q = g.shifts_count > 0 ? g.q_sum / g.shifts_count : 0;
+          g.avg_oee = g.oee_n > 0 ? g.oee_sum / g.oee_n : 0;
+          return g;
+        });
+        // Sort by Kom/h DESC
+        rows.sort(function(a, b) { return b.kom_per_h - a.kom_per_h; });
+
+        html += '<div style="overflow-x:auto;"><table class="oee-shifts-table">';
+        html += '<thead><tr>';
+        html += '<th style="width:50px;">#</th>';
+        html += '<th>Strojar</th>';
+        html += '<th>Smjena</th>';
+        html += '<th>Ukupno kom</th>';
+        html += '<th>Škart kg</th>';
+        html += '<th>Aktivni h</th>';
+        html += '<th>Kom/h</th>';
+        html += '<th>A %</th>';
+        html += '<th>P %</th>';
+        html += '<th>Q %</th>';
+        html += '<th>OEE %</th>';
+        html += '<th>⚠️</th>';
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(function(g, i) {
+          var rankClass = i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : ''));
+          var rankIcon = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '#' + (i + 1)));
+          var oeeClass = self.colorClass(g.avg_oee);
+          html += '<tr>';
+          html += '<td><span class="rank-pos ' + rankClass + '">' + rankIcon + '</span></td>';
+          html += '<td><strong>' + g.operator_name + '</strong></td>';
+          html += '<td style="text-align:right;">' + g.shifts_count + '</td>';
+          html += '<td style="text-align:right;">' + self.formatBroj(g.total_kom) + '</td>';
+          html += '<td style="text-align:right;">' + (g.total_skart > 0 ? g.total_skart.toFixed(1) : '<span style="color:var(--text-lo);">—</span>') + '</td>';
+          html += '<td style="text-align:right;">' + g.total_active_h.toFixed(1) + '</td>';
+          html += '<td style="text-align:right; font-weight:700; color:var(--primary);">' + self.formatBroj(g.kom_per_h) + '</td>';
+          html += '<td style="text-align:right;">' + g.avg_a.toFixed(1) + '</td>';
+          html += '<td style="text-align:right;">' + g.avg_p.toFixed(1) + '</td>';
+          html += '<td style="text-align:right;">' + g.avg_q.toFixed(1) + '</td>';
+          html += '<td class="' + oeeClass + '" style="text-align:right;">' + g.avg_oee.toFixed(1) + '</td>';
+          html += '<td style="text-align:center;">' + (g.suspicious_count > 0 ? '<span style="color:#e65100;">' + g.suspicious_count + '</span>' : '<span style="color:var(--text-lo);">0</span>') + '</td>';
+          html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        html += '</div>'; // /machine-card
+      });
+
+      container.innerHTML = html;
+    },
+
+    // ============================================
+    // SMJENSKI IZVJEŠTAJI (tab "Izvještaji")
+    // ============================================
+
+    getCurrentUserInfo: function() {
+      // Pronađi user info iz Auth modula ili localStorage session
+      var u = null;
+      if (window.Auth && Auth.currentUser) u = Auth.currentUser;
+      if (!u && typeof CONFIG !== 'undefined' && CONFIG.SESSION_KEY) {
+        try {
+          var s = localStorage.getItem(CONFIG.SESSION_KEY);
+          if (s) u = JSON.parse(s);
+        } catch (e) {}
+      }
+      return u || {};
+    },
+
+    isAdmin: function() {
+      var u = this.getCurrentUserInfo();
+      return u && (u.role === 'superadmin' || u.role === 'admin');
+    },
+
+    canEditReport: function(report) {
+      // Admin/superadmin → uvijek može
+      if (this.isAdmin()) return { ok: true, reason: 'admin' };
+      // Ostali → samo ako je shift_date = trenutni proizvodni datum
+      var prod = (typeof getProductionDate === 'function') ? getProductionDate() : (new Date()).toISOString().slice(0, 10);
+      if (report.shift_date === prod) return { ok: true, reason: 'today' };
+      return { ok: false, reason: 'historical' };
+    },
+
+    loadAndRenderReports: async function() {
+      var self = this;
+      var sb = (typeof initSupabase === 'function') ? initSupabase() : null;
+      if (!sb) return;
+
+      this.computePeriodDates();
+      var from = this.state.from, to = this.state.to;
+      var linija = this.state.linija, stroj = this.state.stroj, strojar = this.state.strojar;
+
+      // Permission banner
+      var u = this.getCurrentUserInfo();
+      var bannerEl = document.getElementById('oeeIzvjestajiPermBanner');
+      if (this.isAdmin()) {
+        bannerEl.innerHTML = '<div style="background:var(--remap-success-bg); border-left:4px solid var(--success); padding:10px 14px; border-radius:6px; margin-bottom:12px; font-size:0.88em;">' +
+          '🔓 <strong>Admin pristup:</strong> možeš mijenjati sve izvještaje (uključujući povijesne).' +
+          '</div>';
+      } else {
+        bannerEl.innerHTML = '<div style="background:var(--remap-warning-bg); border-left:4px solid var(--warning); padding:10px 14px; border-radius:6px; margin-bottom:12px; font-size:0.88em;">' +
+          '🔒 <strong>Strojar / voditelj:</strong> možeš mijenjati samo izvještaje za <strong>današnji proizvodni datum</strong>. Povijesni unosi su zaključani (sprečavanje retroaktivne korekcije rezultata).' +
+          '</div>';
+      }
+
+      try {
+        // Dohvati sirove izvještaje (s report_data) — koristimo direktno prod_shift_reports
+        var q = sb.from('prod_shift_reports')
+          .select('id, shift_date, shift_number, production_line, machine_type, strojar, pomocnici, report_data, napomena, created_at, updated_at')
+          .gte('shift_date', from)
+          .lte('shift_date', to)
+          .order('shift_date', { ascending: false })
+          .order('shift_number', { ascending: true })
+          .limit(2000);
+
+        if (linija) {
+          if (linija === 'TISAK') {
+            q = q.is('production_line', null); // Tisak ima production_line=NULL
+          } else {
+            q = q.eq('production_line', linija);
+          }
+        }
+        if (stroj) q = q.eq('machine_type', stroj);
+        if (strojar) q = q.eq('strojar', strojar);
+
+        var res = await q;
+        if (res.error) throw res.error;
+
+        this.data.rawReports = res.data || [];
+        this.renderReportsList();
+      } catch (e) {
+        console.error('loadReports:', e);
+        document.getElementById('oeeIzvjestajiBody').innerHTML =
+          '<tr><td colspan="11" style="text-align:center; padding:20px; color:var(--danger);">Greška: ' + (e.message || e) + '</td></tr>';
+      }
+    },
+
+    renderReportsList: function() {
+      var self = this;
+      var rows = this.data.rawReports;
+      var tbody = document.getElementById('oeeIzvjestajiBody');
+
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px; color:var(--text-lo);">Nema izvještaja u periodu</td></tr>';
+        document.getElementById('oeeIzvjestajiCount').textContent = '';
+        return;
+      }
+
+      // Map shifts (s OEE-om) by id da znamo OEE %
+      var oeeMap = {};
+      this.data.shiftsAll.forEach(function(s) { if (s.id) oeeMap[s.id] = s; });
+
+      var html = rows.map(function(r) {
+        var oeeShift = oeeMap[r.id];
+        var oeePct = oeeShift ? (parseFloat(oeeShift.oee_pct) || 0) : 0;
+        var oeeClass = self.colorClass(oeePct);
+        var perm = self.canEditReport(r);
+        var lockIcon = perm.ok ? '<span class="report-edit-icon">✏️ Otvori</span>' : '<span class="report-locked-icon">🔒 Zaključano</span>';
+        var statusBadge = oeeShift && oeeShift.is_suspicious ? '<span class="badge-warn" title="Sumnjiv unos">⚠️</span>' : '<span class="badge-ok">✓</span>';
+        // Count nalozi
+        var rd = r.report_data || {};
+        var nalogeCount = 0;
+        if (rd.nalozi && rd.nalozi.length) nalogeCount = rd.nalozi.length;
+        else if (rd.work_orders && rd.work_orders.length) nalogeCount = rd.work_orders.length;
+        else if (rd.rows && rd.rows.length) nalogeCount = rd.rows.length;
+        var totalKom = oeeShift ? (parseInt(oeeShift.produced_quantity, 10) || 0) : 0;
+
+        return '<tr class="report-row-clickable" onclick="OEE.openEditModal(\'' + r.id + '\')">' +
+          '<td>' + r.shift_date + '</td>' +
+          '<td>' + r.shift_number + '</td>' +
+          '<td>' + (r.production_line || (r.machine_type === 'Tisak' ? 'TISAK' : '-')) + '</td>' +
+          '<td>' + (r.machine_type || '-') + '</td>' +
+          '<td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + (r.strojar || '') + '">' + (r.strojar || '<span style="color:var(--text-lo);">—</span>') + '</td>' +
+          '<td style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.85em; color:var(--text-mid);" title="' + (r.pomocnici || '') + '">' + (r.pomocnici || '') + '</td>' +
+          '<td style="text-align:right;">' + nalogeCount + '</td>' +
+          '<td style="text-align:right;">' + self.formatBroj(totalKom) + '</td>' +
+          '<td style="text-align:right;">' + (oeeShift && parseFloat(oeeShift.scrap_kg) > 0 ? (parseFloat(oeeShift.scrap_kg)).toFixed(1) : '<span style="color:var(--text-lo);">—</span>') + '</td>' +
+          '<td class="' + oeeClass + '" style="text-align:right;">' + oeePct.toFixed(1) + '</td>' +
+          '<td style="text-align:center;">' + statusBadge + '</td>' +
+          '<td style="text-align:center;">' + lockIcon + '</td>' +
+          '</tr>';
+      }).join('');
+
+      tbody.innerHTML = html;
+      document.getElementById('oeeIzvjestajiCount').textContent = '(' + rows.length + ' izvještaja)';
+    },
+
+    openEditModal: function(reportId) {
+      var report = this.data.rawReports.find(function(r) { return r.id === reportId; });
+      if (!report) return;
+
+      var perm = this.canEditReport(report);
+      this.data.editing = { report: report, canEdit: perm.ok, reason: perm.reason };
+
+      var modal = document.getElementById('oeeEditModal');
+      var title = document.getElementById('oeeModalTitle');
+      var info = document.getElementById('oeeModalInfo');
+      var permEl = document.getElementById('oeeModalPermission');
+
+      title.textContent = 'Izvještaj ' + (report.production_line || 'TISAK') + ' / ' + (report.machine_type || '-') + ' / ' + report.shift_date + ' (sm. ' + report.shift_number + ')';
+
+      info.innerHTML =
+        '<div><span>Datum:</span> <strong>' + report.shift_date + '</strong></div>' +
+        '<div><span>Smjena:</span> <strong>' + report.shift_number + '</strong></div>' +
+        '<div><span>Linija:</span> <strong>' + (report.production_line || (report.machine_type === 'Tisak' ? 'TISAK' : '-')) + '</strong></div>' +
+        '<div><span>Stroj:</span> <strong>' + (report.machine_type || '-') + '</strong></div>' +
+        '<div><span>Kreirano:</span> <strong>' + (report.created_at ? report.created_at.slice(0, 16).replace('T', ' ') : '-') + '</strong></div>' +
+        '<div><span>Updateano:</span> <strong>' + (report.updated_at ? report.updated_at.slice(0, 16).replace('T', ' ') : '-') + '</strong></div>';
+
+      if (perm.ok) {
+        permEl.className = 'oee-modal-permission editable';
+        permEl.innerHTML = perm.reason === 'admin'
+          ? '🔓 <strong>Admin korekcija</strong> — možeš mijenjati sva polja.'
+          : '✏️ <strong>Korekcija današnjeg unosa</strong> — možeš ispraviti vlastite greške.';
+      } else {
+        permEl.className = 'oee-modal-permission readonly';
+        permEl.innerHTML = '🔒 <strong>Povijesni unos</strong> — samo pregled. Izmjene može napraviti samo admin (sprečavanje retroaktivne korekcije rezultata).';
+      }
+
+      // Populate meta inputs
+      document.getElementById('oeeEditStrojar').value = report.strojar || '';
+      document.getElementById('oeeEditPomocnici').value = report.pomocnici || '';
+      document.getElementById('oeeEditNapomena').value = report.napomena || '';
+      document.getElementById('oeeEditStrojar').disabled = !perm.ok;
+      document.getElementById('oeeEditPomocnici').disabled = !perm.ok;
+      document.getElementById('oeeEditNapomena').disabled = !perm.ok;
+
+      // Render naloge tablicu
+      this.renderEditRows(report, perm.ok);
+
+      // Save button visibility
+      document.getElementById('oeeBtnSave').style.display = perm.ok ? '' : 'none';
+
+      modal.classList.add('active');
+    },
+
+    closeEditModal: function() {
+      document.getElementById('oeeEditModal').classList.remove('active');
+      this.data.editing = null;
+    },
+
+    renderEditRows: function(report, editable) {
+      var rd = report.report_data || {};
+      var mt = (report.machine_type || '').toLowerCase();
+      var wrap = document.getElementById('oeeEditTableWrap');
+      var disabled = editable ? '' : ' disabled';
+
+      var rows, html;
+
+      if (mt === 'bottomer') {
+        rows = rd.nalozi || [];
+        html = '<table class="report-edit-table"><thead><tr>' +
+          '<th>RN</th><th>Opis</th><th>Kom</th><th>Škart kg</th><th>Škart kom</th>' +
+          '<th>Preštel.</th><th>Rad</th><th>Kvar</th><th>Čekanje tuljke</th>' +
+          '<th>Van stroja</th><th>Čekanje</th><th>Čišćenje</th>' +
+          '</tr></thead><tbody>';
+        rows.forEach(function(n, i) {
+          html += '<tr data-idx="' + i + '">';
+          html += '<td><input type="text" data-fld="rn" value="' + (n.rn || '') + '"' + disabled + '></td>';
+          html += '<td><input type="text" data-fld="opis" value="' + (n.opis || '').replace(/"/g, '&quot;') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="kom" value="' + (n.kom != null ? n.kom : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="skart" value="' + (n.skart != null ? n.skart : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="skart_kom" value="' + (n.skart_kom != null ? n.skart_kom : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="prestelavanje" value="' + (n.prestelavanje != null ? n.prestelavanje : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="rad" value="' + (n.rad != null ? n.rad : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="kvar" value="' + (n.kvar != null ? n.kvar : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="cekanje_tuljke" value="' + (n.cekanje_tuljke != null ? n.cekanje_tuljke : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="van_stroja" value="' + (n.van_stroja != null ? n.van_stroja : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="cekanje" value="' + (n.cekanje != null ? n.cekanje : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="ciscenje" value="' + (n.ciscenje != null ? n.ciscenje : '') + '"' + disabled + '></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      } else if (mt === 'tuber') {
+        rows = rd.work_orders || [];
+        html = '<table class="report-edit-table"><thead><tr>' +
+          '<th>RN</th><th>Opis</th><th>Kom</th><th>Škart kg</th><th>Škart kom</th>' +
+          '<th>Preštel.</th><th>Rad</th><th>Kvar</th><th>Čekanje tiska</th>' +
+          '<th>Van stroja</th><th>Čekanje bottomera</th><th>Čišćenje</th>' +
+          '</tr></thead><tbody>';
+        rows.forEach(function(n, i) {
+          html += '<tr data-idx="' + i + '">';
+          html += '<td><input type="text" data-fld="wo_number" value="' + (n.wo_number || '') + '"' + disabled + '></td>';
+          html += '<td><input type="text" data-fld="opis" value="' + (n.opis || '').replace(/"/g, '&quot;') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="kom" value="' + (n.kom != null ? n.kom : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="skart" value="' + (n.skart != null ? n.skart : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="skartKom" value="' + (n.skartKom != null ? n.skartKom : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="prestelavanje" value="' + (n.prestelavanje != null ? n.prestelavanje : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="rad" value="' + (n.rad != null ? n.rad : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="kvar" value="' + (n.kvar != null ? n.kvar : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="cekanjeTuljke" value="' + (n.cekanjeTuljke != null ? n.cekanjeTuljke : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="vanStroja" value="' + (n.vanStroja != null ? n.vanStroja : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="cekanje" value="' + (n.cekanje != null ? n.cekanje : '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="ciscenje" value="' + (n.ciscenje != null ? n.ciscenje : '') + '"' + disabled + '></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      } else if (mt === 'tisak') {
+        rows = rd.rows || [];
+        html = '<table class="report-edit-table"><thead><tr>' +
+          '<th>RN</th><th>Opis</th><th>Metri</th><th>Kom</th><th>Škart kom</th>' +
+          '<th>Preštel.</th><th>Priprema</th><th>Pripr. rad</th>' +
+          '<th>Rad</th><th>Kvar</th><th>Čekanje</th><th>Van stroja</th><th>Čišćenje</th>' +
+          '</tr></thead><tbody>';
+        rows.forEach(function(n, i) {
+          html += '<tr data-idx="' + i + '">';
+          html += '<td><input type="text" data-fld="wo_number" value="' + (n.wo_number || '') + '"' + disabled + '></td>';
+          html += '<td><input type="text" data-fld="opis" value="' + (n.opis || '').replace(/"/g, '&quot;') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="metri" value="' + (n.metri || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="kom" value="' + (n.kom || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" data-fld="skart_kom" value="' + (n.skart_kom || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="prestel" value="' + (n.prestel || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="priprema" value="' + (n.priprema || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="pripremaRad" value="' + (n.pripremaRad || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="rad" value="' + (n.rad || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="kvar" value="' + (n.kvar || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="cekanje" value="' + (n.cekanje || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="vanStroja" value="' + (n.vanStroja || '') + '"' + disabled + '></td>';
+          html += '<td><input type="number" step="0.1" data-fld="ciscenje" value="' + (n.ciscenje || '') + '"' + disabled + '></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      } else {
+        html = '<div style="padding:20px; color:var(--text-lo);">Nepoznat tip stroja: ' + report.machine_type + '. Ne mogu prikazati edit formu.</div>';
+      }
+
+      wrap.innerHTML = html;
+    },
+
+    saveReport: async function() {
+      if (!this.data.editing) return;
+      var ed = this.data.editing;
+      if (!ed.canEdit) {
+        if (typeof showMessage === 'function') showMessage('Nemaš pravo izmjene povijesnog unosa', 'error');
+        return;
+      }
+
+      var report = ed.report;
+      var mt = (report.machine_type || '').toLowerCase();
+      var rd = JSON.parse(JSON.stringify(report.report_data || {})); // deep copy
+
+      // Prikupi izmjene iz tablice
+      var trs = document.querySelectorAll('#oeeEditTableWrap tbody tr');
+      var listKey = mt === 'bottomer' ? 'nalozi' : (mt === 'tuber' ? 'work_orders' : 'rows');
+      var arr = rd[listKey] || [];
+
+      // Akumulator za ukupno
+      var ukupno = {};
+      var anySkartKom = false;
+      var anySkartKomCamel = false;
+
+      trs.forEach(function(tr) {
+        var idx = parseInt(tr.getAttribute('data-idx'), 10);
+        var item = arr[idx] || {};
+        tr.querySelectorAll('input[data-fld]').forEach(function(inp) {
+          var fld = inp.getAttribute('data-fld');
+          var v = inp.value;
+          if (inp.type === 'number') {
+            if (v === '') {
+              item[fld] = (fld === 'skart_kom' || fld === 'skartKom') ? null : 0;
+            } else {
+              item[fld] = parseFloat(v);
+            }
+          } else {
+            item[fld] = v;
+          }
+          if (fld === 'skart_kom' && v !== '') anySkartKom = true;
+          if (fld === 'skartKom' && v !== '') anySkartKomCamel = true;
+        });
+        arr[idx] = item;
+      });
+
+      // Recompute "ukupno"
+      arr.forEach(function(it) {
+        for (var k in it) {
+          if (typeof it[k] === 'number') {
+            ukupno[k] = (ukupno[k] || 0) + it[k];
+          }
+        }
+      });
+
+      // Ako nitko nije unio škart_kom → postavi null
+      if (mt === 'tuber') {
+        if (!anySkartKomCamel) ukupno.skartKom = null;
+      } else if (mt === 'bottomer') {
+        if (!anySkartKom) ukupno.skart_kom = null;
+      } else if (mt === 'tisak') {
+        // Tisak je dijelom string-based u ukupno; ostavi nepromijenjeno za time fields, samo set skart_kom
+        if (!anySkartKom) ukupno.skart_kom = '';
+      }
+
+      rd[listKey] = arr;
+      rd.ukupno = ukupno;
+
+      // Update payload
+      var payload = {
+        strojar: document.getElementById('oeeEditStrojar').value || null,
+        pomocnici: document.getElementById('oeeEditPomocnici').value || null,
+        napomena: document.getElementById('oeeEditNapomena').value || null,
+        report_data: rd,
+        updated_at: new Date().toISOString()
+      };
+
+      var btn = document.getElementById('oeeBtnSave');
+      btn.disabled = true;
+      btn.textContent = '⏳ Spremam...';
+
+      try {
+        var sb = initSupabase();
+        var res = await sb.from('prod_shift_reports')
+          .update(payload)
+          .eq('id', report.id)
+          .select()
+          .single();
+
+        if (res.error) throw res.error;
+
+        if (typeof showMessage === 'function') showMessage('💾 Izvještaj spremljen', 'success');
+        this.closeEditModal();
+        // Reload OEE data + reports list
+        await this.loadData();
+        await this.loadAndRenderReports();
+      } catch (e) {
+        console.error('saveReport:', e);
+        if (typeof showMessage === 'function') showMessage('Greška: ' + (e.message || e), 'error');
+        else alert('Greška: ' + (e.message || e));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Spremi';
+      }
+    },
+
+    renderKPI: function() {
+      var totalKom = 0, totalSkartKg = 0, sumnjive = 0;
+      this.data.shifts.forEach(function(s) {
+        totalKom += parseInt(s.produced_quantity, 10) || 0;
+        totalSkartKg += parseFloat(s.scrap_kg) || 0;
+        if (s.is_suspicious) sumnjive++;
+      });
+      document.getElementById('oeeKpiKom').textContent = this.formatBroj(totalKom);
+      document.getElementById('oeeKpiSkart').textContent = totalSkartKg.toFixed(1);
+      document.getElementById('oeeKpiSmjena').textContent = this.data.shifts.length;
+      document.getElementById('oeeKpiSmjenaSub').textContent = '(' + this.data.daily.length + ' dnevnih sažetaka)';
+      document.getElementById('oeeKpiSumnjive').textContent = sumnjive;
+    },
+
+    renderGauges: function() {
+      var n = this.data.shifts.length;
+      var aSum = 0, pSum = 0, qSum = 0, oeeSum = 0;
+      this.data.shifts.forEach(function(s) {
+        aSum += parseFloat(s.availability_pct) || 0;
+        pSum += parseFloat(s.performance_pct) || 0;
+        qSum += parseFloat(s.quality_pct) || 0;
+        oeeSum += parseFloat(s.oee_pct) || 0;
+      });
+      var avg = function(sum) { return n > 0 ? sum / n : 0; };
+
+      this.setGauge('gaugeOEE', 'gaugeBarOEE', avg(oeeSum));
+      this.setGauge('gaugeA', 'gaugeBarA', avg(aSum));
+      this.setGauge('gaugeP', 'gaugeBarP', avg(pSum));
+      this.setGauge('gaugeQ', 'gaugeBarQ', avg(qSum));
+    },
+
+    setGauge: function(valId, barId, val) {
+      var v = isNaN(val) ? 0 : Math.max(0, Math.min(100, val));
+      document.getElementById(valId).textContent = v.toFixed(1) + '%';
+      document.getElementById(barId).style.width = v + '%';
+    },
+
+    renderTrendChart: function() {
+      var canvas = document.getElementById('oeeTrendChart');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+
+      var byDate = {};
+      this.data.daily.forEach(function(d) {
+        if (!byDate[d.shift_date]) byDate[d.shift_date] = { a: [], p: [], q: [], oee: [] };
+        byDate[d.shift_date].a.push(parseFloat(d.avg_availability) || 0);
+        byDate[d.shift_date].p.push(parseFloat(d.avg_performance) || 0);
+        byDate[d.shift_date].q.push(parseFloat(d.avg_quality) || 0);
+        byDate[d.shift_date].oee.push(parseFloat(d.avg_oee) || 0);
+      });
+      var dates = Object.keys(byDate).sort();
+      var avg = function(arr) { return arr.length ? arr.reduce(function(a, b) { return a + b; }, 0) / arr.length : 0; };
+      var seriesA = dates.map(function(d) { return avg(byDate[d].a); });
+      var seriesP = dates.map(function(d) { return avg(byDate[d].p); });
+      var seriesQ = dates.map(function(d) { return avg(byDate[d].q); });
+      var seriesOEE = dates.map(function(d) { return avg(byDate[d].oee); });
+
+      var dpr = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
+      var cssW = rect.width || 1200;
+      var cssH = 320;
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      var w = cssW, h = cssH;
+      var padL = 45, padR = 20, padT = 20, padB = 30;
+      var plotW = w - padL - padR, plotH = h - padT - padB;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (dates.length === 0) {
+        ctx.fillStyle = '#999';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Nema podataka za odabrani period', w / 2, h / 2);
+        document.getElementById('oeeTrendSubtitle').textContent = '';
+        return;
+      }
+
+      ctx.strokeStyle = '#eee';
+      ctx.fillStyle = '#999';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'right';
+      for (var y = 0; y <= 100; y += 25) {
+        var py = padT + plotH * (1 - y / 100);
+        ctx.beginPath();
+        ctx.moveTo(padL, py);
+        ctx.lineTo(padL + plotW, py);
+        ctx.stroke();
+        ctx.fillText(y + '%', padL - 5, py + 3);
+      }
+
+      ctx.textAlign = 'center';
+      var xStep = dates.length > 1 ? plotW / (dates.length - 1) : 0;
+      var labelEvery = Math.max(1, Math.ceil(dates.length / 12));
+      dates.forEach(function(d, i) {
+        var px = padL + i * xStep;
+        if (i % labelEvery === 0 || i === dates.length - 1) {
+          ctx.fillText(d.slice(5), px, padT + plotH + 18);
+        }
+      });
+
+      var drawLine = function(series, color, lineWidth) {
+        if (series.length === 0) return;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        series.forEach(function(v, i) {
+          var px = padL + i * xStep;
+          var py = padT + plotH * (1 - v / 100);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+        ctx.fillStyle = color;
+        series.forEach(function(v, i) {
+          var px = padL + i * xStep;
+          var py = padT + plotH * (1 - v / 100);
+          ctx.beginPath();
+          ctx.arc(px, py, lineWidth + 1, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      };
+
+      drawLine(seriesA, '#4caf50', 1.5);
+      drawLine(seriesP, '#2196f3', 1.5);
+      drawLine(seriesQ, '#ff9800', 1.5);
+      drawLine(seriesOEE, '#1565c0', 3);
+
+      document.getElementById('oeeTrendSubtitle').textContent = dates.length + ' dana';
+    },
+
+    renderShiftsTable: function() {
+      var rows = this.data.shifts.slice();
+      var sk = this.state.sortKey, sd = this.state.sortDir;
+      if (sk) {
+        rows.sort(function(a, b) {
+          var av = a[sk], bv = b[sk];
+          if (av == null) av = '';
+          if (bv == null) bv = '';
+          var an = parseFloat(av), bn = parseFloat(bv);
+          var bothNum = !isNaN(an) && !isNaN(bn) && (typeof av !== 'string' || /^-?[\d.]+$/.test(av));
+          if (bothNum) { av = an; bv = bn; }
+          if (av < bv) return sd === 'asc' ? -1 : 1;
+          if (av > bv) return sd === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      var tbody = document.getElementById('oeeShiftsBody');
+      // EPU kolone i sekcija vidljive svima za NLI Bottomer (pregled OEE detalja)
+      // Bonus brojke se ipak ne prikazuju krajnjim korisnicima — kolona Bonus € je isključena u render-u za ne-admina
+      var table = tbody.closest('table');
+      var showEpu = (this.state.linija === 'NLI' && this.state.stroj === 'Bottomer');
+      if (table) table.classList.toggle('hide-epu', !showEpu);
+      // Toggle EPU sažetak sekciju
+      var epuSection = document.getElementById('oeeEpuSection');
+      if (epuSection) epuSection.style.display = showEpu ? '' : 'none';
+      // Bonus € KPI kartica unutar EPU sekcije — sakri za ne-admin (u sklopu sekcije)
+      var bonusKpis = document.querySelectorAll('#oeeEpuSection .kpi-card');
+      var isAdmin = this.isAdmin();
+      bonusKpis.forEach(function(c, i) {
+        // 4. KPI ("Ukupno isplaćeno €") sakrij za ne-admina
+        if (i === 3) c.style.display = isAdmin ? '' : 'none';
+        // 3. KPI ("Avg bonus / smjena") sakrij za ne-admina
+        if (i === 2) c.style.display = isAdmin ? '' : 'none';
+      });
+
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="21" style="text-align:center; padding:20px; color:var(--text-lo);">Nema smjena u periodu</td></tr>';
+        document.getElementById('oeeShiftsCount').textContent = '';
+        return;
+      }
+
+      var self = this;
+      var html = rows.map(function(s) {
+        var oeeClass = self.colorClass(s.oee_pct);
+        var rowClass = s.is_suspicious ? 'suspicious' : '';
+        var statusBadge = s.is_suspicious
+          ? '<span class="badge-warn" title="Sumnjiv unos — provjeri rad/kvar/škart">⚠️</span>'
+          : '<span class="badge-ok">✓</span>';
+
+        // EPU podaci za ovu smjenu (ako je NLI Bottomer)
+        var epu = self.data.epuByShiftId[s.id];
+        var epuCells = '';
+        var isAdminLocal = self.isAdmin();
+        if (epu) {
+          var spdClass = epu.epu_computable ? (epu.speed_gate_passed ? 'gate-pass' : 'gate-fail') : 'epu-na';
+          var utlClass = epu.util_pct != null ? (epu.util_gate_passed ? 'gate-pass' : 'gate-fail') : 'epu-na';
+          // Bonus € — vidljiv samo adminu; ostali vide "—"
+          var bonusCell = isAdminLocal
+            ? ('<td class="epu-col" style="text-align:right; font-weight:700; color:' + (parseFloat(epu.bonus_postavi_eur) > 0 ? '#2e7d32' : '#999') + ';">' +
+                (parseFloat(epu.bonus_postavi_eur) > 0 ? parseFloat(epu.bonus_postavi_eur).toFixed(2) : '<span class="epu-na">0</span>') + '</td>')
+            : '<td class="epu-col" title="Bonus dostupno samo administratoru"><span class="epu-na">—</span></td>';
+          epuCells =
+            '<td class="epu-col" style="text-align:right;">' + (epu.epu_computable ? Math.round(parseFloat(epu.epu_proizvodnja || 0)) : '<span class="epu-na">—</span>') + '</td>' +
+            '<td class="epu-col ' + spdClass + '" style="text-align:right;">' + (epu.speed_pct != null ? parseFloat(epu.speed_pct).toFixed(1) : '<span class="epu-na">—</span>') + '</td>' +
+            '<td class="epu-col ' + utlClass + '" style="text-align:right;">' + (epu.util_pct != null ? parseFloat(epu.util_pct).toFixed(1) : '<span class="epu-na">—</span>') + '</td>' +
+            bonusCell;
+        } else {
+          epuCells =
+            '<td class="epu-col"><span class="epu-na">—</span></td>'.repeat(4);
+        }
+
+        return '<tr class="' + rowClass + '">' +
+          '<td>' + s.shift_date + '</td>' +
+          '<td>' + s.shift_number + '</td>' +
+          '<td>' + (s.line_grouped || '-') + '</td>' +
+          '<td>' + (s.machine_type || '-') + '</td>' +
+          '<td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + (s.operator_name || '') + '">' + (s.operator_name || '-') + '</td>' +
+          '<td style="text-align:right;">' + (s.orders_count || 0) + '</td>' +
+          '<td style="text-align:right;">' + self.formatBroj(s.produced_quantity || 0) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.scrap_kg) > 0 ? (parseFloat(s.scrap_kg)).toFixed(1) : '<span style="color:var(--text-lo);">—</span>') + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.run_hours) || 0).toFixed(1) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.active_hours) || 0).toFixed(1) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.total_downtime_hours) || 0).toFixed(1) + '</td>' +
+          '<td style="text-align:right; font-weight:600;">' + self.formatBroj(s.kom_per_h || 0) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.availability_pct) || 0).toFixed(1) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.performance_pct) || 0).toFixed(1) + '</td>' +
+          '<td style="text-align:right;">' + (parseFloat(s.quality_pct) || 0).toFixed(1) + '</td>' +
+          '<td class="' + oeeClass + '" style="text-align:right;"><strong>' + (parseFloat(s.oee_pct) || 0).toFixed(1) + '</strong></td>' +
+          epuCells +
+          '<td style="text-align:center;">' + statusBadge + '</td>' +
+          '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+      document.getElementById('oeeShiftsCount').textContent = '(' + rows.length + ' smjena)';
+
+      // EPU sažetak ispod tabele (samo NLI Bottomer)
+      if (showEpu) this.renderEpuSummary();
+    },
+
+    renderEpuSummary: function() {
+      var data = this.data.epuShifts || [];
+      // Filter prema linija/stroj filterima već je primjenjen u SQL view-u (NLI Bottomer fixed),
+      // ali period filter je u select query — to već radi.
+      // Plus: ako je strojar filter postavljen, primjeni client-side.
+      var stroj = this.state.strojar;
+      if (stroj) data = data.filter(function(e) { return e.operator_name === stroj; });
+
+      var n = data.length;
+      var computable = data.filter(function(e) { return e.epu_computable; });
+      var withBonus = data.filter(function(e) { return parseFloat(e.bonus_postavi_eur) > 0; });
+
+      var avgEpu = computable.length > 0
+        ? Math.round(computable.reduce(function(a, e) { return a + parseFloat(e.epu_proizvodnja || 0); }, 0) / computable.length)
+        : 0;
+      var pctBonus = n > 0 ? (100 * withBonus.length / n) : 0;
+      var avgBonus = withBonus.length > 0
+        ? withBonus.reduce(function(a, e) { return a + parseFloat(e.bonus_postavi_eur || 0); }, 0) / withBonus.length
+        : 0;
+      var totalBonus = data.reduce(function(a, e) { return a + parseFloat(e.bonus_postavi_eur || 0); }, 0);
+
+      document.getElementById('epuKpiAvg').textContent = this.formatBroj(avgEpu);
+      document.getElementById('epuKpiPctBonus').textContent = pctBonus.toFixed(1) + '%';
+      document.getElementById('epuKpiPctBonusSub').textContent = withBonus.length + ' / ' + n + ' smjena';
+      document.getElementById('epuKpiAvgBonus').textContent = avgBonus > 0 ? avgBonus.toFixed(2) + ' €' : '—';
+      document.getElementById('epuKpiTotal').textContent = totalBonus.toFixed(2) + ' €';
+      document.getElementById('epuComputableInfo').innerHTML =
+        '📊 <strong>' + computable.length + '</strong> od ' + n + ' smjena ima EPU izračunat (' +
+        (n > 0 ? Math.round(100 * computable.length / n) : 0) + '%). ' +
+        'Ostatak: artikl bez valve_type / bag_width.';
+    },
+
+    loadAndRenderBonusi: async function() {
+      var sb = (typeof initSupabase === 'function') ? initSupabase() : null;
+      if (!sb) return;
+      var self = this;
+
+      // Provjeri exclude_skart toggle za napomenu
+      try {
+        var skartFlag = await sb.from('settings').select('value').eq('key', 'bonus_exclude_skart').maybeSingle();
+        var note = document.getElementById('oeeKlasicniSkartNote');
+        if (note) note.style.display = (skartFlag.data && parseFloat(skartFlag.data.value) >= 1) ? '' : 'none';
+      } catch (e) { /* ignore */ }
+
+      try {
+        // OEE Bonus iz v_oee_epu_monthly_bonus
+        var oeeQ = sb.from('v_oee_epu_monthly_bonus')
+          .select('*')
+          .order('month', { ascending: false })
+          .order('total_bonus_eur', { ascending: false })
+          .limit(2000);
+        // Klasični bonus AUTO-IZRAČUN iz v_classical_bonus_per_employee
+        var clsQ = sb.from('v_classical_bonus_per_employee')
+          .select('*')
+          .order('month', { ascending: false })
+          .limit(5000);
+
+        var results = await Promise.all([oeeQ, clsQ]);
+        if (results[0].error) throw results[0].error;
+        if (results[1].error) console.warn('classical bonuses error:', results[1].error);
+
+        this.data.monthlyBonus = results[0].data || [];
+        this.data.classicalBonuses = (results[1].data || []).map(function(b) {
+          b.month_date = b.month;  // već je '2026-04-01' format iz view-a
+          return b;
+        });
+
+        // Populate month dropdown — UNION oba izvora s oznakama (OEE / klasični / oba)
+        var oeeMonths = {}, classicalMonths = {};
+        this.data.monthlyBonus.forEach(function(r) { if (r.month) oeeMonths[r.month] = true; });
+        this.data.classicalBonuses.forEach(function(b) { if (b.month_date) classicalMonths[b.month_date] = true; });
+        var allMonths = {};
+        Object.keys(oeeMonths).forEach(function(m) { allMonths[m] = true; });
+        Object.keys(classicalMonths).forEach(function(m) { allMonths[m] = true; });
+        var monthList = Object.keys(allMonths).sort().reverse();
+        var monthSelect = document.getElementById('oeeBonusMonth');
+        var prevMonth = this.state.bonusMonth || (monthList[0] || '');
+        monthSelect.innerHTML = monthList.map(function(m) {
+          var has = (oeeMonths[m] ? '⚡' : '') + (classicalMonths[m] ? '📋' : '');
+          var label = m.slice(0, 7) + (has ? '  ' + has : '');
+          return '<option value="' + m + '"' + (m === prevMonth ? ' selected' : '') + '>' + label + '</option>';
+        }).join('') || '<option value="">Nema podataka</option>';
+        if (!this.state.bonusMonth) this.state.bonusMonth = prevMonth;
+
+        // Postava dropdown
+        var postave = {};
+        this.data.monthlyBonus.forEach(function(r) { if (r.postava_broj != null) postave[r.postava_broj] = true; });
+        var postavaList = Object.keys(postave).sort();
+        var pSelect = document.getElementById('oeeBonusPostava');
+        pSelect.innerHTML = '<option value="">Sve (' + postavaList.length + ')</option>' +
+          postavaList.map(function(p) {
+            return '<option value="' + p + '"' + (p === self.state.bonusPostava ? ' selected' : '') + '>Postava ' + p + '</option>';
+          }).join('');
+
+        // Wire change handlers (only once)
+        if (!monthSelect._wired) {
+          monthSelect.addEventListener('change', function(e) { self.state.bonusMonth = e.target.value; self.renderBonusi(); });
+          monthSelect._wired = true;
+        }
+        if (!pSelect._wired) {
+          pSelect.addEventListener('change', function(e) { self.state.bonusPostava = e.target.value; self.renderBonusi(); });
+          pSelect._wired = true;
+        }
+
+        this.renderBonusi();
+      } catch (e) {
+        console.error('loadAndRenderBonusi:', e);
+        document.getElementById('oeeBonusiBody').innerHTML =
+          '<tr><td colspan="9" style="text-align:center; padding:20px; color:var(--danger);">Greška: ' + (e.message || e) + '</td></tr>';
+      }
+    },
+
+    renderBonusi: function() {
+      var month = this.state.bonusMonth;
+      var postava = this.state.bonusPostava;
+      var rows = this.data.monthlyBonus.filter(function(r) {
+        if (month && r.month !== month) return false;
+        if (postava && String(r.postava_broj) !== String(postava)) return false;
+        return true;
+      });
+
+      // Sort: total_bonus_eur DESC
+      rows.sort(function(a, b) {
+        return parseFloat(b.total_bonus_eur || 0) - parseFloat(a.total_bonus_eur || 0);
+      });
+
+      var tbody = document.getElementById('oeeBonusiBody');
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-lo);">Nema podataka</td></tr>';
+        document.getElementById('oeeBonusiCount').textContent = '';
+        document.getElementById('oeeBonusiTotal').textContent = '0.00 €';
+        return;
+      }
+
+      var total = 0;
+      var html = rows.map(function(r, i) {
+        var t = parseFloat(r.total_bonus_eur || 0);
+        total += t;
+        var rankIcon = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '#' + (i + 1)));
+        var posLabel = r.position && r.position !== 'nepoznato' ? r.position : '<span style="color:var(--text-lo);">—</span>';
+        return '<tr>' +
+          '<td>' + rankIcon + '</td>' +
+          '<td><strong>' + (r.djelatnik_ime || '-') + '</strong></td>' +
+          '<td style="font-size:0.85em; color:var(--text-mid);">' + posLabel + '</td>' +
+          '<td>Postava ' + (r.postava_broj || '-') + '</td>' +
+          '<td style="text-align:right;">' + (r.total_shifts || 0) + '</td>' +
+          '<td style="text-align:right;">' + (r.shifts_with_both_gates || 0) + '</td>' +
+          '<td style="text-align:right;">' + (r.shifts_with_bonus || 0) + '</td>' +
+          '<td style="text-align:right;">' + parseFloat(r.avg_bonus_per_shift_eur || 0).toFixed(2) + ' €</td>' +
+          '<td style="text-align:right;">' + parseFloat(r.max_bonus_in_shift_eur || 0).toFixed(2) + ' €</td>' +
+          '<td style="text-align:right; font-weight:700; color:' + (t > 0 ? '#2e7d32' : '#999') + ';">' + t.toFixed(2) + ' €</td>' +
+          '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+      document.getElementById('oeeBonusiCount').textContent = '(' + rows.length + ' strojara)';
+      document.getElementById('oeeBonusiTotal').textContent = total.toFixed(2) + ' €';
+
+      // I klasični bonus
+      this.renderKlasicniBonus(month, postava);
+    },
+
+    renderKlasicniBonus: function(monthDate, postavaFilter) {
+      // Auto-izračun iz v_classical_bonus_per_employee
+      var classical = this.data.classicalBonuses.filter(function(b) {
+        if (monthDate && b.month_date !== monthDate) return false;
+        if (postavaFilter) {
+          if (b.postava_naziv !== ('Postava ' + postavaFilter)) return false;
+        }
+        return true;
+      });
+
+      // Lookup za OEE bonus po normaliziranom imenu
+      var oeeMap = {};
+      var normName = function(s) {
+        return (s || '').toUpperCase()
+          .replace(/Č/g,'C').replace(/Ć/g,'C').replace(/Š/g,'S')
+          .replace(/Ž/g,'Z').replace(/Đ/g,'D').trim();
+      };
+      this.data.monthlyBonus.forEach(function(o) {
+        if (o.djelatnik_ime) oeeMap[normName(o.djelatnik_ime)] = parseFloat(o.total_bonus_eur || 0);
+      });
+
+      var tbody = document.getElementById('oeeKlasicniBody');
+      if (classical.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:20px; color:var(--text-lo);">Nema smjenskih izvještaja za ovaj mjesec/postavu</td></tr>';
+        document.getElementById('oeeKlasicniCount').textContent = '';
+        document.getElementById('oeeKlasicniTotal').textContent = '0.00 €';
+        document.getElementById('oeeKlasicniOeeTotal').textContent = '0.00 €';
+        document.getElementById('oeeKlasicniGrandTotal').textContent = '0.00 €';
+        return;
+      }
+
+      // Sort: postava → kategorija (voditelj prvo) → bonus
+      classical.sort(function(a, b) {
+        var key1 = (a.postava_naziv || '') + '|' + (a.production_line || '') + '|' + (a.machine_type || '');
+        var key2 = (b.postava_naziv || '') + '|' + (b.production_line || '') + '|' + (b.machine_type || '');
+        if (key1 !== key2) return key1.localeCompare(key2, 'hr');
+        // unutar postave: voditelj prvo
+        if (a.bonus_kategorija !== b.bonus_kategorija) return a.bonus_kategorija === 'voditelj' ? -1 : 1;
+        return parseFloat(b.bonus_eur || 0) - parseFloat(a.bonus_eur || 0);
+      });
+
+      var sumClassical = 0, sumOee = 0, sumGrand = 0;
+      var lastKey = null;
+      var html = '';
+      classical.forEach(function(b) {
+        var oeeForEmp = oeeMap[normName(b.djelatnik_ime)] || 0;
+        var classEur = parseFloat(b.bonus_eur || 0);
+        var grand = classEur + oeeForEmp;
+        sumClassical += classEur;
+        sumOee += oeeForEmp;
+        sumGrand += grand;
+
+        var key = b.postava_naziv + '|' + b.production_line + '/' + b.machine_type;
+        var teamCell = (lastKey !== key)
+          ? '<td style="font-weight:600; color:#1a237e;">' + (b.postava_naziv || '—') +
+            '<div style="font-size:0.75em; font-weight:400; color:var(--text-lo);">' + (b.production_line || '') + ' / ' + (b.machine_type || '') + '</div></td>'
+          : '<td></td>';
+        lastKey = key;
+
+        var hasOee = oeeForEmp > 0 ? '<span style="color:var(--success); font-size:1.1em;" title="Ima i OEE bonus">✓</span>' : '<span style="color:var(--text-lo);">—</span>';
+        var katStyle = b.bonus_kategorija === 'voditelj' ? 'color:#1565c0; font-weight:600;' : 'color:#666;';
+
+        var unit = (b.unit === 'm') ? 'm/h' : 'kom/h';
+        var ostv = parseFloat(b.ostvareno_kom_h || 0);
+        var plan = parseFloat(b.plan_kom_h || 0);
+        var razl = parseFloat(b.razlika_kom_h || 0);
+        var razlColor = razl >= 0 ? '#2e7d32' : '#c62828';
+
+        html += '<tr>' +
+          teamCell +
+          '<td><strong>' + (b.djelatnik_ime || '—') + '</strong></td>' +
+          '<td><span style="font-size:0.82em; ' + katStyle + '">' + (b.position && b.position !== 'nepoznato' ? b.position : '—') + '</span></td>' +
+          '<td style="text-align:right;">' + Math.round(ostv).toLocaleString('hr') + ' <span style="font-size:0.78em; color:var(--text-lo);">' + unit + '</span></td>' +
+          '<td style="text-align:right; color:var(--text-lo);">' + Math.round(plan).toLocaleString('hr') + ' <span style="font-size:0.78em;">' + unit + '</span></td>' +
+          '<td style="text-align:right; color:' + razlColor + '; font-weight:600;">' + (razl >= 0 ? '+' : '') + Math.round(razl).toLocaleString('hr') + '</td>' +
+          '<td style="text-align:center;">' + hasOee + '</td>' +
+          '<td style="text-align:right;">' + parseFloat(b.bonus_pct || 0).toFixed(2) + '%</td>' +
+          '<td style="text-align:right;">' + classEur.toFixed(2) + ' €</td>' +
+          '<td style="text-align:right; color:' + (oeeForEmp > 0 ? '#1565c0' : '#bbb') + ';">' + (oeeForEmp > 0 ? oeeForEmp.toFixed(2) + ' €' : '—') + '</td>' +
+          '<td style="text-align:right; font-weight:700;">' + grand.toFixed(2) + ' €</td>' +
+          '</tr>';
+      });
+
+      tbody.innerHTML = html;
+      document.getElementById('oeeKlasicniCount').textContent = '(' + classical.length + ' redaka, auto-izračun)';
+      document.getElementById('oeeKlasicniTotal').textContent = sumClassical.toFixed(2) + ' €';
+      document.getElementById('oeeKlasicniOeeTotal').textContent = sumOee.toFixed(2) + ' €';
+      document.getElementById('oeeKlasicniGrandTotal').textContent = sumGrand.toFixed(2) + ' €';
+    },
+
+    renderStrojariTable: function() {
+      var groups = {};
+      this.data.shifts.forEach(function(s) {
+        if (!s.operator_name) return;
+        var key = s.operator_name + '|' + (s.line_grouped || '-') + '|' + (s.machine_type || '-');
+        if (!groups[key]) {
+          groups[key] = {
+            operator_name: s.operator_name,
+            line_grouped: s.line_grouped || '-',
+            machine_type: s.machine_type || '-',
+            shifts_count: 0,
+            total_kom: 0,
+            total_skart: 0,
+            total_active_h: 0,
+            oee_sum: 0,
+            oee_n: 0,
+            suspicious_count: 0
+          };
+        }
+        var g = groups[key];
+        g.shifts_count++;
+        g.total_kom += parseInt(s.produced_quantity, 10) || 0;
+        g.total_skart += parseFloat(s.scrap_kg) || 0;
+        g.total_active_h += parseFloat(s.active_hours) || 0;
+        var oee = parseFloat(s.oee_pct) || 0;
+        if (oee > 0) { g.oee_sum += oee; g.oee_n++; }
+        if (s.is_suspicious) g.suspicious_count++;
+      });
+
+      var rows = Object.values(groups).map(function(g) {
+        g.kom_per_h = g.total_active_h > 0 ? Math.round(g.total_kom / g.total_active_h) : 0;
+        g.avg_oee = g.oee_n > 0 ? g.oee_sum / g.oee_n : 0;
+        return g;
+      });
+
+      var sk = this.state.strojarSortKey, sd = this.state.strojarSortDir;
+      rows.sort(function(a, b) {
+        var av = a[sk], bv = b[sk];
+        if (typeof av === 'string') {
+          return sd === 'asc' ? av.localeCompare(bv, 'hr') : bv.localeCompare(av, 'hr');
+        }
+        av = parseFloat(av) || 0;
+        bv = parseFloat(bv) || 0;
+        return sd === 'asc' ? av - bv : bv - av;
+      });
+
+      var tbody = document.getElementById('oeeStrojariBody');
+      var self = this;
+
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-lo);">Nema strojara u periodu</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(function(g) {
+          var oeeClass = self.colorClass(g.avg_oee);
+          return '<tr>' +
+            '<td><strong>' + g.operator_name + '</strong></td>' +
+            '<td>' + g.line_grouped + '</td>' +
+            '<td>' + g.machine_type + '</td>' +
+            '<td style="text-align:right;">' + g.shifts_count + '</td>' +
+            '<td style="text-align:right;">' + self.formatBroj(g.total_kom) + '</td>' +
+            '<td style="text-align:right;">' + (g.total_skart > 0 ? g.total_skart.toFixed(1) : '<span style="color:var(--text-lo);">—</span>') + '</td>' +
+            '<td style="text-align:right;">' + g.total_active_h.toFixed(1) + '</td>' +
+            '<td style="text-align:right; font-weight:700; color:var(--primary);">' + self.formatBroj(g.kom_per_h) + '</td>' +
+            '<td class="' + oeeClass + '" style="text-align:right;">' + g.avg_oee.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + (g.suspicious_count > 0 ? '<span style="color:#e65100;">' + g.suspicious_count + '</span>' : '<span style="color:var(--text-lo);">0</span>') + '</td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      // Footer total
+      var total = rows.reduce(function(acc, g) {
+        acc.shifts += g.shifts_count;
+        acc.kom += g.total_kom;
+        acc.skart += g.total_skart;
+        acc.active += g.total_active_h;
+        acc.oeeSum += g.avg_oee * g.shifts_count; // weighted by shifts
+        acc.sumnjive += g.suspicious_count;
+        return acc;
+      }, { shifts: 0, kom: 0, skart: 0, active: 0, oeeSum: 0, sumnjive: 0 });
+
+      var totalKomH = total.active > 0 ? Math.round(total.kom / total.active) : 0;
+      var totalAvgOee = total.shifts > 0 ? total.oeeSum / total.shifts : 0;
+
+      document.getElementById('oeeStrojariTotalSmjena').textContent = total.shifts;
+      document.getElementById('oeeStrojariTotalKom').textContent = this.formatBroj(total.kom);
+      document.getElementById('oeeStrojariTotalSkart').textContent = total.skart > 0 ? total.skart.toFixed(1) : '—';
+      document.getElementById('oeeStrojariTotalActiveH').textContent = total.active.toFixed(1);
+      document.getElementById('oeeStrojariTotalKomH').textContent = this.formatBroj(totalKomH);
+      document.getElementById('oeeStrojariTotalAvgOee').textContent = totalAvgOee.toFixed(1);
+      document.getElementById('oeeStrojariTotalSumnjive').textContent = total.sumnjive;
+
+      document.getElementById('oeeStrojariCount').textContent = '(' + rows.length + ' strojar/stroj/linija kombinacija)';
+    },
+
+    colorClass: function(oee) {
+      var v = parseFloat(oee) || 0;
+      if (v >= 70) return 'oee-good';
+      if (v >= 50) return 'oee-ok';
+      return 'oee-bad';
+    },
+
+    formatBroj: function(n) {
+      var num = parseInt(n, 10) || 0;
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    },
+
+    showLoading: function(show) {
+      var el = document.getElementById('oeeLoadingOverlay');
+      if (el) el.style.display = show ? 'flex' : 'none';
     }
-  }
-};
+  };
 
-// Global funkcija za gumb
-function oeeUcitajPodatke() {
-  OEE.loadData();
-}
+  window.OEE = OEE;
+  window.oeeUcitajPodatke = function() { OEE.loadData(); };
 
-// Init on load
-if (typeof initSupabase === 'function') {
-  OEE.init();
-} else {
-  document.addEventListener('DOMContentLoaded', function() {
+  if (typeof initSupabase === 'function') {
     OEE.init();
-  });
-}
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof initSupabase === 'function') OEE.init();
+    });
+  }
+})();
 </script>

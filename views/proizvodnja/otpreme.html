@@ -32,7 +32,7 @@
   display: flex;
   gap: 5px;
   margin-bottom: 20px;
-  background: white;
+  background: var(--bg-card);
   padding: 8px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -46,13 +46,13 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95em;
-  color: #666;
+  color: var(--text-mid);
   transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.otpreme-tab:hover { background: #f5f5f5; color: #333; }
+.otpreme-tab:hover { background: var(--remap-grey-bg); color: var(--text-hi); }
 .otpreme-tab.active { background: var(--primary); color: white; }
 .otpreme-tab .badge {
   background: rgba(0,0,0,0.15);
@@ -72,7 +72,7 @@
   margin-bottom: 20px;
 }
 .kpi-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -80,16 +80,16 @@
 }
 .kpi-icon { font-size: 2em; margin-bottom: 10px; }
 .kpi-value { font-size: 1.8em; font-weight: 700; color: var(--primary); }
-.kpi-label { font-size: 0.85em; color: #666; margin-top: 5px; }
+.kpi-label { font-size: 0.85em; color: var(--text-mid); margin-top: 5px; }
 .kpi-card.warning .kpi-value { color: #e65100; }
-.kpi-card.success .kpi-value { color: #2e7d32; }
-.kpi-card.info .kpi-value { color: #1565c0; }
+.kpi-card.success .kpi-value { color: var(--success); }
+.kpi-card.info .kpi-value { color: var(--primary); }
 
 /* ============================================
    KALENDAR
    ============================================ */
 .calendar-container {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   margin-bottom: 20px;
@@ -118,57 +118,66 @@
   transition: background 0.2s;
 }
 .calendar-nav button:hover { background: rgba(255,255,255,0.3); }
-.calendar-nav button.active { background: white; color: #1a237e; }
+.calendar-nav button.active { background: #fff; color: #1a237e; }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  background: #e0e0e0;
+  background: var(--glass-border);
 }
 .calendar-day-header {
-  background: #f5f5f5;
+  background: var(--bg-thead);
   padding: 10px;
   text-align: center;
   font-weight: 600;
-  color: #555;
+  color: var(--text-hi);
   font-size: 0.85em;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
+.calendar-day-header.weekend { color: var(--warning); }
 .calendar-day {
-  background: white;
+  background: var(--bg-card);
   min-height: 100px;
   padding: 8px;
   transition: background 0.2s;
   cursor: pointer;
+  color: var(--text-hi);
 }
-.calendar-day:hover { background: #f8f9fa; }
-.calendar-day.other-month { background: #fafafa; color: #bbb; }
+.calendar-day:hover { background: var(--bg-card-hover); }
+.calendar-day.other-month { background: var(--remap-grey-bg); color: var(--text-lo); }
+.calendar-day.weekend { background: rgba(233, 181, 102, 0.04); }
+.calendar-day.weekend.other-month { background: var(--remap-grey-bg); }
 
-/* Drag zone za navigaciju između mjeseci */
+/* Klizne strelice za navigaciju mjesec-mjesec (uvijek vidljive) */
+.calendar-container { position: relative; }
 .calendar-drag-zone {
-  display: none;
+  display: flex;
   position: absolute;
-  top: 0;
+  top: 56px;  /* ispod calendar-header bara */
   bottom: 0;
-  width: 48px;
+  width: 36px;
   z-index: 10;
-  background: rgba(25, 118, 210, 0.12);
-  color: #1565c0;
-  font-size: 11px;
+  background: var(--bg-card);
+  color: var(--primary);
+  font-size: 22px;
   font-weight: 700;
-  writing-mode: vertical-lr;
   align-items: center;
   justify-content: center;
-  border: 2px dashed #90caf9;
-  cursor: default;
-  transition: background 0.2s, border-color 0.2s;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  user-select: none;
 }
-.calendar-drag-zone.left { left: 0; border-radius: 0; border-left: none; border-top: none; border-bottom: none; }
-.calendar-drag-zone.right { right: 0; border-radius: 0; border-right: none; border-top: none; border-bottom: none; }
-.calendar-drag-zone.active { background: rgba(25, 118, 210, 0.3); border-color: #1565c0; }
-body.is-dragging .calendar-drag-zone { display: flex; }
-.calendar-day.today { background: #e3f2fd; }
-.calendar-day.selected { background: #bbdefb; box-shadow: inset 0 0 0 2px #1976d2; }
+.calendar-drag-zone:hover { background: var(--remap-info-bg); color: var(--primary-dark); }
+.calendar-drag-zone.left { left: 0; border-right: 1px solid var(--glass-border); }
+.calendar-drag-zone.right { right: 0; border-left: 1px solid var(--glass-border); }
+.calendar-drag-zone.active { background: var(--remap-info-bg); }
+body.is-dragging .calendar-drag-zone { background: var(--remap-info-bg); border-style: dashed; }
+.calendar-grid { padding: 0 36px; }  /* prostor za arrow trake sa strane */
+.calendar-day.today { background: var(--remap-info-bg); }
+.calendar-day.selected { background: var(--remap-info-bg); box-shadow: inset 0 0 0 2px #1976d2; }
 .calendar-day.has-ready { border-left: 4px solid #4caf50; }
 .calendar-day.has-overdue { border-left: 4px solid #f44336; }
 .calendar-date { font-weight: 600; margin-bottom: 5px; font-size: 0.9em; }
@@ -185,8 +194,8 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--remap-info-bg);
+  color: var(--primary);
   border-left: 3px solid #2196f3;
   transition: transform 0.1s, box-shadow 0.1s;
 }
@@ -198,22 +207,22 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 .calendar-day.drag-over {
-  background: #bbdefb !important;
+  background: var(--remap-info-bg) !important;
   box-shadow: inset 0 0 0 3px #1976d2;
 }
-.calendar-order.ready { background: #e8f5e9; color: #2e7d32; border-left-color: #4caf50; }
-.calendar-order.partial { background: #fff3e0; color: #e65100; border-left-color: #ff9800; }
-.calendar-order.dispatched { background: #f5f5f5; color: #999; border-left-color: #9e9e9e; text-decoration: line-through; }
+.calendar-order.ready { background: var(--remap-success-bg); color: var(--success); border-left-color: #4caf50; }
+.calendar-order.partial { background: var(--remap-warning-bg); color: #e65100; border-left-color: var(--warning); }
+.calendar-order.dispatched { background: var(--remap-grey-bg); color: var(--text-lo); border-left-color: #9e9e9e; text-decoration: line-through; }
 .calendar-order .order-num { font-weight: 700; }
 .calendar-order .order-badge { font-size: 0.7em; padding: 1px 4px; border-radius: 3px; background: rgba(0,0,0,0.1); }
-.calendar-more { font-size: 0.7em; color: #1976d2; text-align: center; padding: 2px; cursor: pointer; }
+.calendar-more { font-size: 0.7em; color: var(--primary); text-align: center; padding: 2px; cursor: pointer; }
 .calendar-more:hover { text-decoration: underline; }
 
 /* ============================================
    FILTERI
    ============================================ */
 .filters-bar {
-  background: white;
+  background: var(--bg-card);
   border-radius: 10px;
   padding: 15px 20px;
   margin-bottom: 20px;
@@ -224,10 +233,10 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   align-items: flex-end;
 }
 .filter-group { display: flex; flex-direction: column; gap: 4px; }
-.filter-group label { font-weight: 600; color: #555; font-size: 0.8em; }
+.filter-group label { font-weight: 600; color: var(--text-mid); font-size: 0.8em; }
 .filter-group select, .filter-group input { 
   padding: 8px 12px; 
-  border: 1px solid #ddd; 
+  border: 1px solid var(--border); 
   border-radius: 6px;
   font-size: 0.9em;
 }
@@ -241,7 +250,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
    LISTA NARUDŽBI TABLICA
    ============================================ */
 .orders-table-container {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   overflow: hidden;
@@ -251,23 +260,23 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   border-collapse: collapse;
 }
 .orders-table th {
-  background: #f8f9fa;
+  background: var(--remap-grey-bg);
   padding: 14px 12px;
   text-align: left;
   font-weight: 600;
   font-size: 0.85em;
-  color: #555;
-  border-bottom: 2px solid #e0e0e0;
+  color: var(--text-mid);
+  border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
 }
 .orders-table td {
   padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   font-size: 0.9em;
 }
-.orders-table tr:hover td { background: #f8f9fa; }
-.orders-table tr.selected td { background: #e3f2fd; }
+.orders-table tr:hover td { background: var(--remap-grey-bg); }
+.orders-table tr.selected td { background: var(--remap-info-bg); }
 
 /* ============================================
    STATUS BADGES
@@ -279,12 +288,12 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   font-weight: 600;
   display: inline-block;
 }
-.status-badge.production { background: #e3f2fd; color: #1565c0; }
-.status-badge.ready { background: #e8f5e9; color: #2e7d32; }
-.status-badge.partial { background: #fff3e0; color: #e65100; }
-.status-badge.complete { background: #f3e5f5; color: #7b1fa2; }
-.status-badge.pripremljeno { background: #fff3e0; color: #e65100; }
-.status-badge.otpremljeno { background: #e8f5e9; color: #2e7d32; }
+.status-badge.production { background: var(--remap-info-bg); color: var(--primary); }
+.status-badge.ready { background: var(--remap-success-bg); color: var(--success); }
+.status-badge.partial { background: var(--remap-warning-bg); color: #e65100; }
+.status-badge.complete { background: var(--remap-grey-bg); color: #b06fce; }
+.status-badge.pripremljeno { background: var(--remap-warning-bg); color: #e65100; }
+.status-badge.otpremljeno { background: var(--remap-success-bg); color: var(--success); }
 
 /* ============================================
    PROGRESS BAR
@@ -302,7 +311,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   transition: width 0.3s;
 }
 .progress-bar .fill.low { background: #f44336; }
-.progress-bar .fill.medium { background: #ff9800; }
+.progress-bar .fill.medium { background: var(--warning); }
 .progress-bar .fill.high { background: #4caf50; }
 .progress-bar .fill.complete { background: #9c27b0; }
 
@@ -310,7 +319,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
    DETALJI NARUDŽBE PANEL
    ============================================ */
 .order-panel {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   margin-top: 20px;
@@ -337,11 +346,11 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   gap: 15px;
   margin-bottom: 20px;
 }
-.info-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-.info-label { font-size: 0.75em; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-.info-value { font-size: 1.1em; font-weight: 600; color: #333; }
+.info-item { background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; }
+.info-label { font-size: 0.75em; color: var(--text-mid); text-transform: uppercase; margin-bottom: 5px; }
+.info-value { font-size: 1.1em; font-weight: 600; color: var(--text-hi); }
 .info-value.large { font-size: 1.4em; color: var(--primary); }
-.info-value.success { color: #2e7d32; }
+.info-value.success { color: var(--success); }
 .info-value.warning { color: #e65100; }
 
 /* ============================================
@@ -350,24 +359,24 @@ body.is-dragging .calendar-drag-zone { display: flex; }
 .pallets-list {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 .pallet-item {
   display: flex;
   align-items: center;
   padding: 12px 15px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.2s;
 }
-.pallet-item:hover { background: #f8f9fa; }
-.pallet-item.selected { background: #e3f2fd; }
-.pallet-item.dispatched { background: #f5f5f5; opacity: 0.6; cursor: not-allowed; }
+.pallet-item:hover { background: var(--remap-grey-bg); }
+.pallet-item.selected { background: var(--remap-info-bg); }
+.pallet-item.dispatched { background: var(--remap-grey-bg); opacity: 0.6; cursor: not-allowed; }
 .pallet-checkbox { margin-right: 12px; width: 20px; height: 20px; cursor: pointer; }
 .pallet-info { flex: 1; }
-.pallet-number { font-weight: 700; color: #333; }
-.pallet-details { font-size: 0.85em; color: #666; margin-top: 3px; }
+.pallet-number { font-weight: 700; color: var(--text-hi); }
+.pallet-details { font-size: 0.85em; color: var(--text-mid); margin-top: 3px; }
 .pallet-quantity { font-weight: 700; color: var(--primary); font-size: 1.1em; }
 .pallet-line { 
   padding: 3px 8px; 
@@ -376,14 +385,14 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   font-weight: 600;
   margin-left: 10px;
 }
-.pallet-line.wh { background: #e8f5e9; color: #2e7d32; }
-.pallet-line.nli { background: #fff3e0; color: #e65100; }
+.pallet-line.wh { background: var(--remap-success-bg); color: var(--success); }
+.pallet-line.nli { background: var(--remap-warning-bg); color: #e65100; }
 
 /* ============================================
    OTPREME LISTA
    ============================================ */
 .dispatch-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   margin-bottom: 15px;
@@ -391,19 +400,19 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   border-left: 4px solid #1976d2;
 }
 .dispatch-card.otpremljeno { border-left-color: #4caf50; }
-.dispatch-card.pripremljeno { border-left-color: #ff9800; }
+.dispatch-card.pripremljeno { border-left-color: var(--warning); }
 .dispatch-header {
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
+  background: var(--remap-grey-bg);
   cursor: pointer;
 }
-.dispatch-header:hover { background: #f0f0f0; }
-.dispatch-number { font-weight: 700; font-size: 1.1em; color: #333; }
-.dispatch-meta { display: flex; gap: 20px; font-size: 0.9em; color: #666; }
-.dispatch-body { padding: 15px 20px; display: none; border-top: 1px solid #e0e0e0; }
+.dispatch-header:hover { background: var(--remap-grey-bg); }
+.dispatch-number { font-weight: 700; font-size: 1.1em; color: var(--text-hi); }
+.dispatch-meta { display: flex; gap: 20px; font-size: 0.9em; color: var(--text-mid); }
+.dispatch-body { padding: 15px 20px; display: none; border-top: 1px solid var(--border); }
 .dispatch-card.expanded .dispatch-body { display: block; }
 .dispatch-info-grid {
   display: grid;
@@ -411,116 +420,46 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   gap: 10px;
   margin-bottom: 15px;
 }
-.dispatch-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; border-top: 1px solid #eee; }
+.dispatch-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; border-top: 1px solid var(--border); }
 
 /* ============================================
    KOMENTARI
    ============================================ */
-.comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+.comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
 .comments-title { font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
 .comment-list { max-height: 250px; overflow-y: auto; }
 .comment-item {
-  background: #f8f9fa;
+  background: var(--remap-grey-bg);
   padding: 12px 15px;
   border-radius: 8px;
   margin-bottom: 10px;
   border-left: 3px solid #1976d2;
 }
-.comment-item.transport { border-left-color: #ff9800; }
-.comment-item.urgent { border-left-color: #f44336; background: #fff8f8; }
-.comment-item.pinned { border-left-color: #9c27b0; background: #faf5ff; }
-.comment-header { display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-bottom: 5px; }
-.comment-text { color: #333; line-height: 1.4; }
+.comment-item.transport { border-left-color: var(--warning); }
+.comment-item.urgent { border-left-color: #f44336; background: var(--remap-danger-bg); }
+.comment-item.pinned { border-left-color: #9c27b0; background: var(--remap-grey-bg); }
+.comment-header { display: flex; justify-content: space-between; font-size: 0.8em; color: var(--text-mid); margin-bottom: 5px; }
+.comment-text { color: var(--text-hi); line-height: 1.4; }
 .comment-input { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
 .comment-input textarea { 
   flex: 1; 
   min-width: 200px;
   padding: 10px; 
-  border: 1px solid #ddd; 
+  border: 1px solid var(--border); 
   border-radius: 6px; 
   resize: none; 
   height: 60px; 
 }
 .comment-type-select { width: 150px; }
 
-/* ============================================
-   MODALI
-   ============================================ */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
+/* Base .modal/.form-control klase — naslijeđuju iz globalnog css/styles.css. */
 .modal.active { display: flex; }
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.modal-header {
-  padding: 20px;
-  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.modal-header h3 { margin: 0; font-size: 1.3em; }
-.modal-close {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5em;
-  cursor: pointer;
-  padding: 5px 10px;
-  opacity: 0.8;
-}
-.modal-close:hover { opacity: 1; }
-.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-.modal-footer {
-  padding: 15px 20px;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* ============================================
-   FORME
-   ============================================ */
-.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; font-weight: 600; color: #555; margin-bottom: 5px; font-size: 0.9em; }
-.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.95em;
-  transition: border-color 0.2s;
-}
-.form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1); }
-.form-control[readonly] { background: #f5f5f5; }
 
 /* ============================================
    DOKUMENTI PREVIEW
    ============================================ */
 .document-preview {
-  background: white;
+  background: var(--bg-card);
   padding: 30px;
   max-width: 800px;
   margin: 0 auto;
@@ -532,26 +471,26 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   align-items: flex-start;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #1a237e;
+  border-bottom: 2px solid var(--primary);
 }
 .document-logo img { height: 50px; }
 .document-title { text-align: right; }
-.document-title h1 { margin: 0; color: #1a237e; font-size: 1.6em; }
-.document-title .number { font-size: 1.1em; color: #666; }
+.document-title h1 { margin: 0; color: var(--text-hi); font-size: 1.6em; }
+.document-title .number { font-size: 1.1em; color: var(--text-mid); }
 .document-info { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-.document-box { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-.document-box h4 { margin: 0 0 10px 0; color: #1a237e; font-size: 0.85em; text-transform: uppercase; }
+.document-box { background: var(--remap-grey-bg); padding: 15px; border-radius: 8px; }
+.document-box h4 { margin: 0 0 10px 0; color: var(--text-hi); font-size: 0.85em; text-transform: uppercase; }
 .document-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
 .document-table th { background: #1a237e; color: white; padding: 10px; text-align: left; font-weight: 600; font-size: 0.85em; }
-.document-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
-.document-table tr:nth-child(even) td { background: #f8f9fa; }
+.document-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+.document-table tr:nth-child(even) td { background: var(--remap-grey-bg); }
 .document-totals { text-align: right; margin-bottom: 30px; }
-.document-totals .row { display: inline-flex; justify-content: space-between; width: 280px; padding: 8px 0; border-bottom: 1px solid #eee; }
-.document-totals .row.final { font-weight: 700; font-size: 1.1em; border-bottom: 2px solid #1a237e; }
+.document-totals .row { display: inline-flex; justify-content: space-between; width: 280px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.document-totals .row.final { font-weight: 700; font-size: 1.1em; border-bottom: 2px solid var(--primary); }
 .document-signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 50px; }
 .signature-box { text-align: center; }
-.signature-line { border-top: 1px solid #333; padding-top: 10px; margin-top: 60px; font-size: 0.85em; color: #666; }
-.document-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.75em; color: #666; text-align: center; }
+.signature-line { border-top: 1px solid #333; padding-top: 10px; margin-top: 60px; font-size: 0.85em; color: var(--text-mid); }
+.document-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.75em; color: var(--text-mid); text-align: center; }
 
 /* ============================================
    NOTIFIKACIJE
@@ -578,7 +517,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
   width: 350px;
   max-height: 400px;
   overflow-y: auto;
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   z-index: 100;
@@ -587,15 +526,15 @@ body.is-dragging .calendar-drag-zone { display: flex; }
 .notifications-dropdown.active { display: block; }
 .notification-item {
   padding: 12px 15px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.2s;
 }
-.notification-item:hover { background: #f8f9fa; }
-.notification-item.unread { background: #e3f2fd; }
-.notification-title { font-weight: 600; color: #333; margin-bottom: 3px; }
-.notification-message { font-size: 0.85em; color: #666; }
-.notification-time { font-size: 0.75em; color: #999; margin-top: 5px; }
+.notification-item:hover { background: var(--remap-grey-bg); }
+.notification-item.unread { background: var(--remap-info-bg); }
+.notification-title { font-weight: 600; color: var(--text-hi); margin-bottom: 3px; }
+.notification-message { font-size: 0.85em; color: var(--text-mid); }
+.notification-time { font-size: 0.75em; color: var(--text-lo); margin-top: 5px; }
 
 /* ============================================
    RESPONSIVE
@@ -617,7 +556,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
 @media print {
   .no-print { display: none !important; }
   .document-preview { box-shadow: none; padding: 0; }
-  body { background: white; }
+  body { background: var(--bg-card); }
 }
 </style>
 
@@ -712,11 +651,9 @@ body.is-dragging .calendar-drag-zone { display: flex; }
         <button onclick="calendarNext()">Sljedeći ▶</button>
       </div>
     </div>
-    <div style="position: relative;">
-      <div id="dragZonePrev" class="calendar-drag-zone left" ondragover="dragZoneOver(event, 'prev')" ondragleave="dragZoneLeave('prev')" ondrop="event.preventDefault()">◀ Prethodni mjesec</div>
-      <div id="dragZoneNext" class="calendar-drag-zone right" ondragover="dragZoneOver(event, 'next')" ondragleave="dragZoneLeave('next')" ondrop="event.preventDefault()">Sljedeći mjesec ▶</div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-    </div>
+    <div id="dragZonePrev" class="calendar-drag-zone left" title="Prethodni mjesec" onclick="calendarPrev()" ondragover="dragZoneOver(event, 'prev')" ondragleave="dragZoneLeave('prev')" ondrop="event.preventDefault()">◀</div>
+    <div id="dragZoneNext" class="calendar-drag-zone right" title="Sljedeći mjesec" onclick="calendarNext()" ondragover="dragZoneOver(event, 'next')" ondragleave="dragZoneLeave('next')" ondrop="event.preventDefault()">▶</div>
+    <div class="calendar-grid" id="calendarGrid"></div>
   </div>
 </div>
 
@@ -880,7 +817,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
 
     <!-- Artikli -->
     <h4 style="margin:20px 0 10px;">📦 Artikli</h4>
-    <div class="orders-table-container" style="box-shadow:none; border:1px solid #e0e0e0;">
+    <div class="orders-table-container" style="box-shadow:none; border:1px solid var(--border);">
       <table class="orders-table">
         <thead>
           <tr>
@@ -1018,7 +955,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
         
         <div class="pallets-list" id="dispatchPalletsList"></div>
         
-        <div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+        <div style="margin-top:15px; padding:15px; background:var(--remap-grey-bg); border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:15px;">
           <div>
             <strong>Odabrano paleta:</strong> <span id="selectedPalletsCount">0</span>
           </div>
@@ -1127,7 +1064,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
       <button class="modal-close" onclick="closeModal('linkPalletsModal')">&times;</button>
     </div>
     <div class="modal-body">
-      <div style="margin-bottom:15px; padding:15px; background:#e3f2fd; border-radius:8px;">
+      <div style="margin-bottom:15px; padding:15px; background:var(--remap-info-bg); border-radius:8px;">
         <strong>Otprema:</strong> <span id="linkDispatchNumber">-</span><br>
         <strong>Kupac:</strong> <span id="linkCustomerName">-</span><br>
         <strong>Količina:</strong> <span id="linkTotalQuantity">-</span> kom
@@ -1150,7 +1087,7 @@ body.is-dragging .calendar-drag-zone { display: flex; }
       
       <div class="pallets-list" id="linkPalletsList" style="max-height:350px;"></div>
       
-      <div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div style="margin-top:15px; padding:15px; background:var(--remap-grey-bg); border-radius:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
         <div><strong>Odabrano:</strong> <span id="linkSelectedCount">0</span> paleta</div>
         <div><strong>Količina:</strong> <span id="linkSelectedQty">0</span> kom</div>
       </div>
@@ -1476,13 +1413,15 @@ function renderCalendar() {
   
   title.textContent = monthNames[m] + ' ' + y;
   
-  var html = ['Pon','Uto','Sri','Čet','Pet','Sub','Ned'].map(function(d) {
-    return '<div class="calendar-day-header">' + d + '</div>';
+  var html = ['Pon','Uto','Sri','Čet','Pet','Sub','Ned'].map(function(d, idx) {
+    var weekendCls = idx >= 5 ? ' weekend' : '';
+    return '<div class="calendar-day-header' + weekendCls + '">' + d + '</div>';
   }).join('');
-  
+
   var firstDay = new Date(y, m, 1);
   var lastDay = new Date(y, m + 1, 0);
   var startDay = (firstDay.getDay() + 6) % 7;
+  var cellIdx = 0;  // 0 = Pon, 5 = Sub, 6 = Ned (kolona u tablici)
   
   // Filteri
   var filterKupac = document.getElementById('filterKupac')?.value || '';
@@ -1497,10 +1436,12 @@ function renderCalendar() {
   for (var i = startDay - 1; i >= 0; i--) {
     var pDay = prevLast - i;
     var pDateStr = prevY + '-' + String(prevM + 1).padStart(2, '0') + '-' + String(pDay).padStart(2, '0');
-    html += '<div class="calendar-day other-month" data-date="' + pDateStr + '" ';
+    var pWeekend = cellIdx >= 5 ? ' weekend' : '';
+    html += '<div class="calendar-day other-month' + pWeekend + '" data-date="' + pDateStr + '" ';
     html += 'ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ';
     html += 'ondrop="handleDrop(event, \'' + pDateStr + '\')">';
     html += '<div class="calendar-date">' + pDay + '</div></div>';
+    cellIdx = (cellIdx + 1) % 7;
   }
   
   var today = new Date();
@@ -1529,6 +1470,7 @@ function renderCalendar() {
     var hasOverdue = dateStr < todayStr && dayOrders.some(function(o) { return o.dispatch_status !== 'Potpuno otpremljeno'; });
     
     var classes = 'calendar-day';
+    if (cellIdx >= 5) classes += ' weekend';
     if (isToday) classes += ' today';
     if (isSelected) classes += ' selected';
     if (hasReady) classes += ' has-ready';
@@ -1559,19 +1501,22 @@ function renderCalendar() {
     if (dayOrders.length > 3) {
       html += '<div class="calendar-more" onclick="event.stopPropagation(); showDayOrders(\'' + dateStr + '\')">+' + (dayOrders.length - 3) + ' više</div>';
     }
-    
+
     html += '</div>';
+    cellIdx = (cellIdx + 1) % 7;
   }
-  
+
   // Sljedeći mjesec (s drag & drop podrškom za premještanje između mjeseci)
   var remaining = 42 - (startDay + lastDay.getDate());
   for (var i = 1; i <= remaining; i++) {
     var nDate = new Date(y, m + 1, i);
     var nDateStr = nDate.getFullYear() + '-' + String(nDate.getMonth() + 1).padStart(2, '0') + '-' + String(i).padStart(2, '0');
-    html += '<div class="calendar-day other-month" data-date="' + nDateStr + '" ';
+    var nWeekend = cellIdx >= 5 ? ' weekend' : '';
+    html += '<div class="calendar-day other-month' + nWeekend + '" data-date="' + nDateStr + '" ';
     html += 'ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ';
     html += 'ondrop="handleDrop(event, \'' + nDateStr + '\')">';
     html += '<div class="calendar-date">' + i + '</div></div>';
+    cellIdx = (cellIdx + 1) % 7;
   }
   
   grid.innerHTML = html;
@@ -1768,7 +1713,7 @@ function renderOrdersTable(orders) {
   if (!tbody) return;
   
   if (orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; color:#999;">Nema narudžbi za prikaz</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; color:var(--text-lo);">Nema narudžbi za prikaz</td></tr>';
     return;
   }
   
@@ -1864,7 +1809,7 @@ function renderDispatchesList(dispatches) {
   if (!container) return;
   
   if (dispatches.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Nema otprema za prikaz</div>';
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-lo);">Nema otprema za prikaz</div>';
     return;
   }
   
@@ -1926,7 +1871,7 @@ function renderReturns() {
   if (!tbody) return;
   
   if (returnsData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#999;">Nema povrata</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-lo);">Nema povrata</td></tr>';
     return;
   }
   
@@ -2016,7 +1961,7 @@ function renderPalletsList(pallets, containerId, selectable) {
   if (!container) return;
   
   if (pallets.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">Nema dostupnih paleta</div>';
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-lo);">Nema dostupnih paleta</div>';
     return;
   }
   
@@ -2049,7 +1994,7 @@ function renderOrderDispatchHistory(dispatches) {
   if (!container) return;
   
   if (dispatches.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Nema prethodnih otprema</div>';
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-lo);">Nema prethodnih otprema</div>';
     return;
   }
   
@@ -2076,7 +2021,7 @@ function renderComments(comments) {
   if (!container) return;
   
   if (!comments || comments.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Nema komentara</div>';
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-lo);">Nema komentara</div>';
     return;
   }
   
@@ -2151,7 +2096,7 @@ function renderNotifications() {
   var dropdown = document.getElementById('notifDropdown');
   
   if (notificationsData.length === 0) {
-    dropdown.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Nema novih obavijesti</div>';
+    dropdown.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-lo);">Nema novih obavijesti</div>';
     return;
   }
   
@@ -2599,7 +2544,7 @@ async function viewDispatch(dispatchId) {
     html += '</div>';
     
     if (dispatch.notes) {
-      html += '<div style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px;"><strong>Napomene:</strong> ' + escapeHtml(dispatch.notes) + '</div>';
+      html += '<div style="margin-top:15px; padding:15px; background:var(--remap-grey-bg); border-radius:8px;"><strong>Napomene:</strong> ' + escapeHtml(dispatch.notes) + '</div>';
     }
     
     html += '<h4 style="margin:20px 0 10px;">📦 Palete</h4>';
@@ -2864,7 +2809,7 @@ async function printPalletListForDispatch(dispatchId) {
   html += '<tbody>';
   
   if (pallets.length === 0) {
-    html += '<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">Nema povezanih paleta u sustavu.<br><small>Ova otprema je možda kreirana prije uvođenja sustava praćenja paleta.</small></td></tr>';
+    html += '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-lo);">Nema povezanih paleta u sustavu.<br><small>Ova otprema je možda kreirana prije uvođenja sustava praćenja paleta.</small></td></tr>';
   } else {
     pallets.forEach(function(p, i) {
       html += '<tr>';
@@ -3068,7 +3013,7 @@ function renderLinkPallets() {
   });
   
   if (filtered.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">Nema paleta za prikaz</div>';
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-lo);">Nema paleta za prikaz</div>';
     return;
   }
   
@@ -3081,10 +3026,10 @@ function renderLinkPallets() {
     
     if (p.alreadyLinked) {
       itemClass += ' dispatched';
-      statusText = '<span style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Već povezano</span>';
+      statusText = '<span style="background:var(--remap-success-bg); color:var(--success); padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Već povezano</span>';
     } else if (p.dispatch_status === 'dispatched') {
       itemClass += ' dispatched';
-      statusText = '<span style="background:#f5f5f5; color:#999; padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Otpremljeno</span>';
+      statusText = '<span style="background:var(--remap-grey-bg); color:var(--text-lo); padding:2px 6px; border-radius:4px; font-size:0.75em; margin-left:10px;">Otpremljeno</span>';
     } else if (isSelected) {
       itemClass += ' selected';
     }
